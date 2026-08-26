@@ -52,7 +52,9 @@ Important constraints for the live adapter:
 - distinguish “not returned” from zero, healthy, or unavailable;
 - use a server-side or user-authorized bridge for private leagues rather than embedding credentials.
 
-`src/providers/espn/espn-normalizer.js` now implements the first half of this seam: explicit ESPN lineup/position mappings and conversion from a captured intermediate record into snapshot v1. Network retrieval and private-league authentication are intentionally not implemented or simulated.
+`src/providers/espn/espn-normalizer.js` implements explicit ESPN lineup/position mappings and conversion from captured ESPN responses into snapshot v1. Network retrieval remains a separate transport concern.
+
+The Chrome companion completes the read transport for a private league. Its service worker owns the credentialed ESPN request, restricts inputs to numeric league/season IDs and fixed views, and returns response JSON without exposing browser cookies. A narrow content-script bridge is limited to the deployed site and localhost. Website code normalizes and validates the response before caching it.
 
 ## Next increments
 

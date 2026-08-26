@@ -25,3 +25,10 @@ test("corrupt cache is discarded", () => {
   const provider = new EspnSnapshotProvider({ storage });
   assert.equal(provider.readCache(), null);
 });
+
+test("validated live snapshots can be saved directly", () => {
+  const storage = memoryStorage();
+  const provider = new EspnSnapshotProvider({ storage });
+  assert.equal(provider.saveSnapshot(sample), sample);
+  assert.deepEqual(provider.readCache(), sample);
+});

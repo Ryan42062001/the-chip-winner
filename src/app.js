@@ -3,8 +3,12 @@ import { isStarter } from "./domain/model.js";
 import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings } from "./domain/recommendations.js";
 import { selectDataCoverage, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
+import { EspnCompanionClient } from "./providers/espn/companion-client.js";
+import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js";
 
 const provider = new EspnSnapshotProvider();
+const companion = new EspnCompanionClient();
+const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
@@ -108,9 +112,12 @@ function hydrateControls() {
   const { snapshot } = state;
   teamSelect.innerHTML = snapshot.teams.map((team) => `<option value="${escapeHtml(team.id)}" ${team.id === state.selectedTeamId ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("");
   document.querySelector("#league-label").textContent = `ESPN · ${snapshot.league.name}`;
-  document.querySelector("#source-label").textContent = state.source === "cache" ? "Imported snapshot" : "Sample snapshot";
+  document.querySelector("#source-label").textContent = snapshot.meta?.kind === "live-companion" ? "Live ESPN snapshot" : state.source === "cache" ? "Imported snapshot" : "Sample snapshot";
   document.querySelector("#source-time").textContent = snapshot.meta?.capturedAt ? `Captured ${new Date(snapshot.meta.capturedAt).toLocaleDateString()}` : "Capture time unavailable";
   document.querySelector("#reset-button").hidden = state.source !== "cache";
+  const connected = snapshot.meta?.kind === "live-companion";
+  const connectButton = document.querySelector("#connect-button");
+  connectButton.textContent = connected ? "Refresh ESPN" : "Connect ESPN";
 }
 
 function showNotice(message, kind = "success") {
@@ -129,6 +136,24 @@ async function init() {
 
 teamSelect.addEventListener("change", () => { store.dispatch({ type: "team/select", teamId: teamSelect.value }); render(); });
 document.querySelector("#import-button").addEventListener("click", () => document.querySelector("#snapshot-input").click());
+document.querySelector("#connect-button").addEventListener("click", async () => {
+  const button = document.querySelector("#connect-button");
+  button.disabled = true; button.textContent = "Connecting…";
+  try {
+    await companion.ping();
+    const response = await companion.fetchLeague(ESPN_CONNECTION);
+    const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta);
+    provider.saveSnapshot(snapshot);
+    store.dispatch({ type: "load/success", snapshot, source: "cache" });
+    if (snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
+    hydrateControls(); render(); showNotice(`Connected ${snapshot.league.name}. ESPN data refreshed successfully.`);
+  } catch (error) {
+    showNotice(error.message.includes("not detected") ? `${error.message} See the setup guide in the repository.` : `${error.message} Make sure ESPN is signed in within this Chrome profile.`, "error");
+  } finally {
+    button.disabled = false;
+    if (state.snapshot) hydrateControls();
+  }
+});
 document.querySelector("#snapshot-input").addEventListener("change", async (event) => {
   try {
     const file = event.target.files[0]; if (!file) return;

@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeEspnCapture, normalizeEspnInjury, normalizeEspnLineupSlot, normalizeEspnPosition } from "../src/providers/espn/espn-normalizer.js";
+import { readFile } from "node:fs/promises";
+import { normalizeEspnCapture, normalizeEspnInjury, normalizeEspnLeagueResponse, normalizeEspnLineupSlot, normalizeEspnPosition } from "../src/providers/espn/espn-normalizer.js";
+
+const leagueResponse = JSON.parse(await readFile(new URL("./fixtures/espn-league-response.json", import.meta.url), "utf8"));
 
 test("ESPN numeric codes map explicitly", () => {
   assert.equal(normalizeEspnLineupSlot(23), "FLEX");
@@ -26,4 +29,14 @@ test("capture normalization creates a valid versioned snapshot", () => {
   assert.equal(snapshot.players[0].position, "QB");
   assert.equal(snapshot.players[0].projection, null);
   assert.equal(snapshot.rosters[0].entries[0].lineupSlot, "QB");
+});
+
+test("real response shape normalizes teams, rosters, matchup, and explicit projection", () => {
+  const snapshot = normalizeEspnLeagueResponse(leagueResponse, { capturedAt: "2026-08-26T20:00:00Z", views: ["mTeam", "mRoster"] });
+  assert.equal(snapshot.league.id, "118749183");
+  assert.equal(snapshot.teams[0].name, "Chip Winners");
+  assert.equal(snapshot.rosters[0].entries[0].lineupSlot, "QB");
+  assert.equal(snapshot.players[0].projection, 20.5);
+  assert.equal(snapshot.matchups[0].homeTeamId, "2");
+  assert.equal(snapshot.meta.kind, "live-companion");
 });

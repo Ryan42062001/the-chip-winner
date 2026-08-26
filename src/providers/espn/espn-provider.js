@@ -43,6 +43,12 @@ export class EspnSnapshotProvider {
 
   clearCache() { this.storage?.removeItem(CACHE_KEY); }
 
+  saveSnapshot(snapshot) {
+    this.assertValid(snapshot);
+    this.storage?.setItem(CACHE_KEY, JSON.stringify(snapshot));
+    return snapshot;
+  }
+
   assertValid(snapshot) {
     const errors = validateLeagueSnapshot(snapshot);
     if (errors.length) throw new Error(`Snapshot validation failed: ${errors.join(" ")}`);

@@ -16,6 +16,19 @@ npm run dev
 
 Open `http://localhost:4173`. The app initially uses realistic sample data. Choose **Import ESPN snapshot** to load a compatible JSON file; validated imports are cached only in the current browser.
 
+## Connect the private ESPN league
+
+The configured development league is ESPN league `118749183`, season `2026`, team `2`. Because it is private, Chrome must make the read request through the local ESPN Companion extension while signed in to ESPN.
+
+1. Open `chrome://extensions` in Chrome.
+2. Enable **Developer mode**.
+3. Select **Load unpacked**.
+4. Choose the repository folder `extensions/espn-companion`.
+5. Sign in to ESPN in the same Chrome profile.
+6. Reload the live website and choose **Connect ESPN**.
+
+The extension does not expose ESPN cookies to the website and does not contain write operations. See [`extensions/espn-companion/README.md`](extensions/espn-companion/README.md) for its security boundary.
+
 Run the checks:
 
 ```bash
@@ -54,6 +67,7 @@ src/
   domain/                        Platform-neutral model and recommendations
   providers/espn/                ESPN snapshot ingestion and caching
   providers/projections/         Projection source contract and overlay
+extensions/espn-companion/       Read-only Chrome bridge for private ESPN leagues
 schema/                           Machine-readable snapshot contract
 scripts/dev-server.js            Dependency-free local server
 test/                            Node unit tests
