@@ -1,6 +1,8 @@
 import { isStarter } from "./model.js";
 
 const FLEX_POSITIONS = new Set(["RB", "WR", "TE"]);
+const MIN_LINEUP_GAIN = 1;
+const MIN_WAIVER_GAIN = 0.5;
 
 export function canFillSlot(player, slot) {
   if (slot === "FLEX") return FLEX_POSITIONS.has(player.position);
@@ -22,7 +24,7 @@ export function buildLineupSuggestions(snapshot, teamId) {
       .filter((player) => player && player.projection != null && canFillSlot(player, starterEntry.lineupSlot))
       .sort((a, b) => b.projection - a.projection);
     for (const alternative of alternatives) {
-      if (alternative.projection > starter.projection) {
+      if (alternative.projection - starter.projection >= MIN_LINEUP_GAIN) {
         candidates.push({
           type: "swap",
           slot: starterEntry.lineupSlot,
@@ -67,19 +69,20 @@ export function buildWaiverIdeas(snapshot, teamId) {
   if (!roster) return { status: "missing", items: [] };
   const players = new Map(snapshot.players.map((p) => [p.id, p]));
   const rosterPlayers = roster.entries.map((e) => players.get(e.playerId)).filter(Boolean);
-  const items = snapshot.availablePlayers
+  const candidates = snapshot.availablePlayers
     .map((id) => players.get(id))
     .filter((p) => p?.projection != null)
-    .map((add) => {
-      const drops = rosterPlayers
-        .filter((drop) => drop.position === add.position && drop.projection != null)
-        .sort((a, b) => a.projection - b.projection);
-      const drop = drops[0];
-      return drop && add.projection > drop.projection
-        ? { add, drop, gain: +(add.projection - drop.projection).toFixed(1) }
-        : null;
-    })
-    .filter(Boolean)
+    .flatMap((add) => rosterPlayers
+      .filter((drop) => drop.position === add.position && drop.projection != null && add.projection - drop.projection >= MIN_WAIVER_GAIN)
+      .map((drop) => ({ add, drop, gain: +(add.projection - drop.projection).toFixed(1) })))
     .sort((a, b) => b.gain - a.gain);
+  const usedAdds = new Set();
+  const usedDrops = new Set();
+  const items = candidates.filter((candidate) => {
+    if (usedAdds.has(candidate.add.id) || usedDrops.has(candidate.drop.id)) return false;
+    usedAdds.add(candidate.add.id);
+    usedDrops.add(candidate.drop.id);
+    return true;
+  }).slice(0, 8);
   return { status: "available", items };
 }

@@ -31,3 +31,18 @@ test("waiver logic reports unavailable inputs honestly", () => {
   delete withoutAvailability.availablePlayers;
   assert.deepEqual(buildWaiverIdeas(withoutAvailability, "t1"), { status: "missing", items: [] });
 });
+
+test("lineup logic suppresses marginal projection churn", () => {
+  const close = structuredClone(sample);
+  close.players.find((player) => player.id === "p11").projection = 15.2;
+  assert.equal(buildLineupSuggestions(close, "t1").length, 0);
+});
+
+test("waiver ideas do not reuse the same drop candidate", () => {
+  const waiverSample = structuredClone(sample);
+  waiverSample.players.find((player) => player.id === "p15").projection = 18;
+  waiverSample.availablePlayers = ["p15", "p18"];
+  const result = buildWaiverIdeas(waiverSample, "t1");
+  assert.equal(result.items.length, 2);
+  assert.equal(new Set(result.items.map((item) => item.drop.id)).size, result.items.length);
+});

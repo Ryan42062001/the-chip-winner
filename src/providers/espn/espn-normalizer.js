@@ -108,10 +108,12 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
       awayScore: item.away.totalPoints ?? null,
       status: currentWeek < response.scoringPeriodId ? "final" : "current"
     }));
-  const availablePlayers = (supplemental.availablePlayers || []).map((entry) => entry.player || entry).filter((player) => player?.id && player?.fullName);
-  for (const player of availablePlayers) {
+  const availableEntries = (supplemental.availablePlayers || []).filter((entry) => (entry.player || entry)?.id && (entry.player || entry)?.fullName);
+  const availablePlayers = availableEntries.map((entry) => entry.player || entry);
+  for (const entry of availableEntries) {
+    const player = entry.player || entry;
     const id = String(player.id);
-    if (!playerMap.has(id)) playerMap.set(id, normalizeRosterPlayer(player, currentWeek, supplemental.nflScoreboard));
+    if (!playerMap.has(id)) playerMap.set(id, { ...normalizeRosterPlayer(player, currentWeek, supplemental.nflScoreboard), availabilityStatus: entry.status || "AVAILABLE" });
   }
   const snapshot = {
     schemaVersion: 1,
