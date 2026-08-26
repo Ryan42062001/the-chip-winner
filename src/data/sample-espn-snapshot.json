@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "provider": "espn",
+  "meta": { "kind": "sample", "capturedAt": "2026-10-08T15:30:00Z", "projectionsSource": "sample" },
+  "league": { "id": "sample-1840797277", "name": "Sunday Legends", "season": 2026, "scoringPeriod": 6, "teamCount": 10, "scoringType": "Head to Head PPR" },
+  "currentWeek": 6,
+  "teams": [
+    { "id": "t1", "name": "Gridiron Architects", "abbreviation": "GRA", "record": { "wins": 4, "losses": 1, "ties": 0 }, "pointsFor": 618.4 },
+    { "id": "t2", "name": "Fourth & Long", "abbreviation": "FNL", "record": { "wins": 3, "losses": 2, "ties": 0 }, "pointsFor": 577.8 }
+  ],
+  "players": [
+    { "id": "p1", "name": "Lamar Jackson", "position": "QB", "proTeam": "BAL", "opponent": "LAR", "gameTime": "Sun 1:00 PM", "projection": 23.4, "seasonAverage": 22.1, "byeWeek": 7, "injury": { "status": "ACTIVE" } },
+    { "id": "p2", "name": "Bijan Robinson", "position": "RB", "proTeam": "ATL", "opponent": "CAR", "gameTime": "Sun 1:00 PM", "projection": 19.8, "seasonAverage": 18.6, "byeWeek": 12, "injury": { "status": "ACTIVE" } },
+    { "id": "p3", "name": "Breece Hall", "position": "RB", "proTeam": "NYJ", "opponent": "DEN", "gameTime": "Sun 4:05 PM", "projection": 16.2, "seasonAverage": 15.9, "byeWeek": 9, "injury": { "status": "QUESTIONABLE", "detail": "Limited in practice — knee" } },
+    { "id": "p4", "name": "CeeDee Lamb", "position": "WR", "proTeam": "DAL", "opponent": "DET", "gameTime": "Sun 4:25 PM", "projection": 18.7, "seasonAverage": 19.3, "byeWeek": 10, "injury": { "status": "ACTIVE" } },
+    { "id": "p5", "name": "Puka Nacua", "position": "WR", "proTeam": "LAR", "opponent": "BAL", "gameTime": "Sun 1:00 PM", "projection": 15.9, "seasonAverage": 17.1, "byeWeek": 8, "injury": { "status": "ACTIVE" } },
+    { "id": "p6", "name": "Trey McBride", "position": "TE", "proTeam": "ARI", "opponent": "GB", "gameTime": "Sun 1:00 PM", "projection": 12.8, "seasonAverage": 13.2, "byeWeek": 11, "injury": { "status": "ACTIVE" } },
+    { "id": "p7", "name": "DeVonta Smith", "position": "WR", "proTeam": "PHI", "opponent": "CLE", "gameTime": "Sun 1:00 PM", "projection": 14.6, "seasonAverage": 13.7, "byeWeek": 5, "injury": { "status": "ACTIVE" } },
+    { "id": "p8", "name": "Brandon Aubrey", "position": "K", "proTeam": "DAL", "opponent": "DET", "gameTime": "Sun 4:25 PM", "projection": 9.1, "seasonAverage": 10.4, "byeWeek": 10, "injury": { "status": "ACTIVE" } },
+    { "id": "p9", "name": "New York Jets", "position": "D/ST", "proTeam": "NYJ", "opponent": "DEN", "gameTime": "Sun 4:05 PM", "projection": 7.6, "seasonAverage": 8.8, "byeWeek": 9, "injury": { "status": "ACTIVE" } },
+    { "id": "p10", "name": "Jordan Love", "position": "QB", "proTeam": "GB", "opponent": "ARI", "gameTime": "Sun 1:00 PM", "projection": 20.1, "seasonAverage": 18.9, "byeWeek": 10, "injury": { "status": "ACTIVE" } },
+    { "id": "p11", "name": "James Cook", "position": "RB", "proTeam": "BUF", "opponent": "NYJ", "gameTime": "Mon 8:15 PM", "projection": 17.5, "seasonAverage": 16.8, "byeWeek": 12, "injury": { "status": "ACTIVE" } },
+    { "id": "p12", "name": "Jayden Reed", "position": "WR", "proTeam": "GB", "opponent": "ARI", "gameTime": "Sun 1:00 PM", "projection": 13.9, "seasonAverage": 14.1, "byeWeek": 10, "injury": { "status": "ACTIVE" } },
+    { "id": "p13", "name": "David Njoku", "position": "TE", "proTeam": "CLE", "opponent": "PHI", "gameTime": "Sun 1:00 PM", "projection": 10.4, "seasonAverage": 9.8, "byeWeek": 10, "injury": { "status": "OUT", "detail": "Ruled out — ankle" } },
+    { "id": "p14", "name": "Rome Odunze", "position": "WR", "proTeam": "CHI", "opponent": "JAX", "gameTime": "Sun 9:30 AM", "projection": null, "seasonAverage": 11.2, "byeWeek": 7, "injury": { "status": "ACTIVE" } },
+    { "id": "p15", "name": "Tank Bigsby", "position": "RB", "proTeam": "JAX", "opponent": "CHI", "gameTime": "Sun 9:30 AM", "projection": 11.4, "seasonAverage": 8.7, "byeWeek": 8, "injury": { "status": "ACTIVE" } },
+    { "id": "p16", "name": "Josh Downs", "position": "WR", "proTeam": "IND", "opponent": "TEN", "gameTime": "Sun 1:00 PM", "projection": 12.1, "seasonAverage": 10.9, "byeWeek": 14, "injury": { "status": "ACTIVE" } },
+    { "id": "p17", "name": "Baker Mayfield", "position": "QB", "proTeam": "TB", "opponent": "NO", "gameTime": "Sun 1:00 PM", "projection": 18.2, "seasonAverage": 19.5, "byeWeek": 11, "injury": { "status": "ACTIVE" } },
+    { "id": "p18", "name": "Alvin Kamara", "position": "RB", "proTeam": "NO", "opponent": "TB", "gameTime": "Sun 1:00 PM", "projection": 18.1, "seasonAverage": 18.3, "byeWeek": 12, "injury": { "status": "ACTIVE" } },
+    { "id": "p19", "name": "Mike Evans", "position": "WR", "proTeam": "TB", "opponent": "NO", "gameTime": "Sun 1:00 PM", "projection": 15.6, "seasonAverage": 16.2, "byeWeek": 11, "injury": { "status": "ACTIVE" } },
+    { "id": "p20", "name": "Sam LaPorta", "position": "TE", "proTeam": "DET", "opponent": "DAL", "gameTime": "Sun 4:25 PM", "projection": 11.6, "seasonAverage": 12.0, "byeWeek": 8, "injury": { "status": "ACTIVE" } }
+  ],
+  "rosters": [
+    { "teamId": "t1", "entries": [
+      { "playerId": "p1", "lineupSlot": "QB" }, { "playerId": "p2", "lineupSlot": "RB" }, { "playerId": "p3", "lineupSlot": "RB" },
+      { "playerId": "p4", "lineupSlot": "WR" }, { "playerId": "p5", "lineupSlot": "WR" }, { "playerId": "p6", "lineupSlot": "TE" },
+      { "playerId": "p7", "lineupSlot": "FLEX" }, { "playerId": "p8", "lineupSlot": "K" }, { "playerId": "p9", "lineupSlot": "D/ST" },
+      { "playerId": "p10", "lineupSlot": "BE" }, { "playerId": "p11", "lineupSlot": "BE" }, { "playerId": "p12", "lineupSlot": "BE" },
+      { "playerId": "p13", "lineupSlot": "BE" }, { "playerId": "p14", "lineupSlot": "BE" }
+    ]},
+    { "teamId": "t2", "entries": [
+      { "playerId": "p17", "lineupSlot": "QB" }, { "playerId": "p18", "lineupSlot": "RB" }, { "playerId": "p15", "lineupSlot": "RB" },
+      { "playerId": "p19", "lineupSlot": "WR" }, { "playerId": "p16", "lineupSlot": "WR" }, { "playerId": "p20", "lineupSlot": "TE" }
+    ]}
+  ],
+  "matchups": [{ "week": 6, "homeTeamId": "t1", "awayTeamId": "t2", "homeScore": 0, "awayScore": 0, "status": "pre" }],
+  "availablePlayers": ["p15", "p16"]
+}

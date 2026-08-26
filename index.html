@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The Chip Winner — an ESPN-only in-season fantasy football companion." />
+    <title>The Chip Winner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#overview" aria-label="The Chip Winner home">
+          <span class="brand-mark">CW</span>
+          <span><strong>The Chip Winner</strong><small>ESPN companion</small></span>
+        </a>
+        <nav aria-label="Primary navigation">
+          <a class="nav-link active" href="#overview" data-section="overview"><span>⌂</span>Overview</a>
+          <a class="nav-link" href="#lineup" data-section="lineup"><span>↕</span>Lineup Lab</a>
+          <a class="nav-link" href="#waivers" data-section="waivers"><span>＋</span>Waivers</a>
+          <a class="nav-link" href="#alerts" data-section="alerts"><span>!</span>Player Alerts</a>
+        </nav>
+        <div class="sidebar-status">
+          <span class="status-dot"></span>
+          <div><strong id="source-label">Sample snapshot</strong><small id="source-time">Local development data</small></div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="mobile-menu" aria-label="Open navigation">☰</button>
+          <div>
+            <p class="eyebrow" id="league-label">ESPN · League</p>
+            <h1 id="page-title">Weekly command center</h1>
+          </div>
+          <div class="header-actions">
+            <label class="team-picker">Team <select id="team-select" aria-label="Select fantasy team"></select></label>
+            <button class="button secondary" id="import-button">Import ESPN snapshot</button>
+            <button class="button ghost" id="reset-button" hidden>Use sample</button>
+            <input type="file" id="snapshot-input" accept="application/json,.json" hidden />
+          </div>
+        </header>
+
+        <div id="notice-region" aria-live="polite"></div>
+        <section id="app-content" aria-live="polite"></section>
+      </main>
+    </div>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
