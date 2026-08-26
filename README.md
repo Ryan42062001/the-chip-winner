@@ -62,6 +62,8 @@ docs/                            Architecture and data-contract notes
 
 See [`docs/architecture.md`](docs/architecture.md) for boundaries and extension guidance.
 
+See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance criteria, and the immediate next sprint.
+
 ## Data safety and provenance
 
 - Imports remain in browser `localStorage`; the MVP sends no league data over the network.
