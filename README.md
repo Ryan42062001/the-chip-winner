@@ -81,6 +81,8 @@ See [`docs/architecture.md`](docs/architecture.md) for boundaries and extension 
 
 See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance criteria, and the immediate next sprint.
 
+See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the post-foundation release sequence from player intelligence through optional confirmed ESPN actions.
+
 See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's read scope, local caching behavior, and deletion path.
 
 ## Data safety and provenance
