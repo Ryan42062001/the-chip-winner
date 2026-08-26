@@ -1,10 +1,10 @@
 import { EspnSnapshotProvider } from "./providers/espn/espn-provider.js";
 import { isStarter } from "./domain/model.js";
-import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings } from "./domain/recommendations.js";
+import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings } from "./domain/recommendations.js?v=0.3.0";
 import { selectDataCoverage, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
-import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js";
+import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.3.0";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
