@@ -46,6 +46,7 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.players[0].proTeam, "LAC");
   assert.equal(snapshot.players[0].opponent, "KC");
   assert.equal(snapshot.players[0].gameTime, "2026-09-10T00:20:00Z");
+  assert.equal(snapshot.players[0].seasonAverage, null);
   assert.deepEqual(snapshot.availablePlayers, ["202"]);
   assert.equal(snapshot.players.find((player) => player.id === "202").injury.status, "ACTIVE");
   assert.equal(snapshot.players.find((player) => player.id === "202").availabilityStatus, "WAIVERS");

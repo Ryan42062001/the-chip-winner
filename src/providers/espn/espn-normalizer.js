@@ -174,8 +174,6 @@ function normalizeTeam(team) {
 
 function normalizeRosterPlayer(player, currentWeek, nflScoreboard) {
   const projectionStat = (player.stats || []).find((stat) => stat.scoringPeriodId === currentWeek && stat.statSourceId === 1 && stat.statSplitTypeId === 1);
-  const actualStats = (player.stats || []).filter((stat) => stat.statSourceId === 0 && Number.isFinite(stat.appliedTotal));
-  const seasonAverage = actualStats.length ? actualStats.reduce((sum, stat) => sum + stat.appliedTotal, 0) / actualStats.length : null;
   const schedule = selectNflSchedule(player.proTeamId, nflScoreboard);
   return {
     id: String(player.id),
@@ -185,7 +183,7 @@ function normalizeRosterPlayer(player, currentWeek, nflScoreboard) {
     opponent: schedule.opponent,
     gameTime: schedule.gameTime,
     projection: Number.isFinite(projectionStat?.appliedTotal) ? projectionStat.appliedTotal : null,
-    seasonAverage: seasonAverage == null ? null : +seasonAverage.toFixed(2),
+    seasonAverage: null,
     byeWeek: schedule.isBye ? currentWeek : null,
     injury: normalizeEspnInjury(player.injuryStatus)
   };

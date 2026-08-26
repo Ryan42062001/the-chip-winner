@@ -4,7 +4,7 @@ import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, compareRosterP
 import { selectDataCoverage, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js?v=0.5.1";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
-import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.0";
+import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.2";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
