@@ -52,6 +52,8 @@ Important constraints for the live adapter:
 - distinguish “not returned” from zero, healthy, or unavailable;
 - use a server-side or user-authorized bridge for private leagues rather than embedding credentials.
 
+`src/providers/espn/espn-normalizer.js` now implements the first half of this seam: explicit ESPN lineup/position mappings and conversion from a captured intermediate record into snapshot v1. Network retrieval and private-league authentication are intentionally not implemented or simulated.
+
 ## Next increments
 
 1. Build a read-only authenticated ESPN adapter or companion extension with captured fixtures.
