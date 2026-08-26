@@ -13,6 +13,7 @@ test("ESPN numeric codes map explicitly", () => {
 
 test("unknown injury states remain unknown and retain the source value", () => {
   assert.deepEqual(normalizeEspnInjury("new-status"), { status: "UNKNOWN", detail: null, sourceStatus: "new-status" });
+  assert.deepEqual(normalizeEspnInjury("NORMAL"), { status: "ACTIVE", detail: null });
 });
 
 test("capture normalization creates a valid versioned snapshot", () => {
@@ -32,11 +33,21 @@ test("capture normalization creates a valid versioned snapshot", () => {
 });
 
 test("real response shape normalizes teams, rosters, matchup, and explicit projection", () => {
-  const snapshot = normalizeEspnLeagueResponse(leagueResponse, { capturedAt: "2026-08-26T20:00:00Z", views: ["mTeam", "mRoster"] });
+  const response = structuredClone(leagueResponse);
+  response.teams[0].roster.entries[0].playerPoolEntry.player.proTeamId = 24;
+  const snapshot = normalizeEspnLeagueResponse(response, { capturedAt: "2026-08-26T20:00:00Z", views: ["mTeam", "mRoster"] }, {
+    availablePlayers: [{ player: { id: 202, fullName: "Available Receiver", defaultPositionId: 3, proTeamId: 21, injuryStatus: "NORMAL", stats: [] } }],
+    nflScoreboard: { events: [{ date: "2026-09-10T00:20:00Z", competitions: [{ competitors: [{ team: { id: "24", abbreviation: "LAC" } }, { team: { id: "12", abbreviation: "KC" } }] }] }] }
+  });
   assert.equal(snapshot.league.id, "118749183");
   assert.equal(snapshot.teams[0].name, "Chip Winners");
   assert.equal(snapshot.rosters[0].entries[0].lineupSlot, "QB");
   assert.equal(snapshot.players[0].projection, 20.5);
+  assert.equal(snapshot.players[0].proTeam, "LAC");
+  assert.equal(snapshot.players[0].opponent, "KC");
+  assert.equal(snapshot.players[0].gameTime, "2026-09-10T00:20:00Z");
+  assert.deepEqual(snapshot.availablePlayers, ["202"]);
+  assert.equal(snapshot.players.find((player) => player.id === "202").injury.status, "ACTIVE");
   assert.equal(snapshot.matchups[0].homeTeamId, "2");
   assert.equal(snapshot.meta.kind, "live-companion");
 });

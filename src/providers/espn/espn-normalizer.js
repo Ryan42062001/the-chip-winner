@@ -8,6 +8,13 @@ export const ESPN_PRO_POSITIONS = Object.freeze({
   1: "QB", 2: "RB", 3: "WR", 4: "TE", 5: "K", 16: "D/ST"
 });
 
+export const ESPN_PRO_TEAMS = Object.freeze({
+  1: "ATL", 2: "BUF", 3: "CHI", 4: "CIN", 5: "CLE", 6: "DAL", 7: "DEN", 8: "DET", 9: "GB", 10: "TEN",
+  11: "IND", 12: "KC", 13: "LV", 14: "LAR", 15: "MIA", 16: "MIN", 17: "NE", 18: "NO", 19: "NYG", 20: "NYJ",
+  21: "PHI", 22: "ARI", 23: "PIT", 24: "LAC", 25: "SF", 26: "SEA", 27: "TB", 28: "WAS", 29: "CAR", 30: "JAX",
+  33: "BAL", 34: "HOU"
+});
+
 export function normalizeEspnLineupSlot(slotId) {
   const slot = ESPN_LINEUP_SLOTS[slotId];
   if (!slot) throw new Error(`Unsupported ESPN lineup slot id ${slotId}.`);
@@ -23,6 +30,8 @@ export function normalizeEspnPosition(positionId) {
 export function normalizeEspnInjury(injuryStatus, detail = null) {
   if (!injuryStatus) return null;
   const status = String(injuryStatus).toUpperCase().replaceAll(" ", "_");
+  if (status === "NORMAL") return { status: "ACTIVE", detail: detail || null };
+  if (status === "INJURY_RESERVE") return { status: "INJURED_RESERVE", detail: detail || null };
   const supported = new Set(["ACTIVE", "QUESTIONABLE", "DOUBTFUL", "OUT", "INJURED_RESERVE", "PHYSICALLY_UNABLE_TO_PERFORM", "SUSPENSION"]);
   return supported.has(status) ? { status, detail: detail || null } : { status: "UNKNOWN", detail: detail || null, sourceStatus: String(injuryStatus) };
 }
@@ -74,7 +83,7 @@ export function normalizeEspnCapture(capture) {
   return snapshot;
 }
 
-export function normalizeEspnLeagueResponse(response, captureMeta = {}) {
+export function normalizeEspnLeagueResponse(response, captureMeta = {}, supplemental = {}) {
   if (!response?.settings || !Array.isArray(response.teams)) throw new Error("ESPN response is missing settings or teams.");
   const currentWeek = response.scoringPeriodId;
   if (!Number.isInteger(currentWeek)) throw new Error("ESPN response is missing scoringPeriodId.");
@@ -84,7 +93,7 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}) {
       const rawPlayer = entry.playerPoolEntry?.player;
       if (!rawPlayer?.id || !rawPlayer?.fullName) throw new Error(`Team ${team.id} contains a roster entry without a stable ESPN player identity.`);
       const id = String(rawPlayer.id);
-      if (!playerMap.has(id)) playerMap.set(id, normalizeRosterPlayer(rawPlayer, currentWeek));
+      if (!playerMap.has(id)) playerMap.set(id, normalizeRosterPlayer(rawPlayer, currentWeek, supplemental.nflScoreboard));
       return { playerId: id, lineupSlot: normalizeEspnLineupSlot(entry.lineupSlotId) };
     });
     return { teamId: String(team.id), entries };
@@ -99,6 +108,11 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}) {
       awayScore: item.away.totalPoints ?? null,
       status: currentWeek < response.scoringPeriodId ? "final" : "current"
     }));
+  const availablePlayers = (supplemental.availablePlayers || []).map((entry) => entry.player || entry).filter((player) => player?.id && player?.fullName);
+  for (const player of availablePlayers) {
+    const id = String(player.id);
+    if (!playerMap.has(id)) playerMap.set(id, normalizeRosterPlayer(player, currentWeek, supplemental.nflScoreboard));
+  }
   const snapshot = {
     schemaVersion: 1,
     provider: "espn",
@@ -122,6 +136,7 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}) {
     rosters,
     matchups
   };
+  if (Array.isArray(supplemental.availablePlayers)) snapshot.availablePlayers = availablePlayers.map((player) => String(player.id));
   const errors = validateLeagueSnapshot(snapshot);
   if (errors.length) throw new Error(`Normalized ESPN response is invalid: ${errors.join(" ")}`);
   return snapshot;
@@ -139,20 +154,33 @@ function normalizeTeam(team) {
   };
 }
 
-function normalizeRosterPlayer(player, currentWeek) {
+function normalizeRosterPlayer(player, currentWeek, nflScoreboard) {
   const projectionStat = (player.stats || []).find((stat) => stat.scoringPeriodId === currentWeek && stat.statSourceId === 1 && stat.statSplitTypeId === 1);
   const actualStats = (player.stats || []).filter((stat) => stat.statSourceId === 0 && Number.isFinite(stat.appliedTotal));
   const seasonAverage = actualStats.length ? actualStats.reduce((sum, stat) => sum + stat.appliedTotal, 0) / actualStats.length : null;
+  const schedule = selectNflSchedule(player.proTeamId, nflScoreboard);
   return {
     id: String(player.id),
     name: player.fullName,
     position: normalizeEspnPosition(player.defaultPositionId),
-    proTeam: null,
-    opponent: null,
-    gameTime: null,
+    proTeam: ESPN_PRO_TEAMS[player.proTeamId] || null,
+    opponent: schedule.opponent,
+    gameTime: schedule.gameTime,
     projection: Number.isFinite(projectionStat?.appliedTotal) ? projectionStat.appliedTotal : null,
     seasonAverage: seasonAverage == null ? null : +seasonAverage.toFixed(2),
-    byeWeek: null,
+    byeWeek: schedule.isBye ? currentWeek : null,
     injury: normalizeEspnInjury(player.injuryStatus)
   };
+}
+
+function selectNflSchedule(proTeamId, scoreboard) {
+  if (!proTeamId || !Array.isArray(scoreboard?.events) || scoreboard.events.length === 0) return { opponent: null, gameTime: null, isBye: false };
+  for (const event of scoreboard.events) {
+    const competitors = event.competitions?.[0]?.competitors || [];
+    const current = competitors.find((item) => Number(item.team?.id) === Number(proTeamId));
+    if (!current) continue;
+    const opponent = competitors.find((item) => item !== current);
+    return { opponent: opponent ? ESPN_PRO_TEAMS[Number(opponent.team?.id)] || opponent.team?.abbreviation || null : null, gameTime: event.date || null, isBye: false };
+  }
+  return { opponent: null, gameTime: null, isBye: true };
 }

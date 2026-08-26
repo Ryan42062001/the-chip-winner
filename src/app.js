@@ -19,14 +19,19 @@ store.subscribe((next) => { state = next; });
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 const projection = (value) => value == null ? '<span class="missing">Not available</span>' : `${value.toFixed(1)} pts`;
 const initials = (name) => name.split(" ").map((part) => part[0]).slice(0, 2).join("");
+const gameTime = (value) => {
+  if (!value) return "Time unavailable";
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).format(parsed) : value;
+};
 
 function playerRow(entry, player) {
   const status = player.injury?.status && player.injury.status !== "ACTIVE" ? player.injury.status : null;
   return `<div class="player-row">
     <span class="slot">${escapeHtml(entry.lineupSlot)}</span>
     <span class="avatar pos-${escapeHtml(player.position).replace("/", "")}">${initials(player.name)}</span>
-    <span class="player-main"><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.position)} · ${escapeHtml(player.proTeam)} vs ${escapeHtml(player.opponent || "Opponent unavailable")}</small></span>
-    ${status ? `<span class="tag danger">${escapeHtml(status)}</span>` : `<span class="game-time">${escapeHtml(player.gameTime || "Time unavailable")}</span>`}
+    <span class="player-main"><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "Team unavailable")} vs ${escapeHtml(player.opponent || "Opponent unavailable")}</small></span>
+    ${status ? `<span class="tag danger">${escapeHtml(status)}</span>` : `<span class="game-time">${escapeHtml(gameTime(player.gameTime))}</span>`}
     <span class="player-proj"><strong>${player.projection == null ? "—" : player.projection.toFixed(1)}</strong><small>projected</small></span>
   </div>`;
 }
@@ -142,7 +147,7 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
   try {
     await companion.ping();
     const response = await companion.fetchLeague(ESPN_CONNECTION);
-    const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta);
+    const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta, { availablePlayers: response.data.availablePlayers, nflScoreboard: response.data.nflScoreboard });
     provider.saveSnapshot(snapshot);
     store.dispatch({ type: "load/success", snapshot, source: "cache" });
     if (snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });

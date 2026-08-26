@@ -25,14 +25,43 @@ async function fetchLeague(payload) {
     const message = body?.messages?.[0] || `ESPN request failed (${response.status}).`;
     throw new Error(message);
   }
+  const [availablePlayers, nflScoreboard] = await Promise.all([
+    fetchAvailablePlayers({ leagueId, seasonId }).catch(() => null),
+    fetchNflScoreboard({ seasonId, week: body.scoringPeriodId }).catch(() => ({ events: [] }))
+  ]);
   return {
     league: body,
+    availablePlayers,
+    nflScoreboard,
     meta: {
       capturedAt: new Date().toISOString(),
       endpoint: "league",
       views: [...ALLOWED_VIEWS]
     }
   };
+}
+
+async function fetchAvailablePlayers({ leagueId, seasonId }) {
+  const filter = {
+    players: {
+      filterStatus: { value: ["FREEAGENT", "WAIVERS"] },
+      filterSlotIds: { value: [0, 2, 4, 6, 16, 17] },
+      limit: 100,
+      sortPercOwned: { sortPriority: 1, sortAsc: false }
+    }
+  };
+  const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}/segments/0/leagues/${leagueId}?view=kona_player_info`;
+  const response = await fetch(url, { credentials: "include", headers: { Accept: "application/json", "X-Fantasy-Filter": JSON.stringify(filter) } });
+  if (!response.ok) throw new Error(`ESPN availability request failed (${response.status}).`);
+  const body = await response.json();
+  return body.players || [];
+}
+
+async function fetchNflScoreboard({ seasonId, week }) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${seasonId}&seasontype=2&week=${week}`;
+  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!response.ok) return { events: [] };
+  return response.json();
 }
 
 function requireDigits(value, label) {

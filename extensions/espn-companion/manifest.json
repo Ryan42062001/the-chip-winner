@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "The Chip Winner — ESPN Companion",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Connects The Chip Winner to the ESPN fantasy league already signed in within Chrome.",
   "permissions": ["storage"],
-  "host_permissions": ["https://lm-api-reads.fantasy.espn.com/*"],
+  "host_permissions": [
+    "https://lm-api-reads.fantasy.espn.com/*",
+    "https://site.api.espn.com/*"
+  ],
   "background": { "service_worker": "service-worker.js", "type": "module" },
   "content_scripts": [
     {
