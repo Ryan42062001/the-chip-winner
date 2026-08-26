@@ -63,6 +63,7 @@ Acceptance criteria:
 ### Projection-provider implementation
 
 - Implement the existing projection-provider contract for one trustworthy source.
+- Follow the source selection, licensing gate, and shadow-mode bake-off in [`projection-source-research.md`](projection-source-research.md).
 - Keep ESPN and external projections separately queryable.
 - Support weekly projection, rest-of-season value, floor, and ceiling only when supplied.
 - Store scoring format, source update time, and projection period.

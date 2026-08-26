@@ -27,6 +27,8 @@ Functions in `src/domain/recommendations.js` return derived suggestions. They do
 
 ESPN remains the authority for league settings, membership, rosters, matchups, lineup slots, and availability. A future projection provider (for example, FantasyPros) should extend `src/providers/projections/projection-provider.js`, keyed by stable player identity. `applyProjectionSet` joins values immutably, retains source metadata, and reports unresolved identities. It must not be added to the ESPN provider.
 
+`src/providers/projections/projection-catalog.js` is the source-neutral forecast store. It preserves providers independently by source, season, week, and scoring format, and requires capture metadata before a projection can enter the recommendation layer. Source selection and evaluation are documented in `docs/projection-source-research.md`.
+
 `src/domain/identity.js` owns canonical provider identities and external-record reconciliation. It accepts only provider-owned IDs, reports unresolved and conflicting mappings, and intentionally contains no display-name fallback.
 
 ## Contract enforcement

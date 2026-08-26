@@ -5,9 +5,11 @@ import { selectDataCoverage, selectPlayerDetail, selectProjectedTotal, selectSna
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
 import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.2";
+import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
+const rankingProvider = new FantasyProsRankingProvider();
 const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
@@ -27,10 +29,11 @@ const gameTime = (value) => {
 
 function playerRow(entry, player) {
   const status = player.injury?.status && player.injury.status !== "ACTIVE" ? player.injury.status : null;
+  const ros = state.rankingReconciliation?.byPlayerId?.[player.id];
   return `<div class="player-row interactive-row" data-player-id="${escapeHtml(player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(player.name)} details">
     <span class="slot">${escapeHtml(entry.lineupSlot)}</span>
     <span class="avatar pos-${escapeHtml(player.position).replace("/", "")}">${initials(player.name)}</span>
-    <span class="player-main"><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "Team unavailable")} vs ${escapeHtml(player.opponent || "Opponent unavailable")}</small></span>
+    <span class="player-main"><strong>${escapeHtml(player.name)}${ros ? ` <span class="ros-rank">ROS #${ros.rank}</span>` : ""}</strong><small>${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "Team unavailable")} vs ${escapeHtml(player.opponent || "Opponent unavailable")}</small></span>
     ${status ? `<span class="tag danger">${escapeHtml(status)}</span>` : `<span class="game-time">${escapeHtml(gameTime(player.gameTime))}</span>`}
     <span class="player-proj"><strong>${player.projection == null ? "—" : player.projection.toFixed(1)}</strong><small>projected</small></span>
   </div>`;
@@ -54,6 +57,7 @@ function renderOverview() {
   const warnings = buildWarnings(snapshot, selectedTeamId);
   const coverage = selectDataCoverage(snapshot, selectedTeamId);
   const freshness = selectSnapshotFreshness(snapshot);
+  const rankingMatches = state.rankingReconciliation ? Object.keys(state.rankingReconciliation.byPlayerId).length : 0;
 
   content.innerHTML = `<div class="page-head"><div><p class="eyebrow">WEEK ${snapshot.currentWeek}</p><h2>Good week to make a move.</h2><p>Your roster, matchup, and highest-confidence flags in one place.</p></div><span class="week-pill">Regular season · Week ${snapshot.currentWeek}</span></div>
     <div class="stat-grid">
@@ -77,6 +81,7 @@ function renderOverview() {
         </article>
         <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA QUALITY</p><h3>Snapshot coverage</h3></div><span class="quality ${freshness.status}">${freshness.status}</span></div>
           ${qualityBar("Roster projections", coverage.projections)}${qualityBar("Injury statuses", coverage.injuries)}${qualityBar("NFL opponents", coverage.opponents)}
+          ${state.rankingSet ? `<div class="ranking-health"><strong>FantasyPros ROS · ${escapeHtml(state.rankingSet.scoringFormat)}</strong><span>${rankingMatches} matched · ${state.rankingReconciliation.unresolved.length} unresolved · ${state.rankingReconciliation.conflicts.length} conflicts</span></div>` : ""}
           <p class="data-note">Waiver availability: <strong>${coverage.availability ? "included" : "not provided"}</strong>. Recommendations only use reported fields.</p>
         </article>
       </div>
@@ -118,6 +123,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">LEAGUE</p><h3>${escapeHtml(league.name)}</h3></div><span class="record">${escapeHtml(league.season || "Season unavailable")}</span></div><dl class="settings-list"><div><dt>Platform</dt><dd>ESPN</dd></div><div><dt>Teams</dt><dd>${escapeHtml(league.teamCount ?? "Unavailable")}</dd></div><div><dt>Scoring</dt><dd>${escapeHtml(league.scoringType || "Unavailable")}</dd></div><div><dt>Current week</dt><dd>${escapeHtml(state.snapshot.currentWeek)}</dd></div></dl></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation.byPlayerId).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation.unresolved.length}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation.conflicts.length}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">Rankings remain separate from ESPN projections and are stored only in this browser.</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
   </div>`;
 }
@@ -142,11 +148,12 @@ function openPlayerDetail(playerId) {
   const detail = selectPlayerDetail(state.snapshot, state.selectedTeamId, playerId);
   if (!detail) return;
   const { player, rosterEntry, source } = detail;
+  const ros = state.rankingReconciliation?.byPlayerId?.[player.id];
   const dialog = document.querySelector("#player-dialog");
   document.querySelector("#player-dialog-content").innerHTML = `<div class="detail-head"><div><p class="eyebrow">${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "NFL team unavailable")}</p><h2 id="player-dialog-title">${escapeHtml(player.name)}</h2><p>${rosterEntry ? `Rostered · ${escapeHtml(rosterEntry.lineupSlot)}` : detail.isAvailable === true ? `${escapeHtml(formatAvailability(player.availabilityStatus))} in ECOG` : "Roster status unavailable"}</p></div><form method="dialog"><button class="dialog-close" aria-label="Close player details">×</button></form></div>
     <div class="detail-projection"><span>Week ${state.snapshot.currentWeek} projection</span><strong>${player.projection == null ? "—" : player.projection.toFixed(1)}</strong><small>Source: ${escapeHtml(source.projections || "Unavailable")}</small></div>
-    <dl class="detail-grid"><div><dt>Opponent</dt><dd>${detailValue(player.opponent)}</dd></div><div><dt>Kickoff</dt><dd>${detailValue(player.gameTime, gameTime)}</dd></div><div><dt>Injury</dt><dd>${detailValue(player.injury?.status)}</dd></div><div><dt>Bye week</dt><dd>${detailValue(player.byeWeek)}</dd></div><div><dt>Season average</dt><dd>${detailValue(player.seasonAverage, value => `${Number(value).toFixed(1)} pts`)}</dd></div><div><dt>Availability</dt><dd>${detail.isRostered ? "On roster" : detail.isAvailable === true ? escapeHtml(formatAvailability(player.availabilityStatus)) : detail.isAvailable === false ? "Not available" : "Unavailable"}</dd></div></dl>
-    <div class="detail-source"><strong>Data provenance</strong><span>League: ${escapeHtml(String(source.leagueProvider || "Unavailable").toUpperCase())}</span><span>Snapshot: ${source.capturedAt ? escapeHtml(new Date(source.capturedAt).toLocaleString()) : "Unavailable"}</span><p>Missing fields are not inferred. Verify late injury news before making a move.</p></div>`;
+    <dl class="detail-grid"><div><dt>Opponent</dt><dd>${detailValue(player.opponent)}</dd></div><div><dt>Kickoff</dt><dd>${detailValue(player.gameTime, gameTime)}</dd></div><div><dt>Injury</dt><dd>${detailValue(player.injury?.status)}</dd></div><div><dt>Bye week</dt><dd>${detailValue(player.byeWeek)}</dd></div><div><dt>Season average</dt><dd>${detailValue(player.seasonAverage, value => `${Number(value).toFixed(1)} pts`)}</dd></div><div><dt>Availability</dt><dd>${detail.isRostered ? "On roster" : detail.isAvailable === true ? escapeHtml(formatAvailability(player.availabilityStatus)) : detail.isAvailable === false ? "Not available" : "Unavailable"}</dd></div>${ros ? `<div><dt>FantasyPros ROS</dt><dd>#${ros.rank} overall · ${escapeHtml(ros.position)}${ros.positionRank}</dd></div><div><dt>Playoff SOS</dt><dd>${ros.playoffScheduleStrength == null ? '<span class="missing">Unavailable</span>' : `${ros.playoffScheduleStrength}/5`}</dd></div>` : ""}</dl>
+    <div class="detail-source"><strong>Data provenance</strong><span>League: ${escapeHtml(String(source.leagueProvider || "Unavailable").toUpperCase())}</span><span>Snapshot: ${source.capturedAt ? escapeHtml(new Date(source.capturedAt).toLocaleString()) : "Unavailable"}</span>${ros ? `<span>ROS rank: FantasyPros · PPR · top-10 expert filter</span>` : ""}<p>Missing fields are not inferred. Verify late injury news before making a move.</p></div>`;
   dialog.showModal();
 }
 
@@ -170,6 +177,11 @@ function hydrateControls() {
   connectButton.textContent = connected ? "Refresh ESPN" : "Connect ESPN";
 }
 
+function loadRankingSet(rankingSet) {
+  if (!rankingSet || !state.snapshot) return;
+  store.dispatch({ type: "rankings/load", rankingSet, reconciliation: reconcileFantasyProsRankings(state.snapshot.players, rankingSet) });
+}
+
 function showNotice(message, kind = "success") {
   noticeRegion.innerHTML = `<div class="notice ${kind}">${escapeHtml(message)}<button aria-label="Dismiss">×</button></div>`;
   noticeRegion.querySelector("button").onclick = () => { noticeRegion.innerHTML = ""; };
@@ -180,12 +192,14 @@ async function init() {
   try {
     const loaded = await provider.load();
     store.dispatch({ type: "load/success", ...loaded });
+    loadRankingSet(rankingProvider.readCache());
     hydrateControls(); render();
   } catch (error) { store.dispatch({ type: "load/error", error: error.message }); content.innerHTML = emptyState("Unable to load league data", error.message); }
 }
 
 teamSelect.addEventListener("change", () => { store.dispatch({ type: "team/select", teamId: teamSelect.value }); render(); });
 document.querySelector("#import-button").addEventListener("click", () => document.querySelector("#snapshot-input").click());
+document.querySelector("#rankings-button").addEventListener("click", () => document.querySelector("#rankings-input").click());
 document.querySelector("#connect-button").addEventListener("click", async () => {
   const button = document.querySelector("#connect-button");
   button.disabled = true; button.textContent = "Connecting…";
@@ -195,6 +209,7 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
     const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta, { availablePlayers: response.data.availablePlayers, nflScoreboard: response.data.nflScoreboard });
     provider.saveSnapshot(snapshot);
     store.dispatch({ type: "load/success", snapshot, source: "cache" });
+    loadRankingSet(state.rankingSet || rankingProvider.readCache());
     if (snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
     hydrateControls(); render(); showNotice(`Connected ${snapshot.league.name}. ESPN data refreshed successfully.`);
   } catch (error) {
@@ -208,7 +223,18 @@ document.querySelector("#snapshot-input").addEventListener("change", async (even
   try {
     const file = event.target.files[0]; if (!file) return;
     const snapshot = provider.importSnapshot(await file.text()); store.dispatch({ type: "load/success", snapshot, source: "cache" });
+    loadRankingSet(state.rankingSet || rankingProvider.readCache());
     hydrateControls(); render(); showNotice(`Imported ${file.name}. Data is cached in this browser.`);
+  } catch (error) { showNotice(error.message, "error"); }
+  event.target.value = "";
+});
+document.querySelector("#rankings-input").addEventListener("change", async (event) => {
+  try {
+    const file = event.target.files[0]; if (!file) return;
+    const rankingSet = rankingProvider.importCsv(await file.text(), { kind: "rest-of-season", season: 2026, scoringFormat: "PPR", expertFilter: "FantasyPros top-10 experts" });
+    loadRankingSet(rankingSet); render();
+    const reconciliation = state.rankingReconciliation;
+    showNotice(`Imported ${rankingSet.rankings.length} FantasyPros ROS rankings. ${Object.keys(reconciliation.byPlayerId).length} matched ESPN players; ${reconciliation.unresolved.length} remain unresolved.`);
   } catch (error) { showNotice(error.message, "error"); }
   event.target.value = "";
 });
@@ -217,6 +243,7 @@ window.addEventListener("hashchange", () => { store.dispatch({ type: "section/se
 document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
 document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
 content.addEventListener("click", (event) => { const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
+content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
 content.addEventListener("keydown", (event) => { if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-player-id]")) { event.preventDefault(); openPlayerDetail(event.target.dataset.playerId); } });
 
 init();
