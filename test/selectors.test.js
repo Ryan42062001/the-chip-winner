@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { selectDataCoverage, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "../src/domain/selectors.js";
+import { selectDataCoverage, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "../src/domain/selectors.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -35,4 +35,14 @@ test("coverage describes known data instead of filling gaps", () => {
   assert.equal(coverage.rosterPlayers, 14);
   assert.equal(coverage.projections, 13 / 14);
   assert.equal(coverage.availability, true);
+});
+
+test("player detail preserves roster, availability, and source provenance", () => {
+  const rostered = selectPlayerDetail(sample, "t1", "p1");
+  assert.equal(rostered.rosterEntry.lineupSlot, "QB");
+  assert.equal(rostered.source.projections, "sample");
+  const available = selectPlayerDetail(sample, "t1", "p15");
+  assert.equal(available.isRostered, false);
+  assert.equal(available.isAvailable, true);
+  assert.equal(selectPlayerDetail(sample, "t1", "missing"), null);
 });

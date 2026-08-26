@@ -51,3 +51,21 @@ export function selectDataCoverage(snapshot, teamId) {
     availability: Array.isArray(snapshot.availablePlayers)
   };
 }
+
+export function selectPlayerDetail(snapshot, teamId, playerId) {
+  const { index, roster } = selectTeamContext(snapshot, teamId);
+  const player = index.players.get(playerId) || null;
+  if (!player) return null;
+  const rosterEntry = roster.find((entry) => entry.playerId === playerId) || null;
+  return {
+    player,
+    rosterEntry,
+    isRostered: Boolean(rosterEntry),
+    isAvailable: Array.isArray(snapshot.availablePlayers) ? snapshot.availablePlayers.includes(playerId) : null,
+    source: {
+      leagueProvider: snapshot.provider,
+      projections: snapshot.meta?.projectionsSource || null,
+      capturedAt: snapshot.meta?.capturedAt || null
+    }
+  };
+}

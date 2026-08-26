@@ -1,10 +1,10 @@
 import { EspnSnapshotProvider } from "./providers/espn/espn-provider.js";
 import { isStarter } from "./domain/model.js";
-import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, compareRosterPlayers } from "./domain/recommendations.js?v=0.4.0";
-import { selectDataCoverage, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js";
+import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, compareRosterPlayers } from "./domain/recommendations.js?v=0.5.0";
+import { selectDataCoverage, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
-import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.3.0";
+import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.0";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
@@ -27,7 +27,7 @@ const gameTime = (value) => {
 
 function playerRow(entry, player) {
   const status = player.injury?.status && player.injury.status !== "ACTIVE" ? player.injury.status : null;
-  return `<div class="player-row">
+  return `<div class="player-row interactive-row" data-player-id="${escapeHtml(player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(player.name)} details">
     <span class="slot">${escapeHtml(entry.lineupSlot)}</span>
     <span class="avatar pos-${escapeHtml(player.position).replace("/", "")}">${initials(player.name)}</span>
     <span class="player-main"><strong>${escapeHtml(player.name)}</strong><small>${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "Team unavailable")} vs ${escapeHtml(player.opponent || "Opponent unavailable")}</small></span>
@@ -101,13 +101,13 @@ function renderLineup() {
 
 function renderWaivers() {
   const result = buildWaiverIdeas(state.snapshot, state.selectedTeamId);
-  const body = result.status === "missing" ? emptyState("Availability data missing", "This ESPN snapshot does not include free-agent availability. Import a snapshot containing availablePlayers to compare adds and drops.") : result.items.length ? result.items.map(item => `<article class="panel waiver-row"><span class="avatar pos-${item.add.position.replace("/", "")}">${initials(item.add.name)}</span><div><small>CONSIDER ADDING · ${escapeHtml(formatAvailability(item.add.availabilityStatus))}</small><strong>${escapeHtml(item.add.name)}</strong><span>${escapeHtml(item.add.position)} · ${projection(item.add.projection)}</span></div><span class="swap-arrow">for</span><div><small>POSSIBLE DROP</small><strong>${escapeHtml(item.drop.name)}</strong><span>${escapeHtml(item.drop.position)} · ${projection(item.drop.projection)}</span></div><b class="positive">+${item.gain}</b></article>`).join("") : emptyState("No clear waiver upgrades", "No same-position available player clears the minimum projection advantage over a rostered player in this snapshot.");
+  const body = result.status === "missing" ? emptyState("Availability data missing", "This ESPN snapshot does not include free-agent availability. Import a snapshot containing availablePlayers to compare adds and drops.") : result.items.length ? result.items.map(item => `<article class="panel waiver-row interactive-row" data-player-id="${escapeHtml(item.add.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(item.add.name)} details"><span class="avatar pos-${item.add.position.replace("/", "")}">${initials(item.add.name)}</span><div><small>CONSIDER ADDING · ${escapeHtml(formatAvailability(item.add.availabilityStatus))}</small><strong>${escapeHtml(item.add.name)}</strong><span>${escapeHtml(item.add.position)} · ${projection(item.add.projection)}</span></div><span class="swap-arrow">for</span><div><small>POSSIBLE DROP</small><strong>${escapeHtml(item.drop.name)}</strong><span>${escapeHtml(item.drop.position)} · ${projection(item.drop.projection)}</span></div><b class="positive">+${item.gain}</b></article>`).join("") : emptyState("No clear waiver upgrades", "No same-position available player clears the minimum projection advantage over a rostered player in this snapshot.");
   content.innerHTML = sectionHeader("Waiver Wire", "Conservative add/drop comparisons using only explicitly available players and projections.") + `<div class="waiver-list">${body}</div>`;
 }
 
 function renderAlerts() {
   const warnings = buildWarnings(state.snapshot, state.selectedTeamId);
-  content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `<div class="alert-list">${warnings.length ? warnings.map(w => `<article class="panel alert-row"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div></article>`).join("") : emptyState("No alerts in this snapshot", "No injuries or current-week byes were reported for this roster.")}</div>`;
+  content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `<div class="alert-list">${warnings.length ? warnings.map(w => `<article class="panel alert-row interactive-row" data-player-id="${escapeHtml(w.player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(w.player.name)} details"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div></article>`).join("") : emptyState("No alerts in this snapshot", "No injuries or current-week byes were reported for this roster.")}</div>`;
 }
 
 function renderLeague() {
@@ -136,6 +136,19 @@ function comparisonResult(result) {
   return `<div class="comparison-result-grid"><div class="${result.preferred.id === result.first.id ? "preferred" : ""}"><strong>${escapeHtml(result.first.name)}</strong><b>${firstValue}</b></div><div class="verdict"><small>PROJECTION LEAN</small><strong>${escapeHtml(result.preferred.name)}</strong><span>${Math.abs(result.difference).toFixed(1)} projected points</span></div><div class="${result.preferred.id === result.second.id ? "preferred" : ""}"><strong>${escapeHtml(result.second.name)}</strong><b>${secondValue}</b></div></div>`;
 }
 function qualityBar(label, value) { const percent = Math.round(value * 100); return `<div class="quality-row"><span>${label}</span><strong>${percent}%</strong><i><b style="width:${percent}%"></b></i></div>`; }
+function detailValue(value, formatter = String) { return value == null || value === "" ? '<span class="missing">Unavailable</span>' : escapeHtml(formatter(value)); }
+
+function openPlayerDetail(playerId) {
+  const detail = selectPlayerDetail(state.snapshot, state.selectedTeamId, playerId);
+  if (!detail) return;
+  const { player, rosterEntry, source } = detail;
+  const dialog = document.querySelector("#player-dialog");
+  document.querySelector("#player-dialog-content").innerHTML = `<div class="detail-head"><div><p class="eyebrow">${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "NFL team unavailable")}</p><h2 id="player-dialog-title">${escapeHtml(player.name)}</h2><p>${rosterEntry ? `Rostered · ${escapeHtml(rosterEntry.lineupSlot)}` : detail.isAvailable === true ? `${escapeHtml(formatAvailability(player.availabilityStatus))} in ECOG` : "Roster status unavailable"}</p></div><form method="dialog"><button class="dialog-close" aria-label="Close player details">×</button></form></div>
+    <div class="detail-projection"><span>Week ${state.snapshot.currentWeek} projection</span><strong>${player.projection == null ? "—" : player.projection.toFixed(1)}</strong><small>Source: ${escapeHtml(source.projections || "Unavailable")}</small></div>
+    <dl class="detail-grid"><div><dt>Opponent</dt><dd>${detailValue(player.opponent)}</dd></div><div><dt>Kickoff</dt><dd>${detailValue(player.gameTime, gameTime)}</dd></div><div><dt>Injury</dt><dd>${detailValue(player.injury?.status)}</dd></div><div><dt>Bye week</dt><dd>${detailValue(player.byeWeek)}</dd></div><div><dt>Season average</dt><dd>${detailValue(player.seasonAverage, value => `${Number(value).toFixed(1)} pts`)}</dd></div><div><dt>Availability</dt><dd>${detail.isRostered ? "On roster" : detail.isAvailable === true ? escapeHtml(formatAvailability(player.availabilityStatus)) : detail.isAvailable === false ? "Not available" : "Unavailable"}</dd></div></dl>
+    <div class="detail-source"><strong>Data provenance</strong><span>League: ${escapeHtml(String(source.leagueProvider || "Unavailable").toUpperCase())}</span><span>Snapshot: ${source.capturedAt ? escapeHtml(new Date(source.capturedAt).toLocaleString()) : "Unavailable"}</span><p>Missing fields are not inferred. Verify late injury news before making a move.</p></div>`;
+  dialog.showModal();
+}
 
 function render() {
   if (!state.snapshot) return;
@@ -203,5 +216,7 @@ document.querySelector("#reset-button").addEventListener("click", () => { provid
 window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: location.hash.slice(1) || "overview" }); render(); });
 document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
 document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
+content.addEventListener("click", (event) => { const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
+content.addEventListener("keydown", (event) => { if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-player-id]")) { event.preventDefault(); openPlayerDetail(event.target.dataset.playerId); } });
 
 init();
