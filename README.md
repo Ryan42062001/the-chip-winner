@@ -2,6 +2,10 @@
 
 An ESPN-only, in-season fantasy football companion. This MVP presents roster, matchup, lineup, waiver, injury, and bye-week information from a normalized ESPN snapshot. It deliberately distinguishes imported/source data from locally derived suggestions.
 
+## Live website
+
+**[Open The Chip Winner](https://ryan42062001.github.io/the-chip-winner/)**
+
 ## Run locally
 
 Requirements: Node.js 18 or newer. There are no runtime dependencies to install.
