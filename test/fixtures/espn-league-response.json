@@ -2,7 +2,7 @@
   "id": 118749183,
   "seasonId": 2026,
   "scoringPeriodId": 1,
-  "settings": { "name": "Fixture League", "scoringSettings": { "scoringType": "H2H_POINTS" } },
+  "settings": { "name": "Fixture League", "scoringSettings": { "scoringType": "H2H_POINTS" }, "rosterSettings": { "lineupSlotCounts": { "0": 1, "2": 2, "20": 6, "23": 1 } }, "acquisitionSettings": { "acquisitionLimit": -1, "waiverProcessDays": 1, "acquisitionBudget": 100 } },
   "teams": [
     {
       "id": 2, "location": "Chip", "nickname": "Winners", "abbrev": "CHP",

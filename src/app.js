@@ -1,6 +1,6 @@
 import { EspnSnapshotProvider } from "./providers/espn/espn-provider.js";
 import { isStarter } from "./domain/model.js";
-import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings } from "./domain/recommendations.js?v=0.3.0";
+import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, compareRosterPlayers } from "./domain/recommendations.js?v=0.4.0";
 import { selectDataCoverage, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "./domain/selectors.js";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
@@ -85,8 +85,18 @@ function renderOverview() {
 
 function renderLineup() {
   const suggestions = buildLineupSuggestions(state.snapshot, state.selectedTeamId);
+  const { index, roster } = getViewModel();
+  const rosterPlayers = roster.map((entry) => index.players.get(entry.playerId)).filter(Boolean);
   content.innerHTML = sectionHeader("Lineup Lab", "Projection-based comparisons from the data in your snapshot. No confidence is implied when inputs are missing.") +
-    `<div class="recommendation-grid">${suggestions.length ? suggestions.map(s => `<article class="panel recommendation"><span class="recommendation-kicker">${escapeHtml(s.slot)} SWAP</span><div class="compare"><div><small>START</small><strong>${escapeHtml(s.start.name)}</strong><span>${projection(s.start.projection)}</span></div><span class="swap-arrow">→</span><div><small>SIT</small><strong>${escapeHtml(s.sit.name)}</strong><span>${projection(s.sit.projection)}</span></div></div><div class="gain">+${s.gain} projected points</div><p>${escapeHtml(s.reason)}. Verify late news before making a move.</p></article>`).join("") : emptyState("No lineup changes identified", "Available projections do not show a higher-scoring eligible bench option. This is not a guarantee that your lineup is optimal.")}</div>`;
+    `<article class="panel comparison-tool"><div class="panel-head"><div><p class="eyebrow">START / SIT</p><h3>Compare roster players</h3></div><span class="source-chip">${escapeHtml(state.snapshot.meta?.projectionsSource || "Source unavailable")}</span></div><div class="comparison-controls"><label>Player one<select id="compare-first">${comparisonOptions(rosterPlayers, rosterPlayers[0]?.id)}</select></label><span>VS</span><label>Player two<select id="compare-second">${comparisonOptions(rosterPlayers, rosterPlayers[1]?.id)}</select></label></div><div id="comparison-result"></div></article>
+    <div class="section-divider"><span>OPTIMIZATION SIGNALS</span></div><div class="recommendation-grid">${suggestions.length ? suggestions.map(s => `<article class="panel recommendation"><span class="recommendation-kicker">${escapeHtml(s.slot)} SWAP</span><div class="compare"><div><small>START</small><strong>${escapeHtml(s.start.name)}</strong><span>${projection(s.start.projection)}</span></div><span class="swap-arrow">→</span><div><small>SIT</small><strong>${escapeHtml(s.sit.name)}</strong><span>${projection(s.sit.projection)}</span></div></div><div class="gain">+${s.gain} projected points</div><p>${escapeHtml(s.reason)}. Verify late news before making a move.</p></article>`).join("") : emptyState("No lineup changes identified", "Available projections do not show a higher-scoring eligible bench option. This is not a guarantee that your lineup is optimal.")}</div>`;
+  const updateComparison = () => {
+    const result = compareRosterPlayers(state.snapshot, state.selectedTeamId, document.querySelector("#compare-first").value, document.querySelector("#compare-second").value);
+    document.querySelector("#comparison-result").innerHTML = comparisonResult(result);
+  };
+  document.querySelector("#compare-first").addEventListener("change", updateComparison);
+  document.querySelector("#compare-second").addEventListener("change", updateComparison);
+  updateComparison();
 }
 
 function renderWaivers() {
@@ -100,18 +110,39 @@ function renderAlerts() {
   content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `<div class="alert-list">${warnings.length ? warnings.map(w => `<article class="panel alert-row"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div></article>`).join("") : emptyState("No alerts in this snapshot", "No injuries or current-week byes were reported for this roster.")}</div>`;
 }
 
+function renderLeague() {
+  const league = state.snapshot.league;
+  const slots = league.lineupSlots || [];
+  const waiver = league.waiver || {};
+  content.innerHTML = sectionHeader("League Setup", "Settings reported by ESPN for the connected league. Unavailable fields remain unlabeled rather than inferred.") + `<div class="league-grid">
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">LEAGUE</p><h3>${escapeHtml(league.name)}</h3></div><span class="record">${escapeHtml(league.season || "Season unavailable")}</span></div><dl class="settings-list"><div><dt>Platform</dt><dd>ESPN</dd></div><div><dt>Teams</dt><dd>${escapeHtml(league.teamCount ?? "Unavailable")}</dd></div><div><dt>Scoring</dt><dd>${escapeHtml(league.scoringType || "Unavailable")}</dd></div><div><dt>Current week</dt><dd>${escapeHtml(state.snapshot.currentWeek)}</dd></div></dl></article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
+    <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
+  </div>`;
+}
+
 function sectionHeader(title, subtitle) { return `<div class="page-head"><div><p class="eyebrow">WEEK ${state.snapshot.currentWeek}</p><h2>${title}</h2><p>${subtitle}</p></div><span class="week-pill">Source: ${escapeHtml(state.snapshot.meta?.projectionsSource || "not provided")}</span></div>`; }
 function emptyState(title, text) { return `<div class="empty-state"><span>◇</span><h3>${title}</h3><p>${text}</p></div>`; }
 function emptyInline(text) { return `<p class="empty-inline">${text}</p>`; }
 function formatAvailability(status) { return status === "FREEAGENT" ? "FREE AGENT" : status === "WAIVERS" ? "WAIVERS" : "AVAILABLE"; }
+function formatLeagueLimit(value) { return value === -1 ? "Unlimited" : value ?? "Unavailable"; }
+function comparisonOptions(players, selectedId) { return players.map((player) => `<option value="${escapeHtml(player.id)}" ${player.id === selectedId ? "selected" : ""}>${escapeHtml(player.name)} · ${escapeHtml(player.position)}</option>`).join(""); }
+function comparisonResult(result) {
+  if (result.status === "invalid") return `<div class="comparison-message neutral"><strong>Comparison unavailable</strong><span>${escapeHtml(result.reason)}</span></div>`;
+  if (result.status === "missing") return `<div class="comparison-message neutral"><strong>No data-based preference</strong><span>${escapeHtml(result.reason)}</span></div>`;
+  const firstValue = result.first.projection.toFixed(1); const secondValue = result.second.projection.toFixed(1);
+  if (result.status === "tossup") return `<div class="comparison-result-grid"><div><strong>${escapeHtml(result.first.name)}</strong><b>${firstValue}</b></div><div class="verdict neutral"><small>NEAR TIE</small><strong>${Math.abs(result.difference).toFixed(1)} pt apart</strong><span>${escapeHtml(result.reason)}</span></div><div><strong>${escapeHtml(result.second.name)}</strong><b>${secondValue}</b></div></div>`;
+  return `<div class="comparison-result-grid"><div class="${result.preferred.id === result.first.id ? "preferred" : ""}"><strong>${escapeHtml(result.first.name)}</strong><b>${firstValue}</b></div><div class="verdict"><small>PROJECTION LEAN</small><strong>${escapeHtml(result.preferred.name)}</strong><span>${Math.abs(result.difference).toFixed(1)} projected points</span></div><div class="${result.preferred.id === result.second.id ? "preferred" : ""}"><strong>${escapeHtml(result.second.name)}</strong><b>${secondValue}</b></div></div>`;
+}
 function qualityBar(label, value) { const percent = Math.round(value * 100); return `<div class="quality-row"><span>${label}</span><strong>${percent}%</strong><i><b style="width:${percent}%"></b></i></div>`; }
 
 function render() {
   if (!state.snapshot) return;
   document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.section === state.section));
-  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts" };
+  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts", league: "League Setup" };
   document.querySelector("#page-title").textContent = titles[state.section] || titles.overview;
-  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts }[state.section] || renderOverview)();
+  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts, league: renderLeague }[state.section] || renderOverview)();
 }
 
 function hydrateControls() {

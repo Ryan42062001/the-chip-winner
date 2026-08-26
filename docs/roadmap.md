@@ -18,7 +18,7 @@ The product is not intended to guarantee outcomes or conceal missing data. It sh
 
 ## Current baseline — Foundation preview
 
-Status: **Complete**
+Status: **Complete and deployed for the configured ESPN league**
 
 The deployed preview includes:
 
@@ -34,7 +34,20 @@ The deployed preview includes:
 - automated GitHub Pages deployment;
 - 21 automated tests.
 
-The preview still uses sample or manually imported data. It does not authenticate with ESPN, automatically refresh a league, or make transactions.
+Additional connected foundation capabilities now include:
+
+- authenticated read-only access to private ESPN league `118749183` through the Chrome companion;
+- real team, roster, matchup, projection, injury, free-agent, and waiver data;
+- public NFL opponent and kickoff context;
+- non-conflicting waiver recommendations with acquisition status;
+- projection thresholds that suppress marginal lineup churn;
+- interactive start/sit comparison with preference, near-tie, and missing-data states;
+- connected league scoring, lineup-slot, and waiver settings;
+- a documented local-only privacy boundary;
+- versioned browser modules for reliable production updates;
+- 26 automated domain/provider/application tests before final browser verification.
+
+The website retains sample and manual-import modes for development. The configured private league can authenticate and refresh through the local Chrome companion. The product remains deliberately read-only and makes no ESPN transactions.
 
 ---
 

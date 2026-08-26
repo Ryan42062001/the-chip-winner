@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, canFillSlot } from "../src/domain/recommendations.js";
+import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, canFillSlot, compareRosterPlayers } from "../src/domain/recommendations.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -45,4 +45,11 @@ test("waiver ideas do not reuse the same drop candidate", () => {
   const result = buildWaiverIdeas(waiverSample, "t1");
   assert.equal(result.items.length, 2);
   assert.equal(new Set(result.items.map((item) => item.drop.id)).size, result.items.length);
+});
+
+test("start sit comparison distinguishes preferences, near ties, and missing projections", () => {
+  assert.equal(compareRosterPlayers(sample, "t1", "p1", "p10").preferred.id, "p1");
+  assert.equal(compareRosterPlayers(sample, "t1", "p5", "p3").status, "tossup");
+  assert.equal(compareRosterPlayers(sample, "t1", "p14", "p12").status, "missing");
+  assert.equal(compareRosterPlayers(sample, "t1", "p1", "not-rostered").status, "invalid");
 });

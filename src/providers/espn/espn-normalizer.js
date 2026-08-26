@@ -130,7 +130,9 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
       season: response.seasonId,
       scoringPeriod: currentWeek,
       teamCount: response.teams.length,
-      scoringType: response.settings.scoringSettings?.scoringType || null
+      scoringType: response.settings.scoringSettings?.scoringType || null,
+      lineupSlots: normalizeLineupSlotCounts(response.settings.rosterSettings?.lineupSlotCounts),
+      waiver: normalizeWaiverSettings(response.settings.acquisitionSettings)
     },
     currentWeek,
     teams: response.teams.map(normalizeTeam),
@@ -142,6 +144,20 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
   const errors = validateLeagueSnapshot(snapshot);
   if (errors.length) throw new Error(`Normalized ESPN response is invalid: ${errors.join(" ")}`);
   return snapshot;
+}
+
+function normalizeLineupSlotCounts(counts = {}) {
+  return Object.entries(counts)
+    .filter(([, count]) => Number(count) > 0)
+    .map(([slotId, count]) => ({ slot: ESPN_LINEUP_SLOTS[slotId] || `ESPN_SLOT_${slotId}`, count: Number(count), espnSlotId: Number(slotId) }));
+}
+
+function normalizeWaiverSettings(settings = {}) {
+  return {
+    acquisitionLimit: Number.isFinite(settings.acquisitionLimit) ? settings.acquisitionLimit : null,
+    waiverProcessDays: Number.isFinite(settings.waiverProcessDays) ? settings.waiverProcessDays : null,
+    budget: Number.isFinite(settings.acquisitionBudget) ? settings.acquisitionBudget : null
+  };
 }
 
 function normalizeTeam(team) {

@@ -51,4 +51,6 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.players.find((player) => player.id === "202").availabilityStatus, "WAIVERS");
   assert.equal(snapshot.matchups[0].homeTeamId, "2");
   assert.equal(snapshot.meta.kind, "live-companion");
+  assert.deepEqual(snapshot.league.lineupSlots.find((item) => item.slot === "QB"), { slot: "QB", count: 1, espnSlotId: 0 });
+  assert.equal(snapshot.league.waiver.budget, 100);
 });

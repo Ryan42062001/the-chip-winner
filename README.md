@@ -41,7 +41,9 @@ npm run check
 - Responsive weekly roster dashboard with starters, bench, matchup, and projections
 - Team switching for snapshots with multiple teams
 - Projection-based, position-eligible lineup comparisons
+- Interactive start/sit comparisons with near-tie and missing-data handling
 - Conservative waiver add/drop comparisons based on explicit availability
+- Live free-agent versus waiver status and non-conflicting drop suggestions
 - Injury and current-week bye flags
 - Validated JSON import and browser-local snapshot cache
 - One-click return from an imported snapshot to bundled sample data
@@ -49,6 +51,7 @@ npm run check
 - Honest missing states when projections, opponents, availability, or other fields are absent
 - Reducer-based application state and reusable domain selectors
 - Independent projection-provider contract for future non-ESPN projections
+- Connected ESPN scoring, lineup-slot, and waiver settings
 
 This version does **not** authenticate with ESPN or mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 
@@ -77,6 +80,8 @@ docs/                            Architecture and data-contract notes
 See [`docs/architecture.md`](docs/architecture.md) for boundaries and extension guidance.
 
 See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance criteria, and the immediate next sprint.
+
+See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's read scope, local caching behavior, and deletion path.
 
 ## Data safety and provenance
 

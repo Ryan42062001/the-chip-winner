@@ -63,6 +63,21 @@ export function buildWarnings(snapshot, teamId) {
   return warnings;
 }
 
+export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlayerId) {
+  const roster = snapshot.rosters.find((item) => item.teamId === teamId)?.entries || [];
+  const rosterIds = new Set(roster.map((entry) => entry.playerId));
+  if (!rosterIds.has(firstPlayerId) || !rosterIds.has(secondPlayerId)) return { status: "invalid", reason: "Both players must be on the selected roster." };
+  if (firstPlayerId === secondPlayerId) return { status: "invalid", reason: "Choose two different players." };
+  const players = new Map(snapshot.players.map((player) => [player.id, player]));
+  const first = players.get(firstPlayerId);
+  const second = players.get(secondPlayerId);
+  if (!first || !second) return { status: "invalid", reason: "A selected player identity is missing." };
+  if (first.projection == null || second.projection == null) return { status: "missing", first, second, reason: "A projection is missing, so no projection-based preference is available." };
+  const difference = +(first.projection - second.projection).toFixed(1);
+  if (Math.abs(difference) < MIN_LINEUP_GAIN) return { status: "tossup", first, second, difference, reason: "The projection difference is below the 1-point action threshold." };
+  return { status: "preference", first, second, difference, preferred: difference > 0 ? first : second, reason: "Higher available projection" };
+}
+
 export function buildWaiverIdeas(snapshot, teamId) {
   if (!Array.isArray(snapshot.availablePlayers)) return { status: "missing", items: [] };
   const roster = snapshot.rosters.find((r) => r.teamId === teamId);
