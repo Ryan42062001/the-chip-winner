@@ -27,6 +27,8 @@ Functions in `src/domain/recommendations.js` return derived suggestions. They do
 
 ESPN remains the authority for league settings, membership, rosters, matchups, lineup slots, and availability. A future projection provider (for example, FantasyPros) should extend `src/providers/projections/projection-provider.js`, keyed by stable player identity. `applyProjectionSet` joins values immutably, retains source metadata, and reports unresolved identities. It must not be added to the ESPN provider.
 
+`src/domain/identity.js` owns canonical provider identities and external-record reconciliation. It accepts only provider-owned IDs, reports unresolved and conflicting mappings, and intentionally contains no display-name fallback.
+
 ## Contract enforcement
 
 Runtime validation lives in `src/domain/model.js`. The matching portable contract is `schema/espn-snapshot.schema.json`. Cross-reference rules—such as a roster referencing a known player—remain runtime checks because JSON Schema alone cannot express them cleanly. Both are versioned at `schemaVersion: 1`.
