@@ -11,6 +11,10 @@ test("ESPN numeric codes map explicitly", () => {
   assert.throws(() => normalizeEspnLineupSlot(99), /Unsupported ESPN lineup slot/);
 });
 
+test("ESPN offensive-player slot maps to OP", () => {
+  assert.equal(normalizeEspnLineupSlot(7), "OP");
+});
+
 test("unknown injury states remain unknown and retain the source value", () => {
   assert.deepEqual(normalizeEspnInjury("new-status"), { status: "UNKNOWN", detail: null, sourceStatus: "new-status" });
   assert.deepEqual(normalizeEspnInjury("NORMAL"), { status: "ACTIVE", detail: null });

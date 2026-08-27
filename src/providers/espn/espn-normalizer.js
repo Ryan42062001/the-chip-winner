@@ -1,7 +1,7 @@
 import { validateLeagueSnapshot } from "../../domain/model.js";
 
 export const ESPN_LINEUP_SLOTS = Object.freeze({
-  0: "QB", 2: "RB", 4: "WR", 6: "TE", 16: "D/ST", 17: "K", 20: "BE", 21: "IR", 23: "FLEX"
+  0: "QB", 2: "RB", 4: "WR", 6: "TE", 7: "OP", 16: "D/ST", 17: "K", 20: "BE", 21: "IR", 23: "FLEX"
 });
 
 export const ESPN_PRO_POSITIONS = Object.freeze({

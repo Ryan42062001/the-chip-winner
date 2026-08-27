@@ -1,5 +1,5 @@
 export const SLOT_GROUPS = Object.freeze({
-  starter: new Set(["QB", "RB", "WR", "TE", "FLEX", "K", "D/ST"]),
+  starter: new Set(["QB", "RB", "WR", "TE", "FLEX", "OP", "K", "D/ST"]),
   bench: new Set(["BE"]),
   reserve: new Set(["IR"])
 });

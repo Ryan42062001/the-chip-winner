@@ -18,6 +18,11 @@ test("flex accepts RB, WR, and TE but not QB", () => {
   assert.equal(canFillSlot({ position: "QB" }, "FLEX"), false);
 });
 
+test("OP accepts offensive skill positions including quarterback", () => {
+  for (const position of ["QB", "RB", "WR", "TE"]) assert.equal(canFillSlot({ position }, "OP"), true);
+  assert.equal(canFillSlot({ position: "K" }, "OP"), false);
+});
+
 test("warnings reflect only explicit injury and current-week bye data", () => {
   const warnings = buildWarnings(sample, "t1");
   assert.deepEqual(warnings.map((w) => [w.player.name, w.kind]), [

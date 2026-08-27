@@ -40,3 +40,11 @@ test("optimizer reports an incomplete lineup when known inputs cannot fill it", 
   assert.equal(result.status, "incomplete");
 });
 
+test("optimizer supports ESPN OP superflex assignments", () => {
+  const result = optimizeLineup(snapshot([
+    { id: "qb1", position: "QB", projection: 18 }, { id: "qb2", position: "QB", projection: 24 }, { id: "rb", position: "RB", projection: 15 }
+  ], [{ playerId: "qb1", lineupSlot: "QB" }, { playerId: "rb", lineupSlot: "OP" }, { playerId: "qb2", lineupSlot: "BE" }]), "mine");
+  assert.equal(result.status, "optimal");
+  assert.equal(result.projectedTotal, 42);
+  assert.equal(result.assignments.find((item) => item.slot === "OP").player.id, "qb2");
+});

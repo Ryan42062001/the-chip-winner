@@ -1,11 +1,13 @@
 import { isStarter } from "./model.js";
 
 const FLEX_POSITIONS = new Set(["RB", "WR", "TE"]);
+const OP_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
 const MIN_LINEUP_GAIN = 1;
 const MIN_WAIVER_GAIN = 0.5;
 
 export function canFillSlot(player, slot) {
   if (slot === "FLEX") return FLEX_POSITIONS.has(player.position);
+  if (slot === "OP") return OP_POSITIONS.has(player.position);
   return player.position === slot;
 }
 
