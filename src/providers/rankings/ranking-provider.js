@@ -6,7 +6,7 @@ const TEAM_ALIASES = Object.freeze({ JAC: "JAX", WSH: "WAS" });
 function normalizedName(value) {
   return String(value || "")
     .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]/g, "");
+    .toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\.?$/i, "").replace(/[^a-z0-9]/g, "");
 }
 
 function normalizedTeam(value) {
@@ -19,7 +19,9 @@ function normalizedPosition(value) {
 }
 
 function identityKey({ name, playerName, proTeam, team, position }) {
-  return [normalizedName(name || playerName), normalizedTeam(proTeam || team), normalizedPosition(position)].join("|");
+  const normalizedPos = normalizedPosition(position);
+  const playerKey = normalizedPos === "DST" ? "team-defense" : normalizedName(name || playerName);
+  return [playerKey, normalizedTeam(proTeam || team), normalizedPos].join("|");
 }
 
 export function reconcileFantasyProsRankings(players, rankingSet) {
@@ -67,4 +69,3 @@ export class FantasyProsRankingProvider {
     this.storage?.removeItem(CACHE_KEY);
   }
 }
-

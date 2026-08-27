@@ -16,6 +16,8 @@ npm run dev
 
 Open `http://localhost:4173`. The app initially uses realistic sample data. Choose **Import ESPN snapshot** to load a compatible JSON file; validated imports are cached only in the current browser.
 
+Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The current importer records the file as 2026 PPR rankings with the top-10 expert filter, reconciles players using name plus NFL team plus position, and reports unresolved or conflicting identities. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
+
 ## Connect the private ESPN league
 
 The configured development league is ESPN league `118749183`, season `2026`, team `2`. Because it is private, Chrome must make the read request through the local ESPN Companion extension while signed in to ESPN.
@@ -52,8 +54,12 @@ npm run check
 - Reducer-based application state and reusable domain selectors
 - Independent projection-provider contract for future non-ESPN projections
 - Connected ESPN scoring, lineup-slot, and waiver settings
+- Local FantasyPros ROS PPR CSV import and caching
+- Strict ESPN/FantasyPros player reconciliation with visible coverage
+- Separate weekly-projection and rest-of-season waiver comparisons
+- FantasyPros overall/positional rank and playoff schedule strength in player details
 
-This version does **not** authenticate with ESPN or mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
+This version reads the configured private ESPN league through the local Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 
 ## Import format
 
@@ -70,6 +76,7 @@ src/
   domain/                        Platform-neutral model and recommendations
   providers/espn/                ESPN snapshot ingestion and caching
   providers/projections/         Projection source contract and overlay
+  providers/rankings/            FantasyPros CSV parsing, cache, reconciliation
 extensions/espn-companion/       Read-only Chrome bridge for private ESPN leagues
 schema/                           Machine-readable snapshot contract
 scripts/dev-server.js            Dependency-free local server
@@ -95,4 +102,4 @@ See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's re
 
 ## Foundation roadmap
 
-The next meaningful integration is a read-only ESPN normalization adapter behind the existing provider seam. After that, an external projection provider can be joined by stable player IDs through the projection overlay without changing ESPN league-state code.
+The read-only ESPN connection and the first external ROS ranking source are in place. The next recommendation milestone is a complete legal-lineup optimizer, followed by roster-aware ROS and playoff planning. See the advanced roadmap for the dependency order and acceptance criteria.

@@ -6,6 +6,7 @@ import { appReducer, createStore, initialAppState } from "./application/store.js
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
 import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.2";
 import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
+import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
@@ -58,6 +59,7 @@ function renderOverview() {
   const coverage = selectDataCoverage(snapshot, selectedTeamId);
   const freshness = selectSnapshotFreshness(snapshot);
   const rankingMatches = state.rankingReconciliation ? Object.keys(state.rankingReconciliation.byPlayerId).length : 0;
+  const rosterRosCoverage = selectRosterRosCoverage(snapshot, selectedTeamId, state.rankingReconciliation);
 
   content.innerHTML = `<div class="page-head"><div><p class="eyebrow">WEEK ${snapshot.currentWeek}</p><h2>Good week to make a move.</h2><p>Your roster, matchup, and highest-confidence flags in one place.</p></div><span class="week-pill">Regular season · Week ${snapshot.currentWeek}</span></div>
     <div class="stat-grid">
@@ -81,7 +83,7 @@ function renderOverview() {
         </article>
         <article class="panel"><div class="panel-head"><div><p class="eyebrow">DATA QUALITY</p><h3>Snapshot coverage</h3></div><span class="quality ${freshness.status}">${freshness.status}</span></div>
           ${qualityBar("Roster projections", coverage.projections)}${qualityBar("Injury statuses", coverage.injuries)}${qualityBar("NFL opponents", coverage.opponents)}
-          ${state.rankingSet ? `<div class="ranking-health"><strong>FantasyPros ROS · ${escapeHtml(state.rankingSet.scoringFormat)}</strong><span>${rankingMatches} matched · ${state.rankingReconciliation.unresolved.length} unresolved · ${state.rankingReconciliation.conflicts.length} conflicts</span></div>` : ""}
+          ${state.rankingSet ? `<div class="ranking-health"><strong>FantasyPros ROS · ${escapeHtml(state.rankingSet.scoringFormat)}</strong><span>${rosterRosCoverage.matched}/${rosterRosCoverage.total} roster players matched · ${rankingMatches} league-pool matches · ${state.rankingReconciliation.conflicts.length} conflicts</span></div>` : ""}
           <p class="data-note">Waiver availability: <strong>${coverage.availability ? "included" : "not provided"}</strong>. Recommendations only use reported fields.</p>
         </article>
       </div>
@@ -107,7 +109,9 @@ function renderLineup() {
 function renderWaivers() {
   const result = buildWaiverIdeas(state.snapshot, state.selectedTeamId);
   const body = result.status === "missing" ? emptyState("Availability data missing", "This ESPN snapshot does not include free-agent availability. Import a snapshot containing availablePlayers to compare adds and drops.") : result.items.length ? result.items.map(item => `<article class="panel waiver-row interactive-row" data-player-id="${escapeHtml(item.add.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(item.add.name)} details"><span class="avatar pos-${item.add.position.replace("/", "")}">${initials(item.add.name)}</span><div><small>CONSIDER ADDING · ${escapeHtml(formatAvailability(item.add.availabilityStatus))}</small><strong>${escapeHtml(item.add.name)}</strong><span>${escapeHtml(item.add.position)} · ${projection(item.add.projection)}</span></div><span class="swap-arrow">for</span><div><small>POSSIBLE DROP</small><strong>${escapeHtml(item.drop.name)}</strong><span>${escapeHtml(item.drop.position)} · ${projection(item.drop.projection)}</span></div><b class="positive">+${item.gain}</b></article>`).join("") : emptyState("No clear waiver upgrades", "No same-position available player clears the minimum projection advantage over a rostered player in this snapshot.");
-  content.innerHTML = sectionHeader("Waiver Wire", "Conservative add/drop comparisons using only explicitly available players and projections.") + `<div class="waiver-list">${body}</div>`;
+  const ros = buildRosWaiverIdeas(state.snapshot, state.selectedTeamId, state.rankingReconciliation);
+  const rosBody = ros.status === "missing-rankings" ? emptyState("Import ROS rankings", "Add the FantasyPros ROS PPR CSV to compare season-long ranks without replacing ESPN weekly projections.") : ros.status === "missing-availability" ? emptyState("Availability data missing", "ESPN availability is required before an ROS add/drop comparison can be made.") : ros.items.length ? ros.items.map(item => `<article class="panel waiver-row interactive-row" data-player-id="${escapeHtml(item.add.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(item.add.name)} details"><span class="avatar pos-${item.add.position.replace("/", "")}">${initials(item.add.name)}</span><div><small>ROS ADD · ${escapeHtml(formatAvailability(item.add.availabilityStatus))}</small><strong>${escapeHtml(item.add.name)}</strong><span>${escapeHtml(item.add.position)} · FantasyPros #${item.addRanking.rank}</span></div><span class="swap-arrow">for</span><div><small>ROS DROP COMPARISON</small><strong>${escapeHtml(item.drop.name)}</strong><span>${escapeHtml(item.drop.position)} · FantasyPros #${item.dropRanking.rank}</span></div><b class="positive">↑${item.rankImprovement}</b></article>`).join("") : emptyState("No ROS rank upgrades found", "No available same-position player ranks ahead of a reconciled roster player in the imported FantasyPros file.");
+  content.innerHTML = sectionHeader("Waiver Wire", "Weekly projections and rest-of-season rankings stay separate so each comparison says exactly what it measures.") + `<div class="section-divider"><span>THIS WEEK · ESPN PROJECTIONS</span></div><div class="waiver-list">${body}</div><div class="section-divider ros-divider"><span>REST OF SEASON · FANTASYPROS PPR</span></div><div class="waiver-list">${rosBody}</div>`;
 }
 
 function renderAlerts() {

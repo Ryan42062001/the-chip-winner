@@ -20,6 +20,18 @@ test("ranking reconciliation requires exact composite identity", () => {
   assert.equal(result.unresolved.length, 1);
 });
 
+test("suffix and defense display-name variants match only with team and position", () => {
+  const result = reconcileFantasyProsRankings([
+    { id: "cook", name: "James Cook", proTeam: "BUF", position: "RB" },
+    { id: "jets", name: "New York Jets", proTeam: "NYJ", position: "D/ST" }
+  ], { rankings: [
+    { rank: 1, playerName: "James Cook III", team: "BUF", position: "RB" },
+    { rank: 2, playerName: "New York Jets DST", team: "NYJ", position: "DST" }
+  ] });
+  assert.equal(result.byPlayerId.cook.rank, 1);
+  assert.equal(result.byPlayerId.jets.rank, 2);
+});
+
 test("ambiguous composite identities are conflicts, not automatic matches", () => {
   const players = [
     { id: "1", name: "Example Player", proTeam: "BUF", position: "RB" },
@@ -40,4 +52,3 @@ test("ranking provider caches normalized imports locally", () => {
   provider.clearCache();
   assert.equal(provider.readCache(), null);
 });
-

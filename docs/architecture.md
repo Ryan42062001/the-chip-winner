@@ -31,6 +31,8 @@ ESPN remains the authority for league settings, membership, rosters, matchups, l
 
 `src/domain/identity.js` owns canonical provider identities and external-record reconciliation. It accepts only provider-owned IDs, reports unresolved and conflicting mappings, and intentionally contains no display-name fallback.
 
+FantasyPros CSV rankings are a constrained exception because the export supplies no player IDs. `src/providers/rankings/ranking-provider.js` reconciles an exact normalized name only when NFL team and position also agree. Suffix and defense-name normalization cannot bypass those additional keys; duplicate composite identities become conflicts. `src/domain/ros-analysis.js` consumes only reconciled records and expresses differences as ranks, never as projected points.
+
 ## Contract enforcement
 
 Runtime validation lives in `src/domain/model.js`. The matching portable contract is `schema/espn-snapshot.schema.json`. Cross-reference rules—such as a roster referencing a known player—remain runtime checks because JSON Schema alone cannot express them cleanly. Both are versioned at `schemaVersion: 1`.
@@ -62,7 +64,7 @@ The Chrome companion completes the read transport for a private league. Its serv
 
 ## Next increments
 
-1. Build a read-only authenticated ESPN adapter or companion extension with captured fixtures.
-2. Add stable external player-ID mappings and identity reconciliation.
+1. Complete the legal-lineup optimizer using ESPN slot eligibility and locks.
+2. Expand ROS roster and playoff analysis using only reconciled rankings.
 3. Add matchup scoring progress and NFL game-state refreshes.
 4. Add recommendation confidence, explanations, and user-configurable risk—only when trustworthy data exists.
