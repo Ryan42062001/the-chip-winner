@@ -25,6 +25,34 @@ test("optimizer respects explicit locks", () => {
   ], [{ playerId: "low", lineupSlot: "RB", locked: true }, { playerId: "high", lineupSlot: "BE" }]), "mine");
   assert.equal(result.assignments[0].player.id, "low");
   assert.equal(result.gain, 0);
+  assert.match(result.locks[0].reason, /ESPN reported/);
+});
+
+test("optimizer locks starters after an explicit ISO kickoff time", () => {
+  const result = optimizeLineup(snapshot([
+    { id: "started", position: "RB", projection: 5, gameTime: "2026-09-01T17:00:00Z" },
+    { id: "bench", position: "RB", projection: 20, gameTime: "2026-09-02T17:00:00Z" }
+  ], [{ playerId: "started", lineupSlot: "RB" }, { playerId: "bench", lineupSlot: "BE" }]), "mine", Date.parse("2026-09-01T18:00:00Z"));
+  assert.equal(result.assignments[0].player.id, "started");
+  assert.match(result.locks[0].reason, /kickoff time has passed/);
+});
+
+test("optimizer does not infer a lock from an unparseable display time", () => {
+  const result = optimizeLineup(snapshot([
+    { id: "starter", position: "RB", projection: 5, gameTime: "Sun 1:00 PM" },
+    { id: "bench", position: "RB", projection: 20, gameTime: "Sun 4:00 PM" }
+  ], [{ playerId: "starter", lineupSlot: "RB" }, { playerId: "bench", lineupSlot: "BE" }]), "mine", Date.parse("2026-09-01T18:00:00Z"));
+  assert.equal(result.assignments[0].player.id, "bench");
+  assert.equal(result.locks.length, 0);
+});
+
+test("optimizer cannot promote a bench player after that player's kickoff", () => {
+  const result = optimizeLineup(snapshot([
+    { id: "starter", position: "RB", projection: 5, gameTime: "2026-09-02T17:00:00Z" },
+    { id: "started-bench", position: "RB", projection: 20, gameTime: "2026-09-01T17:00:00Z" }
+  ], [{ playerId: "starter", lineupSlot: "RB" }, { playerId: "started-bench", lineupSlot: "BE" }]), "mine", Date.parse("2026-09-01T18:00:00Z"));
+  assert.equal(result.assignments[0].player.id, "starter");
+  assert.equal(result.locks[0].slot, "BE");
 });
 
 test("optimizer labels results when projections are missing", () => {

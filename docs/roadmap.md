@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 65 automated tests covering league normalization, recommendations, identity reconciliation, encrypted sync, and snapshot differencing.
+- 68 automated tests covering league normalization, recommendations, identity reconciliation, encrypted sync, snapshot differencing, and lineup locks.
 
 Additional connected foundation capabilities now include:
 

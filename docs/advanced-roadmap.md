@@ -98,7 +98,7 @@ Release exit: reliable player identities and at least one independent projection
 
 Goal: replace pairwise swaps with a full legal-lineup optimizer.
 
-Status: **In progress.** Complete assignment search, duplicate prevention, supported-slot eligibility including OP/superflex, explicit/game-time locks, missing-projection limitations, and UI explanations are implemented. Broader live fixture coverage remains before release exit.
+Status: **In progress.** Complete assignment search, duplicate prevention, supported-slot eligibility including OP/superflex, explicit ESPN locks, automatic ISO kickoff-time locks, missing-projection limitations, and UI explanations are implemented. Unparseable or missing kickoff times remain honestly unlocked. Broader live fixture coverage remains before release exit.
 
 ### Constraint model
 
