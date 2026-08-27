@@ -46,7 +46,7 @@ npm run check
 - Complete supported-slot lineup search with explicit ESPN and reported-kickoff lock handling
 - Honest “best known” labeling whenever any roster projection is missing
 - Interactive start/sit comparisons with near-tie and missing-data handling
-- Conservative waiver add/drop comparisons based on explicit availability
+- Roster-aware waiver add/drop simulations based on explicit ESPN availability and full legal-lineup impact
 - Live free-agent versus waiver status and non-conflicting drop suggestions
 - Injury and current-week bye flags
 - Validated JSON import and browser-local snapshot cache
