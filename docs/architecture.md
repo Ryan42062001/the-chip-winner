@@ -66,7 +66,7 @@ The Chrome companion completes the read transport for a private league. Its serv
 
 ## Next increments
 
-1. Complete the legal-lineup optimizer using ESPN slot eligibility and locks.
+1. Provision the encrypted sync service described in `docs/mobile-sync.md` and connect the existing client contract.
 2. Expand ROS roster and playoff analysis using only reconciled rankings.
 3. Add matchup scoring progress and NFL game-state refreshes.
 4. Add recommendation confidence, explanations, and user-configurable risk—only when trustworthy data exists.

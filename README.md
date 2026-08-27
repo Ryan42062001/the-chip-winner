@@ -60,6 +60,7 @@ npm run check
 - Strict ESPN/FantasyPros player reconciliation with visible coverage
 - Separate weekly-projection and rest-of-season waiver comparisons
 - FantasyPros overall/positional rank and playoff schedule strength in player details
+- Provider-neutral encrypted mobile-sync client and documented server contract
 
 This version reads the configured private ESPN league through the local Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 
@@ -93,6 +94,8 @@ See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance cr
 See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the post-foundation release sequence from player intelligence through optional confirmed ESPN actions.
 
 See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's read scope, local caching behavior, and deletion path.
+
+See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cross-device design and required backend contract.
 
 ## Data safety and provenance
 
