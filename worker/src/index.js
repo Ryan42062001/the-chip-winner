@@ -1,10 +1,11 @@
 const CHANNEL_PATTERN = /^[A-Za-z0-9_-]{24}$/;
 const MAX_BODY_BYTES = 2_000_000;
 const DEFAULT_TTL_SECONDS = 30 * 24 * 60 * 60;
+const DEFAULT_ALLOWED_ORIGINS = "https://ryan42062001.github.io,http://localhost:4173";
 
 function corsHeaders(request, env) {
   const origin = request.headers.get("Origin");
-  const allowed = new Set(String(env.ALLOWED_ORIGINS || "").split(",").map((value) => value.trim()).filter(Boolean));
+  const allowed = new Set(String(env.ALLOWED_ORIGINS || DEFAULT_ALLOWED_ORIGINS).split(",").map((value) => value.trim()).filter(Boolean));
   return origin && allowed.has(origin) ? {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
