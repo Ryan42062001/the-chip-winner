@@ -7,6 +7,7 @@ import { EspnCompanionClient } from "./providers/espn/companion-client.js";
 import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.2";
 import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
 import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
+import { optimizeLineup } from "./domain/lineup-optimizer.js";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
@@ -92,10 +93,13 @@ function renderOverview() {
 
 function renderLineup() {
   const suggestions = buildLineupSuggestions(state.snapshot, state.selectedTeamId);
+  const optimized = optimizeLineup(state.snapshot, state.selectedTeamId);
   const { index, roster } = getViewModel();
   const rosterPlayers = roster.map((entry) => index.players.get(entry.playerId)).filter(Boolean);
   content.innerHTML = sectionHeader("Lineup Lab", "Projection-based comparisons from the data in your snapshot. No confidence is implied when inputs are missing.") +
-    `<article class="panel comparison-tool"><div class="panel-head"><div><p class="eyebrow">START / SIT</p><h3>Compare roster players</h3></div><span class="source-chip">${escapeHtml(state.snapshot.meta?.projectionsSource || "Source unavailable")}</span></div><div class="comparison-controls"><label>Player one<select id="compare-first">${comparisonOptions(rosterPlayers, rosterPlayers[0]?.id)}</select></label><span>VS</span><label>Player two<select id="compare-second">${comparisonOptions(rosterPlayers, rosterPlayers[1]?.id)}</select></label></div><div id="comparison-result"></div></article>
+    `<article class="panel optimizer-summary"><div><p class="eyebrow">COMPLETE LINEUP SEARCH</p><h3>${optimized.status === "optimal" ? "Optimal known lineup" : optimized.status === "best-known" ? "Best known lineup" : "Optimization unavailable"}</h3><p>${escapeHtml(optimized.reason)}</p></div>${optimized.projectedTotal == null ? "" : `<div class="optimizer-score"><strong>${optimized.projectedTotal.toFixed(1)}</strong><span>${optimized.gain > 0 ? `+${optimized.gain.toFixed(1)} vs current` : "No projected gain"}</span></div>`}</article>
+    ${optimized.changes?.length ? `<div class="optimizer-grid">${optimized.changes.map(item => `<article class="panel optimizer-change"><span>${escapeHtml(item.slot)}</span><strong>${escapeHtml(item.player.name)}</strong><small>Replaces ${escapeHtml(index.players.get(item.previousPlayerId)?.name || "current player")} · ${item.player.projection.toFixed(1)} projected</small></article>`).join("")}</div>` : ""}
+    <article class="panel comparison-tool"><div class="panel-head"><div><p class="eyebrow">START / SIT</p><h3>Compare roster players</h3></div><span class="source-chip">${escapeHtml(state.snapshot.meta?.projectionsSource || "Source unavailable")}</span></div><div class="comparison-controls"><label>Player one<select id="compare-first">${comparisonOptions(rosterPlayers, rosterPlayers[0]?.id)}</select></label><span>VS</span><label>Player two<select id="compare-second">${comparisonOptions(rosterPlayers, rosterPlayers[1]?.id)}</select></label></div><div id="comparison-result"></div></article>
     <div class="section-divider"><span>OPTIMIZATION SIGNALS</span></div><div class="recommendation-grid">${suggestions.length ? suggestions.map(s => `<article class="panel recommendation"><span class="recommendation-kicker">${escapeHtml(s.slot)} SWAP</span><div class="compare"><div><small>START</small><strong>${escapeHtml(s.start.name)}</strong><span>${projection(s.start.projection)}</span></div><span class="swap-arrow">→</span><div><small>SIT</small><strong>${escapeHtml(s.sit.name)}</strong><span>${projection(s.sit.projection)}</span></div></div><div class="gain">+${s.gain} projected points</div><p>${escapeHtml(s.reason)}. Verify late news before making a move.</p></article>`).join("") : emptyState("No lineup changes identified", "Available projections do not show a higher-scoring eligible bench option. This is not a guarantee that your lineup is optimal.")}</div>`;
   const updateComparison = () => {
     const result = compareRosterPlayers(state.snapshot, state.selectedTeamId, document.querySelector("#compare-first").value, document.querySelector("#compare-second").value);

@@ -43,6 +43,8 @@ npm run check
 - Responsive weekly roster dashboard with starters, bench, matchup, and projections
 - Team switching for snapshots with multiple teams
 - Projection-based, position-eligible lineup comparisons
+- Complete supported-slot lineup search with explicit lock handling
+- Honest “best known” labeling whenever any roster projection is missing
 - Interactive start/sit comparisons with near-tie and missing-data handling
 - Conservative waiver add/drop comparisons based on explicit availability
 - Live free-agent versus waiver status and non-conflicting drop suggestions

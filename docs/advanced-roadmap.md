@@ -98,6 +98,8 @@ Release exit: reliable player identities and at least one independent projection
 
 Goal: replace pairwise swaps with a full legal-lineup optimizer.
 
+Status: **In progress.** Complete assignment search, duplicate prevention, supported-slot eligibility, explicit/game-time locks, missing-projection limitations, and UI explanations are implemented. ESPN OP/superflex normalization and broader fixture coverage remain before release exit.
+
 ### Constraint model
 
 - Generate eligible assignments from ESPN roster settings and player eligibility.

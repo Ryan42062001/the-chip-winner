@@ -17,6 +17,8 @@ The dependency direction is interface → application/domain ← providers. Reco
 
 Functions in `src/domain/recommendations.js` return derived suggestions. They do not write into the snapshot, allowing the interface to identify their provenance and preventing recommendations from masquerading as source facts.
 
+`src/domain/lineup-optimizer.js` searches complete assignments across the supported ESPN starting slots instead of composing independent swaps. It prevents duplicate player assignments, respects explicit or already-started locks, and downgrades its result from “optimal” to “best known” when any roster projection is absent. Unsupported slot configurations fail visibly rather than being approximated.
+
 `src/domain/selectors.js` is the read boundary for team context, totals, freshness, and data coverage. It preserves completeness metadata so partial totals cannot be presented as complete comparisons.
 
 ## Application state
