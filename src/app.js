@@ -10,6 +10,7 @@ import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analy
 import { optimizeLineup } from "./domain/lineup-optimizer.js";
 import { changesForTeam, diffSnapshots } from "./domain/snapshot-diff.js";
 import { buildRosterAwareWaiverIdeas } from "./domain/waiver-engine.js";
+import { buildRosterPlan } from "./domain/roster-planning.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -143,6 +144,18 @@ function renderChanges() {
   content.innerHTML = sectionHeader("What Changed", "Derived locally by comparing the two most recent valid ESPN snapshots.") + `<article class="panel timeline-summary"><div><p class="eyebrow">LATEST REFRESH</p><h3>${changes.length} relevant change${changes.length === 1 ? "" : "s"}</h3><p>Observed ${escapeHtml(captured)} · ${allChanges.length} across the league</p></div><span class="quality ${changes.length ? "aging" : "fresh"}">${changes.length ? "Review" : "No changes"}</span></article><div class="timeline">${changes.length ? changes.map((change) => `<article class="panel timeline-item ${escapeHtml(change.kind)}" ${change.playerId ? `data-player-id="${escapeHtml(change.playerId)}" role="button" tabindex="0"` : ""}><span class="timeline-icon">${change.kind === "injury" ? "!" : change.kind === "lineup" ? "↕" : change.kind === "projection" ? "±" : change.kind === "matchup" ? "#" : "+"}</span><div><small>${escapeHtml(change.kind.replaceAll("-", " ").toUpperCase())}</small><strong>${escapeHtml(change.title)}</strong><p>${escapeHtml(change.detail)}</p></div></article>`).join("") : emptyState("Nothing meaningful changed", "The latest snapshot matches the previous one for this team. Identical refreshes do not create duplicate events.")}</div>`;
 }
 
+function renderSeasonPlan() {
+  const plan = buildRosterPlan(state.snapshot, state.selectedTeamId, state.rankingReconciliation);
+  if (plan.status === "missing-roster") {
+    content.innerHTML = sectionHeader("Season Plan", "Roster depth, bye-week conflicts, and explicit playoff context from your current data.") + emptyState("Roster unavailable", "Refresh ESPN to build a season plan for this team.");
+    return;
+  }
+  const depth = plan.positions.length ? plan.positions.map(group => `<article class="panel plan-group"><div class="panel-head"><div><p class="eyebrow">${escapeHtml(group.position)}</p><h3>${group.starterCount} starter${group.starterCount === 1 ? "" : "s"} · ${group.benchCount} bench</h3></div><span class="record">${group.knownProjectionCount}/${group.totalCount} projected</span></div><div class="plan-players">${group.players.map(item => `<div class="plan-player"><span class="avatar pos-${escapeHtml(item.player.position).replace("/", "")}">${initials(item.player.name)}</span><div><strong>${escapeHtml(item.player.name)}</strong><small>${item.starter ? "Starter" : "Bench"} · ${escapeHtml(item.player.proTeam || "Team unavailable")}</small></div><b>${item.player.projection == null ? "—" : item.player.projection.toFixed(1)}</b></div>`).join("")}</div></article>`).join("") : emptyState("No positional depth available", "The ESPN snapshot does not contain roster players with positions.");
+  const bye = plan.byeConflicts.length ? plan.byeConflicts.map(item => `<div class="plan-alert"><strong>Week ${item.week}</strong><span>${escapeHtml(item.players.map((player) => player.name).join(", "))}</span></div>`).join("") : `<p class="plan-note">No starter bye conflicts were found in the current snapshot.</p>`;
+  const playoff = plan.playoff.length ? plan.playoff.map(item => `<div class="plan-row"><strong>${escapeHtml(item.player.name)}</strong><span>${escapeHtml(item.player.position)} · schedule strength ${item.strength}</span></div>`).join("") : `<p class="plan-note">No explicit playoff schedule-strength fields are available in the imported rankings.</p>`;
+  content.innerHTML = sectionHeader("Season Plan", "A transparent planning layer built from ESPN roster state and only explicitly reported FantasyPros context.") + `<div class="plan-grid"><div><div class="section-divider"><span>ROSTER DEPTH</span></div><div class="plan-groups">${depth}</div></div><div class="side-stack"><article class="panel"><div class="panel-head"><div><p class="eyebrow">BYE WEEKS</p><h3>Starter conflicts</h3></div></div>${bye}</article><article class="panel"><div class="panel-head"><div><p class="eyebrow">PLAYOFF CONTEXT</p><h3>Explicit schedule strength</h3></div></div>${playoff}</article></div></div><article class="panel plan-limitations"><strong>Data boundaries</strong>${plan.limitations.map(item => `<span>${escapeHtml(item)}</span>`).join("")}</article>`;
+}
+
 function renderLeague() {
   const league = state.snapshot.league;
   const slots = league.lineupSlots || [];
@@ -224,9 +237,9 @@ function openPlayerDetail(playerId) {
 function render() {
   if (!state.snapshot) return;
   document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.section === state.section));
-  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts", changes: "What Changed", league: "League Setup" };
+  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts", changes: "What Changed", season: "Season Plan", league: "League Setup" };
   document.querySelector("#page-title").textContent = titles[state.section] || titles.overview;
-  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts, changes: renderChanges, league: renderLeague }[state.section] || renderOverview)();
+  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts, changes: renderChanges, season: renderSeasonPlan, league: renderLeague }[state.section] || renderOverview)();
 }
 
 function hydrateControls() {

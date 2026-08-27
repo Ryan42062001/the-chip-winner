@@ -108,4 +108,4 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Foundation roadmap
 
-The read-only ESPN connection, full known-projection lineup assignment, FantasyPros ROS rankings, encrypted mobile sync, and first snapshot-change timeline are in place. Next priorities are waiver legality/full-roster impact and recommendation-change explanations. See the advanced roadmap for the dependency order and acceptance criteria.
+The read-only ESPN connection, full known-projection lineup assignment, FantasyPros ROS rankings, encrypted mobile sync, snapshot-change timeline, roster-aware waivers, and Season Plan depth/bye analysis are in place. Next priorities are multiweek scenario planning and deeper schedule intelligence. See the advanced roadmap for the dependency order and acceptance criteria.

@@ -213,6 +213,8 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
+Status: in progress. The first Season Plan slice now reports positional depth, starter bye conflicts, and explicitly supplied playoff schedule-strength fields; multiweek scenario planning and deeper schedule intelligence remain open.
+
 Goal: support roster construction beyond the immediate week.
 
 ### Schedule intelligence
