@@ -52,21 +52,20 @@ Base path: `/v1/channels`
 - `src/sync/sync-provider.js`: provider interface and HTTP implementation.
 - `src/sync/sync-session.js`: validates ESPN state before publishing and after decrypting.
 
-## Remaining deployment decision
+## Production deployment
 
-The static GitHub Pages site cannot implement these endpoints. A small serverless service is required. Cloudflare Workers + KV/D1 or Supabase Edge Functions are suitable options, but provisioning either requires an account, service configuration, and an explicit choice about operational ownership.
-
-No production mobile link should be generated until the service has rate limiting, expiry, deletion, CORS restricted to The Chip Winner origins, and log redaction.
+The sync service is deployed at `https://the-chip-winner-sync.yc6syr6bkd.workers.dev`. The GitHub Pages app encrypts league data before upload; Cloudflare receives only an opaque encrypted envelope. The decryption key remains in the private mobile URL fragment and is not transmitted in HTTP requests.
 
 ## Cloudflare implementation
 
-`worker/src/index.js` implements the service contract using Workers KV. `worker/wrangler.toml` restricts browser origins to the public GitHub Pages site and the local development server, sets a 30-day maximum channel lifetime, and contains a placeholder for the KV namespace ID. The Worker validates envelope structure but cannot decrypt its contents.
+`worker/src/index.js` implements the service contract using Workers KV. `worker/wrangler.toml` restricts browser origins to the public GitHub Pages site and the local development server and sets a 30-day maximum channel lifetime. The Worker validates envelope structure but cannot decrypt its contents.
 
-Before deployment:
+Deployment checklist:
 
-1. create or connect a Cloudflare account on the Workers Free plan;
-2. create a KV namespace and replace `REPLACE_AFTER_KV_CREATION`;
-3. deploy the Worker and record its `workers.dev` URL;
-4. add that URL to the website configuration;
-5. configure Cloudflare rate limiting and verify logs do not include bodies, authorization headers, or full channel IDs;
-6. run publish/read/revoke tests against the deployed endpoint.
+1. Cloudflare Worker and KV namespace are provisioned on the Workers Free plan.
+2. The production `workers.dev` URL is configured in the website.
+3. CORS is limited to The Chip Winner and the local development origin.
+4. Channel bodies are capped at 2 MB and expire after 30 days.
+5. Publish/read/decrypt/revoke has been verified against the deployed endpoint.
+
+Cloudflare account-level rate limiting remains an optional hardening step before a wider public launch. The unguessable 144-bit channel identifier, write-token authentication, body limit, and expiry are enforced in the Worker.

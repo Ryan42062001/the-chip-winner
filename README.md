@@ -60,7 +60,7 @@ npm run check
 - Strict ESPN/FantasyPros player reconciliation with visible coverage
 - Separate weekly-projection and rest-of-season waiver comparisons
 - FantasyPros overall/positional rank and playoff schedule strength in player details
-- Provider-neutral encrypted mobile-sync client and documented server contract
+- End-to-end encrypted mobile sync through a deployed Cloudflare Worker and KV storage
 
 This version reads the configured private ESPN league through the local Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 

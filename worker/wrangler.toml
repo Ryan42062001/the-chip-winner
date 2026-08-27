@@ -9,5 +9,4 @@ CHANNEL_TTL_SECONDS = "2592000"
 
 [[kv_namespaces]]
 binding = "SYNC_CHANNELS"
-id = "REPLACE_AFTER_KV_CREATION"
-
+id = "1863d335bff14bafb73ea990537113ba"

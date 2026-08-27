@@ -8,15 +8,21 @@ import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js
 import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
 import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
 import { optimizeLineup } from "./domain/lineup-optimizer.js";
+import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
+import { HttpSyncProvider } from "./sync/sync-provider.js";
+import { publishSyncState, readSyncState } from "./sync/sync-session.js";
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
 const rankingProvider = new FantasyProsRankingProvider();
+const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sync.yc6syr6bkd.workers.dev" });
+const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
-const store = createStore({ ...initialAppState, section: location.hash.slice(1) || "overview" }, appReducer);
+const appSection = () => location.hash.startsWith("#mobile-sync=") ? "overview" : location.hash.slice(1) || "overview";
+const store = createStore({ ...initialAppState, section: appSection() }, appReducer);
 let state = store.getState();
 store.subscribe((next) => { state = next; });
 
@@ -132,9 +138,45 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation.byPlayerId).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation.unresolved.length}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation.conflicts.length}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">Rankings remain separate from ESPN projections and are stored only in this browser.</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
-    <article class="panel"><div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Encrypted device sync</h3></div><span class="quality aging">Backend needed</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>Ready</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Hosted sync service</dt><dd>Not configured</dd></div></dl><p class="data-note">The secure sync client is implemented, but GitHub Pages cannot store cross-device updates. A small private backend must be selected before a mobile link can be created.</p><a class="text-link" href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/mobile-sync.md" target="_blank" rel="noreferrer">Read the mobile-sync design →</a></article>
+    ${mobileSyncCard()}
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
   </div>`;
+}
+
+function readStoredSyncCredentials() {
+  try { return JSON.parse(localStorage.getItem(SYNC_CREDENTIALS_KEY)); } catch { return null; }
+}
+
+function mobileSyncCard() {
+  const credentials = readStoredSyncCredentials();
+  return `<article class="panel"><div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Encrypted device sync</h3></div><span class="quality fresh">Live</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>AES-256-GCM</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Hosted sync service</dt><dd>Cloudflare · connected</dd></div></dl>${credentials ? `<p class="data-note">Your private mobile link is active. Refresh it after ESPN or rankings change.</p><div class="sync-actions"><button class="button primary" id="refresh-sync-button">Refresh mobile data</button><button class="button ghost" id="copy-sync-button">Copy mobile link</button><button class="button ghost" id="revoke-sync-button">Revoke</button></div>` : `<p class="data-note">Create a private link containing the decryption key. Anyone with that exact link can view the synced snapshot, so keep it private.</p><button class="button primary" id="create-sync-button">Create mobile link</button>`}<p class="data-note">Encrypted snapshots expire from Cloudflare after 30 days.</p></article>`;
+}
+
+function mobileUrl(credentials) {
+  return `${location.origin}${location.pathname}${createMobileSyncFragment(credentials)}`;
+}
+
+async function publishCurrentSync(credentials) {
+  await publishSyncState(syncProvider, credentials, state.snapshot, state.rankingSet);
+  return mobileUrl(credentials);
+}
+
+async function createMobileSync() {
+  const credentials = await createSyncCredentials();
+  await publishCurrentSync(credentials);
+  localStorage.setItem(SYNC_CREDENTIALS_KEY, JSON.stringify(credentials));
+  await navigator.clipboard.writeText(mobileUrl(credentials));
+  render(); showNotice("Private mobile link created and copied. Open it on your phone.");
+}
+
+async function loadMobileSyncFromUrl() {
+  const credentials = parseMobileSyncFragment(location.hash);
+  if (!credentials) return false;
+  const synced = await readSyncState(syncProvider, credentials);
+  if (!synced) throw new Error("This mobile sync link has expired or was revoked.");
+  store.dispatch({ type: "load/success", snapshot: synced.payload.snapshot, source: "sync" });
+  if (synced.payload.rankingSet) loadRankingSet(synced.payload.rankingSet);
+  return true;
 }
 
 function sectionHeader(title, subtitle) { return `<div class="page-head"><div><p class="eyebrow">WEEK ${state.snapshot.currentWeek}</p><h2>${title}</h2><p>${subtitle}</p></div><span class="week-pill">Source: ${escapeHtml(state.snapshot.meta?.projectionsSource || "not provided")}</span></div>`; }
@@ -178,12 +220,13 @@ function hydrateControls() {
   const { snapshot } = state;
   teamSelect.innerHTML = snapshot.teams.map((team) => `<option value="${escapeHtml(team.id)}" ${team.id === state.selectedTeamId ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("");
   document.querySelector("#league-label").textContent = `ESPN · ${snapshot.league.name}`;
-  document.querySelector("#source-label").textContent = snapshot.meta?.kind === "live-companion" ? "Live ESPN snapshot" : state.source === "cache" ? "Imported snapshot" : "Sample snapshot";
+  document.querySelector("#source-label").textContent = state.source === "sync" ? "Encrypted mobile snapshot" : snapshot.meta?.kind === "live-companion" ? "Live ESPN snapshot" : state.source === "cache" ? "Imported snapshot" : "Sample snapshot";
   document.querySelector("#source-time").textContent = snapshot.meta?.capturedAt ? `Captured ${new Date(snapshot.meta.capturedAt).toLocaleDateString()}` : "Capture time unavailable";
   document.querySelector("#reset-button").hidden = state.source !== "cache";
   const connected = snapshot.meta?.kind === "live-companion";
   const connectButton = document.querySelector("#connect-button");
-  connectButton.textContent = connected ? "Refresh ESPN" : "Connect ESPN";
+  connectButton.textContent = state.source === "sync" ? "Mobile snapshot" : connected ? "Refresh ESPN" : "Connect ESPN";
+  connectButton.disabled = state.source === "sync";
 }
 
 function loadRankingSet(rankingSet) {
@@ -199,6 +242,9 @@ function showNotice(message, kind = "success") {
 async function init() {
   store.dispatch({ type: "load/start" });
   try {
+    if (await loadMobileSyncFromUrl()) {
+      hydrateControls(); render(); showNotice("Encrypted ESPN snapshot loaded from your private mobile link."); return;
+    }
     const loaded = await provider.load();
     store.dispatch({ type: "load/success", ...loaded });
     if (loaded.snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
@@ -249,11 +295,22 @@ document.querySelector("#rankings-input").addEventListener("change", async (even
   event.target.value = "";
 });
 document.querySelector("#reset-button").addEventListener("click", () => { provider.clearCache(); showNotice("Imported snapshot cleared. Loading sample data…"); setTimeout(() => location.reload(), 250); });
-window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: location.hash.slice(1) || "overview" }); render(); });
+window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); });
 document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
 document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
 content.addEventListener("click", (event) => { const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
+content.addEventListener("click", async (event) => {
+  const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
+  if (!action) return;
+  action.disabled = true;
+  try {
+    if (action.id === "create-sync-button") await createMobileSync();
+    if (action.id === "refresh-sync-button") { await publishCurrentSync(readStoredSyncCredentials()); showNotice("Mobile data refreshed."); }
+    if (action.id === "copy-sync-button") { await navigator.clipboard.writeText(mobileUrl(readStoredSyncCredentials())); showNotice("Private mobile link copied."); }
+    if (action.id === "revoke-sync-button") { const credentials = readStoredSyncCredentials(); await syncProvider.remove(credentials.channelId, credentials.writeToken); localStorage.removeItem(SYNC_CREDENTIALS_KEY); render(); showNotice("Mobile link revoked."); }
+  } catch (error) { showNotice(error.message, "error"); action.disabled = false; }
+});
 content.addEventListener("keydown", (event) => { if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-player-id]")) { event.preventDefault(); openPlayerDetail(event.target.dataset.playerId); } });
 
 init();
