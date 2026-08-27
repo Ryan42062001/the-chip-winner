@@ -5,7 +5,7 @@ export class SyncProvider {
 }
 
 export class HttpSyncProvider extends SyncProvider {
-  constructor({ baseUrl, fetchImpl = globalThis.fetch }) {
+  constructor({ baseUrl, fetchImpl = (...args) => globalThis.fetch(...args) }) {
     super();
     if (!baseUrl) throw new Error("Sync service URL is required.");
     this.baseUrl = baseUrl.replace(/\/$/, "");
@@ -30,4 +30,3 @@ export class HttpSyncProvider extends SyncProvider {
     if (!response.ok && response.status !== 404) throw new Error(`Sync removal failed (${response.status}).`);
   }
 }
-

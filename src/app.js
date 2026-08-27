@@ -165,8 +165,7 @@ async function createMobileSync() {
   const credentials = await createSyncCredentials();
   await publishCurrentSync(credentials);
   localStorage.setItem(SYNC_CREDENTIALS_KEY, JSON.stringify(credentials));
-  await navigator.clipboard.writeText(mobileUrl(credentials));
-  render(); showNotice("Private mobile link created and copied. Open it on your phone.");
+  render(); showNotice("Private mobile link created. Choose Copy mobile link, then open it on your phone.");
 }
 
 async function loadMobileSyncFromUrl() {
