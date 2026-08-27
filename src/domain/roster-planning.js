@@ -25,5 +25,6 @@ export function buildRosterPlan(snapshot, teamId, reconciliation = null) {
     const player = players.get(entry.playerId); const ranking = reconciliation?.byPlayerId?.[entry.playerId];
     return ranking?.playoffScheduleStrength != null ? { player, lineupSlot: entry.lineupSlot, rank: ranking.rank, strength: ranking.playoffScheduleStrength } : null;
   }).filter(Boolean).sort((a, b) => a.strength - b.strength || a.rank - b.rank).slice(0, 8);
-  return Object.freeze({ status: "ready", positions: Object.freeze(positions), byeConflicts: Object.freeze(byeConflicts), playoff: Object.freeze(playoff), limitations: Object.freeze(["Depth counts rostered players by listed NFL position; FLEX/OP eligibility can cover multiple positions.", "Playoff schedule strength is shown only when supplied by the imported FantasyPros file.", "No future fantasy points are inferred."]) });
+  const futureWeeks = Array.isArray(snapshot.futureWeeks) ? snapshot.futureWeeks : [];
+  return Object.freeze({ status: "ready", positions: Object.freeze(positions), byeConflicts: Object.freeze(byeConflicts), playoff: Object.freeze(playoff), horizon: Object.freeze({ status: futureWeeks.length ? "available" : "missing", weeks: Object.freeze(futureWeeks) }), limitations: Object.freeze(["Depth counts rostered players by listed NFL position; FLEX/OP eligibility can cover multiple positions.", "Playoff schedule strength is shown only when supplied by the imported FantasyPros file.", "No future fantasy points are inferred."]) });
 }
