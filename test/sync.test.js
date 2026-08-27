@@ -20,7 +20,8 @@ test("sync encryption rejects tampering and the wrong key", async () => {
   const second = await createSyncCredentials();
   const envelope = await encryptSyncPayload({ snapshot: sample }, first);
   await assert.rejects(() => decryptSyncPayload(envelope, { ...second, channelId: first.channelId }), /could not be decrypted/);
-  await assert.rejects(() => decryptSyncPayload({ ...envelope, ciphertext: `${envelope.ciphertext.slice(0, -1)}A` }, first), /could not be decrypted/);
+  const alteredCiphertext = `${envelope.ciphertext[0] === "A" ? "B" : "A"}${envelope.ciphertext.slice(1)}`;
+  await assert.rejects(() => decryptSyncPayload({ ...envelope, ciphertext: alteredCiphertext }, first), /could not be decrypted/);
 });
 
 test("mobile fragment contains read credentials but not the write token", async () => {
@@ -51,4 +52,3 @@ test("provider contracts fail explicitly and HTTP transport uses scoped methods"
   assert.deepEqual(calls.map((call) => call.options.method || "GET"), ["PUT", "GET", "DELETE"]);
   assert.equal(calls[0].options.headers.Authorization, "Bearer writer");
 });
-

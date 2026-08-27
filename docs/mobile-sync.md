@@ -58,3 +58,15 @@ The static GitHub Pages site cannot implement these endpoints. A small serverles
 
 No production mobile link should be generated until the service has rate limiting, expiry, deletion, CORS restricted to The Chip Winner origins, and log redaction.
 
+## Cloudflare implementation
+
+`worker/src/index.js` implements the service contract using Workers KV. `worker/wrangler.toml` restricts browser origins to the public GitHub Pages site and the local development server, sets a 30-day maximum channel lifetime, and contains a placeholder for the KV namespace ID. The Worker validates envelope structure but cannot decrypt its contents.
+
+Before deployment:
+
+1. create or connect a Cloudflare account on the Workers Free plan;
+2. create a KV namespace and replace `REPLACE_AFTER_KV_CREATION`;
+3. deploy the Worker and record its `workers.dev` URL;
+4. add that URL to the website configuration;
+5. configure Cloudflare rate limiting and verify logs do not include bodies, authorization headers, or full channel IDs;
+6. run publish/read/revoke tests against the deployed endpoint.
