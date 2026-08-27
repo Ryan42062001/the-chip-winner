@@ -9,7 +9,7 @@ import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./prov
 import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
 import { optimizeLineup } from "./domain/lineup-optimizer.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
-import { HttpSyncProvider } from "./sync/sync-provider.js";
+import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
 
 const provider = new EspnSnapshotProvider();
