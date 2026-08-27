@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 21 automated tests.
+- 65 automated tests covering league normalization, recommendations, identity reconciliation, encrypted sync, and snapshot differencing.
 
 Additional connected foundation capabilities now include:
 
@@ -45,7 +45,9 @@ Additional connected foundation capabilities now include:
 - connected league scoring, lineup-slot, and waiver settings;
 - a documented local-only privacy boundary;
 - versioned browser modules for reliable production updates;
-- 26 automated domain/provider/application tests before final browser verification.
+- deployed end-to-end encrypted mobile snapshot synchronization through Cloudflare Workers KV;
+- locally derived change detection between the two most recent valid ESPN snapshots;
+- a team-filtered **What Changed** timeline for roster, lineup, injury, projection, availability, and matchup-score changes.
 
 The website retains sample and manual-import modes for development. The configured private league can authenticate and refresh through the local Chrome companion. The product remains deliberately read-only and makes no ESPN transactions.
 

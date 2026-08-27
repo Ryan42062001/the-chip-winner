@@ -8,6 +8,7 @@ import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js
 import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
 import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
 import { optimizeLineup } from "./domain/lineup-optimizer.js";
+import { changesForTeam, diffSnapshots } from "./domain/snapshot-diff.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -129,6 +130,17 @@ function renderAlerts() {
   content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `<div class="alert-list">${warnings.length ? warnings.map(w => `<article class="panel alert-row interactive-row" data-player-id="${escapeHtml(w.player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(w.player.name)} details"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div></article>`).join("") : emptyState("No alerts in this snapshot", "No injuries or current-week byes were reported for this roster.")}</div>`;
 }
 
+function renderChanges() {
+  if (!state.previousSnapshot) {
+    content.innerHTML = sectionHeader("What Changed", "A timeline appears after two valid ESPN captures from the same league.") + emptyState("One more refresh needed", "Refresh ESPN again after league data changes. The previous valid snapshot is kept separately and compared locally.");
+    return;
+  }
+  const allChanges = diffSnapshots(state.previousSnapshot, state.snapshot);
+  const changes = changesForTeam(allChanges, state.snapshot, state.selectedTeamId);
+  const captured = state.snapshot.meta?.capturedAt ? new Date(state.snapshot.meta.capturedAt).toLocaleString() : "Capture time unavailable";
+  content.innerHTML = sectionHeader("What Changed", "Derived locally by comparing the two most recent valid ESPN snapshots.") + `<article class="panel timeline-summary"><div><p class="eyebrow">LATEST REFRESH</p><h3>${changes.length} relevant change${changes.length === 1 ? "" : "s"}</h3><p>Observed ${escapeHtml(captured)} · ${allChanges.length} across the league</p></div><span class="quality ${changes.length ? "aging" : "fresh"}">${changes.length ? "Review" : "No changes"}</span></article><div class="timeline">${changes.length ? changes.map((change) => `<article class="panel timeline-item ${escapeHtml(change.kind)}" ${change.playerId ? `data-player-id="${escapeHtml(change.playerId)}" role="button" tabindex="0"` : ""}><span class="timeline-icon">${change.kind === "injury" ? "!" : change.kind === "lineup" ? "↕" : change.kind === "projection" ? "±" : change.kind === "matchup" ? "#" : "+"}</span><div><small>${escapeHtml(change.kind.replaceAll("-", " ").toUpperCase())}</small><strong>${escapeHtml(change.title)}</strong><p>${escapeHtml(change.detail)}</p></div></article>`).join("") : emptyState("Nothing meaningful changed", "The latest snapshot matches the previous one for this team. Identical refreshes do not create duplicate events.")}</div>`;
+}
+
 function renderLeague() {
   const league = state.snapshot.league;
   const slots = league.lineupSlots || [];
@@ -210,9 +222,9 @@ function openPlayerDetail(playerId) {
 function render() {
   if (!state.snapshot) return;
   document.querySelectorAll(".nav-link").forEach((link) => link.classList.toggle("active", link.dataset.section === state.section));
-  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts", league: "League Setup" };
+  const titles = { overview: "Weekly command center", lineup: "Lineup Lab", waivers: "Waiver Wire", alerts: "Player Alerts", changes: "What Changed", league: "League Setup" };
   document.querySelector("#page-title").textContent = titles[state.section] || titles.overview;
-  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts, league: renderLeague }[state.section] || renderOverview)();
+  ({ overview: renderOverview, lineup: renderLineup, waivers: renderWaivers, alerts: renderAlerts, changes: renderChanges, league: renderLeague }[state.section] || renderOverview)();
 }
 
 function hydrateControls() {
@@ -262,8 +274,9 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
     await companion.ping();
     const response = await companion.fetchLeague(ESPN_CONNECTION);
     const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta, { availablePlayers: response.data.availablePlayers, nflScoreboard: response.data.nflScoreboard });
+    const previousSnapshot = provider.readCache();
     provider.saveSnapshot(snapshot);
-    store.dispatch({ type: "load/success", snapshot, source: "cache" });
+    store.dispatch({ type: "load/success", snapshot, previousSnapshot, source: "cache" });
     loadRankingSet(state.rankingSet || rankingProvider.readCache());
     if (snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
     hydrateControls(); render(); showNotice(`Connected ${snapshot.league.name}. ESPN data refreshed successfully.`);
@@ -277,7 +290,8 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
 document.querySelector("#snapshot-input").addEventListener("change", async (event) => {
   try {
     const file = event.target.files[0]; if (!file) return;
-    const snapshot = provider.importSnapshot(await file.text()); store.dispatch({ type: "load/success", snapshot, source: "cache" });
+    const previousSnapshot = provider.readCache();
+    const snapshot = provider.importSnapshot(await file.text()); store.dispatch({ type: "load/success", snapshot, previousSnapshot, source: "cache" });
     loadRankingSet(state.rankingSet || rankingProvider.readCache());
     hydrateControls(); render(); showNotice(`Imported ${file.name}. Data is cached in this browser.`);
   } catch (error) { showNotice(error.message, "error"); }

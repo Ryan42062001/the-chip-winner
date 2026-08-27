@@ -21,6 +21,7 @@ export function createStore(initialState, reducer) {
 export const initialAppState = Object.freeze({
   status: "idle",
   snapshot: null,
+  previousSnapshot: null,
   selectedTeamId: null,
   section: "overview",
   source: null,
@@ -32,7 +33,7 @@ export const initialAppState = Object.freeze({
 export function appReducer(state, action) {
   switch (action.type) {
     case "load/start": return { ...state, status: "loading", error: null };
-    case "load/success": return { ...state, status: "ready", snapshot: action.snapshot, source: action.source, selectedTeamId: action.snapshot.teams[0]?.id || null, error: null };
+    case "load/success": return { ...state, status: "ready", snapshot: action.snapshot, previousSnapshot: action.previousSnapshot ?? null, source: action.source, selectedTeamId: action.snapshot.teams[0]?.id || null, error: null };
     case "rankings/load": return { ...state, rankingSet: action.rankingSet, rankingReconciliation: action.reconciliation };
     case "rankings/clear": return { ...state, rankingSet: null, rankingReconciliation: null };
     case "load/error": return { ...state, status: "error", error: action.error };

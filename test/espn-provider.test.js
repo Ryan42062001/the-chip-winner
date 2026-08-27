@@ -32,3 +32,19 @@ test("validated live snapshots can be saved directly", () => {
   assert.equal(provider.saveSnapshot(sample), sample);
   assert.deepEqual(provider.readCache(), sample);
 });
+
+test("saving a changed snapshot preserves exactly one previous valid snapshot", () => {
+  const storage = memoryStorage();
+  const provider = new EspnSnapshotProvider({ storage });
+  const updated = structuredClone(sample);
+  updated.meta.capturedAt = "2026-09-01T13:00:00Z";
+  provider.saveSnapshot(sample);
+  provider.saveSnapshot(updated);
+  assert.deepEqual(provider.readPreviousSnapshot(), sample);
+  assert.deepEqual(provider.readCache(), updated);
+  provider.saveSnapshot(updated);
+  assert.deepEqual(provider.readPreviousSnapshot(), updated);
+  provider.clearCache();
+  assert.equal(provider.readCache(), null);
+  assert.equal(provider.readPreviousSnapshot(), null);
+});

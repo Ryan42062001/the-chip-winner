@@ -61,6 +61,7 @@ npm run check
 - Separate weekly-projection and rest-of-season waiver comparisons
 - FantasyPros overall/positional rank and playoff schedule strength in player details
 - End-to-end encrypted mobile sync through a deployed Cloudflare Worker and KV storage
+- Local snapshot differencing and a team-specific What Changed timeline
 
 This version reads the configured private ESPN league through the local Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 
@@ -99,7 +100,7 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Data safety and provenance
 
-- Imports remain in browser `localStorage`; the MVP sends no league data over the network.
+- ESPN imports and cached snapshots remain in browser `localStorage`. Mobile sync is optional and uploads only an AES-256-GCM encrypted envelope with a 30-day expiry.
 - The app never writes to ESPN and contains no ESPN credentials.
 - A projection value of `0` is distinct from a missing value of `null`.
 - Derived suggestions are calculated at runtime and never written back into source snapshots.
@@ -107,4 +108,4 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Foundation roadmap
 
-The read-only ESPN connection and the first external ROS ranking source are in place. The next recommendation milestone is a complete legal-lineup optimizer, followed by roster-aware ROS and playoff planning. See the advanced roadmap for the dependency order and acceptance criteria.
+The read-only ESPN connection, full known-projection lineup assignment, FantasyPros ROS rankings, encrypted mobile sync, and first snapshot-change timeline are in place. Next priorities are waiver legality/full-roster impact and recommendation-change explanations. See the advanced roadmap for the dependency order and acceptance criteria.

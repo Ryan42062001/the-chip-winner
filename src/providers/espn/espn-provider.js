@@ -1,6 +1,7 @@
 import { validateLeagueSnapshot } from "../../domain/model.js";
 
 const CACHE_KEY = "chip-winner:espn-snapshot:v1";
+const PREVIOUS_CACHE_KEY = "chip-winner:espn-snapshot:previous:v1";
 
 export class EspnSnapshotProvider {
   constructor({ storage = globalThis.localStorage, sampleUrl = "./src/data/sample-espn-snapshot.json" } = {}) {
@@ -10,7 +11,7 @@ export class EspnSnapshotProvider {
 
   async load() {
     const cached = this.readCache();
-    if (cached) return { snapshot: cached, source: "cache" };
+    if (cached) return { snapshot: cached, previousSnapshot: this.readPreviousSnapshot(), source: "cache" };
     const response = await fetch(this.sampleUrl);
     if (!response.ok) throw new Error(`Could not load sample snapshot (${response.status}).`);
     const sample = await response.json();
@@ -24,8 +25,7 @@ export class EspnSnapshotProvider {
     catch { throw new Error("That file is not valid JSON."); }
     this.assertValid(snapshot);
     const imported = { ...snapshot, meta: { ...(snapshot.meta || {}), importedAt: new Date().toISOString() } };
-    this.storage?.setItem(CACHE_KEY, JSON.stringify(imported));
-    return imported;
+    return this.saveSnapshot(imported);
   }
 
   readCache() {
@@ -41,10 +41,19 @@ export class EspnSnapshotProvider {
     }
   }
 
-  clearCache() { this.storage?.removeItem(CACHE_KEY); }
+  readPreviousSnapshot() {
+    const raw = this.storage?.getItem(PREVIOUS_CACHE_KEY);
+    if (!raw) return null;
+    try { const value = JSON.parse(raw); this.assertValid(value); return value; }
+    catch { this.storage?.removeItem(PREVIOUS_CACHE_KEY); return null; }
+  }
+
+  clearCache() { this.storage?.removeItem(CACHE_KEY); this.storage?.removeItem(PREVIOUS_CACHE_KEY); }
 
   saveSnapshot(snapshot) {
     this.assertValid(snapshot);
+    const current = this.readCache();
+    if (current) this.storage?.setItem(PREVIOUS_CACHE_KEY, JSON.stringify(current));
     this.storage?.setItem(CACHE_KEY, JSON.stringify(snapshot));
     return snapshot;
   }
