@@ -35,6 +35,17 @@ test("optimizer labels results when projections are missing", () => {
   assert.deepEqual(result.missingPlayerIds, ["unknown"]);
 });
 
+test("optimizer reports but does not recommend marginal churn", () => {
+  const result = optimizeLineup(snapshot([
+    { id: "starter", position: "WR", projection: 10 }, { id: "bench", position: "WR", projection: 10.2 }
+  ], [{ playerId: "starter", lineupSlot: "WR" }, { playerId: "bench", lineupSlot: "BE" }]), "mine");
+  assert.equal(result.gain, 0.2);
+  assert.equal(result.actionable, false);
+  assert.equal(result.changes.length, 1);
+  assert.equal(result.recommendedChanges.length, 0);
+  assert.match(result.reason, /below the 1-point action threshold/);
+});
+
 test("optimizer reports an incomplete lineup when known inputs cannot fill it", () => {
   const result = optimizeLineup(snapshot([{ id: "qb", position: "QB", projection: 20 }], [{ playerId: "qb", lineupSlot: "RB" }]), "mine");
   assert.equal(result.status, "incomplete");

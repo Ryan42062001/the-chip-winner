@@ -44,15 +44,19 @@ export function optimizeLineup(snapshot, teamId, now = Date.now()) {
   if (!best) return { status: "incomplete", reason: "Known projections cannot fill every supported starting slot.", missingPlayerIds: missing, assignments: [] };
   const currentTotal = starterEntries.reduce((sum, entry) => sum + (players.get(entry.playerId)?.projection || 0), 0);
   const changes = best.assignment.filter((item) => item.player.id !== item.previousPlayerId);
+  const gain = +(best.total - currentTotal).toFixed(1);
+  const actionable = gain >= 1;
+  const completenessReason = missing.length ? "One or more roster projections are missing, so this is the strongest complete lineup among known projections." : "Highest complete lineup using available projections and supported ESPN slots.";
   return Object.freeze({
     status: missing.length ? "best-known" : "optimal",
-    reason: missing.length ? "One or more roster projections are missing, so this is the strongest complete lineup among known projections." : "Highest complete lineup using available projections and supported ESPN slots.",
+    reason: !actionable && changes.length ? `${completenessReason} The ${gain.toFixed(1)}-point edge is below the 1-point action threshold, so no change is recommended.` : completenessReason,
     projectedTotal: +best.total.toFixed(1),
     currentTotal: +currentTotal.toFixed(1),
-    gain: +(best.total - currentTotal).toFixed(1),
+    gain,
+    actionable,
     assignments: Object.freeze(best.assignment),
     changes: Object.freeze(changes),
+    recommendedChanges: Object.freeze(actionable ? changes : []),
     missingPlayerIds: Object.freeze(missing)
   });
 }
-

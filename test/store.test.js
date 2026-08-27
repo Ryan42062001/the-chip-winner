@@ -20,3 +20,9 @@ test("store ignores a team that is not present", () => {
   const ready = appReducer(initialAppState, { type: "load/success", snapshot, source: "sample" });
   assert.equal(appReducer(ready, { type: "team/select", teamId: "missing" }), ready);
 });
+
+test("store can restore a configured team after snapshot load", () => {
+  let state = appReducer(initialAppState, { type: "load/success", snapshot, source: "cache" });
+  state = appReducer(state, { type: "team/select", teamId: "b" });
+  assert.equal(state.selectedTeamId, "b");
+});
