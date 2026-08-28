@@ -44,6 +44,26 @@ export function reconcileFantasyProsRankings(players, rankingSet) {
   return Object.freeze({ byPlayerId: Object.freeze(byPlayerId), unresolved: Object.freeze(unresolved), conflicts: Object.freeze(conflicts) });
 }
 
+function scoringFamily(value) {
+  const text = String(value || "").toLowerCase().replace(/[_-]/g, " ");
+  if (/half|0\.5/.test(text) && text.includes("ppr")) return "half-ppr";
+  if (text.includes("standard") || text.includes("non ppr")) return "standard";
+  if (text.includes("ppr")) return "ppr";
+  return null;
+}
+
+export function evaluateFantasyProsCompatibility(rankingSet, snapshot) {
+  const errors = []; const warnings = [];
+  const leagueSeason = Number(snapshot?.league?.season);
+  if (Number.isInteger(leagueSeason) && rankingSet?.season !== leagueSeason) errors.push(`FantasyPros season ${rankingSet?.season ?? "unavailable"} does not match ESPN league season ${leagueSeason}.`);
+  else if (!Number.isInteger(leagueSeason)) warnings.push("ESPN season data is missing, so ranking season compatibility cannot be verified.");
+  const rankingScoring = scoringFamily(rankingSet?.scoringFormat); const leagueScoring = scoringFamily(snapshot?.league?.scoringType);
+  if (rankingScoring && leagueScoring && rankingScoring !== leagueScoring) errors.push(`FantasyPros scoring ${rankingSet.scoringFormat} does not match ESPN league scoring ${snapshot.league.scoringType}.`);
+  else if (!rankingScoring) warnings.push("FantasyPros scoring metadata does not identify a supported PPR family, so ranking scoring compatibility cannot be verified.");
+  else if (!leagueScoring) warnings.push("ESPN scoring data does not identify a PPR family, so ranking scoring compatibility cannot be verified.");
+  return Object.freeze({ usable: errors.length === 0, status: errors.length ? "blocked" : warnings.length ? "unverified" : "ready", errors: Object.freeze(errors), warnings: Object.freeze(warnings) });
+}
+
 export class FantasyProsRankingProvider {
   constructor({ storage = globalThis.localStorage } = {}) {
     this.storage = storage;

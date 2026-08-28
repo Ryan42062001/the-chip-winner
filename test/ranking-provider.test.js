@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FantasyProsRankingProvider, reconcileFantasyProsRankings } from "../src/providers/rankings/ranking-provider.js";
+import { FantasyProsRankingProvider, evaluateFantasyProsCompatibility, reconcileFantasyProsRankings } from "../src/providers/rankings/ranking-provider.js";
 
 const rankingSet = { rankings: [
   { rank: 1, playerName: "Ja'Marr Chase", team: "CIN", position: "WR" },
@@ -58,4 +58,24 @@ test("ranking imports require explicit season scoring and expert metadata", () =
   const csv = '"RK","PLAYER NAME",TEAM,"POS"\n"1","Example Player",BUF,"WR1"';
   assert.throws(() => provider.importCsv(csv, { kind: "rest-of-season", season: 2026, scoringFormat: "", expertFilter: "" }), /scoring format.*expert filter/i);
   assert.throws(() => provider.importCsv(csv, { kind: "draft", season: 2026, scoringFormat: "PPR", expertFilter: "all" }), /rest-of-season/);
+});
+
+test("ranking compatibility blocks wrong seasons and known scoring mismatches", () => {
+  const snapshot = { league: { season: 2026, scoringType: "Head to Head PPR" } };
+  assert.equal(evaluateFantasyProsCompatibility({ season: 2026, scoringFormat: "PPR" }, snapshot).status, "ready");
+  const blocked = evaluateFantasyProsCompatibility({ season: 2025, scoringFormat: "Standard" }, snapshot);
+  assert.equal(blocked.usable, false); assert.match(blocked.errors.join(" "), /season 2025/); assert.match(blocked.errors.join(" "), /Standard/);
+});
+
+test("ranking compatibility labels ESPN scoring that cannot prove a PPR family", () => {
+  const result = evaluateFantasyProsCompatibility({ season: 2026, scoringFormat: "PPR" }, { league: { season: 2026, scoringType: "H2H_POINTS" } });
+  assert.equal(result.usable, true); assert.equal(result.status, "unverified"); assert.match(result.warnings[0], /cannot be verified/);
+});
+
+test("ranking compatibility distinguishes non-PPR and flags unknown ranking formats", () => {
+  const snapshot = { league: { season: 2026, scoringType: "Standard non-PPR" } };
+  assert.equal(evaluateFantasyProsCompatibility({ season: 2026, scoringFormat: "Standard" }, snapshot).status, "ready");
+  assert.equal(evaluateFantasyProsCompatibility({ season: 2026, scoringFormat: "PPR" }, snapshot).status, "blocked");
+  const unknown = evaluateFantasyProsCompatibility({ season: 2026, scoringFormat: "Custom" }, snapshot);
+  assert.equal(unknown.status, "unverified"); assert.match(unknown.warnings[0], /FantasyPros scoring metadata/);
 });

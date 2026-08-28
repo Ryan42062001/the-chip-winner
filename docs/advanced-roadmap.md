@@ -430,22 +430,22 @@ No UI placeholder should imply that a gated capability already works.
 - no-console-error check;
 - clean Git worktree and successful deployment.
 
-## Recommended next sprint: 0.5 player intelligence
+## Recommended next sprint: projection-backed season intelligence
 
-Sprint objective: make every advanced player comparison inspectable and ready for an independent projection source.
+Sprint objective: connect a trustworthy weekly projection export and extend season planning without weakening source or identity requirements.
 
 Planned work:
 
-1. Add canonical player identity records and reconciliation results.
-2. Add the player-detail drawer shared across roster, alerts, waivers, and comparisons.
-3. Define weekly and ROS projection contracts separately.
-4. Implement source freshness and disagreement selectors.
-5. Add synthetic fixtures for resolved, unresolved, and conflicting identities.
-6. Keep keyboard/mobile player-detail journeys and the open-dialog WCAG audit green.
+1. Obtain a weekly projection export with provider-owned player IDs and explicit capture metadata.
+2. Complete its provider-to-ESPN identity map without display-name joins.
+3. Validate complete player-week coverage for selected planning horizons.
+4. Add deeper bye, playoff-week, and schedule coverage explanations.
+5. Expand waiver-rule modeling only where ESPN supplies authoritative inputs.
+6. Keep model, keyboard/mobile, WCAG, security, and production gates green.
 
 Sprint exit criteria:
 
-- Selecting any known roster or waiver player opens a source-attributed detail view.
-- Unresolved external identities are visible and excluded from recommendations.
-- Weekly and ROS values cannot be confused.
+- Incompatible or stale external inputs are visible and excluded or warned appropriately.
+- Multiweek deltas appear only with complete mapped coverage for both rosters.
+- Every projected value remains attributable to its source and capture time.
 - All new domain and browser tests pass before deployment.
