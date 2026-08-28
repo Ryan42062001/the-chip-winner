@@ -250,7 +250,7 @@ Release exit: managers can evaluate roster moves across the season and playoffs 
 
 ## Release 1.0 — Production-grade read-only companion
 
-Status: **In progress.** Validated browser-local ESPN league, season, and team configuration, complete browser-local deletion, best-effort mobile-sync revocation, the first Content Security Policy, skip navigation, section focus management, mobile-menu semantics, reduced-motion support, and static production smoke automation are implemented. Multiple saved leagues, cache migrations, browser-engine smoke coverage, and formal accessibility/security audits remain open.
+Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, the first Content Security Policy, skip navigation, section focus management, mobile-menu semantics, reduced-motion support, and static production smoke automation are implemented. Browser-engine smoke coverage and formal accessibility/security audits remain open.
 
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
@@ -263,7 +263,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 
 ### Reliability
 
-- Formal cache migrations.
+- Expand cache migrations whenever a persisted schema changes.
 - Production browser smoke tests.
 - Fixture coverage for custom rosters, leagues of different sizes, playoffs, live games, and offseason states.
 - Graceful partial-data behavior for every provider request.

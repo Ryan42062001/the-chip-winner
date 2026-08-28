@@ -17,11 +17,14 @@ import { ProjectionIdentityMapProvider } from "./providers/projections/projectio
 import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { diffLineupRecommendations } from "./domain/recommendation-change.js";
-import { EspnConnectionPreferences } from "./providers/espn/connection-preferences.js";
+import { EspnConnectionPreferences, connectionKey } from "./providers/espn/connection-preferences.js";
 import { LocalDataManager } from "./application/local-data-manager.js";
+import { runCacheMigrations } from "./application/cache-migrations.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
+
+runCacheMigrations(globalThis.localStorage);
 
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
@@ -35,6 +38,7 @@ const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sy
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const connectionPreferences = new EspnConnectionPreferences();
 let espnConnection = connectionPreferences.read();
+let savedEspnConnections = connectionPreferences.list();
 const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
@@ -186,7 +190,7 @@ function renderLeague() {
   const slots = league.lineupSlots || [];
   const waiver = league.waiver || {};
   content.innerHTML = sectionHeader("League Setup", "Settings reported by ESPN for the connected league. Unavailable fields remain unlabeled rather than inferred.") + `<div class="league-grid">
-    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Local league settings</h3></div></div><div class="connection-form"><label>League ID<input id="connection-league-id" inputmode="numeric" value="${escapeHtml(espnConnection.leagueId)}"></label><label>Season<input id="connection-season-id" inputmode="numeric" value="${escapeHtml(espnConnection.seasonId)}"></label><label>Team ID<input id="connection-team-id" inputmode="numeric" value="${escapeHtml(espnConnection.teamId)}"></label></div><button class="button primary" id="save-connection-button">Save connection</button><p class="data-note">Stored only in this browser. After saving, use Connect ESPN to load the selected league.</p></article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Local league settings</h3></div></div>${savedEspnConnections.length ? `<label class="saved-connection">Saved connection<select id="saved-connection-select">${savedEspnConnections.map((item) => `<option value="${escapeHtml(connectionKey(item))}" ${connectionKey(item) === connectionKey(espnConnection) ? "selected" : ""}>League ${escapeHtml(item.leagueId)} · ${escapeHtml(item.seasonId)} · Team ${escapeHtml(item.teamId)}</option>`).join("")}</select></label>` : ""}<div class="connection-form"><label>League ID<input id="connection-league-id" inputmode="numeric" value="${escapeHtml(espnConnection.leagueId)}"></label><label>Season<input id="connection-season-id" inputmode="numeric" value="${escapeHtml(espnConnection.seasonId)}"></label><label>Team ID<input id="connection-team-id" inputmode="numeric" value="${escapeHtml(espnConnection.teamId)}"></label></div><button class="button primary" id="save-connection-button">Save connection</button>${savedEspnConnections.length ? ` <button class="button ghost" id="remove-connection-button">Remove selected</button>` : ""}<p class="data-note">Stored only in this browser. After selecting or saving, use Connect ESPN to load that league.</p></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">LEAGUE</p><h3>${escapeHtml(league.name)}</h3></div><span class="record">${escapeHtml(league.season || "Season unavailable")}</span></div><dl class="settings-list"><div><dt>Platform</dt><dd>ESPN</dd></div><div><dt>Teams</dt><dd>${escapeHtml(league.teamCount ?? "Unavailable")}</dd></div><div><dt>Scoring</dt><dd>${escapeHtml(league.scoringType || "Unavailable")}</dd></div><div><dt>Current week</dt><dd>${escapeHtml(state.snapshot.currentWeek)}</dd></div></dl></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
@@ -409,8 +413,18 @@ content.addEventListener("click", (event) => {
   if (!event.target.closest("#save-connection-button")) return;
   try {
     espnConnection = connectionPreferences.save({ leagueId: document.querySelector("#connection-league-id").value.trim(), seasonId: document.querySelector("#connection-season-id").value.trim(), teamId: document.querySelector("#connection-team-id").value.trim() });
+    savedEspnConnections = connectionPreferences.list(); render();
     showNotice("ESPN connection saved locally. Use Connect ESPN to refresh this league.");
   } catch (error) { showNotice(error.message, "error"); }
+});
+content.addEventListener("change", (event) => {
+  if (event.target.id !== "saved-connection-select") return;
+  try { espnConnection = connectionPreferences.activate(event.target.value); render(); showNotice("Saved ESPN connection selected. Use Connect ESPN to refresh it."); }
+  catch (error) { showNotice(error.message, "error"); }
+});
+content.addEventListener("click", (event) => {
+  if (!event.target.closest("#remove-connection-button")) return;
+  connectionPreferences.remove(connectionKey(espnConnection)); savedEspnConnections = connectionPreferences.list(); espnConnection = connectionPreferences.read(); render(); showNotice("Saved ESPN connection removed.");
 });
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
 content.addEventListener("click", (event) => {
