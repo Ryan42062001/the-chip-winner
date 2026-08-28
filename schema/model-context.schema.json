@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "The Chip Winner model context",
+  "type": "object",
+  "required": ["schemaVersion", "product", "provider", "league", "currentWeek", "selectedTeam", "roster", "coverage", "recommendations", "capturedAt"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "product": { "const": "The Chip Winner" },
+    "provider": { "const": "espn" },
+    "league": { "type": "object" },
+    "currentWeek": { "type": "integer" },
+    "selectedTeam": { "type": "object" },
+    "opponent": { "type": ["object", "null"] },
+    "roster": { "type": "array" },
+    "coverage": { "type": "object" },
+    "recommendations": { "type": "array" },
+    "capturedAt": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

@@ -14,6 +14,7 @@ import { buildRosterPlan } from "./domain/roster-planning.js";
 import { buildScenarioPlan } from "./domain/scenario-planner.js";
 import { FutureProjectionProvider } from "./providers/projections/future-projection-provider.js";
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
+import { buildModelContext } from "./domain/model-context.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -184,6 +185,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Import a strict CSV with provider_player_id, week, and points columns. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}<div class="sync-actions"><button class="button secondary" id="download-projection-template">Download projection template</button><button class="button secondary" id="download-identity-template">Download ESPN ID template</button></div></article>
     ${mobileSyncCard()}
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ADVANCED MODELS</p><h3>Privacy-safe context packet</h3></div></div><p class="data-note">Export the selected team’s normalized context without browser credentials or unrelated league data. Invalid recommendations are excluded by the offline evaluator.</p><button class="button ghost" id="download-model-context">Download model context</button></article>
   </div>`;
 }
 
@@ -299,6 +301,13 @@ function downloadProjectionTemplate() {
   downloadCsv("the-chip-winner-weekly-projections.csv", [["provider_player_id", "week", "points"], ...providerIds.flatMap((id) => weeks.map((week) => [id, week, ""]))]);
 }
 
+function downloadModelContext() {
+  const result = buildModelContext(state.snapshot, state.selectedTeamId);
+  if (!result.packet) throw new Error(result.errors.join(" "));
+  const blob = new Blob([JSON.stringify(result.packet, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a");
+  link.href = url; link.download = `the-chip-winner-model-context-week-${state.snapshot.currentWeek}.json`; link.click(); URL.revokeObjectURL(url);
+}
+
 async function init() {
   store.dispatch({ type: "load/start" });
   try {
@@ -388,6 +397,7 @@ content.addEventListener("click", (event) => {
   if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); futureProjectionSet = null; projectionIdentityMap = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }
   if (event.target.closest("#download-projection-template")) downloadProjectionTemplate();
   if (event.target.closest("#download-identity-template")) downloadIdentityTemplate();
+  if (event.target.closest("#download-model-context")) downloadModelContext();
 });
 content.addEventListener("click", async (event) => {
   const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");

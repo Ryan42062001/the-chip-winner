@@ -24,6 +24,8 @@ An eventual model adapter should receive: the selected team and week, normalized
 
 The first offline batch evaluator now rejects malformed recommendation envelopes, invented player IDs, and waiver/scenario adds that ESPN does not explicitly report as available.
 
+The app can export a versioned, privacy-safe model context packet for the selected team. The packet excludes browser credentials, unrelated teams' rosters, raw availability pools, and any recommendation that fails offline evaluation.
+
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
