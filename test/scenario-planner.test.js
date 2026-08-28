@@ -19,7 +19,7 @@ test("scenario planner requires projection data and identity mapping for future 
 test("scenario planner reports zero coverage when no projection source is imported", () => {
   const result = buildScenarioPlan(sampleSnapshot, sampleSnapshot.teams[0].id, { weeks: [15, 16] });
   assert.equal(result.source, null);
-  assert.deepEqual(result.coverage, { completeWeeks: 0, totalWeeks: 0, mappedProjectionCells: 0, requiredProjectionCells: 0, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 0 });
+  assert.deepEqual(result.coverage, { readiness: "unavailable", completeWeeks: 0, totalWeeks: 0, readyWeeks: [], blockedWeeks: [], mappedProjectionCells: 0, requiredProjectionCells: 0, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 0 });
 });
 
 test("scenario planner calculates a weekly baseline from explicitly mapped projections", () => {
@@ -34,7 +34,7 @@ test("scenario planner calculates a weekly baseline from explicitly mapped proje
   assert.equal(result.weeklyBaseline[0].projectedTotal > 0, true);
   assert.equal(result.weeklyBaseline[0].completeCoverage, true);
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, roster.entries.length);
-  assert.deepEqual(result.coverage, { completeWeeks: 1, totalWeeks: 1, mappedProjectionCells: roster.entries.length, requiredProjectionCells: roster.entries.length, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 100 });
+  assert.deepEqual(result.coverage, { readiness: "complete", completeWeeks: 1, totalWeeks: 1, readyWeeks: [15], blockedWeeks: [], mappedProjectionCells: roster.entries.length, requiredProjectionCells: roster.entries.length, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 100 });
 });
 
 test("scenario planner compares an isolated add drop move without mutating ESPN state", () => {
@@ -69,6 +69,19 @@ test("scenario planner distinguishes missing weekly values from missing identity
   assert.equal(result.weeklyBaseline[0].missingProjectionPlayerIds.length, roster.entries.length - 1);
   assert.equal(result.coverage.unmappedPlayerCells, 0);
   assert.equal(result.coverage.missingProjectionCells, roster.entries.length - 1);
+  assert.equal(result.coverage.readiness, "blocked");
+  assert.deepEqual(result.coverage.readyWeeks, []);
+  assert.deepEqual(result.coverage.blockedWeeks, [15]);
+});
+
+test("scenario planner identifies a mixed horizon without treating blocked weeks as usable", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
+  const identityMap = new Map(roster.entries.map((entry) => [`provider-${entry.playerId}`, entry.playerId]));
+  const projectionSet = { projections: roster.entries.flatMap((entry) => [{ providerPlayerId: `provider-${entry.playerId}`, week: 15, points: 10 }, ...(entry === roster.entries[0] ? [{ providerPlayerId: `provider-${entry.playerId}`, week: 16, points: 11 }] : [])]) };
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15, 16], identityMap, projectionSet });
+  assert.equal(result.coverage.readiness, "mixed");
+  assert.deepEqual(result.coverage.readyWeeks, [15]);
+  assert.deepEqual(result.coverage.blockedWeeks, [16]);
 });
 
 test("scenario planner rejects starter drops and unavailable adds", () => {
