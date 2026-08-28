@@ -2,6 +2,8 @@ import { validateRecommendation } from "./recommendation-contract.js";
 import { isStarter } from "./model.js";
 
 function issue(code, message) { return Object.freeze({ code, message }); }
+const ALLOWED_EXPLANATION_KEYS = new Set(["provider", "model", "recommendationId", "text", "generatedAt"]);
+const MAX_EXPLANATION_LENGTH = 4000;
 
 function issueCounts(results) {
   const counts = {};
@@ -43,6 +45,10 @@ export function evaluateExplanation(explanation, recommendation) {
   if (explanation.recommendationId !== recommendation?.id) issues.push(issue("recommendation-id-mismatch", "Explanation recommendationId does not match the evaluated recommendation."));
   if (typeof explanation.provider !== "string" || !explanation.provider.trim()) issues.push(issue("provider-missing", "Explanation provider is required."));
   if (typeof explanation.text !== "string" || !explanation.text.trim()) issues.push(issue("explanation-text-missing", "Explanation text is required."));
+  if (typeof explanation.text === "string" && explanation.text.length > MAX_EXPLANATION_LENGTH) issues.push(issue("explanation-too-long", `Explanation text exceeds ${MAX_EXPLANATION_LENGTH} characters.`));
+  if (explanation.model != null && (typeof explanation.model !== "string" || !explanation.model.trim())) issues.push(issue("model-invalid", "Explanation model must be a non-empty string or null."));
+  if (explanation.generatedAt != null && !Number.isFinite(Date.parse(explanation.generatedAt))) issues.push(issue("explanation-timestamp-invalid", "Explanation generatedAt must be an ISO date-time or null."));
+  for (const key of Object.keys(explanation)) if (!ALLOWED_EXPLANATION_KEYS.has(key)) issues.push(issue("explanation-field-unexpected", `Unexpected explanation field: ${key}.`));
   const text = String(explanation.text || "").toLowerCase();
   const namedInputs = (recommendation?.inputs || []).filter((item) => typeof item === "string" && item.trim());
   if (namedInputs.length && !namedInputs.some((item) => text.includes(item.toLowerCase()))) issues.push(issue("input-not-cited", "Explanation must name at least one recommendation input."));

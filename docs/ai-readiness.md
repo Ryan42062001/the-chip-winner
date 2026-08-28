@@ -32,6 +32,8 @@ A provider-neutral model adapter now defines the explanation boundary. Its deter
 
 The evaluator also emits stable machine-readable issue codes and a versioned aggregate run report defined by `schema/model-evaluation-report.schema.json`. The report contains only accepted/rejected totals and issue-code counts—never recommendation IDs, player IDs, explanation text, prompts, or league details. This provides an observability boundary without turning private model inputs into logs.
 
+`schema/model-explanation.schema.json` defines the provider-neutral explanation response. Runtime evaluation rejects unexpected fields, malformed provider metadata, invalid timestamps, and text beyond the 4,000-character boundary before an explanation can be accepted. This prevents raw prompts, hidden metadata, or unbounded provider output from passing through the approved explanation shape.
+
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.

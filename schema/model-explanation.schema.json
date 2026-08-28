@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-chip-winner.local/schema/model-explanation.schema.json",
+  "title": "The Chip Winner model explanation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["provider", "recommendationId", "text"],
+  "properties": {
+    "provider": { "type": "string", "minLength": 1 },
+    "model": { "type": ["string", "null"], "minLength": 1 },
+    "recommendationId": { "type": "string", "minLength": 1 },
+    "text": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "generatedAt": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

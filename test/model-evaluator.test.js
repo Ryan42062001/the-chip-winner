@@ -69,3 +69,16 @@ test("model evaluation report contains aggregate counts but no recommendation or
   assert.equal(report.issueCounts["unknown-player"], 1);
   assert.doesNotMatch(JSON.stringify(report), /private-recommendation|private-player/);
 });
+
+test("explanation evaluator rejects unexpected fields and oversized output", () => {
+  const result = evaluateExplanation({ provider: "fixture", recommendationId: base.id, text: `ESPN. Review before acting. ${"x".repeat(4000)}`, rawPrompt: "private" }, base);
+  assert.equal(result.valid, false);
+  assert.equal(result.issues.some((item) => item.code === "explanation-too-long"), true);
+  assert.equal(result.issues.some((item) => item.code === "explanation-field-unexpected"), true);
+});
+
+test("explanation evaluator accepts the complete provider-neutral metadata contract", () => {
+  const result = evaluateExplanation({ provider: "fixture", model: "fixture-v1", recommendationId: base.id, text: "ESPN supports this review. Review before acting.", generatedAt: "2026-08-28T12:00:00Z" }, base);
+  assert.equal(result.valid, true);
+  assert.deepEqual(result.issues, []);
+});
