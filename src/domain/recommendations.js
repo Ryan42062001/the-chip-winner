@@ -65,6 +65,20 @@ export function buildWarnings(snapshot, teamId) {
   return warnings;
 }
 
+export function buildLineupVacancies(snapshot, teamId) {
+  const reportedSlots = (snapshot?.league?.lineupSlots || []).filter((item) => Number.isInteger(item.count) && item.count > 0);
+  if (!reportedSlots.length) return Object.freeze({ status: "missing-settings", totalMissing: null, items: Object.freeze([]), limitation: "ESPN lineup-slot settings are unavailable." });
+  const configuredSlots = reportedSlots.filter((item) => isStarter(item.slot));
+  const unsupportedSlots = reportedSlots.filter((item) => !isStarter(item.slot) && item.slot !== "BE" && item.slot !== "IR");
+  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
+  if (!roster) return Object.freeze({ status: "missing-roster", totalMissing: null, items: Object.freeze([]), limitation: "The selected roster is unavailable." });
+  const actualCounts = new Map();
+  for (const entry of roster.entries || []) if (isStarter(entry.lineupSlot)) actualCounts.set(entry.lineupSlot, (actualCounts.get(entry.lineupSlot) || 0) + 1);
+  const items = configuredSlots.flatMap((item) => { const missingCount = Math.max(0, item.count - (actualCounts.get(item.slot) || 0)); return missingCount ? [Object.freeze({ slot: item.slot, requiredCount: item.count, filledCount: item.count - missingCount, missingCount })] : []; });
+  const limitation = unsupportedSlots.length ? `Unsupported reported lineup slots were excluded: ${unsupportedSlots.map((item) => item.slot).join(", ")}.` : null;
+  return Object.freeze({ status: limitation ? "partial" : "ready", totalMissing: items.reduce((total, item) => total + item.missingCount, 0), items: Object.freeze(items), limitation });
+}
+
 export function buildPrioritizedWarnings(snapshot, teamId, now = Date.now()) {
   const weights = { critical: 4, high: 3, medium: 2, unknown: 1 };
   return buildWarnings(snapshot, teamId).map((warning) => {

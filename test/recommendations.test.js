@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { buildLineupSuggestions, buildPrioritizedWarnings, buildWaiverIdeas, buildWarnings, canFillSlot, compareRosterPlayers } from "../src/domain/recommendations.js";
+import { buildLineupSuggestions, buildLineupVacancies, buildPrioritizedWarnings, buildWaiverIdeas, buildWarnings, canFillSlot, compareRosterPlayers } from "../src/domain/recommendations.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -29,6 +29,31 @@ test("warnings reflect only explicit injury and current-week bye data", () => {
     ["Breece Hall", "injury"],
     ["David Njoku", "injury"]
   ]);
+});
+
+test("lineup vacancies report exact missing configured starter slots", () => {
+  const snapshot = structuredClone(sample); snapshot.league.lineupSlots = [{ slot: "QB", count: 1 }, { slot: "RB", count: 3 }, { slot: "WR", count: 2 }, { slot: "BE", count: 6 }];
+  const result = buildLineupVacancies(snapshot, "t1");
+  assert.equal(result.status, "ready"); assert.equal(result.totalMissing, 1); assert.deepEqual(result.items, [{ slot: "RB", requiredCount: 3, filledCount: 2, missingCount: 1 }]);
+});
+
+test("lineup vacancies stay unavailable when ESPN omits lineup settings or the roster", () => {
+  assert.equal(buildLineupVacancies(sample, "t1").status, "missing-settings");
+  const snapshot = structuredClone(sample); snapshot.league.lineupSlots = [{ slot: "QB", count: 1 }]; assert.equal(buildLineupVacancies(snapshot, "missing").status, "missing-roster");
+});
+
+test("lineup vacancies return zero only when every configured starter slot is filled", () => {
+  const snapshot = structuredClone(sample); snapshot.league.lineupSlots = [{ slot: "QB", count: 1 }, { slot: "RB", count: 2 }, { slot: "WR", count: 2 }, { slot: "TE", count: 1 }, { slot: "FLEX", count: 1 }, { slot: "K", count: 1 }, { slot: "D/ST", count: 1 }];
+  const result = buildLineupVacancies(snapshot, "t1"); assert.equal(result.status, "ready"); assert.equal(result.totalMissing, 0); assert.deepEqual(result.items, []);
+});
+
+test("lineup vacancies disclose unsupported reported slot settings", () => {
+  const snapshot = structuredClone(sample);
+  snapshot.league.lineupSlots = [{ slot: "QB", count: 1 }, { slot: "ESPN_SLOT_99", count: 1 }];
+  const result = buildLineupVacancies(snapshot, "t1");
+  assert.equal(result.status, "partial");
+  assert.equal(result.totalMissing, 0);
+  assert.match(result.limitation, /ESPN_SLOT_99/);
 });
 
 test("waiver logic reports unavailable inputs honestly", () => {
