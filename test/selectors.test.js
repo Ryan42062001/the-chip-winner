@@ -64,15 +64,16 @@ test("team schedule reports ESPN matchups and missing horizon weeks without infe
   const snapshot = { ...sample, matchups: [...sample.matchups, { week: 7, homeTeamId: "t2", awayTeamId: "t1", homeScore: null, awayScore: null, status: "upcoming" }] };
   const result = selectTeamSchedule(snapshot, "t1", [6, 7, 8]);
   assert.deepEqual(result.rows.map((row) => [row.week, row.opponentId, row.homeAway]), [[6, "t2", "home"], [7, "t2", "away"]]);
-  assert.deepEqual(result.coverage, { requestedWeeks: 3, reportedWeeks: 2, missingWeeks: [8], ambiguousWeeks: [] });
+  assert.deepEqual(result.coverage, { status: "partial", requestedWeeks: 3, reportedWeeks: 2, missingWeeks: [8], ambiguousWeeks: [], repeatedOpponents: [{ opponentId: "t2", opponentName: "Fourth & Long", weeks: [6, 7] }] });
   assert.equal(result.rows[1].teamScore, null);
-  assert.match(result.methodology, /No opponent strength or win probability is inferred/);
+  assert.match(result.methodology, /No playoff boundary, opponent strength, or win probability is inferred/);
 });
 
 test("team schedule preserves duplicate week records as ambiguous source data", () => {
   const duplicate = { week: 6, homeTeamId: "t1", awayTeamId: "t2", homeScore: null, awayScore: null, status: "upcoming" };
   const result = selectTeamSchedule({ ...sample, matchups: [...sample.matchups, duplicate] }, "t1", [6]);
   assert.equal(result.rows.length, 2);
+  assert.equal(result.coverage.status, "ambiguous");
   assert.deepEqual(result.coverage.ambiguousWeeks, [6]);
   assert.equal(selectTeamSchedule(sample, "missing", [6]).status, "missing-team");
 });

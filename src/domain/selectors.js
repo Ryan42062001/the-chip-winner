@@ -88,7 +88,7 @@ export function selectLeagueMatchups(snapshot, week) {
 
 export function selectTeamSchedule(snapshot, teamId, weeks = null) {
   const teamIndex = new Map((snapshot?.teams || []).map((team) => [team.id, team]));
-  if (!teamIndex.has(teamId)) return Object.freeze({ status: "missing-team", rows: Object.freeze([]), coverage: Object.freeze({ requestedWeeks: 0, reportedWeeks: 0, missingWeeks: Object.freeze([]), ambiguousWeeks: Object.freeze([]) }), methodology: "No schedule was evaluated because the selected team is unavailable." });
+  if (!teamIndex.has(teamId)) return Object.freeze({ status: "missing-team", rows: Object.freeze([]), coverage: Object.freeze({ status: "unavailable", requestedWeeks: 0, reportedWeeks: 0, missingWeeks: Object.freeze([]), ambiguousWeeks: Object.freeze([]), repeatedOpponents: Object.freeze([]) }), methodology: "No schedule was evaluated because the selected team is unavailable." });
   const teamMatchups = (snapshot?.matchups || []).filter((matchup) => matchup.homeTeamId === teamId || matchup.awayTeamId === teamId);
   const requestedWeeks = Array.isArray(weeks)
     ? [...new Set(weeks.filter(Number.isInteger))].sort((a, b) => a - b)
@@ -101,5 +101,12 @@ export function selectTeamSchedule(snapshot, teamId, weeks = null) {
     return Object.freeze({ week, opponentId, opponentName: teamIndex.get(opponentId)?.name || null, homeAway: isHome ? "home" : "away", teamScore: isHome ? matchup.homeScore ?? null : matchup.awayScore ?? null, opponentScore: isHome ? matchup.awayScore ?? null : matchup.homeScore ?? null, status: matchup.status || null });
   }));
   const reportedWeeks = requestedWeeks.length - missingWeeks.length;
-  return Object.freeze({ status: requestedWeeks.length ? "ready" : "unavailable", rows: Object.freeze(rows), coverage: Object.freeze({ requestedWeeks: requestedWeeks.length, reportedWeeks, missingWeeks: Object.freeze(missingWeeks), ambiguousWeeks: Object.freeze(ambiguousWeeks) }), methodology: "Matchups, scores, and status are ESPN-reported league state. No opponent strength or win probability is inferred." });
+  const opponentWeeks = new Map();
+  for (const row of rows) {
+    if (!opponentWeeks.has(row.opponentId)) opponentWeeks.set(row.opponentId, []);
+    opponentWeeks.get(row.opponentId).push(row.week);
+  }
+  const repeatedOpponents = [...opponentWeeks.entries()].filter(([, opponentWeekList]) => new Set(opponentWeekList).size > 1).map(([opponentId, opponentWeekList]) => Object.freeze({ opponentId, opponentName: teamIndex.get(opponentId)?.name || null, weeks: Object.freeze([...new Set(opponentWeekList)].sort((a, b) => a - b)) }));
+  const coverageStatus = !requestedWeeks.length ? "unavailable" : missingWeeks.length ? "partial" : ambiguousWeeks.length ? "ambiguous" : "complete";
+  return Object.freeze({ status: requestedWeeks.length ? "ready" : "unavailable", rows: Object.freeze(rows), coverage: Object.freeze({ status: coverageStatus, requestedWeeks: requestedWeeks.length, reportedWeeks, missingWeeks: Object.freeze(missingWeeks), ambiguousWeeks: Object.freeze(ambiguousWeeks), repeatedOpponents: Object.freeze(repeatedOpponents) }), methodology: "Matchups, scores, and status are ESPN-reported league state. Repeated opponents are identified only by ESPN team ID. No playoff boundary, opponent strength, or win probability is inferred." });
 }
