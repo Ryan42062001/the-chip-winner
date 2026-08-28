@@ -18,11 +18,15 @@ The site Content Security Policy restricts scripts and assets to the application
 
 League Setup provides a complete local-data deletion action. It clears ESPN snapshots and history, external data imports, mappings, alert preferences, saved league settings, and mobile-link credentials. When possible, it revokes the remote encrypted snapshot first; if revocation fails, the interface reports that fact and the encrypted record remains subject to automatic expiry.
 
+## Automated release controls
+
+- The companion manifest and source pass a least-privilege audit for fixed site origins, fixed ESPN read hosts, fixed message types, fixed ESPN views, and absence of mutation verbs or sensitive Chrome APIs.
+- The extension declares no general Chrome permissions; its unused `storage` permission was removed in version 0.2.1.
+- The deployment workflow runs dependency installation/audit, tracked-file secret scanning, CSP/static smoke checks, real-browser smoke checks, and automated WCAG checks.
+
 ## Remaining review work
 
-- Formal Chrome-extension permission audit.
-- Dependency review in CI.
-- Automated CSP/browser smoke coverage.
-- Independent accessibility and security review before a broader public release.
+- Independent manual security and assistive-technology review before a broader public release.
+- Chrome Web Store packaging and distribution review if the companion moves beyond local unpacked installation.
 
-The deployment workflow runs a tracked-file secret scan that rejects ESPN session cookies, private keys, OpenAI-style API keys, and embedded mobile write tokens.
+The tracked-file secret scan rejects ESPN session cookies, private keys, OpenAI-style API keys, and embedded mobile write tokens.

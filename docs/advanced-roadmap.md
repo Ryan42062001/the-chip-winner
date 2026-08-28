@@ -250,7 +250,7 @@ Release exit: managers can evaluate roster moves across the season and playoffs 
 
 ## Release 1.0 — Production-grade read-only companion
 
-Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, the first Content Security Policy, skip navigation, section focus management, mobile-menu semantics, reduced-motion support, desktop/mobile browser smoke automation, and an automated WCAG 2.2 A/AA audit across six primary sections are implemented. Manual accessibility review and formal security audit remain open.
+Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, Content Security Policy, skip navigation, focus and mobile-menu semantics, reduced-motion support, desktop/mobile browser smoke automation, an automated WCAG 2.2 A/AA audit, and a least-privilege companion audit are implemented. Independent manual accessibility and security review remain open.
 
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
@@ -280,7 +280,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 ### Security and privacy
 
 - Threat model for the Chrome companion and page bridge.
-- Least-privilege permission audit.
+- Keep the automated least-privilege companion audit green; require manual review for any permission expansion.
 - Content Security Policy suitable for the static site.
 - Secret scanning and dependency review.
 - Documented data deletion and extension removal.
