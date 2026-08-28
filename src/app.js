@@ -15,6 +15,7 @@ import { buildScenarioPlan } from "./domain/scenario-planner.js";
 import { FutureProjectionProvider } from "./providers/projections/future-projection-provider.js";
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
 import { buildModelContext } from "./domain/model-context.js";
+import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -26,6 +27,7 @@ const futureProjectionProvider = new FutureProjectionProvider();
 let futureProjectionSet = futureProjectionProvider.readCache();
 const projectionIdentityMapProvider = new ProjectionIdentityMapProvider();
 let projectionIdentityMap = projectionIdentityMapProvider.readCache();
+const alertPreferences = new AlertPreferences();
 const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sync.yc6syr6bkd.workers.dev" });
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
@@ -138,7 +140,8 @@ function renderWaivers() {
 
 function renderAlerts() {
   const warnings = buildWarnings(state.snapshot, state.selectedTeamId);
-  content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `<div class="alert-list">${warnings.length ? warnings.map(w => `<article class="panel alert-row interactive-row" data-player-id="${escapeHtml(w.player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(w.player.name)} details"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div></article>`).join("") : emptyState("No alerts in this snapshot", "No injuries or current-week byes were reported for this roster.")}</div>`;
+  const dismissed = alertPreferences.read(); const visible = warnings.filter((warning) => !dismissed.has(alertId(warning, state.snapshot.currentWeek))); const dismissedCount = warnings.length - visible.length;
+  content.innerHTML = sectionHeader("Player Alerts", "Injury and bye-week flags reported by the current source data.") + `${dismissedCount ? `<div class="alert-toolbar"><span>${dismissedCount} alert${dismissedCount === 1 ? "" : "s"} dismissed for Week ${state.snapshot.currentWeek}</span><button class="button ghost" id="restore-alerts-button">Restore</button></div>` : ""}<div class="alert-list">${visible.length ? visible.map(w => `<article class="panel alert-row interactive-row" data-player-id="${escapeHtml(w.player.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(w.player.name)} details"><span class="alert-symbol ${w.kind}">${w.kind === "injury" ? "!" : "B"}</span><div><small>${escapeHtml(w.kind.toUpperCase())} · ${escapeHtml(w.lineupSlot)}</small><strong>${escapeHtml(w.player.name)}</strong><p>${escapeHtml(w.detail || (w.kind === "bye" ? `Bye in Week ${state.snapshot.currentWeek}` : `Status: ${w.player.injury.status}`))}</p></div><button class="alert-dismiss" data-dismiss-alert="${escapeHtml(alertId(w, state.snapshot.currentWeek))}" aria-label="Dismiss ${escapeHtml(w.player.name)} alert">×</button></article>`).join("") : emptyState(dismissedCount ? "All alerts dismissed" : "No alerts in this snapshot", dismissedCount ? "Restore dismissed alerts whenever you want to review them again." : "No injuries or current-week byes were reported for this roster.")}</div>`;
 }
 
 function renderChanges() {
@@ -389,7 +392,12 @@ document.querySelector("#reset-button").addEventListener("click", () => { provid
 window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); });
 document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
 document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
-content.addEventListener("click", (event) => { const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
+content.addEventListener("click", (event) => { if (event.target.closest("[data-dismiss-alert]")) return; const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
+content.addEventListener("click", (event) => {
+  const dismiss = event.target.closest("[data-dismiss-alert]");
+  if (dismiss) { event.stopPropagation(); alertPreferences.dismiss(dismiss.dataset.dismissAlert); render(); showNotice("Alert dismissed for this week."); }
+  if (event.target.closest("#restore-alerts-button")) { alertPreferences.restoreAll(); render(); showNotice("Dismissed alerts restored."); }
+});
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
 content.addEventListener("click", (event) => {
   if (event.target.closest("#future-projections-button")) document.querySelector("#future-projections-input").click();
