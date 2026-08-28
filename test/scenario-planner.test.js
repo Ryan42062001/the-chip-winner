@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildScenarioPlan } from "../src/domain/scenario-planner.js";
+import { buildProjectionGapReport, buildScenarioPlan } from "../src/domain/scenario-planner.js";
 import sampleSnapshot from "../src/data/sample-espn-snapshot.json" with { type: "json" };
 
 test("scenario planner reports missing future inputs honestly", () => {
@@ -104,4 +104,25 @@ test("scenario planner exposes projection provenance without inferring missing m
   const projectionSet = { provider: "fixture-provider", scoringFormat: "PPR", capturedAt: "2026-10-08T12:00:00Z", projections: roster.entries.map((entry) => ({ providerPlayerId: `provider-${entry.playerId}`, week: 15, points: 10 })) };
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet });
   assert.deepEqual(result.source, { provider: "fixture-provider", scoringFormat: "PPR", capturedAt: "2026-10-08T12:00:00Z", projectionCount: roster.entries.length, identityMappingCount: roster.entries.length });
+});
+
+test("projection gap report separates mapping gaps from week-value gaps using ESPN identities", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
+  const mappedPlayerId = roster.entries[0].playerId; const identityMap = new Map([["provider-one", mappedPlayerId]]);
+  const plan = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet: { projections: [] } });
+  const report = buildProjectionGapReport(sampleSnapshot, plan, identityMap);
+  assert.equal(report.status, "gaps");
+  assert.equal(report.records.find((item) => item.espnPlayerId === mappedPlayerId).gapType, "missing-week-projection");
+  assert.equal(report.records.find((item) => item.espnPlayerId === mappedPlayerId).providerPlayerId, "provider-one");
+  assert.equal(report.records.some((item) => item.gapType === "missing-identity-map"), true);
+  assert.match(report.limitation, /human review only/);
+});
+
+test("projection gap report is empty only when every selected player-week is supplied", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
+  const identityMap = new Map(roster.entries.map((entry) => [`provider-${entry.playerId}`, entry.playerId]));
+  const projectionSet = { projections: roster.entries.map((entry) => ({ providerPlayerId: `provider-${entry.playerId}`, week: 15, points: 10 })) };
+  const plan = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet });
+  assert.deepEqual(buildProjectionGapReport(sampleSnapshot, plan, identityMap), { status: "complete", records: [], limitation: null });
+  assert.equal(buildProjectionGapReport(sampleSnapshot, { weeklyBaseline: [] }, identityMap).status, "unavailable");
 });

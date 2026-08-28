@@ -11,7 +11,7 @@ import { optimizeLineup } from "./domain/lineup-optimizer.js";
 import { changesForTeam, diffSnapshots } from "./domain/snapshot-diff.js";
 import { buildRosterAwareWaiverIdeas } from "./domain/waiver-engine.js";
 import { buildRosterPlan } from "./domain/roster-planning.js";
-import { buildScenarioPlan } from "./domain/scenario-planner.js";
+import { buildProjectionGapReport, buildScenarioPlan } from "./domain/scenario-planner.js?v=0.2.0";
 import { FutureProjectionProvider } from "./providers/projections/future-projection-provider.js";
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
 import { buildModelContext } from "./domain/model-context.js";
@@ -202,9 +202,10 @@ function renderSeasonPlan() {
   const currentMoves = buildRosterAwareWaiverIdeas(state.snapshot, state.selectedTeamId);
   const futureMoveInputs = (currentMoves.items || []).slice(0, 3).map((item, index) => ({ id: `candidate-${index + 1}`, addPlayerId: item.add.id, dropPlayerId: item.drop.id }));
   const scenarios = buildScenarioPlan(state.snapshot, state.selectedTeamId, { weeks: futureWeeks, projectionSet: futureProjectionSet, identityMap: projectionIdentityMap, scenarios: futureMoveInputs });
+  const projectionGapReport = buildProjectionGapReport(state.snapshot, scenarios, projectionIdentityMap);
   const horizon = scenarios.status === "ready" ? `${scenarios.weeklyBaseline.length} future week${scenarios.weeklyBaseline.length === 1 ? "" : "s"} calculated` : "Future-week projections unavailable";
   const horizonPicker = importedFutureWeeks.length ? `<fieldset class="horizon-picker"><legend>Planning horizon</legend><div class="horizon-options">${importedFutureWeeks.map((week) => `<label><input type="checkbox" data-planning-week="${week}" ${futureWeeks.includes(week) ? "checked" : ""}>Week ${week}</label>`).join("")}</div></fieldset>` : "";
-  const scenarioSource = scenarios.source ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(scenarios.source.provider || "Unavailable")}</dd></div><div><dt>Scoring format</dt><dd>${escapeHtml(scenarios.source.scoringFormat || "Unavailable")}</dd></div><div><dt>Captured</dt><dd>${scenarios.source.capturedAt ? escapeHtml(new Date(scenarios.source.capturedAt).toLocaleString()) : "Unavailable"}</dd></div><div><dt>Projection coverage</dt><dd>${scenarios.coverage.mappedProjectionCells}/${scenarios.coverage.requiredProjectionCells} player-weeks (${scenarios.coverage.percentage}%)</dd></div><div><dt>Complete weeks</dt><dd>${scenarios.coverage.completeWeeks}/${scenarios.coverage.totalWeeks}</dd></div><div><dt>Missing ID mappings</dt><dd>${scenarios.coverage.unmappedPlayerCells}</dd></div><div><dt>Missing weekly values</dt><dd>${scenarios.coverage.missingProjectionCells}</dd></div><div><dt>Explicit ID mappings</dt><dd>${scenarios.source.identityMappingCount}</dd></div></dl>${horizonPicker}` : `<p class="plan-note">No future projection source is currently imported.</p>`;
+  const scenarioSource = scenarios.source ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(scenarios.source.provider || "Unavailable")}</dd></div><div><dt>Scoring format</dt><dd>${escapeHtml(scenarios.source.scoringFormat || "Unavailable")}</dd></div><div><dt>Captured</dt><dd>${scenarios.source.capturedAt ? escapeHtml(new Date(scenarios.source.capturedAt).toLocaleString()) : "Unavailable"}</dd></div><div><dt>Projection coverage</dt><dd>${scenarios.coverage.mappedProjectionCells}/${scenarios.coverage.requiredProjectionCells} player-weeks (${scenarios.coverage.percentage}%)</dd></div><div><dt>Complete weeks</dt><dd>${scenarios.coverage.completeWeeks}/${scenarios.coverage.totalWeeks}</dd></div><div><dt>Missing ID mappings</dt><dd>${scenarios.coverage.unmappedPlayerCells}</dd></div><div><dt>Missing weekly values</dt><dd>${scenarios.coverage.missingProjectionCells}</dd></div><div><dt>Explicit ID mappings</dt><dd>${scenarios.source.identityMappingCount}</dd></div></dl>${projectionGapReport.records.length ? `<button class="button secondary" id="download-projection-gaps">Download missing-input report</button>` : ""}${horizonPicker}` : `<p class="plan-note">No future projection source is currently imported.</p>`;
   const moveBody = scenarios.currentWeekScenarios?.length ? scenarios.currentWeekScenarios.slice(0, 3).map(({ payload: item }) => `<div class="plan-row"><strong>${escapeHtml(item.add.name)} for ${escapeHtml(item.drop.name)}</strong><span>+${item.lineupGain} current-week lineup points · validated legal simulation</span></div>`).join("") : `<p class="plan-note">No validated current-week add/drop scenario clears the action threshold, or ESPN availability is missing.</p>`;
   const playerIndex = new Map(state.snapshot.players.map((player) => [player.id, player]));
   const gapDetails = (item) => [...item.unmappedPlayerIds.map((id) => `${playerIndex.get(id)?.name || `ESPN player ${id}`} — identity mapping missing`), ...item.missingProjectionPlayerIds.map((id) => `${playerIndex.get(id)?.name || `ESPN player ${id}`} — Week ${item.week} projection missing`)];
@@ -351,6 +352,16 @@ function downloadProjectionTemplate() {
   const start = Math.max(1, Number(state.snapshot.currentWeek) || 1); const weeks = Array.from({ length: Math.min(6, 19 - start) }, (_, index) => start + index);
   const providerIds = projectionIdentityMap ? [...projectionIdentityMap.keys()] : [];
   downloadCsv("the-chip-winner-weekly-projections.csv", [["provider_player_id", "week", "points"], ...providerIds.flatMap((id) => weeks.map((week) => [id, week, ""]))]);
+}
+
+function downloadProjectionGaps() {
+  const importedWeeks = futureProjectionSet ? [...new Set(futureProjectionSet.projections.map((item) => item.week))].sort((a, b) => a - b) : [];
+  const weeks = selectedFutureWeeks === null ? importedWeeks : importedWeeks.filter((week) => selectedFutureWeeks.includes(week));
+  const plan = buildScenarioPlan(state.snapshot, state.selectedTeamId, { weeks, projectionSet: futureProjectionSet, identityMap: projectionIdentityMap });
+  const report = buildProjectionGapReport(state.snapshot, plan, projectionIdentityMap);
+  if (!report.records.length) { showNotice(report.status === "complete" ? "All selected player-week projection inputs are complete." : report.limitation, report.status === "complete" ? "success" : "error"); return; }
+  downloadCsv("the-chip-winner-projection-gaps.csv", [["week", "espn_player_id", "player_name", "team", "position", "gap_type", "provider_player_id"], ...report.records.map((item) => [item.week, item.espnPlayerId, item.playerName, item.proTeam, item.position, item.gapType, item.providerPlayerId])]);
+  showNotice(`Downloaded ${report.records.length} missing projection input${report.records.length === 1 ? "" : "s"}. Names are for review only; imports still require explicit IDs.`);
 }
 
 function downloadModelContext() {
@@ -502,6 +513,7 @@ content.addEventListener("click", (event) => {
   if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); planningPreferences.clear(); futureProjectionSet = null; projectionIdentityMap = null; selectedFutureWeeks = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }
   if (event.target.closest("#download-projection-template")) downloadProjectionTemplate();
   if (event.target.closest("#download-identity-template")) downloadIdentityTemplate();
+  if (event.target.closest("#download-projection-gaps")) downloadProjectionGaps();
   if (event.target.closest("#download-model-context")) downloadModelContext();
 });
 content.addEventListener("change", (event) => {

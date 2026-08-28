@@ -76,3 +76,17 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
   const source = options.projectionSet ? Object.freeze({ provider: options.projectionSet.provider || null, scoringFormat: options.projectionSet.scoringFormat || null, capturedAt: options.projectionSet.capturedAt || null, projectionCount: options.projectionSet.projections?.length || 0, identityMappingCount: options.identityMap instanceof Map ? options.identityMap.size : 0 }) : null;
   return Object.freeze({ status, weeks: Object.freeze(weeks), source, coverage, scenarios: Object.freeze(scenarioResults), rejectedScenarios: Object.freeze(rejectedScenarios), weeklyBaseline: Object.freeze(weeklyBaseline), currentWeekScenarios: Object.freeze(currentWeekScenarios), limitations: Object.freeze(status === "ready" ? ["Weekly totals use only explicitly mapped provider projections.", "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.", "Only ESPN-available adds and unlocked bench drops are evaluated.", "This planner is read-only and does not modify ESPN league state."] : ["Future-week projections and an explicit identity map were not both supplied.", "Current-week scenarios remain available when ESPN availability and projections are present.", "No future fantasy points or scenario winner are inferred."]) });
 }
+
+export function buildProjectionGapReport(snapshot, plan, identityMap) {
+  if (!Array.isArray(plan?.weeklyBaseline) || !plan.weeklyBaseline.length) return Object.freeze({ status: "unavailable", records: Object.freeze([]), limitation: "No evaluated future weeks are available." });
+  const players = new Map((snapshot?.players || []).map((player) => [player.id, player]));
+  const espnToProvider = identityMap instanceof Map ? new Map([...identityMap].map(([providerId, espnId]) => [espnId, providerId])) : new Map();
+  const records = plan.weeklyBaseline.flatMap((week) => [
+    ...week.unmappedPlayerIds.map((playerId) => ({ week: week.week, playerId, gapType: "missing-identity-map", providerPlayerId: null })),
+    ...week.missingProjectionPlayerIds.map((playerId) => ({ week: week.week, playerId, gapType: "missing-week-projection", providerPlayerId: espnToProvider.get(playerId) || null }))
+  ]).map((record) => {
+    const player = players.get(record.playerId);
+    return Object.freeze({ week: record.week, espnPlayerId: record.playerId, playerName: player?.name || null, proTeam: player?.proTeam || null, position: player?.position || null, gapType: record.gapType, providerPlayerId: record.providerPlayerId });
+  });
+  return Object.freeze({ status: records.length ? "gaps" : "complete", records: Object.freeze(records), limitation: records.length ? "Player names are included for human review only; provider joins still require explicit IDs." : null });
+}

@@ -213,7 +213,7 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
-Status: in progress. Season Plan reports positional depth, starter bye conflicts, explicitly supplied playoff schedule-strength fields, current-week legal moves, multiweek baselines and isolated add/drop deltas. Projection provider, scoring format, capture time, ID-map size, player-week coverage, persisted user-selectable horizons and withheld-delta reasons are visible. Missing identity mappings are now distinguished from missing week-specific projection values, with exact ESPN roster identities shown locally for repair. Deeper schedule intelligence remains open.
+Status: in progress. Season Plan reports positional depth, starter bye conflicts, explicitly supplied playoff schedule-strength fields, current-week legal moves, multiweek baselines and isolated add/drop deltas. Projection provider, scoring format, capture time, ID-map size, player-week coverage, persisted user-selectable horizons and withheld-delta reasons are visible. Missing identity mappings are distinguished from missing week-specific projection values, with exact ESPN roster identities shown locally and available as a repair report; names are informational and never used for provider joins. Deeper schedule intelligence remains open.
 
 Goal: support roster construction beyond the immediate week.
 
