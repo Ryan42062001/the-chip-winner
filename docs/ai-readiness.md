@@ -25,3 +25,7 @@ An eventual model adapter should receive: the selected team and week, normalized
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
+
+## Future projection input
+
+`schema/future-projection-set.schema.json` defines the provider-neutral weekly projection format. Imports require provider-owned player IDs and explicit week-level values; display-name matching is intentionally excluded from this boundary.

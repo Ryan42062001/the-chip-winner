@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Future projection set",
+  "type": "object",
+  "required": ["provider", "scoringFormat", "season", "capturedAt", "projections"],
+  "properties": {
+    "provider": { "type": "string", "minLength": 1 },
+    "scoringFormat": { "type": "string", "minLength": 1 },
+    "season": { "type": "integer" },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "projections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["providerPlayerId", "week", "points"],
+        "properties": {
+          "providerPlayerId": { "type": "string", "minLength": 1 },
+          "week": { "type": "integer", "minimum": 1, "maximum": 18 },
+          "points": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
