@@ -85,3 +85,21 @@ export function selectLeagueMatchups(snapshot, week) {
   if (!Number.isInteger(week)) return Object.freeze([]);
   return Object.freeze((snapshot?.matchups || []).filter((matchup) => matchup.week === week));
 }
+
+export function selectTeamSchedule(snapshot, teamId, weeks = null) {
+  const teamIndex = new Map((snapshot?.teams || []).map((team) => [team.id, team]));
+  if (!teamIndex.has(teamId)) return Object.freeze({ status: "missing-team", rows: Object.freeze([]), coverage: Object.freeze({ requestedWeeks: 0, reportedWeeks: 0, missingWeeks: Object.freeze([]), ambiguousWeeks: Object.freeze([]) }), methodology: "No schedule was evaluated because the selected team is unavailable." });
+  const teamMatchups = (snapshot?.matchups || []).filter((matchup) => matchup.homeTeamId === teamId || matchup.awayTeamId === teamId);
+  const requestedWeeks = Array.isArray(weeks)
+    ? [...new Set(weeks.filter(Number.isInteger))].sort((a, b) => a - b)
+    : [...new Set(teamMatchups.filter((matchup) => matchup.week >= snapshot.currentWeek).map((matchup) => matchup.week))].sort((a, b) => a - b);
+  const missingWeeks = requestedWeeks.filter((week) => !teamMatchups.some((matchup) => matchup.week === week));
+  const ambiguousWeeks = requestedWeeks.filter((week) => teamMatchups.filter((matchup) => matchup.week === week).length > 1);
+  const rows = requestedWeeks.flatMap((week) => teamMatchups.filter((matchup) => matchup.week === week).map((matchup) => {
+    const isHome = matchup.homeTeamId === teamId;
+    const opponentId = isHome ? matchup.awayTeamId : matchup.homeTeamId;
+    return Object.freeze({ week, opponentId, opponentName: teamIndex.get(opponentId)?.name || null, homeAway: isHome ? "home" : "away", teamScore: isHome ? matchup.homeScore ?? null : matchup.awayScore ?? null, opponentScore: isHome ? matchup.awayScore ?? null : matchup.homeScore ?? null, status: matchup.status || null });
+  }));
+  const reportedWeeks = requestedWeeks.length - missingWeeks.length;
+  return Object.freeze({ status: requestedWeeks.length ? "ready" : "unavailable", rows: Object.freeze(rows), coverage: Object.freeze({ requestedWeeks: requestedWeeks.length, reportedWeeks, missingWeeks: Object.freeze(missingWeeks), ambiguousWeeks: Object.freeze(ambiguousWeeks) }), methodology: "Matchups, scores, and status are ESPN-reported league state. No opponent strength or win probability is inferred." });
+}

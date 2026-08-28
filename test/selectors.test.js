@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { selectDataCoverage, selectLeagueMatchups, selectLeagueStandings, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "../src/domain/selectors.js";
+import { selectDataCoverage, selectLeagueMatchups, selectLeagueStandings, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext, selectTeamSchedule } from "../src/domain/selectors.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -58,4 +58,21 @@ test("league matchup selector returns only the requested reported week", () => {
   assert.equal(selectLeagueMatchups(snapshot, 7).length, 1);
   assert.equal(selectLeagueMatchups(snapshot, 6)[0].status, "pre");
   assert.deepEqual(selectLeagueMatchups(snapshot, null), []);
+});
+
+test("team schedule reports ESPN matchups and missing horizon weeks without inferring strength", () => {
+  const snapshot = { ...sample, matchups: [...sample.matchups, { week: 7, homeTeamId: "t2", awayTeamId: "t1", homeScore: null, awayScore: null, status: "upcoming" }] };
+  const result = selectTeamSchedule(snapshot, "t1", [6, 7, 8]);
+  assert.deepEqual(result.rows.map((row) => [row.week, row.opponentId, row.homeAway]), [[6, "t2", "home"], [7, "t2", "away"]]);
+  assert.deepEqual(result.coverage, { requestedWeeks: 3, reportedWeeks: 2, missingWeeks: [8], ambiguousWeeks: [] });
+  assert.equal(result.rows[1].teamScore, null);
+  assert.match(result.methodology, /No opponent strength or win probability is inferred/);
+});
+
+test("team schedule preserves duplicate week records as ambiguous source data", () => {
+  const duplicate = { week: 6, homeTeamId: "t1", awayTeamId: "t2", homeScore: null, awayScore: null, status: "upcoming" };
+  const result = selectTeamSchedule({ ...sample, matchups: [...sample.matchups, duplicate] }, "t1", [6]);
+  assert.equal(result.rows.length, 2);
+  assert.deepEqual(result.coverage.ambiguousWeeks, [6]);
+  assert.equal(selectTeamSchedule(sample, "missing", [6]).status, "missing-team");
 });

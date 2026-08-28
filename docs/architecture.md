@@ -19,7 +19,7 @@ Functions in `src/domain/recommendations.js` return derived suggestions. They do
 
 `src/domain/lineup-optimizer.js` searches complete assignments across the supported ESPN starting slots instead of composing independent swaps. It prevents duplicate player assignments, respects explicit or already-started locks, and downgrades its result from “optimal” to “best known” when any roster projection is absent. Unsupported slot configurations fail visibly rather than being approximated.
 
-`src/domain/selectors.js` is the read boundary for team context, totals, freshness, and data coverage. It preserves completeness metadata so partial totals cannot be presented as complete comparisons.
+`src/domain/selectors.js` is the read boundary for team context, totals, freshness, data coverage, and ESPN-reported fantasy schedules. It preserves completeness metadata so partial totals or schedules cannot be presented as complete comparisons. Small renderers under `src/ui` turn those provider-neutral results into escaped interface markup.
 
 ## Application state
 
@@ -70,7 +70,7 @@ League ID, season, and team ID are explicit browser-local onboarding inputs. A p
 
 ## Next increments
 
-1. Provision the encrypted sync service described in `docs/mobile-sync.md` and connect the existing client contract.
-2. Expand ROS roster and playoff analysis using only reconciled rankings.
-3. Add matchup scoring progress and NFL game-state refreshes.
-4. Add recommendation confidence, explanations, and user-configurable risk—only when trustworthy data exists.
+1. Connect a trustworthy weekly projection export with provider-owned IDs and explicit source metadata.
+2. Complete provider-to-ESPN identity maps and selected-horizon player-week coverage.
+3. Expand playoff and schedule explanations only from documented inputs and methods.
+4. Improve model-safety fixtures, explanation evaluation, and privacy-safe observability.
