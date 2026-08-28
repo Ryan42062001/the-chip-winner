@@ -250,7 +250,7 @@ Release exit: managers can evaluate roster moves across the season and playoffs 
 
 ## Release 1.0 — Production-grade read-only companion
 
-Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, the first Content Security Policy, skip navigation, section focus management, mobile-menu semantics, reduced-motion support, and desktop/mobile browser smoke automation are implemented. Formal accessibility and security audits remain open.
+Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, the first Content Security Policy, skip navigation, section focus management, mobile-menu semantics, reduced-motion support, desktop/mobile browser smoke automation, and an automated WCAG 2.2 A/AA audit across six primary sections are implemented. Manual accessibility review and formal security audit remain open.
 
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
@@ -271,7 +271,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 
 ### Accessibility and performance
 
-- WCAG 2.2 AA audit.
+- Keep the automated WCAG 2.2 A/AA audit green and complete a manual assistive-technology review.
 - Full keyboard operation and focus management.
 - Screen-reader labels for recommendations, deltas, injuries, and status.
 - Mobile performance and asset budgets.

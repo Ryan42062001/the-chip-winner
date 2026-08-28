@@ -28,6 +28,7 @@ jobs:
       - run: npm run eval:model
       - run: npm run smoke
       - run: npm run smoke:browser
+      - run: npm run audit:a11y
       - run: npm run security
 
   deploy:

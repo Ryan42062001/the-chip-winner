@@ -8,9 +8,10 @@ An ESPN-only, in-season fantasy football companion. This MVP presents roster, ma
 
 ## Run locally
 
-Requirements: Node.js 18 or newer. There are no runtime dependencies to install.
+Requirements: Node.js 18 or newer and Chrome or Chromium for the browser checks.
 
 ```bash
+npm install
 npm run dev
 ```
 
@@ -36,6 +37,7 @@ Run the checks:
 ```bash
 npm test
 npm run check
+npm run audit:a11y
 ```
 
 ## Current capabilities
