@@ -26,9 +26,9 @@ export function indexFutureProjections(set) {
 export function parseFutureProjectionCsv(text, metadata) {
   const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) throw new Error("Future projection CSV is empty.");
-  const headers = lines[0].split(",").map((item) => item.trim().toLowerCase());
+  const headers = lines[0].split(",").map((item) => item.trim().replace(/^"|"$/g, "").toLowerCase());
   for (const required of ["provider_player_id", "week", "points"]) if (!headers.includes(required)) throw new Error(`Future projection CSV is missing ${required}.`);
-  const at = (values, name) => values[headers.indexOf(name)]?.trim() || "";
+  const at = (values, name) => values[headers.indexOf(name)]?.trim().replace(/^"|"$/g, "").replaceAll('""', '"') || "";
   const projections = lines.slice(1).map((line) => {
     const values = line.split(",");
     const week = at(values, "week"); const points = at(values, "points");

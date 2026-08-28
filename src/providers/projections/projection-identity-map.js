@@ -3,11 +3,11 @@ const CACHE_KEY = "chip-winner:projection-identity-map:v1";
 export function parseProjectionIdentityMapCsv(text) {
   const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) throw new Error("Projection identity map CSV is empty.");
-  const headers = lines[0].split(",").map((value) => value.trim().toLowerCase());
+  const headers = lines[0].split(",").map((value) => value.trim().replace(/^"|"$/g, "").toLowerCase());
   for (const name of ["provider_player_id", "espn_player_id"]) if (!headers.includes(name)) throw new Error(`Projection identity map CSV is missing ${name}.`);
   const providerIndex = headers.indexOf("provider_player_id"); const espnIndex = headers.indexOf("espn_player_id");
   const entries = lines.slice(1).map((line, index) => {
-    const values = line.split(","); const providerPlayerId = values[providerIndex]?.trim(); const espnPlayerId = values[espnIndex]?.trim();
+    const values = line.split(","); const clean = (value) => value?.trim().replace(/^"|"$/g, "").replaceAll('""', '"'); const providerPlayerId = clean(values[providerIndex]); const espnPlayerId = clean(values[espnIndex]);
     if (!providerPlayerId || !espnPlayerId) throw new Error(`Projection identity map row ${index + 2} is incomplete.`);
     return Object.freeze({ providerPlayerId, espnPlayerId });
   });

@@ -177,7 +177,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation.byPlayerId).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation.unresolved.length}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation.conflicts.length}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">Rankings remain separate from ESPN projections and are stored only in this browser.</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
-    <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Import a strict CSV with provider_player_id, week, and points columns. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}</article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Import a strict CSV with provider_player_id, week, and points columns. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}<div class="sync-actions"><button class="button secondary" id="download-projection-template">Download projection template</button><button class="button secondary" id="download-identity-template">Download ESPN ID template</button></div></article>
     ${mobileSyncCard()}
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
   </div>`;
@@ -278,6 +278,23 @@ function showNotice(message, kind = "success") {
   noticeRegion.querySelector("button").onclick = () => { noticeRegion.innerHTML = ""; };
 }
 
+const csvCell = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+function downloadCsv(filename, rows) {
+  const blob = new Blob([rows.map((row) => row.map(csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob); const link = document.createElement("a");
+  link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url);
+}
+
+function downloadIdentityTemplate() {
+  downloadCsv("the-chip-winner-player-id-map.csv", [["provider_player_id", "espn_player_id", "player_name", "team", "position"], ...state.snapshot.players.map((player) => ["", player.id, player.name, player.proTeam || "", player.position])]);
+}
+
+function downloadProjectionTemplate() {
+  const start = Math.max(1, Number(state.snapshot.currentWeek) || 1); const weeks = Array.from({ length: Math.min(6, 19 - start) }, (_, index) => start + index);
+  const providerIds = projectionIdentityMap ? [...projectionIdentityMap.keys()] : [];
+  downloadCsv("the-chip-winner-weekly-projections.csv", [["provider_player_id", "week", "points"], ...providerIds.flatMap((id) => weeks.map((week) => [id, week, ""]))]);
+}
+
 async function init() {
   store.dispatch({ type: "load/start" });
   try {
@@ -365,6 +382,8 @@ content.addEventListener("click", (event) => {
   if (event.target.closest("#future-projections-button")) document.querySelector("#future-projections-input").click();
   if (event.target.closest("#projection-identity-button")) document.querySelector("#projection-identity-input").click();
   if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); futureProjectionSet = null; projectionIdentityMap = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }
+  if (event.target.closest("#download-projection-template")) downloadProjectionTemplate();
+  if (event.target.closest("#download-identity-template")) downloadIdentityTemplate();
 });
 content.addEventListener("click", async (event) => {
   const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
