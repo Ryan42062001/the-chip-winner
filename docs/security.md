@@ -22,7 +22,8 @@ League Setup provides a complete local-data deletion action. It clears ESPN snap
 
 - The companion manifest and source pass a least-privilege audit for fixed site origins, fixed ESPN read hosts, fixed message types, fixed ESPN views, and absence of mutation verbs or sensitive Chrome APIs.
 - The extension declares no general Chrome permissions; its unused `storage` permission was removed in version 0.2.1.
-- The deployment workflow runs dependency installation/audit, tracked-file secret scanning, CSP/static smoke checks, real-browser smoke checks, and automated WCAG checks.
+- The deployment workflow fails on high/critical npm advisories and runs tracked-file secret scanning, CSP/static smoke checks, real-browser smoke checks, and automated WCAG checks.
+- Dependabot checks npm and GitHub Actions dependencies weekly; updates still require the complete release gate before deployment.
 
 ## Remaining review work
 
