@@ -58,3 +58,11 @@ test("scenario planner rejects starter drops and unavailable adds", () => {
   assert.equal(result.scenarios.length, 0);
   assert.match(result.rejectedScenarios[0].reason, /bench/);
 });
+
+test("scenario planner suppresses move deltas when either roster has partial coverage", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const drop = roster.entries.find((entry) => entry.lineupSlot === "BE"); const add = sampleSnapshot.players.find((player) => sampleSnapshot.availablePlayers?.includes(player.id));
+  const identityMap = new Map([[`p-${add.id}`, add.id]]); const projectionSet = { projections: [{ providerPlayerId: `p-${add.id}`, week: 15, points: 30 }] };
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ addPlayerId: add.id, dropPlayerId: drop.playerId }], now: 0 });
+  assert.equal(result.scenarios[0].weekly[0].delta, null);
+  assert.equal(result.scenarios[0].weekly[0].completeCoverage, false);
+});

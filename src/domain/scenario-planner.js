@@ -45,8 +45,11 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
         const weeklyPlayers = snapshot.players.map((player) => ({ ...player, projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null }));
         const scenarioSnapshot = { ...snapshot, currentWeek: week, players: weeklyPlayers, rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : { ...item, entries: item.entries.map((entry) => entry.playerId === scenario.dropPlayerId ? { ...entry, playerId: scenario.addPlayerId } : entry) }) };
         const result = optimizeLineup(scenarioSnapshot, teamId);
-        const baseline = weeklyBaseline.find((item) => item.week === week)?.projectedTotal;
-        return Object.freeze({ week, projectedTotal: result.projectedTotal ?? null, delta: result.projectedTotal != null && baseline != null ? +(result.projectedTotal - baseline).toFixed(1) : null, status: result.status });
+        const baselineEntry = weeklyBaseline.find((item) => item.week === week); const baseline = baselineEntry?.projectedTotal;
+        const scenarioRosterIds = scenarioSnapshot.rosters.find((item) => item.teamId === teamId).entries.map((entry) => entry.playerId);
+        const mappedProjectionCount = scenarioRosterIds.filter((id) => projectionIndex.has(`${espnToProvider.get(id)}:${week}`)).length;
+        const completeCoverage = mappedProjectionCount === scenarioRosterIds.length;
+        return Object.freeze({ week, projectedTotal: result.projectedTotal ?? null, delta: result.projectedTotal != null && baseline != null && baselineEntry.completeCoverage && completeCoverage ? +(result.projectedTotal - baseline).toFixed(1) : null, status: result.status, mappedProjectionCount, rosterPlayerCount: scenarioRosterIds.length, completeCoverage });
       });
       scenarioResults.push(Object.freeze({ id: scenario.id || `${scenario.addPlayerId}-for-${scenario.dropPlayerId}`, addPlayerId: scenario.addPlayerId, dropPlayerId: scenario.dropPlayerId, weekly: Object.freeze(weekly) }));
     }
