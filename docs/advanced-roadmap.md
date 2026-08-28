@@ -250,7 +250,7 @@ Release exit: managers can evaluate roster moves across the season and playoffs 
 
 ## Release 1.0 — Production-grade read-only companion
 
-Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, Content Security Policy, skip navigation, focus and mobile-menu semantics, reduced-motion support, desktop/mobile browser smoke automation, an automated WCAG 2.2 A/AA audit, and a least-privilege companion audit are implemented. Independent manual accessibility and security review remain open.
+Status: **In progress.** Validated multiple browser-local ESPN league/season/team profiles, companion health/version compatibility, per-league refresh cooldowns and recovery guidance, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, Content Security Policy, accessibility controls, desktop/mobile browser smoke automation, an automated WCAG 2.2 A/AA audit, and a least-privilege companion audit are implemented. Independent manual accessibility and security review remain open.
 
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
@@ -258,7 +258,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 
 - Replace hard-coded league configuration with local league ID, season, and team setup.
 - Support multiple locally saved ESPN leagues.
-- Add connection health, extension version compatibility, refresh cooldown, and recovery guidance.
+- Keep connection health, extension version compatibility, per-league refresh cooldown, and recovery guidance covered as the companion evolves.
 - Add explicit disconnect and complete local-data deletion.
 
 ### Reliability
