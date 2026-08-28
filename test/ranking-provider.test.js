@@ -52,3 +52,10 @@ test("ranking provider caches normalized imports locally", () => {
   provider.clearCache();
   assert.equal(provider.readCache(), null);
 });
+
+test("ranking imports require explicit season scoring and expert metadata", () => {
+  const provider = new FantasyProsRankingProvider({ storage: null });
+  const csv = '"RK","PLAYER NAME",TEAM,"POS"\n"1","Example Player",BUF,"WR1"';
+  assert.throws(() => provider.importCsv(csv, { kind: "rest-of-season", season: 2026, scoringFormat: "", expertFilter: "" }), /scoring format.*expert filter/i);
+  assert.throws(() => provider.importCsv(csv, { kind: "draft", season: 2026, scoringFormat: "PPR", expertFilter: "all" }), /rest-of-season/);
+});

@@ -50,6 +50,12 @@ export class FantasyProsRankingProvider {
   }
 
   importCsv(text, metadata) {
+    const metadataErrors = [];
+    if (metadata?.kind !== "rest-of-season") metadataErrors.push("Ranking kind must be explicitly set to rest-of-season.");
+    if (!Number.isInteger(Number(metadata?.season)) || Number(metadata.season) < 2000 || Number(metadata.season) > 2100) metadataErrors.push("Ranking season must be a four-digit year from 2000 through 2100.");
+    if (typeof metadata?.scoringFormat !== "string" || !metadata.scoringFormat.trim()) metadataErrors.push("Ranking scoring format is required.");
+    if (typeof metadata?.expertFilter !== "string" || !metadata.expertFilter.trim()) metadataErrors.push("Ranking expert filter is required.");
+    if (metadataErrors.length) throw new Error(metadataErrors.join(" "));
     const set = parseFantasyProsRankingsCsv(text, metadata);
     this.storage?.setItem(CACHE_KEY, JSON.stringify(set));
     return set;

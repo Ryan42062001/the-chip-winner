@@ -47,6 +47,7 @@ const onboardingPreferences = new OnboardingPreferences();
 let espnConnection = connectionPreferences.read();
 let savedEspnConnections = connectionPreferences.list();
 let selectedFutureWeeks = planningPreferences.read();
+let pendingRankingFile = null;
 let leagueScheduleWeek = null;
 let companionHealth = { status: "checking", version: null, message: "Checking for the Chrome companion…" };
 const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown, planningPreferences, onboardingPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
@@ -453,15 +454,24 @@ document.querySelector("#snapshot-input").addEventListener("change", async (even
   event.target.value = "";
 });
 document.querySelector("#rankings-input").addEventListener("change", async (event) => {
+  const file = event.target.files[0]; if (!file) return;
+  pendingRankingFile = file;
+  document.querySelector("#rankings-season").value = state.snapshot.league.season || "";
+  document.querySelector("#rankings-scoring").value = "";
+  document.querySelector("#rankings-experts").value = "";
+  document.querySelector("#rankings-metadata-dialog").showModal();
+});
+document.querySelector("#rankings-import-confirm").addEventListener("click", async () => {
   try {
-    const file = event.target.files[0]; if (!file) return;
-    const rankingSet = rankingProvider.importCsv(await file.text(), { kind: "rest-of-season", season: 2026, scoringFormat: "PPR", expertFilter: "FantasyPros top-10 experts" });
+    if (!pendingRankingFile) throw new Error("Choose a FantasyPros rankings CSV first.");
+    const rankingSet = rankingProvider.importCsv(await pendingRankingFile.text(), { kind: "rest-of-season", season: Number(document.querySelector("#rankings-season").value), scoringFormat: document.querySelector("#rankings-scoring").value, expertFilter: document.querySelector("#rankings-experts").value });
     loadRankingSet(rankingSet); render();
     const reconciliation = state.rankingReconciliation;
     showNotice(`Imported ${rankingSet.rankings.length} FantasyPros ROS rankings. ${Object.keys(reconciliation.byPlayerId).length} matched ESPN players; ${reconciliation.unresolved.length} remain unresolved.`);
+    document.querySelector("#rankings-metadata-dialog").close(); pendingRankingFile = null; document.querySelector("#rankings-input").value = "";
   } catch (error) { showNotice(error.message, "error"); }
-  event.target.value = "";
 });
+document.querySelector("#rankings-import-cancel").addEventListener("click", () => { document.querySelector("#rankings-metadata-dialog").close(); pendingRankingFile = null; document.querySelector("#rankings-input").value = ""; });
 document.querySelector("#future-projections-input").addEventListener("change", async (event) => {
   try {
     const file = event.target.files[0]; if (!file) return;

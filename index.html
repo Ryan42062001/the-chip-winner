@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.29" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.30" />
   </head>
   <body>
     <a class="skip-link" href="#app-content">Skip to main content</a>
@@ -79,6 +79,15 @@
       </div>
       <p class="onboarding-note">You can change leagues, reconnect, or clear all local data later in League Setup.</p>
     </dialog>
-    <script type="module" src="src/app.js?v=0.9.29"></script>
+    <dialog id="rankings-metadata-dialog" class="onboarding-dialog" aria-labelledby="rankings-metadata-title" aria-describedby="rankings-metadata-description">
+      <div class="onboarding-copy"><p class="eyebrow">IMPORT DETAILS</p><h2 id="rankings-metadata-title">Describe this rankings export</h2><p id="rankings-metadata-description">These fields are stored with the CSV so the app never guesses its season, scoring basis, or expert filter.</p></div>
+      <div class="connection-form onboarding-form">
+        <label>Season<input id="rankings-season" inputmode="numeric" autocomplete="off" placeholder="Four-digit season"></label>
+        <label>Scoring format<input id="rankings-scoring" autocomplete="off" placeholder="Example: PPR"></label>
+        <label>Expert filter<input id="rankings-experts" autocomplete="off" placeholder="Example: FantasyPros top-10 experts"></label>
+      </div>
+      <div class="onboarding-actions"><button class="button primary" id="rankings-import-confirm" type="button">Import rankings</button><button class="button secondary" id="rankings-import-cancel" type="button">Cancel</button></div>
+    </dialog>
+    <script type="module" src="src/app.js?v=0.9.30"></script>
   </body>
 </html>

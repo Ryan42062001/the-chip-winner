@@ -78,4 +78,3 @@ export function validateFantasyProsRankingUsage(set) {
   limitations.push("FantasyPros player IDs are absent; records require explicit reconciliation before recommendations can use them.");
   return limitations;
 }
-

@@ -17,7 +17,7 @@ npm run dev
 
 Open `http://localhost:4173`. The app initially uses realistic sample data. Choose **Import ESPN snapshot** to load a compatible JSON file; validated imports are cached only in the current browser.
 
-Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The current importer records the file as 2026 PPR rankings with the top-10 expert filter, reconciles players using name plus NFL team plus position, and reports unresolved or conflicting identities. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
+Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The import dialog requires you to record the export's season, scoring format, and expert filter; the app does not infer them from the filename. Players are reconciled using name plus NFL team plus position, and unresolved or conflicting identities are reported. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
 
 ## Connect an ESPN league
 
