@@ -4,6 +4,7 @@ import { changesForTeam, diffSnapshots } from "../src/domain/snapshot-diff.js";
 
 const base = {
   league: { id: "league" }, meta: { capturedAt: "2026-09-01T12:00:00Z" },
+  currentWeek: 1, teams: [{ id: "one", name: "One", acquisition: { waiverRank: 2, seasonAcquisitions: 3, matchupAcquisitions: 1, budgetSpent: 10 } }, { id: "two", name: "Two" }],
   players: [
     { id: "a", name: "Alpha Runner", projection: 10, injury: { status: "ACTIVE" } },
     { id: "b", name: "Beta Receiver", projection: 8, injury: { status: "ACTIVE" } },
@@ -42,4 +43,13 @@ test("snapshot diff returns no history across different leagues or identical inp
   assert.deepEqual(diffSnapshots(base, structuredClone(base)), []);
   assert.deepEqual(diffSnapshots({ ...base, league: { id: "other" } }, base), []);
   assert.deepEqual(diffSnapshots(null, base), []);
+});
+
+test("snapshot diff explains ESPN acquisition usage and league waiver-setting changes", () => {
+  const previous = structuredClone(base); previous.league.waiver = { acquisitionLimit: 20, matchupAcquisitionLimit: 3, waiverProcessDays: 1, budget: 100 };
+  const current = structuredClone(previous); current.teams[0].acquisition.matchupAcquisitions = 2; current.teams[0].acquisition.waiverRank = 1; current.league.waiver.matchupAcquisitionLimit = 2;
+  const changes = diffSnapshots(previous, current);
+  assert.deepEqual(changes.map((change) => change.kind), ["waiver-settings", "acquisition"]);
+  assert.match(changes[1].detail, /Week 1 acquisitions: 1 → 2/); assert.match(changes[1].detail, /waiver priority: 2 → 1/);
+  assert.equal(changesForTeam(changes, current, "one").length, 2); assert.equal(changesForTeam(changes, current, "two").length, 1);
 });

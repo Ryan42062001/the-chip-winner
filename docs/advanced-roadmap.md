@@ -178,7 +178,7 @@ Release exit: waiver guidance is legal, time-horizon aware, and based on full-ro
 
 Goal: tell the manager what changed and what requires action.
 
-Status: **Feature-complete for the current snapshot contract.** Two-snapshot local retention, deterministic differencing, team relevance filtering, identical-refresh suppression, recommendation appearance/change/clear explanations, the **What Changed** timeline, week-scoped persistent alert dismissal/restoration, and kickoff-aware urgency ranking are implemented.
+Status: **Feature-complete for the current snapshot contract.** Two-snapshot local retention, deterministic differencing, team relevance filtering, identical-refresh suppression, recommendation appearance/change/clear explanations, acquisition-usage and waiver-setting changes, the **What Changed** timeline, week-scoped persistent alert dismissal/restoration, and kickoff-aware urgency ranking are implemented.
 
 ### Snapshot differencing
 

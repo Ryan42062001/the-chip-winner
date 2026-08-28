@@ -51,6 +51,17 @@ export function diffSnapshots(previous, current) {
     if (beforeAvailable.has(playerId) !== afterAvailable.has(playerId)) add({ kind: "availability", playerId, title: `${playerLabel(players, playerId)} availability changed`, detail: afterAvailable.has(playerId) ? "Now reported available by ESPN." : "No longer reported available by ESPN." });
   }
 
+  const beforeTeams = new Map((previous.teams || []).map((team) => [team.id, team]));
+  const acquisitionFields = [["seasonAcquisitions", "season acquisitions"], ["matchupAcquisitions", `Week ${current.currentWeek} acquisitions`], ["budgetSpent", "budget spent"], ["waiverRank", "waiver priority"]];
+  for (const team of current.teams || []) {
+    const old = beforeTeams.get(team.id); if (!old) continue;
+    const details = acquisitionFields.filter(([key]) => changed(old.acquisition?.[key], team.acquisition?.[key])).map(([key, label]) => `${label}: ${old.acquisition?.[key] ?? "Unavailable"} → ${team.acquisition?.[key] ?? "Unavailable"}`);
+    if (details.length) add({ kind: "acquisition", teamId: team.id, title: `${team.name} acquisition state changed`, detail: `${details.join("; ")}.` });
+  }
+  const waiverFields = [["acquisitionLimit", "season limit"], ["matchupAcquisitionLimit", "weekly limit"], ["waiverProcessDays", "processing days"], ["budget", "budget"]];
+  const waiverDetails = waiverFields.filter(([key]) => changed(previous.league?.waiver?.[key], current.league?.waiver?.[key])).map(([key, label]) => `${label}: ${previous.league?.waiver?.[key] ?? "Unavailable"} → ${current.league?.waiver?.[key] ?? "Unavailable"}`);
+  if (waiverDetails.length) add({ kind: "waiver-settings", teamIds: (current.teams || []).map((team) => team.id), title: "League waiver settings changed", detail: `${waiverDetails.join("; ")}.` });
+
   const beforeMatchups = new Map((previous.matchups || []).map((matchup) => [`${matchup.week}:${matchup.homeTeamId}:${matchup.awayTeamId}`, matchup]));
   for (const matchup of current.matchups || []) {
     const old = beforeMatchups.get(`${matchup.week}:${matchup.homeTeamId}:${matchup.awayTeamId}`);
@@ -58,7 +69,7 @@ export function diffSnapshots(previous, current) {
     if (changed(old.homeScore, matchup.homeScore) || changed(old.awayScore, matchup.awayScore)) add({ kind: "matchup", week: matchup.week, teamIds: [matchup.homeTeamId, matchup.awayTeamId], title: `Week ${matchup.week} matchup score changed`, detail: `${old.homeScore ?? "—"}–${old.awayScore ?? "—"} → ${matchup.homeScore ?? "—"}–${matchup.awayScore ?? "—"}.` });
   }
 
-  const priority = { injury: 0, lineup: 1, "roster-add": 2, "roster-drop": 2, availability: 3, projection: 4, matchup: 5 };
+  const priority = { injury: 0, lineup: 1, "roster-add": 2, "roster-drop": 2, "waiver-settings": 3, acquisition: 4, availability: 5, projection: 6, matchup: 7 };
   return changes.sort((left, right) => (priority[left.kind] ?? 9) - (priority[right.kind] ?? 9) || left.title.localeCompare(right.title));
 }
 
