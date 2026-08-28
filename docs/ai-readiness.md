@@ -22,6 +22,8 @@ An eventual model adapter should receive: the selected team and week, normalized
 4. Add explanation regression tests that require source fields and explicit uncertainty.
 5. Introduce a model adapter only after offline evaluation passes; keep the deterministic engine as the final gate.
 
+The first offline batch evaluator now rejects malformed recommendation envelopes, invented player IDs, and waiver/scenario adds that ESPN does not explicitly report as available.
+
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
