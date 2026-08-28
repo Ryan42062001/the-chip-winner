@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { selectDataCoverage, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "../src/domain/selectors.js";
+import { selectDataCoverage, selectLeagueMatchups, selectLeagueStandings, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext } from "../src/domain/selectors.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -45,4 +45,17 @@ test("player detail preserves roster, availability, and source provenance", () =
   assert.equal(available.isRostered, false);
   assert.equal(available.isAvailable, true);
   assert.equal(selectPlayerDetail(sample, "t1", "missing"), null);
+});
+
+test("league standings sort reported records without claiming official seeding", () => {
+  const result = selectLeagueStandings({ teams: [{ id: "a", name: "A", record: { wins: null, losses: null }, pointsFor: null }, { id: "b", name: "B", record: { wins: 4, losses: 1 }, pointsFor: 500 }, { id: "c", name: "C", record: { wins: 5, losses: 0 }, pointsFor: 400 }] });
+  assert.deepEqual(result.teams.map((team) => team.id), ["c", "b", "a"]);
+  assert.match(result.methodology, /not official ESPN playoff seeding/);
+});
+
+test("league matchup selector returns only the requested reported week", () => {
+  const snapshot = { matchups: [...sample.matchups, { week: 7, homeTeamId: "t2", awayTeamId: "t1", homeScore: null, awayScore: null, status: "upcoming" }] };
+  assert.equal(selectLeagueMatchups(snapshot, 7).length, 1);
+  assert.equal(selectLeagueMatchups(snapshot, 6)[0].status, "pre");
+  assert.deepEqual(selectLeagueMatchups(snapshot, null), []);
 });

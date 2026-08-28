@@ -69,3 +69,19 @@ export function selectPlayerDetail(snapshot, teamId, playerId) {
     }
   };
 }
+
+export function selectLeagueStandings(snapshot) {
+  const teams = [...(snapshot?.teams || [])].sort((left, right) => {
+    const leftKnown = Number.isInteger(left.record?.wins) && Number.isInteger(left.record?.losses);
+    const rightKnown = Number.isInteger(right.record?.wins) && Number.isInteger(right.record?.losses);
+    if (leftKnown !== rightKnown) return leftKnown ? -1 : 1;
+    if (!leftKnown) return left.name.localeCompare(right.name);
+    return right.record.wins - left.record.wins || left.record.losses - right.record.losses || (right.pointsFor ?? -1) - (left.pointsFor ?? -1) || left.name.localeCompare(right.name);
+  });
+  return Object.freeze({ teams: Object.freeze(teams), methodology: "Sorted locally by reported wins, then losses, then points for. This is not official ESPN playoff seeding or tiebreaking." });
+}
+
+export function selectLeagueMatchups(snapshot, week) {
+  if (!Number.isInteger(week)) return Object.freeze([]);
+  return Object.freeze((snapshot?.matchups || []).filter((matchup) => matchup.week === week));
+}

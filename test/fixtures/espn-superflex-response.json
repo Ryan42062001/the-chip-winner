@@ -5,5 +5,8 @@
     { "id": 1, "location": "Alpha", "nickname": "Team", "abbrev": "ALP", "record": { "overall": { "wins": 4, "losses": 1, "ties": 0 } }, "roster": { "entries": [{ "lineupSlotId": 7, "playerPoolEntry": { "player": { "id": 1001, "fullName": "Synthetic Quarterback", "defaultPositionId": 1, "injuryStatus": "NORMAL", "stats": [{ "scoringPeriodId": 6, "statSourceId": 1, "statSplitTypeId": 1, "appliedTotal": 19.2 }] } } }] } },
     { "id": 2, "location": "Beta", "nickname": "Team", "abbrev": "BET", "record": { "overall": { "wins": 3, "losses": 2, "ties": 0 } }, "roster": { "entries": [] } }
   ],
-  "schedule": [{ "matchupPeriodId": 6, "winner": "UNDECIDED", "home": { "teamId": 1, "totalPoints": 0 }, "away": { "teamId": 2, "totalPoints": 0 } }]
+  "schedule": [
+    { "matchupPeriodId": 6, "winner": "UNDECIDED", "home": { "teamId": 1, "totalPoints": 0 }, "away": { "teamId": 2, "totalPoints": 0 } },
+    { "matchupPeriodId": 7, "winner": "UNDECIDED", "home": { "teamId": 2 }, "away": { "teamId": 1 } }
+  ]
 }

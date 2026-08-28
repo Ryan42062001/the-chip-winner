@@ -74,6 +74,12 @@ test("superflex league fixture preserves OP slots and its reported scoring type"
   assert.equal(snapshot.matchups[0].status, "current");
 });
 
+test("ESPN normalization retains reported future matchups without borrowing current scores", () => {
+  const snapshot = normalizeEspnLeagueResponse(superflexResponse);
+  assert.equal(snapshot.matchups.length, 2);
+  assert.deepEqual(snapshot.matchups[1], { week: 7, homeTeamId: "2", awayTeamId: "1", homeScore: null, awayScore: null, status: "upcoming" });
+});
+
 test("offseason fixture preserves empty state and missing records", () => {
   const snapshot = normalizeEspnLeagueResponse(offseasonResponse);
   assert.equal(snapshot.currentWeek, 0);

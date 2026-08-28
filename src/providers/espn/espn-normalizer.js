@@ -99,14 +99,14 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
     return { teamId: String(team.id), entries };
   });
   const matchups = (response.schedule || [])
-    .filter((item) => item.matchupPeriodId === currentWeek && item.home?.teamId && item.away?.teamId)
+    .filter((item) => Number.isInteger(item.matchupPeriodId) && item.home?.teamId && item.away?.teamId)
     .map((item) => ({
-      week: currentWeek,
+      week: item.matchupPeriodId,
       homeTeamId: String(item.home.teamId),
       awayTeamId: String(item.away.teamId),
       homeScore: item.home.totalPoints ?? null,
       awayScore: item.away.totalPoints ?? null,
-      status: item.winner && item.winner !== "UNDECIDED" ? "final" : "current"
+      status: item.winner && item.winner !== "UNDECIDED" ? "final" : item.matchupPeriodId === currentWeek ? "current" : item.matchupPeriodId > currentWeek ? "upcoming" : "unreported"
     }));
   const availableEntries = (supplemental.availablePlayers || []).filter((entry) => (entry.player || entry)?.id && (entry.player || entry)?.fullName);
   const availablePlayers = availableEntries.map((entry) => entry.player || entry);

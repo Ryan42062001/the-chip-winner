@@ -55,6 +55,9 @@ try {
   if (await page.locator("#player-dialog").isVisible()) throw new Error("Player detail dialog did not close.");
   await page.locator('a[data-section="lineup"]').click();
   await page.getByRole("heading", { name: "Lineup Lab", level: 2 }).waitFor();
+  await page.locator('a[data-section="league"]').click();
+  await page.getByRole("heading", { name: "Standings overview", level: 3 }).waitFor();
+  await page.getByRole("heading", { name: "Reported schedule", level: 3 }).waitFor();
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
 
