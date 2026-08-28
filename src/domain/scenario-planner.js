@@ -1,5 +1,6 @@
 import { buildRosterAwareWaiverIdeas } from "./waiver-engine.js";
 import { validateRecommendation } from "./recommendation-contract.js";
+import { createRecommendation } from "./recommendation-factory.js";
 import { optimizeLineup } from "./lineup-optimizer.js";
 import { indexFutureProjections } from "../providers/projections/future-projection-provider.js";
 
@@ -13,7 +14,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
   if (!roster) return Object.freeze({ status: "missing-roster", weeks: [], limitations: ["Roster data is unavailable."] });
   const waiverResult = buildRosterAwareWaiverIdeas(snapshot, teamId);
   const currentWeekScenarios = (waiverResult.items || []).map((item, index) => {
-    const recommendation = { id: `waiver-${teamId}-${index}`, kind: "scenario", status: "review", confidence: "medium", inputs: ["ESPN availability", "ESPN current-week projections", "ESPN lineup rules"], limitations: waiverResult.limitations || [], payload: item };
+    const recommendation = createRecommendation({ id: `waiver-${teamId}-${index}`, kind: "scenario", status: "review", confidence: "medium", inputs: ["ESPN availability", "ESPN current-week projections", "ESPN lineup rules"], limitations: waiverResult.limitations || [], sourceCapturedAt: snapshot.meta?.capturedAt || null, payload: item });
     const validation = validateRecommendation(recommendation);
     return validation.valid ? Object.freeze(recommendation) : null;
   }).filter(Boolean);
