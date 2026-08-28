@@ -13,7 +13,34 @@
     {
       "name": "missing uncertainty",
       "expectedValid": false,
+      "expectedError": "require a limitation",
       "recommendation": { "id": "fixture-no-limits", "kind": "scenario", "status": "unavailable", "confidence": "none", "inputs": [], "limitations": [] }
+    },
+    {
+      "name": "starter cannot be a drop",
+      "teamId": "t1",
+      "expectedValid": false,
+      "expectedError": "not an unlocked bench player",
+      "recommendation": { "id": "fixture-starter-drop", "kind": "waiver", "status": "review", "confidence": "medium", "inputs": ["ESPN availability"], "limitations": ["Verify transaction rules."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p1" } }
+    },
+    {
+      "name": "opponent player cannot be a drop",
+      "teamId": "t1",
+      "expectedValid": false,
+      "expectedError": "not on selected team",
+      "recommendation": { "id": "fixture-opponent-drop", "kind": "scenario", "status": "review", "confidence": "low", "inputs": ["ESPN roster"], "limitations": ["Verify transaction rules."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p17" } }
+    },
+    {
+      "name": "stale source timestamp",
+      "expectedValid": false,
+      "expectedError": "does not match",
+      "recommendation": { "id": "fixture-stale", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Refresh first."], "sourceCapturedAt": "2026-01-01T00:00:00Z", "payload": { "playerId": "p3" } }
+    },
+    {
+      "name": "review without traceable inputs",
+      "expectedValid": false,
+      "expectedError": "named input",
+      "recommendation": { "id": "fixture-no-input", "kind": "lineup", "status": "review", "confidence": "low", "inputs": [], "limitations": ["Projection source unavailable."], "payload": { "playerId": "p1" } }
     }
   ]
 }

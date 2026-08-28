@@ -22,13 +22,13 @@ An eventual model adapter should receive: the selected team and week, normalized
 4. Add explanation regression tests that require source fields and explicit uncertainty.
 5. Introduce a model adapter only after offline evaluation passes; keep the deterministic engine as the final gate.
 
-The first offline batch evaluator now rejects malformed recommendation envelopes, invented player IDs, and waiver/scenario adds that ESPN does not explicitly report as available.
+The offline batch evaluator rejects malformed recommendation envelopes, invented player IDs, waiver/scenario adds that ESPN does not explicitly report as available, selected-team starter/IR/locked drops, opponent-roster drops, stale capture timestamps, and review output without named inputs.
 
 The app can export a versioned, privacy-safe model context packet for the selected team. The packet excludes browser credentials, unrelated teams' rosters, raw availability pools, and any recommendation that fails offline evaluation.
 
 A provider-neutral model adapter now defines the explanation boundary. Its deterministic fallback produces traceable summaries without network access, while unconfigured model providers fail explicitly.
 
-`npm run eval:model` executes versioned safety fixtures, and the deployment workflow now requires those fixtures to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks.
+`npm run eval:model` executes seven versioned safety fixtures, and the deployment workflow requires them to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks. Explanation output is separately evaluated for the correct recommendation ID, provider attribution, named source inputs, and every stated limitation. Per-recommendation failures are returned without exposing credentials or aborting unrelated explanations.
 
 ## Open model capabilities
 

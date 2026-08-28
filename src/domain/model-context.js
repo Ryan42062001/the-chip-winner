@@ -4,7 +4,7 @@ import { evaluateRecommendationBatch } from "./model-evaluator.js";
 export function buildModelContext(snapshot, teamId, recommendations = []) {
   const context = selectTeamContext(snapshot, teamId);
   if (!context.team) return Object.freeze({ status: "missing-team", packet: null, errors: ["Selected team is not present in the snapshot."] });
-  const evaluation = evaluateRecommendationBatch(recommendations, snapshot);
+  const evaluation = evaluateRecommendationBatch(recommendations, snapshot, { teamId });
   const acceptedIds = new Set(evaluation.results.filter((item) => item.valid).map((item) => item.id));
   const players = new Map(snapshot.players.map((player) => [player.id, player]));
   const roster = context.roster.map((entry) => {
