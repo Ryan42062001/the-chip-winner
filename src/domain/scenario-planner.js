@@ -19,6 +19,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
   }).filter(Boolean);
   const weeklyBaseline = [];
   const scenarioResults = [];
+  const rejectedScenarios = [];
   if (options.projectionSet && options.identityMap instanceof Map) {
     const projectionIndex = indexFutureProjections(options.projectionSet);
     const espnToProvider = new Map([...options.identityMap].map(([providerId, espnId]) => [espnId, providerId]));
@@ -32,7 +33,14 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     for (const scenario of options.scenarios || []) {
       const dropEntry = roster.entries.find((entry) => entry.playerId === scenario.dropPlayerId);
       const addPlayer = snapshot.players.find((player) => player.id === scenario.addPlayerId);
-      if (!dropEntry || !addPlayer) continue;
+      const dropPlayer = snapshot.players.find((player) => player.id === scenario.dropPlayerId);
+      const kickoff = Date.parse(dropPlayer?.gameTime); const locked = dropEntry?.locked === true || dropPlayer?.locked === true || (Number.isFinite(kickoff) && kickoff <= (options.now ?? Date.now()));
+      let rejection = null;
+      if (!dropEntry || !addPlayer) rejection = "Scenario references a player outside the current snapshot.";
+      else if (dropEntry.lineupSlot !== "BE") rejection = "Only bench players can be dropped by the scenario planner.";
+      else if (locked) rejection = "The proposed drop player is locked.";
+      else if (!snapshot.availablePlayers?.includes(addPlayer.id)) rejection = "The proposed add is not explicitly available in ESPN data.";
+      if (rejection) { rejectedScenarios.push(Object.freeze({ id: scenario.id || "unknown", reason: rejection })); continue; }
       const weekly = weeks.map((week) => {
         const weeklyPlayers = snapshot.players.map((player) => ({ ...player, projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null }));
         const scenarioSnapshot = { ...snapshot, currentWeek: week, players: weeklyPlayers, rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : { ...item, entries: item.entries.map((entry) => entry.playerId === scenario.dropPlayerId ? { ...entry, playerId: scenario.addPlayerId } : entry) }) };
@@ -44,5 +52,5 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     }
   }
   const status = weeks.length && weeklyBaseline.length ? "ready" : "missing-future-inputs";
-  return Object.freeze({ status, weeks: Object.freeze(weeks), scenarios: Object.freeze(scenarioResults), weeklyBaseline: Object.freeze(weeklyBaseline), currentWeekScenarios: Object.freeze(currentWeekScenarios), limitations: Object.freeze(status === "ready" ? ["Weekly totals use only explicitly mapped provider projections.", "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.", "This planner is read-only and does not modify ESPN league state."] : ["Future-week projections and an explicit identity map were not both supplied.", "Current-week scenarios remain available when ESPN availability and projections are present.", "No future fantasy points or scenario winner are inferred."]) });
+  return Object.freeze({ status, weeks: Object.freeze(weeks), scenarios: Object.freeze(scenarioResults), rejectedScenarios: Object.freeze(rejectedScenarios), weeklyBaseline: Object.freeze(weeklyBaseline), currentWeekScenarios: Object.freeze(currentWeekScenarios), limitations: Object.freeze(status === "ready" ? ["Weekly totals use only explicitly mapped provider projections.", "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.", "Only ESPN-available adds and unlocked bench drops are evaluated.", "This planner is read-only and does not modify ESPN league state."] : ["Future-week projections and an explicit identity map were not both supplied.", "Current-week scenarios remain available when ESPN availability and projections are present.", "No future fantasy points or scenario winner are inferred."]) });
 }

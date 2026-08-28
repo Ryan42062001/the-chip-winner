@@ -50,3 +50,11 @@ test("scenario planner labels partial roster projection coverage", () => {
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, 1);
   assert.equal(result.weeklyBaseline[0].completeCoverage, false);
 });
+
+test("scenario planner rejects starter drops and unavailable adds", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const starter = roster.entries.find((entry) => entry.lineupSlot !== "BE" && entry.lineupSlot !== "IR");
+  const identityMap = new Map(sampleSnapshot.players.map((player) => [`p-${player.id}`, player.id])); const projectionSet = { projections: sampleSnapshot.players.map((player) => ({ providerPlayerId: `p-${player.id}`, week: 15, points: 10 })) };
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ id: "illegal", addPlayerId: sampleSnapshot.players[0].id, dropPlayerId: starter.playerId }], now: 0 });
+  assert.equal(result.scenarios.length, 0);
+  assert.match(result.rejectedScenarios[0].reason, /bench/);
+});
