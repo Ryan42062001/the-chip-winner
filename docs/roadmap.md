@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 124 automated tests covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning and projection coverage, persistent prioritized alerts, accessibility markup, multiple local ESPN connections, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context, guarded model adapters, recommendation and explanation evaluation, and future projection inputs.
+- 127 automated tests covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning, persisted horizons and projection coverage, persistent prioritized alerts, accessibility markup, multiple local ESPN connections, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context, guarded model adapters, recommendation and explanation evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 

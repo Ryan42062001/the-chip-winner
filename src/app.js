@@ -21,6 +21,7 @@ import { EspnConnectionPreferences, connectionKey } from "./providers/espn/conne
 import { EspnRefreshCooldown, evaluateCompanionPing, MINIMUM_COMPANION_VERSION } from "./providers/espn/connection-health.js";
 import { LocalDataManager } from "./application/local-data-manager.js";
 import { runCacheMigrations } from "./application/cache-migrations.js";
+import { PlanningPreferences } from "./application/planning-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -39,10 +40,12 @@ const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sy
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const connectionPreferences = new EspnConnectionPreferences();
 const refreshCooldown = new EspnRefreshCooldown();
+const planningPreferences = new PlanningPreferences();
 let espnConnection = connectionPreferences.read();
 let savedEspnConnections = connectionPreferences.list();
+let selectedFutureWeeks = planningPreferences.read();
 let companionHealth = { status: "checking", version: null, message: "Checking for the Chrome companion…" };
-const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown], extraKeys: [SYNC_CREDENTIALS_KEY] });
+const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown, planningPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
@@ -177,12 +180,14 @@ function renderSeasonPlan() {
   const depth = plan.positions.length ? plan.positions.map(group => `<article class="panel plan-group"><div class="panel-head"><div><p class="eyebrow">${escapeHtml(group.position)}</p><h3>${group.starterCount} starter${group.starterCount === 1 ? "" : "s"} · ${group.benchCount} bench</h3></div><span class="record">${group.knownProjectionCount}/${group.totalCount} projected</span></div><div class="plan-players">${group.players.map(item => `<div class="plan-player"><span class="avatar pos-${escapeHtml(item.player.position).replace("/", "")}">${initials(item.player.name)}</span><div><strong>${escapeHtml(item.player.name)}</strong><small>${item.starter ? "Starter" : "Bench"} · ${escapeHtml(item.player.proTeam || "Team unavailable")}</small></div><b>${item.player.projection == null ? "—" : item.player.projection.toFixed(1)}</b></div>`).join("")}</div></article>`).join("") : emptyState("No positional depth available", "The ESPN snapshot does not contain roster players with positions.");
   const bye = plan.byeConflicts.length ? plan.byeConflicts.map(item => `<div class="plan-alert"><strong>Week ${item.week}</strong><span>${escapeHtml(item.players.map((player) => player.name).join(", "))}</span></div>`).join("") : `<p class="plan-note">No starter bye conflicts were found in the current snapshot.</p>`;
   const playoff = plan.playoff.length ? plan.playoff.map(item => `<div class="plan-row"><strong>${escapeHtml(item.player.name)}</strong><span>${escapeHtml(item.player.position)} · schedule strength ${item.strength}</span></div>`).join("") : `<p class="plan-note">No explicit playoff schedule-strength fields are available in the imported rankings.</p>`;
-  const futureWeeks = futureProjectionSet ? [...new Set(futureProjectionSet.projections.map((item) => item.week))].sort((a, b) => a - b) : [];
+  const importedFutureWeeks = futureProjectionSet ? [...new Set(futureProjectionSet.projections.map((item) => item.week))].sort((a, b) => a - b) : [];
+  const futureWeeks = selectedFutureWeeks === null ? importedFutureWeeks : importedFutureWeeks.filter((week) => selectedFutureWeeks.includes(week));
   const currentMoves = buildRosterAwareWaiverIdeas(state.snapshot, state.selectedTeamId);
   const futureMoveInputs = (currentMoves.items || []).slice(0, 3).map((item, index) => ({ id: `candidate-${index + 1}`, addPlayerId: item.add.id, dropPlayerId: item.drop.id }));
   const scenarios = buildScenarioPlan(state.snapshot, state.selectedTeamId, { weeks: futureWeeks, projectionSet: futureProjectionSet, identityMap: projectionIdentityMap, scenarios: futureMoveInputs });
   const horizon = scenarios.status === "ready" ? `${scenarios.weeklyBaseline.length} future week${scenarios.weeklyBaseline.length === 1 ? "" : "s"} calculated` : "Future-week projections unavailable";
-  const scenarioSource = scenarios.source ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(scenarios.source.provider || "Unavailable")}</dd></div><div><dt>Scoring format</dt><dd>${escapeHtml(scenarios.source.scoringFormat || "Unavailable")}</dd></div><div><dt>Captured</dt><dd>${scenarios.source.capturedAt ? escapeHtml(new Date(scenarios.source.capturedAt).toLocaleString()) : "Unavailable"}</dd></div><div><dt>Projection coverage</dt><dd>${scenarios.coverage.mappedProjectionCells}/${scenarios.coverage.requiredProjectionCells} player-weeks (${scenarios.coverage.percentage}%)</dd></div><div><dt>Complete weeks</dt><dd>${scenarios.coverage.completeWeeks}/${scenarios.coverage.totalWeeks}</dd></div><div><dt>Explicit ID mappings</dt><dd>${scenarios.source.identityMappingCount}</dd></div></dl>` : `<p class="plan-note">No future projection source is currently imported.</p>`;
+  const horizonPicker = importedFutureWeeks.length ? `<fieldset class="horizon-picker"><legend>Planning horizon</legend><div class="horizon-options">${importedFutureWeeks.map((week) => `<label><input type="checkbox" data-planning-week="${week}" ${futureWeeks.includes(week) ? "checked" : ""}>Week ${week}</label>`).join("")}</div></fieldset>` : "";
+  const scenarioSource = scenarios.source ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(scenarios.source.provider || "Unavailable")}</dd></div><div><dt>Scoring format</dt><dd>${escapeHtml(scenarios.source.scoringFormat || "Unavailable")}</dd></div><div><dt>Captured</dt><dd>${scenarios.source.capturedAt ? escapeHtml(new Date(scenarios.source.capturedAt).toLocaleString()) : "Unavailable"}</dd></div><div><dt>Projection coverage</dt><dd>${scenarios.coverage.mappedProjectionCells}/${scenarios.coverage.requiredProjectionCells} player-weeks (${scenarios.coverage.percentage}%)</dd></div><div><dt>Complete weeks</dt><dd>${scenarios.coverage.completeWeeks}/${scenarios.coverage.totalWeeks}</dd></div><div><dt>Explicit ID mappings</dt><dd>${scenarios.source.identityMappingCount}</dd></div></dl>${horizonPicker}` : `<p class="plan-note">No future projection source is currently imported.</p>`;
   const moveBody = scenarios.currentWeekScenarios?.length ? scenarios.currentWeekScenarios.slice(0, 3).map(({ payload: item }) => `<div class="plan-row"><strong>${escapeHtml(item.add.name)} for ${escapeHtml(item.drop.name)}</strong><span>+${item.lineupGain} current-week lineup points · validated legal simulation</span></div>`).join("") : `<p class="plan-note">No validated current-week add/drop scenario clears the action threshold, or ESPN availability is missing.</p>`;
   const weeklyBody = scenarios.weeklyBaseline?.length ? scenarios.weeklyBaseline.map(item => `<div class="plan-row"><strong>Week ${item.week}</strong><span>${item.projectedTotal == null ? "No complete lineup" : `${item.projectedTotal.toFixed(1)} optimized known points`} · ${item.mappedProjectionCount}/${item.rosterPlayerCount} roster projections · ${item.completeCoverage ? "complete" : "partial"}</span></div>`).join("") : `<p class="plan-note">Future scenario comparisons need both weekly projections and the explicit ID mapping CSV.</p>`;
   const playerIndex = new Map(state.snapshot.players.map((player) => [player.id, player]));
@@ -398,6 +403,7 @@ document.querySelector("#future-projections-input").addEventListener("change", a
   try {
     const file = event.target.files[0]; if (!file) return;
     futureProjectionSet = futureProjectionProvider.importCsv(await file.text(), { provider: "user-import", scoringFormat: state.snapshot.league.scoringType || "Unknown", season: Number(state.snapshot.league.season) || 2026, capturedAt: new Date().toISOString() });
+    selectedFutureWeeks = planningPreferences.save([...new Set(futureProjectionSet.projections.map((item) => item.week))]);
     render();
     const weeks = [...new Set(futureProjectionSet.projections.map((item) => item.week))];
     showNotice(`Imported ${futureProjectionSet.projections.length} weekly projections across ${weeks.length} week${weeks.length === 1 ? "" : "s"}.`);
@@ -446,10 +452,15 @@ content.addEventListener("click", (event) => { if (event.target.closest("#clear-
 content.addEventListener("click", (event) => {
   if (event.target.closest("#future-projections-button")) document.querySelector("#future-projections-input").click();
   if (event.target.closest("#projection-identity-button")) document.querySelector("#projection-identity-input").click();
-  if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); futureProjectionSet = null; projectionIdentityMap = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }
+  if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); planningPreferences.clear(); futureProjectionSet = null; projectionIdentityMap = null; selectedFutureWeeks = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }
   if (event.target.closest("#download-projection-template")) downloadProjectionTemplate();
   if (event.target.closest("#download-identity-template")) downloadIdentityTemplate();
   if (event.target.closest("#download-model-context")) downloadModelContext();
+});
+content.addEventListener("change", (event) => {
+  if (!event.target.matches("[data-planning-week]")) return;
+  selectedFutureWeeks = planningPreferences.save([...content.querySelectorAll("[data-planning-week]:checked")].map((input) => Number(input.dataset.planningWeek)));
+  render(); showNotice(selectedFutureWeeks.length ? `Planning horizon updated to ${selectedFutureWeeks.length} week${selectedFutureWeeks.length === 1 ? "" : "s"}.` : "Planning horizon cleared. No future totals or deltas are shown.");
 });
 content.addEventListener("click", async (event) => {
   const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
