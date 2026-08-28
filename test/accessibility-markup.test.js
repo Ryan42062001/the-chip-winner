@@ -9,3 +9,8 @@ test("page exposes skip navigation and labeled mobile navigation controls", () =
 });
 
 test("styles respect reduced motion preferences", () => { assert.match(css, /prefers-reduced-motion:reduce/); });
+
+test("first-run onboarding has an accessible dialog name, description, and explicit choices", () => {
+  assert.match(html, /id="onboarding-dialog"[^>]*aria-labelledby="onboarding-title"[^>]*aria-describedby="onboarding-description"/);
+  assert.match(html, /id="onboarding-save-button"/); assert.match(html, /id="onboarding-sample-button"/);
+});

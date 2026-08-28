@@ -22,6 +22,7 @@ import { EspnRefreshCooldown, evaluateCompanionPing, MINIMUM_COMPANION_VERSION }
 import { LocalDataManager } from "./application/local-data-manager.js";
 import { runCacheMigrations } from "./application/cache-migrations.js";
 import { PlanningPreferences } from "./application/planning-preferences.js";
+import { OnboardingPreferences } from "./application/onboarding-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -41,11 +42,12 @@ const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const connectionPreferences = new EspnConnectionPreferences();
 const refreshCooldown = new EspnRefreshCooldown();
 const planningPreferences = new PlanningPreferences();
+const onboardingPreferences = new OnboardingPreferences();
 let espnConnection = connectionPreferences.read();
 let savedEspnConnections = connectionPreferences.list();
 let selectedFutureWeeks = planningPreferences.read();
 let companionHealth = { status: "checking", version: null, message: "Checking for the Chrome companion…" };
-const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown, planningPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
+const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown, planningPreferences, onboardingPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
@@ -343,7 +345,16 @@ async function init() {
     loadRankingSet(rankingProvider.readCache());
     hydrateControls(); render();
     refreshCompanionHealth();
+    openOnboardingIfNeeded();
   } catch (error) { store.dispatch({ type: "load/error", error: error.message }); content.innerHTML = emptyState("Unable to load league data", error.message); }
+}
+
+function openOnboardingIfNeeded() {
+  if (savedEspnConnections.length || onboardingPreferences.read()) return;
+  document.querySelector("#onboarding-league-id").value = espnConnection.leagueId;
+  document.querySelector("#onboarding-season-id").value = espnConnection.seasonId;
+  document.querySelector("#onboarding-team-id").value = espnConnection.teamId;
+  document.querySelector("#onboarding-dialog").showModal();
 }
 
 async function refreshCompanionHealth() {
@@ -355,6 +366,14 @@ async function refreshCompanionHealth() {
 teamSelect.addEventListener("change", () => { store.dispatch({ type: "team/select", teamId: teamSelect.value }); render(); });
 document.querySelector("#import-button").addEventListener("click", () => document.querySelector("#snapshot-input").click());
 document.querySelector("#rankings-button").addEventListener("click", () => document.querySelector("#rankings-input").click());
+document.querySelector("#onboarding-save-button").addEventListener("click", () => {
+  try {
+    espnConnection = connectionPreferences.save({ leagueId: document.querySelector("#onboarding-league-id").value.trim(), seasonId: document.querySelector("#onboarding-season-id").value.trim(), teamId: document.querySelector("#onboarding-team-id").value.trim() });
+    savedEspnConnections = connectionPreferences.list(); onboardingPreferences.complete("connection"); document.querySelector("#onboarding-dialog").close();
+    if (state.section === "league") render(); showNotice("ESPN connection saved locally. Install or reload the companion, then choose Connect ESPN.");
+  } catch (error) { showNotice(error.message, "error"); }
+});
+document.querySelector("#onboarding-sample-button").addEventListener("click", () => { onboardingPreferences.complete("sample"); document.querySelector("#onboarding-dialog").close(); showNotice("Sample mode selected. Open League Setup whenever you are ready to connect ESPN."); });
 document.querySelector("#connect-button").addEventListener("click", async () => {
   const button = document.querySelector("#connect-button");
   button.disabled = true; button.textContent = "Connecting…";

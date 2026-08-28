@@ -41,10 +41,8 @@ try {
   await page.locator(".player-row").first().waitFor();
 
   const violations = [];
-  for (const section of ["overview", "lineup", "waivers", "alerts", "season", "league"]) {
-    await page.locator(`a[data-section="${section}"]`).click();
-    await page.locator("#app-content").waitFor();
-    await page.addScriptTag({ content: axe.source });
+  await page.addScriptTag({ content: axe.source });
+  const audit = async (section) => {
     const result = await page.evaluate(async () => globalThis.axe.run(document, {
       runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"] },
     }));
@@ -56,12 +54,20 @@ try {
       help: violation.help,
       targets: violation.nodes.map((node) => node.target.join(" ")).join(", "),
     })));
+  };
+  await page.locator("#onboarding-dialog").waitFor();
+  await audit("onboarding");
+  await page.getByRole("button", { name: "Explore sample" }).click();
+  for (const section of ["overview", "lineup", "waivers", "alerts", "season", "league"]) {
+    await page.locator(`a[data-section="${section}"]`).click();
+    await page.locator("#app-content").waitFor();
+    await audit(section);
   }
 
   if (violations.length) {
     throw new Error(`WCAG audit violations:\n${violations.map((item) => `${item.section}: ${item.id} (${item.impact}, ${item.nodes} nodes) — ${item.help} [${item.targets}]`).join("\n")}`);
   }
-  console.log("Automated WCAG 2.2 A/AA browser audit passed across six primary sections.");
+  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding and six primary sections.");
 } finally {
   await browser?.close();
   server.kill();

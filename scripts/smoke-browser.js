@@ -41,6 +41,10 @@ try {
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(origin, { waitUntil: "networkidle" });
   await page.locator(".player-row").first().waitFor();
+  const onboarding = page.locator("#onboarding-dialog");
+  await onboarding.waitFor();
+  await page.getByRole("button", { name: "Save ESPN connection" }).click();
+  if (await onboarding.isVisible()) throw new Error("Desktop onboarding did not close after saving a valid connection.");
   if (await page.title() !== "The Chip Winner") throw new Error("Unexpected document title.");
   if (await page.locator("#app-content").getByText("STARTERS", { exact: true }).count() === 0) throw new Error("Sample roster did not render.");
   await page.locator('a[data-section="lineup"]').click();
@@ -51,6 +55,8 @@ try {
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
   const mobilePage = await mobile.newPage();
   await mobilePage.goto(origin, { waitUntil: "networkidle" });
+  await mobilePage.locator("#onboarding-dialog").waitFor();
+  await mobilePage.getByRole("button", { name: "Explore sample" }).click();
   const menu = mobilePage.locator(".mobile-menu");
   await menu.click();
   if (await menu.getAttribute("aria-expanded") !== "true") throw new Error("Mobile navigation did not open.");

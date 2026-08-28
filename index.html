@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.15" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.16" />
   </head>
   <body>
     <a class="skip-link" href="#app-content">Skip to main content</a>
@@ -61,6 +61,24 @@
     <dialog id="player-dialog" class="player-dialog" aria-labelledby="player-dialog-title">
       <div id="player-dialog-content"></div>
     </dialog>
-    <script type="module" src="src/app.js?v=0.9.15"></script>
+    <dialog id="onboarding-dialog" class="onboarding-dialog" aria-labelledby="onboarding-title" aria-describedby="onboarding-description">
+      <div class="onboarding-copy">
+        <p class="eyebrow">WELCOME</p>
+        <h2 id="onboarding-title">Set up The Chip Winner</h2>
+        <p id="onboarding-description">Connect an ESPN league through the read-only Chrome companion, or explore the realistic sample dashboard first.</p>
+      </div>
+      <div class="onboarding-boundary"><strong>Your ESPN sign-in stays in Chrome</strong><span>The website receives normalized fantasy data—not your ESPN cookies or password.</span></div>
+      <div class="connection-form onboarding-form">
+        <label>League ID<input id="onboarding-league-id" inputmode="numeric" autocomplete="off"></label>
+        <label>Season<input id="onboarding-season-id" inputmode="numeric" autocomplete="off"></label>
+        <label>Team ID<input id="onboarding-team-id" inputmode="numeric" autocomplete="off"></label>
+      </div>
+      <div class="onboarding-actions">
+        <button class="button primary" id="onboarding-save-button" type="button">Save ESPN connection</button>
+        <button class="button secondary" id="onboarding-sample-button" type="button">Explore sample</button>
+      </div>
+      <p class="onboarding-note">You can change leagues, reconnect, or clear all local data later in League Setup.</p>
+    </dialog>
+    <script type="module" src="src/app.js?v=0.9.16"></script>
   </body>
 </html>
