@@ -66,6 +66,8 @@ Important constraints for the live adapter:
 
 The Chrome companion completes the read transport for a private league. Its service worker owns the credentialed ESPN request, restricts inputs to numeric league/season IDs and fixed views, and returns response JSON without exposing browser cookies. A narrow content-script bridge is limited to the deployed site and localhost. Website code normalizes and validates the response before caching it.
 
+League ID, season, and team ID are explicit browser-local onboarding inputs. No user league is embedded in source defaults; existing saved profiles remain isolated in local storage and may be selected or removed in League Setup.
+
 ## Next increments
 
 1. Provision the encrypted sync service described in `docs/mobile-sync.md` and connect the existing client contract.

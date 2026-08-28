@@ -17,7 +17,7 @@ import { ProjectionIdentityMapProvider } from "./providers/projections/projectio
 import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { diffLineupRecommendations } from "./domain/recommendation-change.js";
-import { EspnConnectionPreferences, connectionKey } from "./providers/espn/connection-preferences.js";
+import { EspnConnectionPreferences, connectionKey, validateEspnConnection } from "./providers/espn/connection-preferences.js";
 import { EspnRefreshCooldown, evaluateCompanionPing, MINIMUM_COMPANION_VERSION } from "./providers/espn/connection-health.js";
 import { LocalDataManager } from "./application/local-data-manager.js";
 import { runCacheMigrations } from "./application/cache-migrations.js";
@@ -417,6 +417,8 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
   const button = document.querySelector("#connect-button");
   button.disabled = true; button.textContent = "Connecting…";
   try {
+    const connectionValidation = validateEspnConnection(espnConnection);
+    if (!connectionValidation.valid) throw new Error(`Save a valid ESPN connection in League Setup first. ${connectionValidation.errors.join(" ")}`);
     const health = evaluateCompanionPing(await companion.ping()); companionHealth = health;
     if (health.status !== "ready") throw new Error(health.message);
     const cooldown = refreshCooldown.remainingMs(connectionKey(espnConnection));

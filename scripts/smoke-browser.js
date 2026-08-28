@@ -43,6 +43,9 @@ try {
   await page.locator(".player-row").first().waitFor();
   const onboarding = page.locator("#onboarding-dialog");
   await onboarding.waitFor();
+  await page.locator("#onboarding-league-id").fill("123456");
+  await page.locator("#onboarding-season-id").fill("2026");
+  await page.locator("#onboarding-team-id").fill("2");
   await page.getByRole("button", { name: "Save ESPN connection" }).click();
   if (await onboarding.isVisible()) throw new Error("Desktop onboarding did not close after saving a valid connection.");
   if (await page.title() !== "The Chip Winner") throw new Error("Unexpected document title.");

@@ -18,7 +18,7 @@ The product is not intended to guarantee outcomes or conceal missing data. It sh
 
 ## Current baseline — Foundation preview
 
-Status: **Complete and deployed for the configured ESPN league**
+Status: **Complete and deployed with browser-local ESPN league onboarding**
 
 The deployed preview includes:
 
@@ -36,7 +36,7 @@ The deployed preview includes:
 
 Additional connected foundation capabilities now include:
 
-- authenticated read-only access to private ESPN league `118749183` through the Chrome companion;
+- authenticated read-only access to a locally configured private ESPN league through the Chrome companion;
 - real team, roster, matchup, projection, injury, free-agent, and waiver data;
 - public NFL opponent and kickoff context;
 - non-conflicting waiver recommendations with acquisition status;

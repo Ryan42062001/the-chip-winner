@@ -13,6 +13,6 @@ test("multiple ESPN connection profiles can be saved and activated", () => {
   assert.equal(preferences.list().length, 2); assert.deepEqual(preferences.activate(connectionKey(first)), first); assert.deepEqual(preferences.read(), first); preferences.remove(connectionKey(second)); assert.equal(preferences.list().length, 1);
 });
 
-test("invalid ESPN connection settings are rejected and defaults remain available", () => {
-  const preferences = new EspnConnectionPreferences({ storage: null }); assert.deepEqual(preferences.read(), DEFAULT_ESPN_CONNECTION); assert.throws(() => preferences.save({ leagueId: "abc", seasonId: "26", teamId: "" }), /League ID/);
+test("new installations have no hard-coded ESPN league and invalid settings are rejected", () => {
+  const preferences = new EspnConnectionPreferences({ storage: null }); assert.deepEqual(preferences.read(), DEFAULT_ESPN_CONNECTION); assert.deepEqual(DEFAULT_ESPN_CONNECTION, { leagueId: "", seasonId: "", teamId: "" }); assert.throws(() => preferences.save({ leagueId: "abc", seasonId: "26", teamId: "" }), /League ID/);
 });

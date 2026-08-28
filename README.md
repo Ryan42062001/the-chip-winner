@@ -19,16 +19,16 @@ Open `http://localhost:4173`. The app initially uses realistic sample data. Choo
 
 Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The current importer records the file as 2026 PPR rankings with the top-10 expert filter, reconciles players using name plus NFL team plus position, and reports unresolved or conflicting identities. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
 
-## Connect the private ESPN league
+## Connect an ESPN league
 
-The configured development league is ESPN league `118749183`, season `2026`, team `2`. Because it is private, Chrome must make the read request through the local ESPN Companion extension while signed in to ESPN.
+League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
 
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode**.
 3. Select **Load unpacked**.
 4. Choose the repository folder `extensions/espn-companion`.
 5. Sign in to ESPN in the same Chrome profile.
-6. Reload the live website and choose **Connect ESPN**.
+6. Reload the live website, enter the IDs from your ESPN team URL, save the connection, and choose **Connect ESPN**.
 
 The extension does not expose ESPN cookies to the website and does not contain write operations. See [`extensions/espn-companion/README.md`](extensions/espn-companion/README.md) for its security boundary.
 
@@ -68,7 +68,7 @@ Production releases and safe rollback are documented in [`docs/deployment.md`](d
 - End-to-end encrypted mobile sync through a deployed Cloudflare Worker and KV storage
 - Local snapshot differencing and a team-specific What Changed timeline
 
-This version reads the configured private ESPN league through the local Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
+This version reads a locally configured private ESPN league through the Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
 
 ## Import format
 

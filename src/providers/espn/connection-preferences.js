@@ -1,6 +1,6 @@
 export const ESPN_CONNECTION_CACHE_KEY = "chip-winner:espn-connection:v1";
 export const ESPN_CONNECTION_PROFILES_KEY = "chip-winner:espn-connections:v1";
-export const DEFAULT_ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
+export const DEFAULT_ESPN_CONNECTION = Object.freeze({ leagueId: "", seasonId: "", teamId: "" });
 
 export function validateEspnConnection(value) {
   const errors = [];
