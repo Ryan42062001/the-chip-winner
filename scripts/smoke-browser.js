@@ -47,6 +47,12 @@ try {
   if (await onboarding.isVisible()) throw new Error("Desktop onboarding did not close after saving a valid connection.");
   if (await page.title() !== "The Chip Winner") throw new Error("Unexpected document title.");
   if (await page.locator("#app-content").getByText("STARTERS", { exact: true }).count() === 0) throw new Error("Sample roster did not render.");
+  const firstPlayer = page.locator(".player-row").first();
+  await firstPlayer.focus(); await firstPlayer.press("Enter");
+  await page.locator("#player-dialog[open]").waitFor();
+  if (await page.locator("#player-dialog-title").textContent() === "") throw new Error("Keyboard player detail did not render a player identity.");
+  await page.getByRole("button", { name: "Close player details" }).click();
+  if (await page.locator("#player-dialog").isVisible()) throw new Error("Player detail dialog did not close.");
   await page.locator('a[data-section="lineup"]').click();
   await page.getByRole("heading", { name: "Lineup Lab", level: 2 }).waitFor();
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
@@ -57,6 +63,9 @@ try {
   await mobilePage.goto(origin, { waitUntil: "networkidle" });
   await mobilePage.locator("#onboarding-dialog").waitFor();
   await mobilePage.getByRole("button", { name: "Explore sample" }).click();
+  await mobilePage.locator(".player-row").first().click();
+  await mobilePage.locator("#player-dialog[open]").waitFor();
+  await mobilePage.getByRole("button", { name: "Close player details" }).click();
   const menu = mobilePage.locator(".mobile-menu");
   await menu.click();
   if (await menu.getAttribute("aria-expanded") !== "true") throw new Error("Mobile navigation did not open.");

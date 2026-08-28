@@ -14,8 +14,9 @@
     "audit:a11y": "node scripts/audit-accessibility.js",
     "audit:extension": "node scripts/audit-extension.js",
     "audit:dependencies": "npm audit --audit-level=high",
+    "audit:performance": "node scripts/audit-performance.js",
     "security": "node scripts/security-scan.js",
-    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js"
+    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js"
   },
   "engines": {
     "node": ">=18"

@@ -274,7 +274,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Keep the automated WCAG 2.2 A/AA audit green and complete a manual assistive-technology review.
 - Full keyboard operation and focus management.
 - Screen-reader labels for recommendations, deltas, injuries, and status.
-- Mobile performance and asset budgets.
+- Keep HTML, CSS, app-entry, sample-data, and total source-JavaScript budgets green; add runtime performance thresholds when production telemetry has an approved privacy policy.
 - Reduced-motion behavior.
 
 ### Security and privacy
@@ -441,7 +441,7 @@ Planned work:
 3. Define weekly and ROS projection contracts separately.
 4. Implement source freshness and disagreement selectors.
 5. Add synthetic fixtures for resolved, unresolved, and conflicting identities.
-6. Add keyboard/mobile browser tests for the detail drawer.
+6. Keep keyboard/mobile player-detail journeys and the open-dialog WCAG audit green.
 
 Sprint exit criteria:
 

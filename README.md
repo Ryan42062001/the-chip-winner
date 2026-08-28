@@ -38,6 +38,7 @@ Run the checks:
 npm test
 npm run check
 npm run audit:a11y
+npm run audit:performance
 ```
 
 Production releases and safe rollback are documented in [`docs/deployment.md`](docs/deployment.md).

@@ -58,6 +58,10 @@ try {
   await page.locator("#onboarding-dialog").waitFor();
   await audit("onboarding");
   await page.getByRole("button", { name: "Explore sample" }).click();
+  await page.locator(".player-row").first().click();
+  await page.locator("#player-dialog[open]").waitFor();
+  await audit("player detail");
+  await page.getByRole("button", { name: "Close player details" }).click();
   for (const section of ["overview", "lineup", "waivers", "alerts", "season", "league"]) {
     await page.locator(`a[data-section="${section}"]`).click();
     await page.locator("#app-content").waitFor();
@@ -67,7 +71,7 @@ try {
   if (violations.length) {
     throw new Error(`WCAG audit violations:\n${violations.map((item) => `${item.section}: ${item.id} (${item.impact}, ${item.nodes} nodes) — ${item.help} [${item.targets}]`).join("\n")}`);
   }
-  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding and six primary sections.");
+  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding, player detail, and six primary sections.");
 } finally {
   await browser?.close();
   server.kill();
