@@ -18,6 +18,7 @@ import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { diffLineupRecommendations } from "./domain/recommendation-change.js";
 import { EspnConnectionPreferences } from "./providers/espn/connection-preferences.js";
+import { LocalDataManager } from "./application/local-data-manager.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -34,6 +35,7 @@ const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sy
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const connectionPreferences = new EspnConnectionPreferences();
 let espnConnection = connectionPreferences.read();
+const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
@@ -191,7 +193,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation.byPlayerId).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation.unresolved.length}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation.conflicts.length}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">Rankings remain separate from ESPN projections and are stored only in this browser.</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Import a strict CSV with provider_player_id, week, and points columns. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}<div class="sync-actions"><button class="button secondary" id="download-projection-template">Download projection template</button><button class="button secondary" id="download-identity-template">Download ESPN ID template</button></div></article>
     ${mobileSyncCard()}
-    <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
+    <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a><div class="sync-actions"><button class="button secondary" id="clear-local-data-button">Disconnect and clear local data</button></div></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ADVANCED MODELS</p><h3>Privacy-safe context packet</h3></div></div><p class="data-note">Export the selected team’s normalized context without browser credentials or unrelated league data. Invalid recommendations are excluded by the offline evaluator.</p><button class="button ghost" id="download-model-context">Download model context</button></article>
   </div>`;
 }
@@ -428,6 +430,15 @@ content.addEventListener("click", async (event) => {
     if (action.id === "copy-sync-button") { await navigator.clipboard.writeText(mobileUrl(readStoredSyncCredentials())); showNotice("Private mobile link copied."); }
     if (action.id === "revoke-sync-button") { const credentials = readStoredSyncCredentials(); await syncProvider.remove(credentials.channelId, credentials.writeToken); localStorage.removeItem(SYNC_CREDENTIALS_KEY); render(); showNotice("Mobile link revoked."); }
   } catch (error) { showNotice(error.message, "error"); action.disabled = false; }
+});
+content.addEventListener("click", async (event) => {
+  if (!event.target.closest("#clear-local-data-button")) return;
+  if (!confirm("Clear all The Chip Winner data stored in this browser and disconnect the saved ESPN league?")) return;
+  const credentials = readStoredSyncCredentials(); let remoteRevoked = true;
+  if (credentials) { try { await syncProvider.remove(credentials.channelId, credentials.writeToken); } catch { remoteRevoked = false; } }
+  localDataManager.clearAll();
+  showNotice(remoteRevoked ? "Local data cleared. Loading the sample league…" : "Local data cleared, but the encrypted mobile snapshot could not be revoked. It will expire automatically.", remoteRevoked ? "success" : "error");
+  setTimeout(() => location.reload(), 600);
 });
 content.addEventListener("keydown", (event) => { if ((event.key === "Enter" || event.key === " ") && event.target.matches("[data-player-id]")) { event.preventDefault(); openPlayerDetail(event.target.dataset.playerId); } });
 

@@ -96,6 +96,8 @@ See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the post-fou
 
 See [`AI readiness`](docs/ai-readiness.md) for model context boundaries, recommendation guardrails, and the evaluation roadmap.
 
+See [`Security model`](docs/security.md) for browser trust boundaries, Content Security Policy, mobile-sync behavior, and local-data deletion.
+
 See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's read scope, local caching behavior, and deletion path.
 
 See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cross-device design and required backend contract.
