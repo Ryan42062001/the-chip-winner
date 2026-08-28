@@ -17,6 +17,7 @@ import { ProjectionIdentityMapProvider } from "./providers/projections/projectio
 import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { diffLineupRecommendations } from "./domain/recommendation-change.js";
+import { EspnConnectionPreferences } from "./providers/espn/connection-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -31,7 +32,8 @@ let projectionIdentityMap = projectionIdentityMapProvider.readCache();
 const alertPreferences = new AlertPreferences();
 const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sync.yc6syr6bkd.workers.dev" });
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
-const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
+const connectionPreferences = new EspnConnectionPreferences();
+let espnConnection = connectionPreferences.read();
 const content = document.querySelector("#app-content");
 const noticeRegion = document.querySelector("#notice-region");
 const teamSelect = document.querySelector("#team-select");
@@ -182,6 +184,7 @@ function renderLeague() {
   const slots = league.lineupSlots || [];
   const waiver = league.waiver || {};
   content.innerHTML = sectionHeader("League Setup", "Settings reported by ESPN for the connected league. Unavailable fields remain unlabeled rather than inferred.") + `<div class="league-grid">
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Local league settings</h3></div></div><div class="connection-form"><label>League ID<input id="connection-league-id" inputmode="numeric" value="${escapeHtml(espnConnection.leagueId)}"></label><label>Season<input id="connection-season-id" inputmode="numeric" value="${escapeHtml(espnConnection.seasonId)}"></label><label>Team ID<input id="connection-team-id" inputmode="numeric" value="${escapeHtml(espnConnection.teamId)}"></label></div><button class="button primary" id="save-connection-button">Save connection</button><p class="data-note">Stored only in this browser. After saving, use Connect ESPN to load the selected league.</p></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">LEAGUE</p><h3>${escapeHtml(league.name)}</h3></div><span class="record">${escapeHtml(league.season || "Season unavailable")}</span></div><dl class="settings-list"><div><dt>Platform</dt><dd>ESPN</dd></div><div><dt>Teams</dt><dd>${escapeHtml(league.teamCount ?? "Unavailable")}</dd></div><div><dt>Scoring</dt><dd>${escapeHtml(league.scoringType || "Unavailable")}</dd></div><div><dt>Current week</dt><dd>${escapeHtml(state.snapshot.currentWeek)}</dd></div></dl></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
@@ -320,7 +323,7 @@ async function init() {
     }
     const loaded = await provider.load();
     store.dispatch({ type: "load/success", ...loaded });
-    if (loaded.snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
+    if (loaded.snapshot.teams.some((team) => team.id === espnConnection.teamId)) store.dispatch({ type: "team/select", teamId: espnConnection.teamId });
     loadRankingSet(rankingProvider.readCache());
     hydrateControls(); render();
   } catch (error) { store.dispatch({ type: "load/error", error: error.message }); content.innerHTML = emptyState("Unable to load league data", error.message); }
@@ -334,13 +337,13 @@ document.querySelector("#connect-button").addEventListener("click", async () => 
   button.disabled = true; button.textContent = "Connecting…";
   try {
     await companion.ping();
-    const response = await companion.fetchLeague(ESPN_CONNECTION);
+    const response = await companion.fetchLeague(espnConnection);
     const snapshot = normalizeEspnLeagueResponse(response.data.league, response.data.meta, { availablePlayers: response.data.availablePlayers, nflScoreboard: response.data.nflScoreboard });
     const previousSnapshot = provider.readCache();
     provider.saveSnapshot(snapshot);
     store.dispatch({ type: "load/success", snapshot, previousSnapshot, source: "cache" });
     loadRankingSet(state.rankingSet || rankingProvider.readCache());
-    if (snapshot.teams.some((team) => team.id === ESPN_CONNECTION.teamId)) store.dispatch({ type: "team/select", teamId: ESPN_CONNECTION.teamId });
+    if (snapshot.teams.some((team) => team.id === espnConnection.teamId)) store.dispatch({ type: "team/select", teamId: espnConnection.teamId });
     hydrateControls(); render(); showNotice(`Connected ${snapshot.league.name}. ESPN data refreshed successfully.`);
   } catch (error) {
     showNotice(error.message.includes("not detected") ? `${error.message} See the setup guide in the repository.` : `${error.message} Make sure ESPN is signed in within this Chrome profile.`, "error");
@@ -398,6 +401,13 @@ content.addEventListener("click", (event) => {
   const dismiss = event.target.closest("[data-dismiss-alert]");
   if (dismiss) { event.stopPropagation(); alertPreferences.dismiss(dismiss.dataset.dismissAlert); render(); showNotice("Alert dismissed for this week."); }
   if (event.target.closest("#restore-alerts-button")) { alertPreferences.restoreAll(); render(); showNotice("Dismissed alerts restored."); }
+});
+content.addEventListener("click", (event) => {
+  if (!event.target.closest("#save-connection-button")) return;
+  try {
+    espnConnection = connectionPreferences.save({ leagueId: document.querySelector("#connection-league-id").value.trim(), seasonId: document.querySelector("#connection-season-id").value.trim(), teamId: document.querySelector("#connection-team-id").value.trim() });
+    showNotice("ESPN connection saved locally. Use Connect ESPN to refresh this league.");
+  } catch (error) { showNotice(error.message, "error"); }
 });
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
 content.addEventListener("click", (event) => {

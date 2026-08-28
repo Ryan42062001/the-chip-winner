@@ -250,6 +250,8 @@ Release exit: managers can evaluate roster moves across the season and playoffs 
 
 ## Release 1.0 — Production-grade read-only companion
 
+Status: **In progress.** Validated browser-local ESPN league, season, and team configuration is implemented. Multiple saved leagues, cache migrations, production smoke automation, accessibility/security audits, and full recovery/deletion flows remain open.
+
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
 ### Connection and onboarding
