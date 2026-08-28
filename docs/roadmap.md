@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 83 automated tests covering league normalization, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, season planning, recommendation contracts, and future projection inputs.
+- 85 automated tests covering league normalization, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, season planning, recommendation contracts, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
