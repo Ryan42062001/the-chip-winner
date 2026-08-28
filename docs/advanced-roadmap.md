@@ -213,7 +213,7 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
-Status: in progress. The first Season Plan slice now reports positional depth, starter bye conflicts, and explicitly supplied playoff schedule-strength fields; multiweek scenario planning and deeper schedule intelligence remain open.
+Status: in progress. Season Plan reports positional depth, starter bye conflicts, explicitly supplied playoff schedule-strength fields, current-week legal moves, multiweek baselines and isolated add/drop deltas. Projection provider, scoring format, capture time, ID-map size, player-week coverage and withheld-delta reasons are visible. Deeper schedule intelligence and user-selectable scenario horizons remain open.
 
 Goal: support roster construction beyond the immediate week.
 
