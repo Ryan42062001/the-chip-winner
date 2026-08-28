@@ -25,6 +25,7 @@ jobs:
       - run: npm test
       - run: npm run eval:model
       - run: npm run smoke
+      - run: npm run security
 
   deploy:
     needs: test

@@ -21,6 +21,8 @@ League Setup provides a complete local-data deletion action. It clears ESPN snap
 ## Remaining review work
 
 - Formal Chrome-extension permission audit.
-- Dependency and secret scanning in CI.
+- Dependency review in CI.
 - Automated CSP/browser smoke coverage.
 - Independent accessibility and security review before a broader public release.
+
+The deployment workflow runs a tracked-file secret scan that rejects ESPN session cookies, private keys, OpenAI-style API keys, and embedded mobile write tokens.
