@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { buildLineupSuggestions, buildWaiverIdeas, buildWarnings, canFillSlot, compareRosterPlayers } from "../src/domain/recommendations.js";
+import { buildLineupSuggestions, buildPrioritizedWarnings, buildWaiverIdeas, buildWarnings, canFillSlot, compareRosterPlayers } from "../src/domain/recommendations.js";
 
 const sample = JSON.parse(await readFile(new URL("../src/data/sample-espn-snapshot.json", import.meta.url), "utf8"));
 
@@ -57,4 +57,11 @@ test("start sit comparison distinguishes preferences, near ties, and missing pro
   assert.equal(compareRosterPlayers(sample, "t1", "p5", "p3").status, "tossup");
   assert.equal(compareRosterPlayers(sample, "t1", "p14", "p12").status, "missing");
   assert.equal(compareRosterPlayers(sample, "t1", "p1", "not-rostered").status, "invalid");
+});
+
+test("alerts prioritize an injured starter near an explicit kickoff", () => {
+  const snapshot = structuredClone(sample); const starterId = snapshot.rosters[0].entries.find((entry) => entry.lineupSlot !== "BE" && entry.lineupSlot !== "IR").playerId;
+  const player = snapshot.players.find((item) => item.id === starterId); player.injury = { status: "QUESTIONABLE", detail: null }; player.gameTime = "2026-09-01T13:00:00Z";
+  const warnings = buildPrioritizedWarnings(snapshot, "t1", Date.parse("2026-09-01T01:00:00Z"));
+  assert.equal(warnings[0].player.id, starterId); assert.equal(warnings[0].urgency, "critical"); assert.equal(warnings[0].hoursToKickoff, 12);
 });

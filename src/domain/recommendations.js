@@ -65,6 +65,19 @@ export function buildWarnings(snapshot, teamId) {
   return warnings;
 }
 
+export function buildPrioritizedWarnings(snapshot, teamId, now = Date.now()) {
+  const weights = { critical: 4, high: 3, medium: 2, unknown: 1 };
+  return buildWarnings(snapshot, teamId).map((warning) => {
+    const starter = isStarter(warning.lineupSlot); const kickoff = Date.parse(warning.player.gameTime); const hours = Number.isFinite(kickoff) ? (kickoff - now) / 36e5 : null;
+    let urgency = "unknown";
+    if (warning.kind === "bye" && starter) urgency = "high";
+    else if (warning.kind === "injury" && starter && hours != null && hours <= 24) urgency = "critical";
+    else if (warning.kind === "injury" && starter && hours != null && hours <= 72) urgency = "high";
+    else if (starter) urgency = "medium";
+    return Object.freeze({ ...warning, urgency, hoursToKickoff: hours == null ? null : Math.max(0, +hours.toFixed(1)) });
+  }).sort((a, b) => weights[b.urgency] - weights[a.urgency] || (a.hoursToKickoff ?? Infinity) - (b.hoursToKickoff ?? Infinity));
+}
+
 export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlayerId) {
   const roster = snapshot.rosters.find((item) => item.teamId === teamId)?.entries || [];
   const rosterIds = new Set(roster.map((entry) => entry.playerId));
