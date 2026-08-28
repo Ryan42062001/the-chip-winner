@@ -26,6 +26,8 @@ test("scenario planner calculates a weekly baseline from explicitly mapped proje
   assert.equal(result.weeklyBaseline.length, 1);
   assert.equal(result.weeklyBaseline[0].week, 15);
   assert.equal(result.weeklyBaseline[0].projectedTotal > 0, true);
+  assert.equal(result.weeklyBaseline[0].completeCoverage, true);
+  assert.equal(result.weeklyBaseline[0].mappedProjectionCount, roster.entries.length);
 });
 
 test("scenario planner compares an isolated add drop move without mutating ESPN state", () => {
@@ -40,4 +42,11 @@ test("scenario planner compares an isolated add drop move without mutating ESPN 
   assert.equal(result.scenarios.length, 1);
   assert.equal(result.scenarios[0].weekly[0].delta != null, true);
   assert.equal(JSON.stringify(sampleSnapshot), before);
+});
+
+test("scenario planner labels partial roster projection coverage", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const playerId = roster.entries[0].playerId;
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap: new Map([["provider-one", playerId]]), projectionSet: { projections: [{ providerPlayerId: "provider-one", week: 15, points: 20 }] } });
+  assert.equal(result.weeklyBaseline[0].mappedProjectionCount, 1);
+  assert.equal(result.weeklyBaseline[0].completeCoverage, false);
 });

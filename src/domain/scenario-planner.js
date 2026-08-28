@@ -25,7 +25,9 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     for (const week of weeks) {
       const weeklySnapshot = { ...snapshot, currentWeek: week, players: snapshot.players.map((player) => ({ ...player, projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null })) };
       const result = optimizeLineup(weeklySnapshot, teamId);
-      weeklyBaseline.push(Object.freeze({ week, status: result.status, projectedTotal: result.projectedTotal ?? null, knownAssignments: result.assignments?.length || 0, reason: result.reason }));
+      const rosterPlayerIds = roster.entries.map((entry) => entry.playerId);
+      const mappedProjectionCount = rosterPlayerIds.filter((id) => projectionIndex.has(`${espnToProvider.get(id)}:${week}`)).length;
+      weeklyBaseline.push(Object.freeze({ week, status: result.status, projectedTotal: result.projectedTotal ?? null, knownAssignments: result.assignments?.length || 0, mappedProjectionCount, rosterPlayerCount: rosterPlayerIds.length, completeCoverage: mappedProjectionCount === rosterPlayerIds.length, reason: result.reason }));
     }
     for (const scenario of options.scenarios || []) {
       const dropEntry = roster.entries.find((entry) => entry.playerId === scenario.dropPlayerId);
