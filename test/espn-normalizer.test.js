@@ -4,6 +4,13 @@ import { readFile } from "node:fs/promises";
 import { normalizeEspnCapture, normalizeEspnInjury, normalizeEspnLeagueResponse, normalizeEspnLineupSlot, normalizeEspnPosition } from "../src/providers/espn/espn-normalizer.js";
 
 const leagueResponse = JSON.parse(await readFile(new URL("./fixtures/espn-league-response.json", import.meta.url), "utf8"));
+const readFixture = async (name) => JSON.parse(await readFile(new URL(`./fixtures/${name}`, import.meta.url), "utf8"));
+const [superflexResponse, offseasonResponse, playoffResponse, partialResponse] = await Promise.all([
+  readFixture("espn-superflex-response.json"),
+  readFixture("espn-offseason-response.json"),
+  readFixture("espn-playoff-final-response.json"),
+  readFixture("espn-partial-live-response.json"),
+]);
 
 test("ESPN numeric codes map explicitly", () => {
   assert.equal(normalizeEspnLineupSlot(23), "FLEX");
@@ -58,4 +65,33 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.meta.kind, "live-companion");
   assert.deepEqual(snapshot.league.lineupSlots.find((item) => item.slot === "QB"), { slot: "QB", count: 1, espnSlotId: 0 });
   assert.equal(snapshot.league.waiver.budget, 100);
+});
+
+test("superflex league fixture preserves OP slots and its reported scoring type", () => {
+  const snapshot = normalizeEspnLeagueResponse(superflexResponse);
+  assert.equal(snapshot.rosters[0].entries[0].lineupSlot, "OP");
+  assert.equal(snapshot.league.scoringType, "H2H_POINTS_HALF");
+  assert.equal(snapshot.matchups[0].status, "current");
+});
+
+test("offseason fixture preserves empty state and missing records", () => {
+  const snapshot = normalizeEspnLeagueResponse(offseasonResponse);
+  assert.equal(snapshot.currentWeek, 0);
+  assert.equal(snapshot.matchups.length, 0);
+  assert.deepEqual(snapshot.teams[0].record, { wins: null, losses: null, ties: null });
+});
+
+test("completed playoff fixture reports a final matchup without inventing a projection", () => {
+  const snapshot = normalizeEspnLeagueResponse(playoffResponse);
+  assert.equal(snapshot.matchups[0].status, "final");
+  assert.equal(snapshot.matchups[0].homeScore, 121.4);
+  assert.equal(snapshot.players[0].projection, null);
+});
+
+test("partial live fixture retains unknown injury state and missing NFL context", () => {
+  const snapshot = normalizeEspnLeagueResponse(partialResponse);
+  assert.deepEqual(snapshot.players[0].injury, { status: "UNKNOWN", detail: null, sourceStatus: "PRESEASON_RECOVERY" });
+  assert.equal(snapshot.players[0].opponent, null);
+  assert.equal(snapshot.players[0].gameTime, null);
+  assert.equal(snapshot.players[0].projection, null);
 });

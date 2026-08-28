@@ -265,7 +265,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 
 - Expand cache migrations whenever a persisted schema changes.
 - Keep local desktop/mobile browser smoke tests and the post-deployment public URL smoke check green.
-- Fixture coverage for custom rosters, leagues of different sizes, playoffs, live games, and offseason states.
+- Continue expanding the synthetic regular, superflex, playoff-final, partial-live, and offseason fixture matrix when new ESPN response shapes appear.
 - Graceful partial-data behavior for every provider request.
 - Keep deployment and extension rollback instructions current with the release workflow.
 

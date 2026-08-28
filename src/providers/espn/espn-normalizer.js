@@ -106,7 +106,7 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
       awayTeamId: String(item.away.teamId),
       homeScore: item.home.totalPoints ?? null,
       awayScore: item.away.totalPoints ?? null,
-      status: currentWeek < response.scoringPeriodId ? "final" : "current"
+      status: item.winner && item.winner !== "UNDECIDED" ? "final" : "current"
     }));
   const availableEntries = (supplemental.availablePlayers || []).filter((entry) => (entry.player || entry)?.id && (entry.player || entry)?.fullName);
   const availablePlayers = availableEntries.map((entry) => entry.player || entry);
@@ -167,7 +167,7 @@ function normalizeTeam(team) {
     id: String(team.id),
     name: explicitName || team.name || team.abbrev || `Team ${team.id}`,
     abbreviation: team.abbrev || `T${team.id}`,
-    record: { wins: overall.wins ?? 0, losses: overall.losses ?? 0, ties: overall.ties ?? 0 },
+    record: { wins: overall.wins ?? null, losses: overall.losses ?? null, ties: overall.ties ?? null },
     pointsFor: overall.pointsFor ?? null
   };
 }

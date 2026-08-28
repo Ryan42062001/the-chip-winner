@@ -1,0 +1,9 @@
+{
+  "id": 900004, "seasonId": 2026, "scoringPeriodId": 8,
+  "settings": { "name": "Synthetic Partial League", "rosterSettings": { "lineupSlotCounts": { "0": 1, "20": 3 } }, "acquisitionSettings": {} },
+  "teams": [
+    { "id": 1, "name": "Synthetic Partial One", "abbrev": "P1", "roster": { "entries": [{ "lineupSlotId": 0, "playerPoolEntry": { "player": { "id": 4001, "fullName": "Synthetic Unknown Status", "defaultPositionId": 1, "injuryStatus": "PRESEASON_RECOVERY" } } }] } },
+    { "id": 2, "name": "Synthetic Partial Two", "abbrev": "P2", "roster": { "entries": [] } }
+  ],
+  "schedule": [{ "matchupPeriodId": 8, "home": { "teamId": 1 }, "away": { "teamId": 2 } }]
+}

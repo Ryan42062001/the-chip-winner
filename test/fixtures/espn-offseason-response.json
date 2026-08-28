@@ -1,0 +1,9 @@
+{
+  "id": 900002, "seasonId": 2026, "scoringPeriodId": 0,
+  "settings": { "name": "Synthetic Offseason League", "scoringSettings": {}, "rosterSettings": { "lineupSlotCounts": { "0": 1, "20": 7 } }, "acquisitionSettings": {} },
+  "teams": [
+    { "id": 1, "name": "Synthetic One", "abbrev": "ONE", "roster": { "entries": [] } },
+    { "id": 2, "name": "Synthetic Two", "abbrev": "TWO", "roster": { "entries": [] } }
+  ],
+  "schedule": []
+}

@@ -54,6 +54,7 @@ store.subscribe((next) => { state = next; });
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 const projection = (value) => value == null ? '<span class="missing">Not available</span>' : `${value.toFixed(1)} pts`;
 const initials = (name) => name.split(" ").map((part) => part[0]).slice(0, 2).join("");
+const formatRecord = (record) => Number.isInteger(record?.wins) && Number.isInteger(record?.losses) ? `${record.wins}-${record.losses}${record.ties ? `-${record.ties}` : ""}` : "Record unavailable";
 const gameTime = (value) => {
   if (!value) return "Time unavailable";
   const parsed = Date.parse(value);
@@ -96,18 +97,18 @@ function renderOverview() {
   content.innerHTML = `<div class="page-head"><div><p class="eyebrow">WEEK ${snapshot.currentWeek}</p><h2>Good week to make a move.</h2><p>Your roster, matchup, and highest-confidence flags in one place.</p></div><span class="week-pill">Regular season · Week ${snapshot.currentWeek}</span></div>
     <div class="stat-grid">
       <article class="stat-card"><span>Projected points</span><strong>${starterProjection.knownCount ? starterTotal.toFixed(1) : "—"}</strong><small>${starterProjection.complete ? "Current starting lineup" : `${starterProjection.knownCount}/${starterProjection.totalCount} projections available`}</small></article>
-      <article class="stat-card"><span>Matchup</span><strong>${opponent ? `vs ${escapeHtml(opponent.abbreviation)}` : "Unavailable"}</strong><small>${opponent ? `${escapeHtml(opponent.name)} · ${opponent.record.wins}-${opponent.record.losses}` : "No current-week matchup found"}</small></article>
+      <article class="stat-card"><span>Matchup</span><strong>${opponent ? `vs ${escapeHtml(opponent.abbreviation)}` : "Unavailable"}</strong><small>${opponent ? `${escapeHtml(opponent.name)} · ${formatRecord(opponent.record)}` : "No current-week matchup found"}</small></article>
       <article class="stat-card"><span>Lineup edge</span><strong class="${starterTotal >= opponentTotal ? "positive" : "negative"}">${matchupProjectionComplete ? `${starterTotal >= opponentTotal ? "+" : ""}${(starterTotal - opponentTotal).toFixed(1)}` : "—"}</strong><small>${matchupProjectionComplete ? "Complete starting projections" : "Incomplete matchup data"}</small></article>
       <article class="stat-card"><span>Needs attention</span><strong>${warnings.length}</strong><small>${warnings.filter((w) => w.kind === "injury").length} injury · ${warnings.filter((w) => w.kind === "bye").length} bye</small></article>
     </div>
     <div class="dashboard-grid">
-      <article class="panel roster-panel"><div class="panel-head"><div><p class="eyebrow">MY TEAM</p><h3>${escapeHtml(team.name)}</h3></div><span class="record">${team.record.wins}-${team.record.losses}${team.record.ties ? `-${team.record.ties}` : ""}</span></div>
+      <article class="panel roster-panel"><div class="panel-head"><div><p class="eyebrow">MY TEAM</p><h3>${escapeHtml(team.name)}</h3></div><span class="record">${formatRecord(team.record)}</span></div>
         <div class="list-heading"><span>STARTERS</span><span>WEEK ${snapshot.currentWeek}</span></div>${starters.length ? starters.map((e) => playerRow(e, index.players.get(e.playerId))).join("") : emptyInline("No starters in snapshot")}
         <div class="list-heading bench-heading"><span>BENCH</span><span>${bench.length} PLAYERS</span></div>${bench.length ? bench.map((e) => playerRow(e, index.players.get(e.playerId))).join("") : emptyInline("No bench players in snapshot")}
       </article>
       <div class="side-stack">
         <article class="panel matchup-card"><div class="panel-head"><div><p class="eyebrow">MATCHUP</p><h3>Week ${snapshot.currentWeek}</h3></div><span class="live-dot">UPCOMING</span></div>
-          ${opponent ? `<div class="matchup-team"><span class="team-badge">${escapeHtml(team.abbreviation)}</span><div><strong>${escapeHtml(team.name)}</strong><small>${team.record.wins}-${team.record.losses}</small></div><b>${starterTotal ? starterTotal.toFixed(1) : "—"}</b></div><div class="versus"><span></span>VS<span></span></div><div class="matchup-team"><span class="team-badge opponent">${escapeHtml(opponent.abbreviation)}</span><div><strong>${escapeHtml(opponent.name)}</strong><small>${opponent.record.wins}-${opponent.record.losses}</small></div><b>${opponentTotal ? opponentTotal.toFixed(1) : "—"}</b></div>` : emptyInline("Current-week opponent unavailable")}
+          ${opponent ? `<div class="matchup-team"><span class="team-badge">${escapeHtml(team.abbreviation)}</span><div><strong>${escapeHtml(team.name)}</strong><small>${formatRecord(team.record)}</small></div><b>${starterTotal ? starterTotal.toFixed(1) : "—"}</b></div><div class="versus"><span></span>VS<span></span></div><div class="matchup-team"><span class="team-badge opponent">${escapeHtml(opponent.abbreviation)}</span><div><strong>${escapeHtml(opponent.name)}</strong><small>${formatRecord(opponent.record)}</small></div><b>${opponentTotal ? opponentTotal.toFixed(1) : "—"}</b></div>` : emptyInline("Current-week opponent unavailable")}
         </article>
         <article class="panel"><div class="panel-head"><div><p class="eyebrow">QUICK READ</p><h3>Lineup signals</h3></div><a href="#lineup">Open lab →</a></div>
           ${suggestions.length ? suggestions.slice(0, 2).map(s => `<div class="signal"><span class="signal-icon">↗</span><div><strong>Start ${escapeHtml(s.start.name)}</strong><small>Over ${escapeHtml(s.sit.name)} · +${s.gain} projected</small></div></div>`).join("") : emptyInline("No projection-based swaps found")}
