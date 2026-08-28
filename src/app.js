@@ -395,9 +395,10 @@ document.querySelector("#projection-identity-input").addEventListener("change", 
   event.target.value = "";
 });
 document.querySelector("#reset-button").addEventListener("click", () => { provider.clearCache(); showNotice("Imported snapshot cleared. Loading sample data…"); setTimeout(() => location.reload(), 250); });
-window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); });
-document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
-document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
+window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); content.focus({ preventScroll: true }); });
+document.querySelector(".mobile-menu").addEventListener("click", (event) => { const open = document.querySelector(".sidebar").classList.toggle("open"); event.currentTarget.setAttribute("aria-expanded", String(open)); event.currentTarget.setAttribute("aria-label", open ? "Close navigation" : "Open navigation"); });
+document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => { document.querySelector(".sidebar").classList.remove("open"); document.querySelector(".mobile-menu").setAttribute("aria-expanded", "false"); }));
+document.addEventListener("keydown", (event) => { if (event.key === "Escape" && document.querySelector(".sidebar").classList.contains("open")) { document.querySelector(".sidebar").classList.remove("open"); const menu = document.querySelector(".mobile-menu"); menu.setAttribute("aria-expanded", "false"); menu.setAttribute("aria-label", "Open navigation"); menu.focus(); } });
 content.addEventListener("click", (event) => { if (event.target.closest("[data-dismiss-alert]")) return; const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
 content.addEventListener("click", (event) => {
   const dismiss = event.target.closest("[data-dismiss-alert]");

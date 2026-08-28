@@ -9,11 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.4" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.5" />
   </head>
   <body>
+    <a class="skip-link" href="#app-content">Skip to main content</a>
     <div class="app-shell">
-      <aside class="sidebar">
+      <aside class="sidebar" id="primary-sidebar">
         <a class="brand" href="#overview" aria-label="The Chip Winner home">
           <span class="brand-mark">CW</span>
           <span><strong>The Chip Winner</strong><small>ESPN companion</small></span>
@@ -35,7 +36,7 @@
 
       <main>
         <header class="topbar">
-          <button class="mobile-menu" aria-label="Open navigation">☰</button>
+          <button class="mobile-menu" aria-label="Open navigation" aria-controls="primary-sidebar" aria-expanded="false">☰</button>
           <div>
             <p class="eyebrow" id="league-label">ESPN · League</p>
             <h1 id="page-title">Weekly command center</h1>
@@ -54,12 +55,12 @@
         </header>
 
         <div id="notice-region" aria-live="polite"></div>
-        <section id="app-content" aria-live="polite"></section>
+        <section id="app-content" aria-live="polite" tabindex="-1"></section>
       </main>
     </div>
     <dialog id="player-dialog" class="player-dialog" aria-labelledby="player-dialog-title">
       <div id="player-dialog-content"></div>
     </dialog>
-    <script type="module" src="src/app.js?v=0.9.4"></script>
+    <script type="module" src="src/app.js?v=0.9.5"></script>
   </body>
 </html>
