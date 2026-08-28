@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 138 automated tests covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning, persisted horizons and projection coverage, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context, guarded model adapters, recommendation and explanation evaluation, and future projection inputs.
+- 142 automated tests covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning, persisted horizons and projection coverage, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context, guarded model adapters, recommendation and explanation evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -134,6 +134,8 @@ Acceptance criteria:
 - The selected week can be changed without mutating the active league snapshot.
 
 ### 2.2 Weekly overview
+
+Status: **Implemented for the current snapshot contract.** The overview combines exact configured-slot vacancies, unresolved starter injury and bye flags, reported game locks, kickoff-aware urgency, missing-projection gaps, and explicit missing-time limitations into a linked weekly checklist.
 
 - Summarize projected matchup range and remaining player exposure.
 - Show unresolved starter injuries, empty lineup slots, byes, and players whose games have started.

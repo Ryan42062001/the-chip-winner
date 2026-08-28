@@ -1,7 +1,7 @@
 import { canFillSlot } from "./recommendations.js";
 import { isStarter } from "./model.js";
 
-function lockReason(entry, player, now) {
+export function getLineupLockReason(entry, player, now = Date.now()) {
   if (entry.locked === true || player.locked === true) return "ESPN reported this player locked.";
   const kickoff = Date.parse(player.gameTime);
   if (Number.isFinite(kickoff) && kickoff <= now) return "The reported NFL kickoff time has passed.";
@@ -18,7 +18,7 @@ export function optimizeLineup(snapshot, teamId, now = Date.now()) {
   const slots = starterEntries.map((entry, index) => ({ id: `${entry.lineupSlot}:${index}`, slot: entry.lineupSlot, currentPlayerId: entry.playerId }));
   const rosterPlayers = roster.entries.filter((entry) => entry.lineupSlot !== "IR").map((entry) => ({ entry, player: players.get(entry.playerId) })).filter((item) => item.player);
   const locked = new Map();
-  const locks = rosterPlayers.map((item) => ({ item, reason: lockReason(item.entry, item.player, now) })).filter(({ reason }) => reason).map(({ item, reason }) => Object.freeze({ playerId: item.player.id, slot: item.entry.lineupSlot, reason }));
+  const locks = rosterPlayers.map((item) => ({ item, reason: getLineupLockReason(item.entry, item.player, now) })).filter(({ reason }) => reason).map(({ item, reason }) => Object.freeze({ playerId: item.player.id, slot: item.entry.lineupSlot, reason }));
   const lockedPlayerIds = new Set(locks.map((lock) => lock.playerId));
   for (const slot of slots) {
     const item = rosterPlayers.find((candidate) => candidate.player.id === slot.currentPlayerId);

@@ -26,6 +26,7 @@ import { OnboardingPreferences } from "./application/onboarding-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
+import { buildWeeklyChecklist } from "./domain/weekly-checklist.js?v=0.1.0";
 
 runCacheMigrations(globalThis.localStorage);
 
@@ -96,6 +97,7 @@ function renderOverview() {
   const suggestions = buildLineupSuggestions(snapshot, selectedTeamId);
   const warnings = buildWarnings(snapshot, selectedTeamId);
   const vacancies = buildLineupVacancies(snapshot, selectedTeamId);
+  const checklist = buildWeeklyChecklist(snapshot, selectedTeamId);
   const coverage = selectDataCoverage(snapshot, selectedTeamId);
   const freshness = selectSnapshotFreshness(snapshot);
   const rankingMatches = state.rankingReconciliation ? Object.keys(state.rankingReconciliation.byPlayerId).length : 0;
@@ -121,6 +123,10 @@ function renderOverview() {
       <div class="side-stack">
         <article class="panel matchup-card"><div class="panel-head"><div><p class="eyebrow">MATCHUP</p><h3>Week ${snapshot.currentWeek}</h3></div><span class="live-dot">UPCOMING</span></div>
           ${opponent ? `<div class="matchup-team"><span class="team-badge">${escapeHtml(team.abbreviation)}</span><div><strong>${escapeHtml(team.name)}</strong><small>${formatRecord(team.record)}</small></div><b>${starterTotal ? starterTotal.toFixed(1) : "—"}</b></div><div class="versus"><span></span>VS<span></span></div><div class="matchup-team"><span class="team-badge opponent">${escapeHtml(opponent.abbreviation)}</span><div><strong>${escapeHtml(opponent.name)}</strong><small>${formatRecord(opponent.record)}</small></div><b>${opponentTotal ? opponentTotal.toFixed(1) : "—"}</b></div>` : emptyInline("Current-week opponent unavailable")}
+        </article>
+        <article class="panel checklist-card"><div class="panel-head"><div><p class="eyebrow">BEFORE KICKOFF</p><h3>Weekly checklist</h3></div><span class="quality ${checklist.needsActionCount ? "aging" : checklist.status === "ready" ? "fresh" : "unknown"}">${checklist.needsActionCount ?? "—"} to review</span></div>
+          <div class="checklist-list">${checklist.items.length ? checklist.items.slice(0, 4).map((item) => item.playerId ? `<div class="checklist-item ${escapeHtml(item.status)} interactive-row" data-player-id="${escapeHtml(item.playerId)}" role="button" tabindex="0" aria-label="Review ${escapeHtml(item.title)}"><span>${item.status === "needs-action" ? "!" : item.status === "locked" ? "✓" : "?"}</span><div><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></div></div>` : `<a class="checklist-item ${escapeHtml(item.status)}" href="${escapeHtml(item.destination)}"><span>!</span><div><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.detail)}</small></div></a>`).join("") : emptyInline("No reported weekly issues found")}</div>
+          ${checklist.items.length > 4 ? `<a class="text-link" href="#alerts">Review ${checklist.items.length - 4} more checklist item${checklist.items.length - 4 === 1 ? "" : "s"} →</a>` : ""}${checklist.limitations.length ? `<p class="data-note">${escapeHtml(checklist.limitations[0])}</p>` : ""}
         </article>
         <article class="panel"><div class="panel-head"><div><p class="eyebrow">QUICK READ</p><h3>Lineup signals</h3></div><a href="#lineup">Open lab →</a></div>
           ${quickSignals.length ? quickSignals.join("") : emptyInline(vacancies.status === "missing-settings" ? "Lineup rules unavailable; no other signals found" : "No lineup signals found")}

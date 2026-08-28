@@ -47,6 +47,7 @@ try {
   if (await onboarding.isVisible()) throw new Error("Desktop onboarding did not close after saving a valid connection.");
   if (await page.title() !== "The Chip Winner") throw new Error("Unexpected document title.");
   if (await page.locator("#app-content").getByText("STARTERS", { exact: true }).count() === 0) throw new Error("Sample roster did not render.");
+  await page.getByRole("heading", { name: "Weekly checklist", level: 3 }).waitFor();
   const firstPlayer = page.locator(".player-row").first();
   await firstPlayer.focus(); await firstPlayer.press("Enter");
   await page.locator("#player-dialog[open]").waitFor();
