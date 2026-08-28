@@ -29,3 +29,5 @@ Future work may summarize decisions, compare scenarios, and answer natural-langu
 ## Future projection input
 
 `schema/future-projection-set.schema.json` defines the provider-neutral weekly projection format. Imports require provider-owned player IDs and explicit week-level values; display-name matching is intentionally excluded from this boundary.
+
+The scenario engine can now calculate an optimized weekly baseline when both a validated projection set and an explicit provider-to-ESPN identity map are supplied. Partial identity coverage produces missing projections rather than automatic name matches.
