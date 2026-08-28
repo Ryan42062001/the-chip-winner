@@ -18,7 +18,7 @@ for (const position of positions) {
   const url = new URL(`https://api.fantasypros.com/public/v2/json/nfl/${season}/projections`);
   url.searchParams.set("position", position); url.searchParams.set("week", String(week)); url.searchParams.set("scoring", scoring);
   const response = await fetch(url, { headers: { "x-api-key": apiKey, accept: "application/json" } });
-  if (!response.ok) throw new Error(`FantasyPros ${position} request failed with HTTP ${response.status}. The response body was not logged.`);
+  if (!response.ok) throw new Error(`FantasyPros ${position} request failed with HTTP ${response.status}. Live projection access may require an activated personal-production key. The response body was not logged.`);
   const responseDate = response.headers.get("date");
   if (responseDate && Number.isFinite(Date.parse(responseDate))) responseDates.push(Date.parse(responseDate));
   payloads.push(await response.json());

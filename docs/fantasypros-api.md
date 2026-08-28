@@ -13,6 +13,14 @@ npm run projections:fantasypros -- --season 2026 --week 1 --scoring PPR
 
 The environment variable exists only in that PowerShell process. Do not place a real key in `.env.example`, source code, browser storage, a GitHub secret for this public site, or a support message.
 
+Free keys that cannot access live projections may still be tested against the canonical player-directory endpoint:
+
+```powershell
+npm.cmd run players:fantasypros
+```
+
+This writes `local-data/fantasypros-player-directory.csv`. It preserves FantasyPros IDs and reference labels but creates no ESPN mapping or display-name join.
+
 Generated files are written under ignored `local-data/`:
 
 - `fantasypros-2026-week-1-ppr.csv` is compatible with the app's weekly projection importer.

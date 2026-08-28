@@ -53,3 +53,20 @@ export function projectionSetToCsv(set) {
 export function identityReferenceToCsv(identities) {
   return csv([["provider_player_id", "espn_player_id", "player_name_for_review_only", "team_for_review_only", "position_for_review_only"], ...identities.map((item) => [item.providerPlayerId, "", item.playerName, item.team, item.position])]);
 }
+
+export function normalizeFantasyProsPlayerDirectory(payload) {
+  const rows = playerRows(payload); const players = []; const seen = new Set(); const exclusions = [];
+  for (const player of rows) {
+    const providerPlayerId = text(player.player_id ?? player.fpid);
+    if (!providerPlayerId) { exclusions.push(Object.freeze({ reason: "missing-provider-player-id" })); continue; }
+    if (seen.has(providerPlayerId)) throw new Error(`FantasyPros player directory contains duplicate provider ID ${providerPlayerId}.`);
+    seen.add(providerPlayerId);
+    players.push(Object.freeze({ providerPlayerId, playerName: text(player.player_name ?? player.name) || null, team: text(player.team_id ?? player.player_team_id) || null, position: text(player.position_id ?? player.position) || null }));
+  }
+  if (!players.length) throw new Error("FantasyPros returned no player-directory records with provider IDs.");
+  return Object.freeze({ players: Object.freeze(players), exclusions: Object.freeze(exclusions) });
+}
+
+export function playerDirectoryToCsv(players) {
+  return csv([["fantasypros_player_id", "player_name_for_review_only", "team_for_review_only", "position_for_review_only"], ...players.map((item) => [item.providerPlayerId, item.playerName, item.team, item.position])]);
+}

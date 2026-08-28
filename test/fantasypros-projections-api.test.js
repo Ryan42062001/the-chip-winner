@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { identityReferenceToCsv, normalizeFantasyProsProjectionResponses, projectionSetToCsv } from "../scripts/lib/fantasypros-projections.js";
+import { identityReferenceToCsv, normalizeFantasyProsPlayerDirectory, normalizeFantasyProsProjectionResponses, playerDirectoryToCsv, projectionSetToCsv } from "../scripts/lib/fantasypros-projections.js";
 
 const metadata = { season: 2026, week: 1, scoring: "PPR", capturedAt: "2026-08-28T22:00:00Z" };
 
@@ -20,4 +20,16 @@ test("FantasyPros API projections exclude missing IDs and requested scoring valu
 test("FantasyPros API projections reject mismatched source metadata and conflicting player-week values", () => {
   assert.throws(() => normalizeFantasyProsProjectionResponses([{ season: 2025, players: [] }], metadata), /does not match requested season/);
   assert.throws(() => normalizeFantasyProsProjectionResponses([{ players: [{ fpid: 3, stats: { points_ppr: 7 } }, { fpid: 3, stats: { points_ppr: 8 } }] }], metadata), /conflicting/);
+});
+
+test("FantasyPros player directory preserves provider IDs without creating identity joins", () => {
+  const result = normalizeFantasyProsPlayerDirectory({ players: [{ player_id: 17240, player_name: "Known Player", team_id: "PHI", position_id: "RB" }, { player_name: "Missing ID" }] });
+  assert.deepEqual(result.players[0], { providerPlayerId: "17240", playerName: "Known Player", team: "PHI", position: "RB" });
+  assert.equal(result.exclusions.length, 1);
+  assert.match(playerDirectoryToCsv(result.players), /^fantasypros_player_id,player_name_for_review_only/);
+  assert.doesNotMatch(playerDirectoryToCsv(result.players), /espn_player_id/);
+});
+
+test("FantasyPros player directory rejects duplicate provider IDs", () => {
+  assert.throws(() => normalizeFantasyProsPlayerDirectory({ players: [{ player_id: 1 }, { fpid: 1 }] }), /duplicate provider ID/);
 });
