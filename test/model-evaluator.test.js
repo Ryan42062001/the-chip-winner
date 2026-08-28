@@ -35,6 +35,14 @@ test("model evaluator blocks drops when selected-team context is absent", () => 
   assert.equal(result.issueCounts["team-context-missing"], 1);
 });
 
+test("model evaluator blocks adds when ESPN reports an exhausted acquisition limit", () => {
+  const teamId = snapshot.teams[0].id;
+  const limitedSnapshot = { ...snapshot, league: { ...snapshot.league, waiver: { ...(snapshot.league.waiver || {}), matchupAcquisitionLimit: 2 } }, teams: snapshot.teams.map((team) => team.id === teamId ? { ...team, acquisition: { ...(team.acquisition || {}), matchupAcquisitions: 2 } } : team) };
+  const result = evaluateRecommendationBatch([{ ...base, payload: { addPlayerId: snapshot.availablePlayers[0], dropPlayerId: snapshot.rosters[0].entries.at(-1).playerId } }], limitedSnapshot, { teamId });
+  assert.equal(result.valid, false);
+  assert.equal(result.issueCounts["acquisition-limit-exhausted"], 1);
+});
+
 test("model evaluator rejects stale provenance and untraceable review output", () => {
   const stale = { ...base, sourceCapturedAt: "2026-01-01T00:00:00Z" };
   const untraceable = { ...base, id: "r-2", inputs: [] };

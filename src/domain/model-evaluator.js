@@ -1,5 +1,6 @@
 import { validateRecommendation } from "./recommendation-contract.js";
 import { isStarter } from "./model.js";
+import { evaluateAcquisitionCapacity } from "./waiver-engine.js";
 
 function issue(code, message) { return Object.freeze({ code, message }); }
 const ALLOWED_EXPLANATION_KEYS = new Set(["provider", "model", "recommendationId", "text", "generatedAt"]);
@@ -24,6 +25,8 @@ export function evaluateRecommendationBatch(recommendations, snapshot, { teamId 
     if (recommendation?.kind === "waiver" || recommendation?.kind === "scenario") {
       const addId = recommendation?.payload?.addPlayerId;
       if (addId && !availableIds.has(addId)) issues.push(issue("add-unavailable", `Player ${addId} is not explicitly available in ESPN data.`));
+      const acquisitionCapacity = addId ? evaluateAcquisitionCapacity(snapshot, teamId) : null;
+      if (acquisitionCapacity?.status === "exhausted") issues.push(issue("acquisition-limit-exhausted", acquisitionCapacity.reason));
       const dropId = recommendation?.payload?.dropPlayerId;
       if (dropId && !teamId) issues.push(issue("team-context-missing", "A selected team is required to validate a drop player."));
       else if (dropId) {

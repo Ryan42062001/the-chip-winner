@@ -82,6 +82,14 @@
       "expectedValid": false,
       "expectedCode": "team-context-missing",
       "recommendation": { "id": "fixture-no-team-drop", "kind": "waiver", "status": "review", "confidence": "low", "inputs": ["ESPN roster"], "limitations": ["Selected team is required."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p10" } }
+    },
+    {
+      "name": "waiver blocked by exhausted ESPN acquisition limit",
+      "teamId": "t1",
+      "snapshotCase": "matchup-limit-exhausted",
+      "expectedValid": false,
+      "expectedCode": "acquisition-limit-exhausted",
+      "recommendation": { "id": "fixture-limit-exhausted", "kind": "waiver", "status": "review", "confidence": "medium", "inputs": ["ESPN availability", "ESPN acquisition usage"], "limitations": ["ESPN transaction limits apply."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p10" } }
     }
   ],
   "explanationCases": [

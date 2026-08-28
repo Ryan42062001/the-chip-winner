@@ -4,7 +4,8 @@ import { buildModelEvaluationReport, evaluateExplanation, evaluateRecommendation
 
 let failed = 0;
 for (const item of fixtures.cases) {
-  const result = evaluateRecommendationBatch([item.recommendation], snapshot, { teamId: item.teamId || null });
+  const fixtureSnapshot = item.snapshotCase === "matchup-limit-exhausted" ? { ...snapshot, league: { ...snapshot.league, waiver: { ...(snapshot.league.waiver || {}), matchupAcquisitionLimit: 2 } }, teams: snapshot.teams.map((team) => team.id === item.teamId ? { ...team, acquisition: { ...(team.acquisition || {}), matchupAcquisitions: 2 } } : team) } : snapshot;
+  const result = evaluateRecommendationBatch([item.recommendation], fixtureSnapshot, { teamId: item.teamId || null });
   const errors = result.results[0]?.errors || [];
   const issueCodes = result.results[0]?.issues?.map((issue) => issue.code) || [];
   const expectedErrorFound = !item.expectedError || errors.some((error) => error.includes(item.expectedError));
