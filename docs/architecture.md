@@ -70,7 +70,7 @@ League ID, season, and team ID are explicit browser-local onboarding inputs. A p
 
 ## Next increments
 
-1. Connect a trustworthy weekly projection export with provider-owned IDs and explicit source metadata.
+1. Run and validate the local FantasyPros API downloader, then complete its explicit FantasyPros-to-ESPN identity map.
 2. Complete provider-to-ESPN identity maps and selected-horizon player-week coverage.
 3. Expand playoff and schedule explanations only from documented inputs and methods.
 4. Improve model-safety fixtures, explanation evaluation, and privacy-safe observability.

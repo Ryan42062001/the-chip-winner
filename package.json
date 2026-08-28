@@ -1,6 +1,6 @@
 {
   "name": "the-chip-winner",
-  "version": "0.9.38",
+  "version": "0.9.39",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "start": "node scripts/dev-server.js",
     "test": "node --test",
     "eval:model": "node scripts/run-model-evals.js",
+    "projections:fantasypros": "node scripts/download-fantasypros-projections.js",
     "smoke": "node scripts/smoke-static.js",
     "smoke:browser": "node scripts/smoke-browser.js",
     "smoke:production": "node scripts/smoke-production.js",

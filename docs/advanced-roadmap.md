@@ -436,7 +436,7 @@ Sprint objective: connect a trustworthy weekly projection export and extend seas
 
 Planned work:
 
-1. Obtain a weekly projection export with provider-owned player IDs and explicit capture metadata.
+1. Run the local FantasyPros API downloader for each available planning week; it preserves provider player IDs and HTTP response capture metadata without exposing the API key.
 2. Complete its provider-to-ESPN identity map without display-name joins.
 3. Validate complete player-week coverage for selected planning horizons.
 4. Add deeper bye, playoff-week, and schedule coverage explanations.
