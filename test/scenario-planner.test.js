@@ -19,7 +19,7 @@ test("scenario planner requires projection data and identity mapping for future 
 test("scenario planner reports zero coverage when no projection source is imported", () => {
   const result = buildScenarioPlan(sampleSnapshot, sampleSnapshot.teams[0].id, { weeks: [15, 16] });
   assert.equal(result.source, null);
-  assert.deepEqual(result.coverage, { completeWeeks: 0, totalWeeks: 0, mappedProjectionCells: 0, requiredProjectionCells: 0, percentage: 0 });
+  assert.deepEqual(result.coverage, { completeWeeks: 0, totalWeeks: 0, mappedProjectionCells: 0, requiredProjectionCells: 0, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 0 });
 });
 
 test("scenario planner calculates a weekly baseline from explicitly mapped projections", () => {
@@ -34,7 +34,7 @@ test("scenario planner calculates a weekly baseline from explicitly mapped proje
   assert.equal(result.weeklyBaseline[0].projectedTotal > 0, true);
   assert.equal(result.weeklyBaseline[0].completeCoverage, true);
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, roster.entries.length);
-  assert.deepEqual(result.coverage, { completeWeeks: 1, totalWeeks: 1, mappedProjectionCells: roster.entries.length, requiredProjectionCells: roster.entries.length, percentage: 100 });
+  assert.deepEqual(result.coverage, { completeWeeks: 1, totalWeeks: 1, mappedProjectionCells: roster.entries.length, requiredProjectionCells: roster.entries.length, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 100 });
 });
 
 test("scenario planner compares an isolated add drop move without mutating ESPN state", () => {
@@ -56,6 +56,19 @@ test("scenario planner labels partial roster projection coverage", () => {
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap: new Map([["provider-one", playerId]]), projectionSet: { projections: [{ providerPlayerId: "provider-one", week: 15, points: 20 }] } });
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, 1);
   assert.equal(result.weeklyBaseline[0].completeCoverage, false);
+  assert.equal(result.weeklyBaseline[0].unmappedPlayerIds.length, roster.entries.length - 1);
+  assert.deepEqual(result.weeklyBaseline[0].missingProjectionPlayerIds, []);
+});
+
+test("scenario planner distinguishes missing weekly values from missing identity mappings", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
+  const identityMap = new Map(roster.entries.map((entry) => [`provider-${entry.playerId}`, entry.playerId]));
+  const projectionSet = { projections: [{ providerPlayerId: `provider-${roster.entries[0].playerId}`, week: 15, points: 20 }] };
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet });
+  assert.deepEqual(result.weeklyBaseline[0].unmappedPlayerIds, []);
+  assert.equal(result.weeklyBaseline[0].missingProjectionPlayerIds.length, roster.entries.length - 1);
+  assert.equal(result.coverage.unmappedPlayerCells, 0);
+  assert.equal(result.coverage.missingProjectionCells, roster.entries.length - 1);
 });
 
 test("scenario planner rejects starter drops and unavailable adds", () => {
@@ -72,7 +85,18 @@ test("scenario planner suppresses move deltas when either roster has partial cov
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ addPlayerId: add.id, dropPlayerId: drop.playerId }], now: 0 });
   assert.equal(result.scenarios[0].weekly[0].delta, null);
   assert.equal(result.scenarios[0].weekly[0].completeCoverage, false);
+  assert.equal(result.scenarios[0].weekly[0].unmappedPlayerIds.length > 0, true);
   assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline roster projection coverage is incomplete/);
+});
+
+test("scenario planner reports the scenario-only player input that blocks a delta", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const drop = roster.entries.find((entry) => entry.lineupSlot === "BE"); const add = sampleSnapshot.players.find((player) => sampleSnapshot.availablePlayers.includes(player.id));
+  const identityMap = new Map(roster.entries.map((entry) => [`p-${entry.playerId}`, entry.playerId]));
+  const projectionSet = { projections: roster.entries.map((entry) => ({ providerPlayerId: `p-${entry.playerId}`, week: 15, points: 10 })) };
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ addPlayerId: add.id, dropPlayerId: drop.playerId }], now: 0 });
+  assert.deepEqual(result.scenarios[0].weekly[0].unmappedPlayerIds, [add.id]);
+  assert.equal(result.scenarios[0].weekly[0].delta, null);
+  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Scenario roster projection coverage is incomplete/);
 });
 
 test("scenario planner exposes projection provenance without inferring missing metadata", () => {
