@@ -76,6 +76,12 @@
       "expectedValid": false,
       "expectedCode": "contract-invalid",
       "recommendation": { "id": "fixture-extra-field", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Use only contract fields."], "payload": { "playerId": "p3" }, "secretThought": "must never pass" }
+    },
+    {
+      "name": "drop without selected team context",
+      "expectedValid": false,
+      "expectedCode": "team-context-missing",
+      "recommendation": { "id": "fixture-no-team-drop", "kind": "waiver", "status": "review", "confidence": "low", "inputs": ["ESPN roster"], "limitations": ["Selected team is required."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p10" } }
     }
   ],
   "explanationCases": [
@@ -120,6 +126,13 @@
       "expectedCodes": ["model-invalid", "explanation-timestamp-invalid"],
       "recommendation": { "id": "explain-metadata", "inputs": [], "limitations": [] },
       "explanation": { "provider": "fixture", "model": "", "recommendationId": "explain-metadata", "text": "No source-dependent claim is made.", "generatedAt": "not-a-date" }
+    },
+    {
+      "name": "explanation is not an object",
+      "expectedValid": false,
+      "expectedCodes": ["explanation-invalid"],
+      "recommendation": { "id": "explain-shape", "inputs": [], "limitations": [] },
+      "explanation": ["not", "an", "object"]
     }
   ]
 }

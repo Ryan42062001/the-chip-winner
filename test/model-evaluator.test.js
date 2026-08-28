@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import snapshot from "../src/data/sample-espn-snapshot.json" with { type: "json" };
-import { buildModelEvaluationReport, evaluateExplanation, evaluateRecommendationBatch } from "../src/domain/model-evaluator.js";
+import { buildModelEvaluationReport, evaluateExplanation, evaluateRecommendationBatch, validateModelEvaluationReport } from "../src/domain/model-evaluator.js";
 
 const base = { id: "r-1", kind: "scenario", status: "review", confidence: "medium", inputs: ["ESPN"], limitations: ["Review before acting."] };
 
 test("model evaluator accepts traceable recommendations with known available players", () => {
   const addPlayerId = snapshot.availablePlayers[0]; const dropPlayerId = snapshot.rosters[0].entries.at(-1).playerId;
-  const result = evaluateRecommendationBatch([{ ...base, payload: { addPlayerId, dropPlayerId } }], snapshot);
+  const result = evaluateRecommendationBatch([{ ...base, payload: { addPlayerId, dropPlayerId } }], snapshot, { teamId: snapshot.teams[0].id });
   assert.equal(result.valid, true); assert.equal(result.passed, 1);
 });
 
@@ -27,6 +27,12 @@ test("model evaluator protects starters and players outside the selected roster 
   assert.equal(result.valid, false);
   assert.match(result.results[0].errors.join(" "), /unlocked bench/);
   assert.match(result.results[1].errors.join(" "), /not on selected team/);
+});
+
+test("model evaluator blocks drops when selected-team context is absent", () => {
+  const result = evaluateRecommendationBatch([{ ...base, payload: { addPlayerId: snapshot.availablePlayers[0], dropPlayerId: snapshot.rosters[0].entries.at(-1).playerId } }], snapshot);
+  assert.equal(result.valid, false);
+  assert.equal(result.issueCounts["team-context-missing"], 1);
 });
 
 test("model evaluator rejects stale provenance and untraceable review output", () => {
@@ -66,8 +72,20 @@ test("model evaluation report contains aggregate counts but no recommendation or
   const report = buildModelEvaluationReport(recommendationEvaluation, [{ recommendationId: base.id, ...explanationEvaluation }], 1);
   assert.deepEqual(report.recommendations, { submitted: 1, accepted: 0, rejected: 1 });
   assert.deepEqual(report.explanations, { attempted: 1, accepted: 0, rejected: 1 });
+  assert.equal(report.schemaVersion, 2);
+  assert.equal(report.recommendationIssueCounts["unknown-player"], 1);
+  assert.equal(report.explanationIssueCounts["recommendation-id-mismatch"], 1);
   assert.equal(report.issueCounts["unknown-player"], 1);
   assert.doesNotMatch(JSON.stringify(report), /private-recommendation|private-player/);
+  assert.deepEqual(validateModelEvaluationReport(report), { valid: true, errors: [] });
+});
+
+test("model evaluation report validation rejects inconsistent or expanded telemetry", () => {
+  const report = buildModelEvaluationReport(evaluateRecommendationBatch([], snapshot), [], 0);
+  assert.equal(validateModelEvaluationReport({ ...report, issueCounts: { beta: 1, alpha: 2 }, recommendationIssueCounts: { alpha: 2 }, explanationIssueCounts: { beta: 1 } }).valid, true);
+  assert.equal(validateModelEvaluationReport({ ...report, recommendations: { submitted: 1, accepted: 0, rejected: 0 } }).valid, false);
+  assert.equal(validateModelEvaluationReport({ ...report, privatePlayerId: "must-not-pass" }).valid, false);
+  assert.equal(validateModelEvaluationReport({ ...report, issueCounts: { leaked: 1 } }).valid, false);
 });
 
 test("explanation evaluator rejects unexpected fields and oversized output", () => {

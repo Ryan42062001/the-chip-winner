@@ -25,7 +25,8 @@ export function evaluateRecommendationBatch(recommendations, snapshot, { teamId 
       const addId = recommendation?.payload?.addPlayerId;
       if (addId && !availableIds.has(addId)) issues.push(issue("add-unavailable", `Player ${addId} is not explicitly available in ESPN data.`));
       const dropId = recommendation?.payload?.dropPlayerId;
-      if (dropId && teamId) {
+      if (dropId && !teamId) issues.push(issue("team-context-missing", "A selected team is required to validate a drop player."));
+      else if (dropId) {
         const entry = selectedRoster?.entries?.find((item) => item.playerId === dropId);
         if (!entry) issues.push(issue("drop-not-on-team", `Drop player ${dropId} is not on selected team ${teamId}.`));
         else if (isStarter(entry.lineupSlot) || entry.lineupSlot === "IR" || entry.locked) issues.push(issue("illegal-drop", `Drop player ${dropId} is not an unlocked bench player.`));
@@ -57,14 +58,33 @@ export function evaluateExplanation(explanation, recommendation) {
 }
 
 export function buildModelEvaluationReport(evaluation, explanationEvaluations = [], submittedCount = null) {
+  const recommendationIssueCounts = Object.freeze({ ...(evaluation?.issueCounts || {}) });
   const explanationIssueCounts = issueCounts(explanationEvaluations);
-  const combinedCounts = { ...(evaluation?.issueCounts || {}) };
+  const combinedCounts = { ...recommendationIssueCounts };
   for (const [code, count] of Object.entries(explanationIssueCounts)) combinedCounts[code] = (combinedCounts[code] || 0) + count;
   const acceptedExplanations = explanationEvaluations.filter((item) => item.valid).length;
   return Object.freeze({
-    schemaVersion: 1,
+    schemaVersion: 2,
     recommendations: Object.freeze({ submitted: submittedCount ?? ((evaluation?.passed || 0) + (evaluation?.failed || 0)), accepted: evaluation?.passed || 0, rejected: evaluation?.failed || 0 }),
     explanations: Object.freeze({ attempted: explanationEvaluations.length, accepted: acceptedExplanations, rejected: explanationEvaluations.length - acceptedExplanations }),
+    recommendationIssueCounts,
+    explanationIssueCounts,
     issueCounts: Object.freeze(Object.fromEntries(Object.entries(combinedCounts).sort(([left], [right]) => left.localeCompare(right))))
   });
+}
+
+export function validateModelEvaluationReport(report) {
+  const errors = [];
+  const exactKeys = (value, expected) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).sort().join("|") === [...expected].sort().join("|");
+  const countsValid = (value, keys) => exactKeys(value, keys) && keys.every((key) => Number.isInteger(value[key]) && value[key] >= 0);
+  const issuesValid = (value) => value && typeof value === "object" && !Array.isArray(value) && Object.entries(value).every(([code, count]) => /^[a-z][a-z0-9-]*$/.test(code) && Number.isInteger(count) && count > 0);
+  if (!exactKeys(report, ["schemaVersion", "recommendations", "explanations", "recommendationIssueCounts", "explanationIssueCounts", "issueCounts"])) errors.push("Report fields do not match schema version 2.");
+  if (report?.schemaVersion !== 2) errors.push("schemaVersion must be 2.");
+  if (!countsValid(report?.recommendations, ["submitted", "accepted", "rejected"]) || report.recommendations.submitted !== report.recommendations.accepted + report.recommendations.rejected) errors.push("Recommendation counts are inconsistent.");
+  if (!countsValid(report?.explanations, ["attempted", "accepted", "rejected"]) || report.explanations.attempted !== report.explanations.accepted + report.explanations.rejected) errors.push("Explanation counts are inconsistent.");
+  for (const key of ["recommendationIssueCounts", "explanationIssueCounts", "issueCounts"]) if (!issuesValid(report?.[key])) errors.push(`${key} is invalid.`);
+  const combined = { ...(report?.recommendationIssueCounts || {}) }; for (const [code, count] of Object.entries(report?.explanationIssueCounts || {})) combined[code] = (combined[code] || 0) + count;
+  const reportedIssues = report?.issueCounts || {};
+  if (Object.keys(combined).length !== Object.keys(reportedIssues).length || Object.entries(combined).some(([code, count]) => reportedIssues[code] !== count)) errors.push("Combined issue counts are inconsistent.");
+  return Object.freeze({ valid: errors.length === 0, errors: Object.freeze(errors) });
 }

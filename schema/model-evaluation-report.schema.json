@@ -4,9 +4,9 @@
   "title": "The Chip Winner privacy-safe model evaluation report",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "recommendations", "explanations", "issueCounts"],
+  "required": ["schemaVersion", "recommendations", "explanations", "recommendationIssueCounts", "explanationIssueCounts", "issueCounts"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "recommendations": { "$ref": "#/$defs/counts" },
     "explanations": {
       "type": "object",
@@ -18,13 +18,16 @@
         "rejected": { "type": "integer", "minimum": 0 }
       }
     },
+    "recommendationIssueCounts": { "$ref": "#/$defs/issueCounts" },
+    "explanationIssueCounts": { "$ref": "#/$defs/issueCounts" },
+    "issueCounts": { "$ref": "#/$defs/issueCounts" }
+  },
+  "$defs": {
     "issueCounts": {
       "type": "object",
       "additionalProperties": { "type": "integer", "minimum": 1 },
       "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" }
-    }
-  },
-  "$defs": {
+    },
     "counts": {
       "type": "object",
       "additionalProperties": false,
