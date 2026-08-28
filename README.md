@@ -94,6 +94,8 @@ See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance cr
 
 See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the post-foundation release sequence from player intelligence through optional confirmed ESPN actions.
 
+See [`AI readiness`](docs/ai-readiness.md) for model context boundaries, recommendation guardrails, and the evaluation roadmap.
+
 See [`privacy and data handling`](docs/privacy.md) for the Chrome companion's read scope, local caching behavior, and deletion path.
 
 See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cross-device design and required backend contract.

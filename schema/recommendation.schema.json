@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-chip-winner.dev/schema/recommendation.schema.json",
+  "title": "The Chip Winner recommendation",
+  "type": "object",
+  "required": ["id", "kind", "status", "confidence", "inputs", "limitations"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "enum": ["lineup", "waiver", "alert", "scenario"] },
+    "status": { "type": "string", "enum": ["actionable", "review", "unavailable"] },
+    "confidence": { "type": "string", "enum": ["high", "medium", "low", "none"] },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "sourceCapturedAt": { "type": ["string", "null"], "format": "date-time" },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}
