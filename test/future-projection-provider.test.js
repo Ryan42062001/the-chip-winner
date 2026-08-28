@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FutureProjectionProvider, indexFutureProjections, normalizeFutureProjectionSet, parseFutureProjectionCsv } from "../src/providers/projections/future-projection-provider.js";
+import { FutureProjectionProvider, evaluateFutureProjectionCompatibility, indexFutureProjections, normalizeFutureProjectionSet, parseFutureProjectionCsv } from "../src/providers/projections/future-projection-provider.js";
 
 const validSet = { provider: "example", scoringFormat: "PPR", season: 2026, capturedAt: "2026-08-28T00:00:00Z", projections: [{ providerPlayerId: "p-1", week: 1, points: 18.4 }] };
 
@@ -27,4 +27,17 @@ test("future projections reject missing identities and invented numeric values",
   const result = normalizeFutureProjectionSet({ ...validSet, projections: [{ week: 19, points: null }] });
   assert.equal(result.valid, false);
   assert.match(result.errors.join(" "), /providerPlayerId/);
+});
+
+test("future projection compatibility reports ready and stale source states", () => {
+  const snapshot = { league: { season: 2026, scoringType: "PPR" } };
+  assert.equal(evaluateFutureProjectionCompatibility(validSet, snapshot, { now: Date.parse("2026-08-29T00:00:00Z") }).status, "ready");
+  const stale = evaluateFutureProjectionCompatibility(validSet, snapshot, { now: Date.parse("2026-09-10T00:00:00Z") });
+  assert.equal(stale.usable, true); assert.equal(stale.status, "stale"); assert.match(stale.warnings[0], /days old/);
+});
+
+test("future projection compatibility blocks season scoring and future-time mismatches", () => {
+  const result = evaluateFutureProjectionCompatibility({ ...validSet, season: 2025, scoringFormat: "Standard", capturedAt: "2026-08-30T00:00:00Z" }, { league: { season: 2026, scoringType: "PPR" } }, { now: Date.parse("2026-08-28T00:00:00Z") });
+  assert.equal(result.usable, false); assert.equal(result.status, "blocked");
+  assert.match(result.errors.join(" "), /season 2025/); assert.match(result.errors.join(" "), /scoring format Standard/); assert.match(result.errors.join(" "), /future/);
 });

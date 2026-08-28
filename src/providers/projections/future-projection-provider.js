@@ -23,6 +23,20 @@ export function indexFutureProjections(set) {
   return index;
 }
 
+export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Date.now(), staleAfterMs = 7 * 24 * 60 * 60 * 1000 } = {}) {
+  const normalized = normalizeFutureProjectionSet(set);
+  if (!normalized.valid) return Object.freeze({ usable: false, status: "invalid", ageMs: null, errors: Object.freeze(normalized.errors), warnings: Object.freeze([]) });
+  const value = normalized.value; const errors = []; const warnings = [];
+  const leagueSeason = Number(snapshot?.league?.season);
+  if (Number.isInteger(leagueSeason) && value.season !== leagueSeason) errors.push(`Projection season ${value.season} does not match ESPN league season ${leagueSeason}.`);
+  const leagueScoring = String(snapshot?.league?.scoringType || "").trim();
+  if (leagueScoring && leagueScoring.toLowerCase() !== "unknown" && value.scoringFormat.trim().toLowerCase() !== leagueScoring.toLowerCase()) errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN league scoring ${leagueScoring}.`);
+  const capturedTime = Date.parse(value.capturedAt); const ageMs = Number.isFinite(capturedTime) ? now - capturedTime : null;
+  if (ageMs != null && ageMs < -5 * 60 * 1000) errors.push("Projection capture time is in the future.");
+  else if (ageMs != null && ageMs > staleAfterMs) warnings.push(`Projection source is ${Math.floor(ageMs / 86_400_000)} days old.`);
+  return Object.freeze({ usable: errors.length === 0, status: errors.length ? "blocked" : warnings.length ? "stale" : "ready", ageMs, errors: Object.freeze(errors), warnings: Object.freeze(warnings) });
+}
+
 export function parseFutureProjectionCsv(text, metadata) {
   const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) throw new Error("Future projection CSV is empty.");
