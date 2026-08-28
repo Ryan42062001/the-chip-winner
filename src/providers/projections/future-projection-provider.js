@@ -22,3 +22,32 @@ export function indexFutureProjections(set) {
   for (const item of set.projections) index.set(`${item.providerPlayerId}:${item.week}`, item.points);
   return index;
 }
+
+export function parseFutureProjectionCsv(text, metadata) {
+  const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) throw new Error("Future projection CSV is empty.");
+  const headers = lines[0].split(",").map((item) => item.trim().toLowerCase());
+  for (const required of ["provider_player_id", "week", "points"]) if (!headers.includes(required)) throw new Error(`Future projection CSV is missing ${required}.`);
+  const at = (values, name) => values[headers.indexOf(name)]?.trim() || "";
+  const projections = lines.slice(1).map((line) => {
+    const values = line.split(",");
+    const week = at(values, "week"); const points = at(values, "points");
+    return { providerPlayerId: at(values, "provider_player_id"), week: week === "" ? Number.NaN : Number(week), points: points === "" ? Number.NaN : Number(points) };
+  });
+  const result = normalizeFutureProjectionSet({ ...metadata, projections });
+  if (!result.valid) throw new Error(result.errors.join(" "));
+  const keys = result.value.projections.map((item) => `${item.providerPlayerId}:${item.week}`);
+  if (new Set(keys).size !== keys.length) throw new Error("Future projection CSV contains duplicate player-week records.");
+  return result.value;
+}
+
+const CACHE_KEY = "chip-winner:future-projections:v1";
+export class FutureProjectionProvider {
+  constructor({ storage = globalThis.localStorage } = {}) { this.storage = storage; }
+  importCsv(text, metadata) { const set = parseFutureProjectionCsv(text, metadata); this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
+  readCache() {
+    try { const value = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); return value && normalizeFutureProjectionSet(value).valid ? value : null; }
+    catch { this.clearCache(); return null; }
+  }
+  clearCache() { this.storage?.removeItem(CACHE_KEY); }
+}

@@ -33,3 +33,5 @@ Future work may summarize decisions, compare scenarios, and answer natural-langu
 The scenario engine can now calculate an optimized weekly baseline when both a validated projection set and an explicit provider-to-ESPN identity map are supplied. Partial identity coverage produces missing projections rather than automatic name matches.
 
 Read-only add/drop scenarios can be evaluated against that baseline across selected weeks. Every scenario uses an isolated roster copy and reruns legal lineup assignment; the ESPN snapshot remains unchanged.
+
+Weekly projections can be imported from a strict CSV with `provider_player_id`, `week`, and `points` columns plus explicit source metadata. Validated imports may be cached locally; duplicate player-week rows are rejected.
