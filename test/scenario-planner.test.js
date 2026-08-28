@@ -27,3 +27,17 @@ test("scenario planner calculates a weekly baseline from explicitly mapped proje
   assert.equal(result.weeklyBaseline[0].week, 15);
   assert.equal(result.weeklyBaseline[0].projectedTotal > 0, true);
 });
+
+test("scenario planner compares an isolated add drop move without mutating ESPN state", () => {
+  const teamId = sampleSnapshot.teams[0].id;
+  const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
+  const dropPlayerId = roster.entries.at(-1).playerId;
+  const addPlayer = sampleSnapshot.players.find((player) => !roster.entries.some((entry) => entry.playerId === player.id));
+  const identityMap = new Map(sampleSnapshot.players.map((player) => [`provider-${player.id}`, player.id]));
+  const projectionSet = { projections: sampleSnapshot.players.map((player) => ({ providerPlayerId: `provider-${player.id}`, week: 15, points: player.id === addPlayer.id ? 30 : 10 })) };
+  const before = JSON.stringify(sampleSnapshot);
+  const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ id: "move-1", addPlayerId: addPlayer.id, dropPlayerId }] });
+  assert.equal(result.scenarios.length, 1);
+  assert.equal(result.scenarios[0].weekly[0].delta != null, true);
+  assert.equal(JSON.stringify(sampleSnapshot), before);
+});
