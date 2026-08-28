@@ -32,11 +32,11 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 154 automated tests plus 18 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning, persisted horizons and projection coverage diagnostics, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context and evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 155 automated tests plus 18 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist, recommendations, identity reconciliation, encrypted sync, snapshot differencing, lineup locks, roster-aware waiver simulation, recommendation-change explanations, season planning, persisted horizons and projection coverage diagnostics, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe model context and evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
-- authenticated read-only access to a locally configured private ESPN league through the Chrome companion;
+- authenticated read-only access to a locally configured private ESPN league through the Chrome companion, including safe local parsing of ESPN team URLs;
 - real team, roster, matchup, projection, injury, free-agent, and waiver data;
 - public NFL opponent and kickoff context;
 - non-conflicting waiver recommendations with acquisition status;

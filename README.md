@@ -21,7 +21,7 @@ Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The cur
 
 ## Connect an ESPN league
 
-League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
+League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. You may paste the full ESPN team URL into the first field; the app extracts and stores only its numeric connection IDs. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
 
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode**.
