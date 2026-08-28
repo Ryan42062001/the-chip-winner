@@ -264,10 +264,10 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 ### Reliability
 
 - Expand cache migrations whenever a persisted schema changes.
-- Production browser smoke tests.
+- Keep local desktop/mobile browser smoke tests and the post-deployment public URL smoke check green.
 - Fixture coverage for custom rosters, leagues of different sizes, playoffs, live games, and offseason states.
 - Graceful partial-data behavior for every provider request.
-- Deployment rollback instructions.
+- Keep deployment and extension rollback instructions current with the release workflow.
 
 ### Accessibility and performance
 

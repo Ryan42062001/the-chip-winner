@@ -40,6 +40,8 @@ npm run check
 npm run audit:a11y
 ```
 
+Production releases and safe rollback are documented in [`docs/deployment.md`](docs/deployment.md).
+
 ## Current capabilities
 
 - Responsive weekly roster dashboard with starters, bench, matchup, and projections
