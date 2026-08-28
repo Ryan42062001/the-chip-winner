@@ -16,6 +16,7 @@ import { FutureProjectionProvider } from "./providers/projections/future-project
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
 import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
+import { diffLineupRecommendations } from "./domain/recommendation-change.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -150,7 +151,7 @@ function renderChanges() {
     return;
   }
   const allChanges = diffSnapshots(state.previousSnapshot, state.snapshot);
-  const changes = changesForTeam(allChanges, state.snapshot, state.selectedTeamId);
+  const changes = [...changesForTeam(allChanges, state.snapshot, state.selectedTeamId), ...diffLineupRecommendations(state.previousSnapshot, state.snapshot, state.selectedTeamId)];
   const captured = state.snapshot.meta?.capturedAt ? new Date(state.snapshot.meta.capturedAt).toLocaleString() : "Capture time unavailable";
   content.innerHTML = sectionHeader("What Changed", "Derived locally by comparing the two most recent valid ESPN snapshots.") + `<article class="panel timeline-summary"><div><p class="eyebrow">LATEST REFRESH</p><h3>${changes.length} relevant change${changes.length === 1 ? "" : "s"}</h3><p>Observed ${escapeHtml(captured)} · ${allChanges.length} across the league</p></div><span class="quality ${changes.length ? "aging" : "fresh"}">${changes.length ? "Review" : "No changes"}</span></article><div class="timeline">${changes.length ? changes.map((change) => `<article class="panel timeline-item ${escapeHtml(change.kind)}" ${change.playerId ? `data-player-id="${escapeHtml(change.playerId)}" role="button" tabindex="0"` : ""}><span class="timeline-icon">${change.kind === "injury" ? "!" : change.kind === "lineup" ? "↕" : change.kind === "projection" ? "±" : change.kind === "matchup" ? "#" : "+"}</span><div><small>${escapeHtml(change.kind.replaceAll("-", " ").toUpperCase())}</small><strong>${escapeHtml(change.title)}</strong><p>${escapeHtml(change.detail)}</p></div></article>`).join("") : emptyState("Nothing meaningful changed", "The latest snapshot matches the previous one for this team. Identical refreshes do not create duplicate events.")}</div>`;
 }
