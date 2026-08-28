@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-chip-winner.local/schema/model-evaluation-report.schema.json",
+  "title": "The Chip Winner privacy-safe model evaluation report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "recommendations", "explanations", "issueCounts"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "recommendations": { "$ref": "#/$defs/counts" },
+    "explanations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempted", "accepted", "rejected"],
+      "properties": {
+        "attempted": { "type": "integer", "minimum": 0 },
+        "accepted": { "type": "integer", "minimum": 0 },
+        "rejected": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "issueCounts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 1 },
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" }
+    }
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["submitted", "accepted", "rejected"],
+      "properties": {
+        "submitted": { "type": "integer", "minimum": 0 },
+        "accepted": { "type": "integer", "minimum": 0 },
+        "rejected": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

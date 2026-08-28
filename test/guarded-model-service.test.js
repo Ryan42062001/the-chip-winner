@@ -24,3 +24,20 @@ test("guarded model service excludes explanations that omit evidence or limitati
 test("guarded model service requires a configured adapter", () => {
   assert.throws(() => new GuardedModelService({}), /adapter/);
 });
+
+test("guarded model service reports adapter failures without leaking recommendation contents", async () => {
+  const adapter = { explain: async () => { throw new Error("provider timeout"); } };
+  const result = await new GuardedModelService({ adapter }).explainRecommendations(snapshot, snapshot.teams[0].id, [{ ...base, id: "sensitive-id" }]);
+  assert.equal(result.status, "partial");
+  assert.equal(result.report.issueCounts["adapter-failure"], 1);
+  assert.deepEqual(result.report.explanations, { attempted: 1, accepted: 0, rejected: 1 });
+  assert.doesNotMatch(JSON.stringify(result.report), /sensitive-id|provider timeout/);
+});
+
+test("guarded model service treats an absent recommendation batch as an empty run", async () => {
+  const adapter = { explain: async () => { throw new Error("adapter should not run"); } };
+  const result = await new GuardedModelService({ adapter }).explainRecommendations(snapshot, snapshot.teams[0].id);
+  assert.equal(result.status, "ready");
+  assert.deepEqual(result.report.recommendations, { submitted: 0, accepted: 0, rejected: 0 });
+  assert.deepEqual(result.report.explanations, { attempted: 0, accepted: 0, rejected: 0 });
+});

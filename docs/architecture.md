@@ -31,6 +31,8 @@ ESPN remains the authority for league settings, membership, rosters, matchups, l
 
 `src/providers/projections/projection-catalog.js` is the source-neutral forecast store. It preserves providers independently by source, season, week, and scoring format, and requires capture metadata before a projection can enter the recommendation layer. Source selection and evaluation are documented in `docs/projection-source-research.md`.
 
+Model recommendations and explanations pass through deterministic evaluation before use. Individual results retain human-readable errors plus stable issue codes, while `schema/model-evaluation-report.schema.json` defines an aggregate, privacy-safe observability record with counts only.
+
 `src/domain/identity.js` owns canonical provider identities and external-record reconciliation. It accepts only provider-owned IDs, reports unresolved and conflicting mappings, and intentionally contains no display-name fallback.
 
 FantasyPros CSV rankings are a constrained exception because the export supplies no player IDs. `src/providers/rankings/ranking-provider.js` reconciles an exact normalized name only when NFL team and position also agree. Suffix and defense-name normalization cannot bypass those additional keys; duplicate composite identities become conflicts. `src/domain/ros-analysis.js` consumes only reconciled records and expresses differences as ranks, never as projected points.

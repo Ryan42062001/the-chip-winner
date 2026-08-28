@@ -8,12 +8,14 @@
     {
       "name": "invented waiver player",
       "expectedValid": false,
+      "expectedCode": "unknown-player",
       "recommendation": { "id": "fixture-invented", "kind": "waiver", "status": "review", "confidence": "low", "inputs": ["ESPN availability"], "limitations": ["Availability required."], "payload": { "addPlayerId": "invented-player" } }
     },
     {
       "name": "missing uncertainty",
       "expectedValid": false,
       "expectedError": "require a limitation",
+      "expectedCode": "contract-invalid",
       "recommendation": { "id": "fixture-no-limits", "kind": "scenario", "status": "unavailable", "confidence": "none", "inputs": [], "limitations": [] }
     },
     {
@@ -21,6 +23,7 @@
       "teamId": "t1",
       "expectedValid": false,
       "expectedError": "not an unlocked bench player",
+      "expectedCode": "illegal-drop",
       "recommendation": { "id": "fixture-starter-drop", "kind": "waiver", "status": "review", "confidence": "medium", "inputs": ["ESPN availability"], "limitations": ["Verify transaction rules."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p1" } }
     },
     {
@@ -28,19 +31,51 @@
       "teamId": "t1",
       "expectedValid": false,
       "expectedError": "not on selected team",
+      "expectedCode": "drop-not-on-team",
       "recommendation": { "id": "fixture-opponent-drop", "kind": "scenario", "status": "review", "confidence": "low", "inputs": ["ESPN roster"], "limitations": ["Verify transaction rules."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p17" } }
     },
     {
       "name": "stale source timestamp",
       "expectedValid": false,
       "expectedError": "does not match",
+      "expectedCode": "snapshot-timestamp-mismatch",
       "recommendation": { "id": "fixture-stale", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Refresh first."], "sourceCapturedAt": "2026-01-01T00:00:00Z", "payload": { "playerId": "p3" } }
     },
     {
       "name": "review without traceable inputs",
       "expectedValid": false,
       "expectedError": "named input",
+      "expectedCode": "named-input-missing",
       "recommendation": { "id": "fixture-no-input", "kind": "lineup", "status": "review", "confidence": "low", "inputs": [], "limitations": ["Projection source unavailable."], "payload": { "playerId": "p1" } }
+    },
+    {
+      "name": "valid unavailable recommendation",
+      "expectedValid": true,
+      "recommendation": { "id": "fixture-valid-unavailable", "kind": "scenario", "status": "unavailable", "confidence": "none", "inputs": [], "limitations": ["Future projections are unavailable."] }
+    },
+    {
+      "name": "valid unlocked bench waiver",
+      "teamId": "t1",
+      "expectedValid": true,
+      "recommendation": { "id": "fixture-valid-waiver", "kind": "waiver", "status": "review", "confidence": "medium", "inputs": ["ESPN availability", "ESPN roster"], "limitations": ["Refresh availability before acting."], "payload": { "addPlayerId": "p15", "dropPlayerId": "p10" } }
+    },
+    {
+      "name": "invented alert identity",
+      "expectedValid": false,
+      "expectedCode": "unknown-player",
+      "recommendation": { "id": "fixture-invented-alert", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Identity must be known."], "payload": { "playerId": "not-an-espn-player" } }
+    },
+    {
+      "name": "malformed source timestamp",
+      "expectedValid": false,
+      "expectedCode": "contract-invalid",
+      "recommendation": { "id": "fixture-bad-time", "kind": "lineup", "status": "review", "confidence": "low", "inputs": ["ESPN projection"], "limitations": ["Timestamp required."], "sourceCapturedAt": "not-a-date", "payload": { "playerId": "p1" } }
+    },
+    {
+      "name": "unexpected model field",
+      "expectedValid": false,
+      "expectedCode": "contract-invalid",
+      "recommendation": { "id": "fixture-extra-field", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Use only contract fields."], "payload": { "playerId": "p3" }, "secretThought": "must never pass" }
     }
   ]
 }

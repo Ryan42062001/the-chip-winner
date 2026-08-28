@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import snapshot from "../src/data/sample-espn-snapshot.json" with { type: "json" };
-import { evaluateExplanation, evaluateRecommendationBatch } from "../src/domain/model-evaluator.js";
+import { buildModelEvaluationReport, evaluateExplanation, evaluateRecommendationBatch } from "../src/domain/model-evaluator.js";
 
 const base = { id: "r-1", kind: "scenario", status: "review", confidence: "medium", inputs: ["ESPN"], limitations: ["Review before acting."] };
 
@@ -45,4 +45,27 @@ test("explanation evaluation requires provenance and every stated limitation", (
   assert.match(invalid.errors.join(" "), /recommendationId/);
   assert.match(invalid.errors.join(" "), /input/);
   assert.match(invalid.errors.join(" "), /omits limitation/);
+});
+
+test("model evaluator exposes stable aggregate issue codes", () => {
+  const result = evaluateRecommendationBatch([{ ...base, inputs: [], payload: { addPlayerId: "invented" } }], snapshot);
+  assert.equal(result.issueCounts["named-input-missing"], 1);
+  assert.equal(result.issueCounts["unknown-player"], 1);
+  assert.equal(result.issueCounts["add-unavailable"], 1);
+  assert.deepEqual(result.results[0].issues.map((item) => item.code), ["named-input-missing", "unknown-player", "add-unavailable"]);
+});
+
+test("explanation evaluator exposes stable source and limitation issue codes", () => {
+  const result = evaluateExplanation({ recommendationId: "wrong", provider: "", text: "Unsupported conclusion." }, base);
+  assert.deepEqual(result.issues.map((item) => item.code), ["recommendation-id-mismatch", "provider-missing", "input-not-cited", "limitation-omitted"]);
+});
+
+test("model evaluation report contains aggregate counts but no recommendation or player identities", () => {
+  const recommendationEvaluation = evaluateRecommendationBatch([{ ...base, id: "private-recommendation", payload: { playerId: "private-player" } }], snapshot);
+  const explanationEvaluation = evaluateExplanation({ provider: "fixture", recommendationId: "wrong", text: "No source." }, base);
+  const report = buildModelEvaluationReport(recommendationEvaluation, [{ recommendationId: base.id, ...explanationEvaluation }], 1);
+  assert.deepEqual(report.recommendations, { submitted: 1, accepted: 0, rejected: 1 });
+  assert.deepEqual(report.explanations, { attempted: 1, accepted: 0, rejected: 1 });
+  assert.equal(report.issueCounts["unknown-player"], 1);
+  assert.doesNotMatch(JSON.stringify(report), /private-recommendation|private-player/);
 });

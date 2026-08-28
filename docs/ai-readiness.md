@@ -28,7 +28,9 @@ The app can export a versioned, privacy-safe model context packet for the select
 
 A provider-neutral model adapter now defines the explanation boundary. Its deterministic fallback produces traceable summaries without network access, while unconfigured model providers fail explicitly.
 
-`npm run eval:model` executes seven versioned safety fixtures, and the deployment workflow requires them to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks. Explanation output is separately evaluated for the correct recommendation ID, provider attribution, named source inputs, and every stated limitation. Per-recommendation failures are returned without exposing credentials or aborting unrelated explanations.
+`npm run eval:model` executes twelve versioned safety fixtures, and the deployment workflow requires them to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks. Explanation output is separately evaluated for the correct recommendation ID, provider attribution, named source inputs, and every stated limitation. Per-recommendation failures are returned without exposing credentials or aborting unrelated explanations.
+
+The evaluator also emits stable machine-readable issue codes and a versioned aggregate run report defined by `schema/model-evaluation-report.schema.json`. The report contains only accepted/rejected totals and issue-code counts—never recommendation IDs, player IDs, explanation text, prompts, or league details. This provides an observability boundary without turning private model inputs into logs.
 
 ## Open model capabilities
 
