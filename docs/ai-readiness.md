@@ -46,4 +46,4 @@ The scenario engine can now calculate an optimized weekly baseline when both a v
 
 Read-only add/drop scenarios can be evaluated against that baseline across selected weeks. Every scenario uses an isolated roster copy and reruns legal lineup assignment; the ESPN snapshot remains unchanged.
 
-Weekly projections can be imported from a strict CSV with `provider_player_id`, `week`, and `points` columns plus explicit source metadata. Validated imports may be cached locally; duplicate player-week rows are rejected.
+Weekly projections can be imported from a strict CSV with `provider`, `scoring_format`, `season`, `captured_at`, `provider_player_id`, `week`, and `points` columns. Source metadata must be explicit and identical on every row; the app never substitutes import time for source capture time. Validated imports may be cached locally, while duplicate player-week rows and inconsistent metadata are rejected.

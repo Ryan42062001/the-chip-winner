@@ -6,7 +6,7 @@
   "properties": {
     "provider": { "type": "string", "minLength": 1 },
     "scoringFormat": { "type": "string", "minLength": 1 },
-    "season": { "type": "integer" },
+    "season": { "type": "integer", "minimum": 2000, "maximum": 2100 },
     "capturedAt": { "type": "string", "format": "date-time" },
     "projections": {
       "type": "array",

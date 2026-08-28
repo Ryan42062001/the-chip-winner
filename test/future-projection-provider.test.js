@@ -14,13 +14,18 @@ test("future projection CSV imports and caches explicit weekly records", () => {
   const values = new Map();
   const storage = { getItem: (key) => values.get(key) || null, setItem: (key, value) => values.set(key, value), removeItem: (key) => values.delete(key) };
   const provider = new FutureProjectionProvider({ storage });
-  const set = provider.importCsv("provider_player_id,week,points\np-1,15,17.25", { provider: "example", scoringFormat: "PPR", season: 2026, capturedAt: "2026-08-28T00:00:00Z" });
+  const set = provider.importCsv("provider,scoring_format,season,captured_at,provider_player_id,week,points\nexample,PPR,2026,2026-08-28T00:00:00Z,p-1,15,17.25");
   assert.equal(set.projections[0].points, 17.25);
   assert.equal(provider.readCache().provider, "example");
 });
 
 test("future projection CSV rejects duplicate player weeks", () => {
-  assert.throws(() => parseFutureProjectionCsv("provider_player_id,week,points\np-1,15,10\np-1,15,11", { provider: "x", scoringFormat: "PPR", season: 2026, capturedAt: "2026-08-28T00:00:00Z" }), /duplicate/);
+  assert.throws(() => parseFutureProjectionCsv("provider,scoring_format,season,captured_at,provider_player_id,week,points\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,15,10\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,15,11"), /duplicate/);
+});
+
+test("future projection CSV requires consistent explicit source metadata", () => {
+  assert.throws(() => parseFutureProjectionCsv("provider_player_id,week,points\np-1,15,10"), /missing provider/);
+  assert.throws(() => parseFutureProjectionCsv("provider,scoring_format,season,captured_at,provider_player_id,week,points\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,15,10\ny,PPR,2026,2026-08-28T00:00:00Z,p-2,15,11"), /identical/);
 });
 
 test("future projections reject missing identities and invented numeric values", () => {

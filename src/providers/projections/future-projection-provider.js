@@ -3,7 +3,7 @@ export function normalizeFutureProjectionSet(input) {
   if (!input || typeof input !== "object") return { valid: false, errors: ["Projection set must be an object."] };
   if (typeof input.provider !== "string" || !input.provider.trim()) errors.push("provider is required.");
   if (typeof input.scoringFormat !== "string" || !input.scoringFormat.trim()) errors.push("scoringFormat is required.");
-  if (!Number.isInteger(input.season)) errors.push("season must be an integer.");
+  if (!Number.isInteger(input.season) || input.season < 2000 || input.season > 2100) errors.push("season must be a four-digit year from 2000 through 2100.");
   if (!input.capturedAt || !Number.isFinite(Date.parse(input.capturedAt))) errors.push("capturedAt must be an ISO date-time.");
   if (!Array.isArray(input.projections)) errors.push("projections must be an array.");
   const records = [];
@@ -37,18 +37,21 @@ export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Dat
   return Object.freeze({ usable: errors.length === 0, status: errors.length ? "blocked" : warnings.length ? "stale" : "ready", ageMs, errors: Object.freeze(errors), warnings: Object.freeze(warnings) });
 }
 
-export function parseFutureProjectionCsv(text, metadata) {
+export function parseFutureProjectionCsv(text) {
   const lines = String(text || "").trim().split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) throw new Error("Future projection CSV is empty.");
   const headers = lines[0].split(",").map((item) => item.trim().replace(/^"|"$/g, "").toLowerCase());
-  for (const required of ["provider_player_id", "week", "points"]) if (!headers.includes(required)) throw new Error(`Future projection CSV is missing ${required}.`);
+  for (const required of ["provider", "scoring_format", "season", "captured_at", "provider_player_id", "week", "points"]) if (!headers.includes(required)) throw new Error(`Future projection CSV is missing ${required}.`);
   const at = (values, name) => values[headers.indexOf(name)]?.trim().replace(/^"|"$/g, "").replaceAll('""', '"') || "";
-  const projections = lines.slice(1).map((line) => {
+  const rows = lines.slice(1).map((line) => {
     const values = line.split(",");
     const week = at(values, "week"); const points = at(values, "points");
-    return { providerPlayerId: at(values, "provider_player_id"), week: week === "" ? Number.NaN : Number(week), points: points === "" ? Number.NaN : Number(points) };
+    return { provider: at(values, "provider"), scoringFormat: at(values, "scoring_format"), season: at(values, "season"), capturedAt: at(values, "captured_at"), projection: { providerPlayerId: at(values, "provider_player_id"), week: week === "" ? Number.NaN : Number(week), points: points === "" ? Number.NaN : Number(points) } };
   });
-  const result = normalizeFutureProjectionSet({ ...metadata, projections });
+  const metadataKeys = rows.map((row) => JSON.stringify([row.provider, row.scoringFormat, row.season, row.capturedAt]));
+  if (new Set(metadataKeys).size !== 1) throw new Error("Future projection CSV source metadata must be identical on every row.");
+  const first = rows[0];
+  const result = normalizeFutureProjectionSet({ provider: first.provider, scoringFormat: first.scoringFormat, season: Number(first.season), capturedAt: first.capturedAt, projections: rows.map((row) => row.projection) });
   if (!result.valid) throw new Error(result.errors.join(" "));
   const keys = result.value.projections.map((item) => `${item.providerPlayerId}:${item.week}`);
   if (new Set(keys).size !== keys.length) throw new Error("Future projection CSV contains duplicate player-week records.");
@@ -58,7 +61,7 @@ export function parseFutureProjectionCsv(text, metadata) {
 const CACHE_KEY = "chip-winner:future-projections:v1";
 export class FutureProjectionProvider {
   constructor({ storage = globalThis.localStorage } = {}) { this.storage = storage; }
-  importCsv(text, metadata) { const set = parseFutureProjectionCsv(text, metadata); this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
+  importCsv(text) { const set = parseFutureProjectionCsv(text); this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
   readCache() {
     try { const value = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); return value && normalizeFutureProjectionSet(value).valid ? value : null; }
     catch { this.clearCache(); return null; }
