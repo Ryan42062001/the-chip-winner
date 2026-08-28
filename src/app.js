@@ -12,6 +12,7 @@ import { changesForTeam, diffSnapshots } from "./domain/snapshot-diff.js";
 import { buildRosterAwareWaiverIdeas } from "./domain/waiver-engine.js";
 import { buildRosterPlan } from "./domain/roster-planning.js";
 import { buildScenarioPlan } from "./domain/scenario-planner.js";
+import { FutureProjectionProvider } from "./providers/projections/future-projection-provider.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
@@ -19,6 +20,8 @@ import { publishSyncState, readSyncState } from "./sync/sync-session.js";
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
 const rankingProvider = new FantasyProsRankingProvider();
+const futureProjectionProvider = new FutureProjectionProvider();
+let futureProjectionSet = futureProjectionProvider.readCache();
 const syncProvider = new HttpSyncProvider({ baseUrl: "https://the-chip-winner-sync.yc6syr6bkd.workers.dev" });
 const SYNC_CREDENTIALS_KEY = "the-chip-winner:sync-credentials:v1";
 const ESPN_CONNECTION = Object.freeze({ leagueId: "118749183", seasonId: "2026", teamId: "2" });
@@ -169,6 +172,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ACQUISITIONS</p><h3>Waiver settings</h3></div></div><dl class="settings-list"><div><dt>Season acquisition limit</dt><dd>${formatLeagueLimit(waiver.acquisitionLimit)}</dd></div><div><dt>Processing days</dt><dd>${waiver.waiverProcessDays ?? "Unavailable"}</dd></div><div><dt>Budget</dt><dd>${waiver.budget ?? "Unavailable"}</dd></div></dl><p class="data-note">Player availability and transaction legality are rechecked from ESPN data on every refresh.</p></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation.byPlayerId).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation.unresolved.length}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation.conflicts.length}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">Rankings remain separate from ESPN projections and are stored only in this browser.</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace CSV</button> <button class="button ghost" id="clear-future-projections-button">Remove</button>` : `<p class="data-note">Import a strict CSV with provider_player_id, week, and points columns. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button>`}</article>
     ${mobileSyncCard()}
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a></article>
   </div>`;
@@ -326,12 +330,26 @@ document.querySelector("#rankings-input").addEventListener("change", async (even
   } catch (error) { showNotice(error.message, "error"); }
   event.target.value = "";
 });
+document.querySelector("#future-projections-input").addEventListener("change", async (event) => {
+  try {
+    const file = event.target.files[0]; if (!file) return;
+    futureProjectionSet = futureProjectionProvider.importCsv(await file.text(), { provider: "user-import", scoringFormat: state.snapshot.league.scoringType || "Unknown", season: Number(state.snapshot.league.season) || 2026, capturedAt: new Date().toISOString() });
+    render();
+    const weeks = [...new Set(futureProjectionSet.projections.map((item) => item.week))];
+    showNotice(`Imported ${futureProjectionSet.projections.length} weekly projections across ${weeks.length} week${weeks.length === 1 ? "" : "s"}.`);
+  } catch (error) { showNotice(error.message, "error"); }
+  event.target.value = "";
+});
 document.querySelector("#reset-button").addEventListener("click", () => { provider.clearCache(); showNotice("Imported snapshot cleared. Loading sample data…"); setTimeout(() => location.reload(), 250); });
 window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); });
 document.querySelector(".mobile-menu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
 document.querySelectorAll(".nav-link").forEach(link => link.addEventListener("click", () => document.querySelector(".sidebar").classList.remove("open")));
 content.addEventListener("click", (event) => { const row = event.target.closest("[data-player-id]"); if (row) openPlayerDetail(row.dataset.playerId); });
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
+content.addEventListener("click", (event) => {
+  if (event.target.closest("#future-projections-button")) document.querySelector("#future-projections-input").click();
+  if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); futureProjectionSet = null; render(); showNotice("Weekly projections removed from this browser."); }
+});
 content.addEventListener("click", async (event) => {
   const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
   if (!action) return;
