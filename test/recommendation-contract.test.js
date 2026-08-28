@@ -11,3 +11,10 @@ test("recommendation contract rejects unavailable output without limitations", (
   assert.equal(result.valid, false);
   assert.match(result.errors.join(" "), /limitation/);
 });
+
+test("recommendation contract rejects malformed timestamps and unexpected fields", () => {
+  const result = validateRecommendation({ id: "x", kind: "alert", status: "review", confidence: "low", inputs: [], limitations: ["test"], sourceCapturedAt: "not-a-date", inventedRank: 1 });
+  assert.equal(result.valid, false);
+  assert.match(result.errors.join(" "), /sourceCapturedAt/);
+  assert.match(result.errors.join(" "), /Unexpected/);
+});

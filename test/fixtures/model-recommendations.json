@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "name": "valid injury review",
+      "expectedValid": true,
+      "recommendation": { "id": "fixture-valid", "kind": "alert", "status": "review", "confidence": "medium", "inputs": ["ESPN injury status"], "limitations": ["Verify late news."], "payload": { "playerId": "p1" } }
+    },
+    {
+      "name": "invented waiver player",
+      "expectedValid": false,
+      "recommendation": { "id": "fixture-invented", "kind": "waiver", "status": "review", "confidence": "low", "inputs": ["ESPN availability"], "limitations": ["Availability required."], "payload": { "addPlayerId": "invented-player" } }
+    },
+    {
+      "name": "missing uncertainty",
+      "expectedValid": false,
+      "recommendation": { "id": "fixture-no-limits", "kind": "scenario", "status": "unavailable", "confidence": "none", "inputs": [], "limitations": [] }
+    }
+  ]
+}

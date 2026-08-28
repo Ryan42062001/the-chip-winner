@@ -28,6 +28,8 @@ The app can export a versioned, privacy-safe model context packet for the select
 
 A provider-neutral model adapter now defines the explanation boundary. Its deterministic fallback produces traceable summaries without network access, while unconfigured model providers fail explicitly.
 
+`npm run eval:model` executes versioned safety fixtures, and the deployment workflow now requires those fixtures to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks.
+
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
