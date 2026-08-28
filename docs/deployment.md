@@ -10,7 +10,7 @@ The public site is deployed from `master` to GitHub Pages by `.github/workflows/
 4. Confirm the **Deploy website** workflow completed successfully.
 5. Open `https://ryan42062001.github.io/the-chip-winner/` in a private window and verify the visible release.
 
-The release gate covers 173 automated tests, 20 model-safety fixtures, secret scanning, companion least-privilege rules, static assets, desktop/mobile browser journeys, and automated WCAG 2.2 A/AA checks.
+The release gate covers 174 automated tests, 20 model-safety fixtures, secret scanning, companion least-privilege rules, static assets, desktop/mobile browser journeys, and automated WCAG 2.2 A/AA checks.
 
 ## Safe rollback
 

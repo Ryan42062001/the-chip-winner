@@ -51,3 +51,11 @@ test("weekly checklist reports missing roster and projection gaps without invent
   assert.equal(gap.status, "data-gap");
   assert.match(gap.detail, /No projection-based lineup claim/);
 });
+
+test("weekly checklist surfaces only a proven exhausted ESPN acquisition limit", () => {
+  const snapshot = configuredSnapshot(); snapshot.league.waiver = { acquisitionLimit: -1, matchupAcquisitionLimit: 2 }; snapshot.teams[0].acquisition = { matchupAcquisitions: 2 };
+  const blocked = buildWeeklyChecklist(snapshot, "t1", NOW).items.find((item) => item.id === "acquisition-limit");
+  assert.equal(blocked.status, "locked"); assert.match(blocked.detail, /Week 6 acquisition limit is exhausted/);
+  snapshot.teams[0].acquisition.matchupAcquisitions = null;
+  assert.equal(buildWeeklyChecklist(snapshot, "t1", NOW).items.some((item) => item.id === "acquisition-limit"), false);
+});

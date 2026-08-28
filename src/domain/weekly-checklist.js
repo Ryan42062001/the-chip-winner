@@ -1,6 +1,7 @@
 import { isStarter } from "./model.js";
 import { getLineupLockReason } from "./lineup-optimizer.js";
 import { buildLineupVacancies, buildWarnings } from "./recommendations.js";
+import { evaluateAcquisitionCapacity } from "./waiver-engine.js";
 
 const STATUS_WEIGHT = Object.freeze({ "needs-action": 4, "data-gap": 3, locked: 2, complete: 1 });
 const URGENCY_WEIGHT = Object.freeze({ critical: 4, high: 3, medium: 2, unknown: 1, info: 0 });
@@ -29,6 +30,8 @@ export function buildWeeklyChecklist(snapshot, teamId, now = Date.now()) {
     detail: `ESPN requires ${item.requiredCount}; ${item.filledCount} currently filled.`,
     destination: "#lineup"
   }));
+  const acquisitionCapacity = evaluateAcquisitionCapacity(snapshot, teamId);
+  if (acquisitionCapacity.status === "exhausted") items.push(Object.freeze({ id: "acquisition-limit", kind: "acquisition-limit", status: "locked", urgency: "info", playerId: null, title: "Waiver moves blocked by ESPN limit", detail: acquisitionCapacity.reason, destination: "#waivers" }));
   const warningByPlayer = new Map(buildWarnings(snapshot, teamId).filter((warning) => isStarter(warning.lineupSlot)).map((warning) => [warning.player.id, warning]));
   let unknownKickoffCount = 0;
 
