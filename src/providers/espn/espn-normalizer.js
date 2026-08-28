@@ -135,7 +135,7 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
       waiver: normalizeWaiverSettings(response.settings.acquisitionSettings)
     },
     currentWeek,
-    teams: response.teams.map(normalizeTeam),
+    teams: response.teams.map((team) => normalizeTeam(team, currentWeek)),
     players: [...playerMap.values()],
     rosters,
     matchups
@@ -155,20 +155,28 @@ function normalizeLineupSlotCounts(counts = {}) {
 function normalizeWaiverSettings(settings = {}) {
   return {
     acquisitionLimit: Number.isFinite(settings.acquisitionLimit) ? settings.acquisitionLimit : null,
+    matchupAcquisitionLimit: Number.isFinite(settings.matchupAcquisitionLimit) ? settings.matchupAcquisitionLimit : null,
     waiverProcessDays: Number.isFinite(settings.waiverProcessDays) ? settings.waiverProcessDays : null,
     budget: Number.isFinite(settings.acquisitionBudget) ? settings.acquisitionBudget : null
   };
 }
 
-function normalizeTeam(team) {
+function normalizeTeam(team, currentWeek) {
   const overall = team.record?.overall || {};
   const explicitName = [team.location, team.nickname].filter(Boolean).join(" ").trim();
+  const counter = team.transactionCounter || {};
   return {
     id: String(team.id),
     name: explicitName || team.name || team.abbrev || `Team ${team.id}`,
     abbreviation: team.abbrev || `T${team.id}`,
     record: { wins: overall.wins ?? null, losses: overall.losses ?? null, ties: overall.ties ?? null },
-    pointsFor: overall.pointsFor ?? null
+    pointsFor: overall.pointsFor ?? null,
+    acquisition: {
+      waiverRank: Number.isInteger(team.waiverRank) ? team.waiverRank : null,
+      seasonAcquisitions: Number.isInteger(counter.acquisitions) ? counter.acquisitions : null,
+      matchupAcquisitions: Number.isInteger(counter.matchupAcquisitionTotals?.[currentWeek]) ? counter.matchupAcquisitionTotals[currentWeek] : null,
+      budgetSpent: Number.isFinite(counter.acquisitionBudgetSpent) ? counter.acquisitionBudgetSpent : null
+    }
   };
 }
 

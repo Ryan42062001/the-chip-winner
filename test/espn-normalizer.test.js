@@ -65,6 +65,8 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.meta.kind, "live-companion");
   assert.deepEqual(snapshot.league.lineupSlots.find((item) => item.slot === "QB"), { slot: "QB", count: 1, espnSlotId: 0 });
   assert.equal(snapshot.league.waiver.budget, 100);
+  assert.equal(snapshot.league.waiver.matchupAcquisitionLimit, 3);
+  assert.deepEqual(snapshot.teams[0].acquisition, { waiverRank: 2, seasonAcquisitions: 3, matchupAcquisitions: 1, budgetSpent: 17 });
 });
 
 test("superflex league fixture preserves OP slots and its reported scoring type", () => {

@@ -1,11 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildRosterAwareWaiverIdeas } from "../src/domain/waiver-engine.js";
+import { buildRosterAwareWaiverIdeas, evaluateAcquisitionCapacity } from "../src/domain/waiver-engine.js";
 
 function snapshot() {
   return {
     currentWeek: 1,
-    league: { waiver: { acquisitionLimit: -1 } },
+    league: { waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: null } },
+    teams: [{ id: "mine", acquisition: { waiverRank: null, seasonAcquisitions: null, matchupAcquisitions: null, budgetSpent: null } }],
     players: [
       { id: "qb", name: "Quarterback", position: "QB", projection: 20 },
       { id: "rb", name: "Starter Back", position: "RB", projection: 10 },
@@ -45,4 +46,16 @@ test("waiver engine reports missing availability and incomplete lineups honestly
   assert.equal(buildRosterAwareWaiverIdeas(missing, "mine").status, "missing-availability");
   const incomplete = snapshot(); incomplete.rosters[0].entries = [{ playerId: "qb", lineupSlot: "RB" }];
   assert.equal(buildRosterAwareWaiverIdeas(incomplete, "mine", 0).status, "incomplete-lineup");
+});
+
+test("waiver engine suppresses moves only when ESPN proves an acquisition limit is exhausted", () => {
+  const value = snapshot(); value.league.waiver = { acquisitionLimit: 5, matchupAcquisitionLimit: 2 }; value.teams[0].acquisition = { seasonAcquisitions: 3, matchupAcquisitions: 2 };
+  const capacity = evaluateAcquisitionCapacity(value, "mine");
+  assert.deepEqual(capacity, { status: "exhausted", seasonRemaining: 2, matchupRemaining: 0, reason: "ESPN reports that the Week 1 acquisition limit is exhausted." });
+  const result = buildRosterAwareWaiverIdeas(value, "mine", 0);
+  assert.equal(result.status, "acquisition-limit-reached"); assert.equal(result.items.length, 0);
+  value.teams[0].acquisition.matchupAcquisitions = null;
+  assert.equal(evaluateAcquisitionCapacity(value, "mine").status, "unverified");
+  value.league.waiver.matchupAcquisitionLimit = -1;
+  assert.equal(evaluateAcquisitionCapacity(value, "mine").status, "available");
 });

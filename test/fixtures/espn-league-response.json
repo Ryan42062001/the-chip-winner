@@ -2,11 +2,11 @@
   "id": 118749183,
   "seasonId": 2026,
   "scoringPeriodId": 1,
-  "settings": { "name": "Fixture League", "scoringSettings": { "scoringType": "H2H_POINTS" }, "rosterSettings": { "lineupSlotCounts": { "0": 1, "2": 2, "20": 6, "23": 1 } }, "acquisitionSettings": { "acquisitionLimit": -1, "waiverProcessDays": 1, "acquisitionBudget": 100 } },
+  "settings": { "name": "Fixture League", "scoringSettings": { "scoringType": "H2H_POINTS" }, "rosterSettings": { "lineupSlotCounts": { "0": 1, "2": 2, "20": 6, "23": 1 } }, "acquisitionSettings": { "acquisitionLimit": -1, "matchupAcquisitionLimit": 3, "waiverProcessDays": 1, "acquisitionBudget": 100 } },
   "teams": [
     {
       "id": 2, "location": "Chip", "nickname": "Winners", "abbrev": "CHP",
-      "record": { "overall": { "wins": 0, "losses": 0, "ties": 0, "pointsFor": 0 } },
+      "record": { "overall": { "wins": 0, "losses": 0, "ties": 0, "pointsFor": 0 } }, "waiverRank": 2, "transactionCounter": { "acquisitions": 3, "acquisitionBudgetSpent": 17, "matchupAcquisitionTotals": { "1": 1 } },
       "roster": { "entries": [
         { "lineupSlotId": 0, "playerPoolEntry": { "player": { "id": 101, "fullName": "Fixture Quarterback", "defaultPositionId": 1, "injuryStatus": "ACTIVE", "stats": [{ "scoringPeriodId": 1, "statSourceId": 1, "statSplitTypeId": 1, "appliedTotal": 20.5 }] } } }
       ] }

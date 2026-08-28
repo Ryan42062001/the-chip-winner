@@ -12,9 +12,9 @@
     "league": {
       "type": "object",
       "required": ["id", "name"],
-      "properties": { "id": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 }, "season": { "type": "integer" } }
+      "properties": { "id": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 }, "season": { "type": "integer" }, "waiver": { "$ref": "#/$defs/waiver" } }
     },
-    "currentWeek": { "type": "integer", "minimum": 1 },
+    "currentWeek": { "type": "integer", "minimum": 0 },
     "teams": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/team" } },
     "players": { "type": "array", "items": { "$ref": "#/$defs/player" } },
     "rosters": { "type": "array", "items": { "$ref": "#/$defs/roster" } },
@@ -22,7 +22,8 @@
     "availablePlayers": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
   },
   "$defs": {
-    "team": { "type": "object", "required": ["id", "name"], "properties": { "id": { "type": "string" }, "name": { "type": "string" } } },
+    "waiver": { "type": "object", "properties": { "acquisitionLimit": { "type": ["integer", "null"], "minimum": -1 }, "matchupAcquisitionLimit": { "type": ["integer", "null"], "minimum": -1 }, "waiverProcessDays": { "type": ["integer", "null"], "minimum": 0 }, "budget": { "type": ["number", "null"], "minimum": 0 } } },
+    "team": { "type": "object", "required": ["id", "name"], "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "acquisition": { "type": "object", "properties": { "waiverRank": { "type": ["integer", "null"], "minimum": 1 }, "seasonAcquisitions": { "type": ["integer", "null"], "minimum": 0 }, "matchupAcquisitions": { "type": ["integer", "null"], "minimum": 0 }, "budgetSpent": { "type": ["number", "null"], "minimum": 0 } } } } },
     "player": { "type": "object", "required": ["id", "name", "position"], "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "position": { "enum": ["QB", "RB", "WR", "TE", "K", "D/ST"] }, "projection": { "type": ["number", "null"], "minimum": 0 } } },
     "roster": { "type": "object", "required": ["teamId", "entries"], "properties": { "teamId": { "type": "string" }, "entries": { "type": "array", "items": { "type": "object", "required": ["playerId", "lineupSlot"], "properties": { "playerId": { "type": "string" }, "lineupSlot": { "enum": ["QB", "RB", "WR", "TE", "FLEX", "OP", "K", "D/ST", "BE", "IR"] } } } } } },
     "matchup": { "type": "object", "required": ["week", "homeTeamId", "awayTeamId"], "properties": { "week": { "type": "integer", "minimum": 1 }, "homeTeamId": { "type": "string" }, "awayTeamId": { "type": "string" } } }

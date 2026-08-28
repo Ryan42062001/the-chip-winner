@@ -29,10 +29,23 @@ export function validateLeagueSnapshot(snapshot) {
   const teamIds = new Set(teams.map((team) => team.id));
   if (playerIds.size !== players.length) errors.push("Player ids must be unique.");
   if (teamIds.size !== teams.length) errors.push("Team ids must be unique.");
+  const waiver = snapshot.league?.waiver;
+  if (waiver) {
+    for (const key of ["acquisitionLimit", "matchupAcquisitionLimit"]) if (waiver[key] != null && (!Number.isInteger(waiver[key]) || waiver[key] < -1)) errors.push(`League waiver ${key} is invalid.`);
+    if (waiver.waiverProcessDays != null && (!Number.isInteger(waiver.waiverProcessDays) || waiver.waiverProcessDays < 0)) errors.push("League waiver waiverProcessDays is invalid.");
+    if (waiver.budget != null && (!Number.isFinite(waiver.budget) || waiver.budget < 0)) errors.push("League waiver budget is invalid.");
+  }
   for (const player of players) {
     if (!player.id || !player.name) errors.push("Every player requires an id and name.");
     if (!SUPPORTED_POSITIONS.has(player.position)) errors.push(`Player ${player.id || "unknown"} has unsupported position ${player.position || "missing"}.`);
     if (player.projection != null && (!Number.isFinite(player.projection) || player.projection < 0)) errors.push(`Player ${player.id || "unknown"} has an invalid projection.`);
+  }
+  for (const team of teams) {
+    const acquisition = team.acquisition;
+    if (!acquisition) continue;
+    for (const key of ["seasonAcquisitions", "matchupAcquisitions"]) if (acquisition[key] != null && (!Number.isInteger(acquisition[key]) || acquisition[key] < 0)) errors.push(`Team ${team.id} has invalid ${key}.`);
+    if (acquisition.waiverRank != null && (!Number.isInteger(acquisition.waiverRank) || acquisition.waiverRank < 1)) errors.push(`Team ${team.id} has an invalid waiverRank.`);
+    if (acquisition.budgetSpent != null && (!Number.isFinite(acquisition.budgetSpent) || acquisition.budgetSpent < 0)) errors.push(`Team ${team.id} has invalid budgetSpent.`);
   }
   for (const roster of snapshot.rosters || []) {
     if (!roster.teamId) errors.push("Every roster requires a teamId.");
