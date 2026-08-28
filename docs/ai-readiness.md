@@ -26,6 +26,8 @@ The first offline batch evaluator now rejects malformed recommendation envelopes
 
 The app can export a versioned, privacy-safe model context packet for the selected team. The packet excludes browser credentials, unrelated teams' rosters, raw availability pools, and any recommendation that fails offline evaluation.
 
+A provider-neutral model adapter now defines the explanation boundary. Its deterministic fallback produces traceable summaries without network access, while unconfigured model providers fail explicitly.
+
 ## Open model capabilities
 
 Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
