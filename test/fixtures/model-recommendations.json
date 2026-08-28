@@ -77,5 +77,49 @@
       "expectedCode": "contract-invalid",
       "recommendation": { "id": "fixture-extra-field", "kind": "alert", "status": "review", "confidence": "low", "inputs": ["ESPN injury status"], "limitations": ["Use only contract fields."], "payload": { "playerId": "p3" }, "secretThought": "must never pass" }
     }
+  ],
+  "explanationCases": [
+    {
+      "name": "valid traceable explanation",
+      "expectedValid": true,
+      "expectedCodes": [],
+      "recommendation": { "id": "explain-valid", "inputs": ["ESPN projection"], "limitations": ["Kickoff time is unavailable."] },
+      "explanation": { "provider": "deterministic", "model": null, "recommendationId": "explain-valid", "text": "ESPN projection supports this review. Kickoff time is unavailable.", "generatedAt": null }
+    },
+    {
+      "name": "explanation for wrong recommendation",
+      "expectedValid": false,
+      "expectedCodes": ["recommendation-id-mismatch"],
+      "recommendation": { "id": "explain-target", "inputs": [], "limitations": [] },
+      "explanation": { "provider": "fixture", "recommendationId": "different-target", "text": "No recommendation inputs were supplied." }
+    },
+    {
+      "name": "explanation omits source input",
+      "expectedValid": false,
+      "expectedCodes": ["input-not-cited"],
+      "recommendation": { "id": "explain-input", "inputs": ["ESPN injury status"], "limitations": [] },
+      "explanation": { "provider": "fixture", "recommendationId": "explain-input", "text": "The roster should be reviewed." }
+    },
+    {
+      "name": "explanation hides stated limitation",
+      "expectedValid": false,
+      "expectedCodes": ["limitation-omitted"],
+      "recommendation": { "id": "explain-limit", "inputs": ["ESPN roster"], "limitations": ["Projection coverage is incomplete."] },
+      "explanation": { "provider": "fixture", "recommendationId": "explain-limit", "text": "ESPN roster supports this recommendation." }
+    },
+    {
+      "name": "explanation leaks an unexpected field",
+      "expectedValid": false,
+      "expectedCodes": ["explanation-field-unexpected"],
+      "recommendation": { "id": "explain-extra", "inputs": [], "limitations": [] },
+      "explanation": { "provider": "fixture", "recommendationId": "explain-extra", "text": "No source-dependent claim is made.", "rawPrompt": "must not pass" }
+    },
+    {
+      "name": "explanation has malformed provider metadata",
+      "expectedValid": false,
+      "expectedCodes": ["model-invalid", "explanation-timestamp-invalid"],
+      "recommendation": { "id": "explain-metadata", "inputs": [], "limitations": [] },
+      "explanation": { "provider": "fixture", "model": "", "recommendationId": "explain-metadata", "text": "No source-dependent claim is made.", "generatedAt": "not-a-date" }
+    }
   ]
 }
