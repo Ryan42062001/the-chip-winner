@@ -1,6 +1,6 @@
 {
   "name": "the-chip-winner",
-  "version": "0.9.7",
+  "version": "0.9.8",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,10 +9,14 @@
     "test": "node --test",
     "eval:model": "node scripts/run-model-evals.js",
     "smoke": "node scripts/smoke-static.js",
+    "smoke:browser": "node scripts/smoke-browser.js",
     "security": "node scripts/security-scan.js",
-    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/smoke-static.js"
+    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/smoke-static.js && node scripts/smoke-browser.js"
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.55.0"
   }
 }

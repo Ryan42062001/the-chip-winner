@@ -22,9 +22,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      - run: npm ci
       - run: npm test
       - run: npm run eval:model
       - run: npm run smoke
+      - run: npm run smoke:browser
       - run: npm run security
 
   deploy:
