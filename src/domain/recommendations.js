@@ -92,7 +92,23 @@ export function buildPrioritizedWarnings(snapshot, teamId, now = Date.now()) {
   }).sort((a, b) => weights[b.urgency] - weights[a.urgency] || (a.hoursToKickoff ?? Infinity) - (b.hoursToKickoff ?? Infinity));
 }
 
-export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlayerId) {
+export function assessStartSitDataConfidence(snapshot, players, now = Date.now()) {
+  const limitations = []; const checks = [];
+  for (const player of players) {
+    checks.push(player?.projection != null, player?.injury?.status != null, Boolean(player?.opponent), Number.isFinite(Date.parse(player?.gameTime)));
+    if (player?.projection == null) limitations.push(`${player?.name || "A player"} projection unavailable.`);
+    if (player?.injury?.status == null) limitations.push(`${player?.name || "A player"} injury status unavailable.`);
+    if (!player?.opponent) limitations.push(`${player?.name || "A player"} opponent unavailable.`);
+    if (!Number.isFinite(Date.parse(player?.gameTime))) limitations.push(`${player?.name || "A player"} kickoff unavailable.`);
+  }
+  const captured = Date.parse(snapshot?.meta?.capturedAt); const ageMs = Number.isFinite(captured) ? Math.max(0, now - captured) : null;
+  const freshness = ageMs == null ? "unknown" : ageMs <= 15 * 60_000 ? "fresh" : ageMs <= 6 * 60 * 60_000 ? "aging" : "stale";
+  if (freshness !== "fresh") limitations.push(freshness === "unknown" ? "Snapshot freshness unavailable." : `Snapshot is ${freshness}.`);
+  const score = Math.round((checks.filter(Boolean).length + (freshness === "fresh" ? 1 : freshness === "aging" ? 0.5 : 0)) / 9 * 100);
+  return Object.freeze({ label: score >= 80 ? "High" : score >= 55 ? "Medium" : "Low", score, freshness, limitations: Object.freeze(limitations) });
+}
+
+export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlayerId, now = Date.now()) {
   const roster = snapshot.rosters.find((item) => item.teamId === teamId)?.entries || [];
   const rosterIds = new Set(roster.map((entry) => entry.playerId));
   if (!rosterIds.has(firstPlayerId) || !rosterIds.has(secondPlayerId)) return { status: "invalid", reason: "Both players must be on the selected roster." };
@@ -101,10 +117,11 @@ export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlay
   const first = players.get(firstPlayerId);
   const second = players.get(secondPlayerId);
   if (!first || !second) return { status: "invalid", reason: "A selected player identity is missing." };
-  if (first.projection == null || second.projection == null) return { status: "missing", first, second, reason: "A projection is missing, so no projection-based preference is available." };
+  const confidence = assessStartSitDataConfidence(snapshot, [first, second], now);
+  if (first.projection == null || second.projection == null) return { status: "missing", first, second, confidence, reason: "A projection is missing, so no projection-based preference is available." };
   const difference = +(first.projection - second.projection).toFixed(1);
-  if (Math.abs(difference) < MIN_LINEUP_GAIN) return { status: "tossup", first, second, difference, reason: "The projection difference is below the 1-point action threshold." };
-  return { status: "preference", first, second, difference, preferred: difference > 0 ? first : second, reason: "Higher available projection" };
+  if (Math.abs(difference) < MIN_LINEUP_GAIN) return { status: "tossup", first, second, difference, confidence, reason: "The projection difference is below the 1-point action threshold." };
+  return { status: "preference", first, second, difference, preferred: difference > 0 ? first : second, confidence, reason: "Higher available projection" };
 }
 
 export function buildWaiverIdeas(snapshot, teamId) {

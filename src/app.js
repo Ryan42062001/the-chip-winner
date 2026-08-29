@@ -32,6 +32,7 @@ import { publishSyncState, readSyncState } from "./sync/sync-session.js";
 import { buildWeeklyChecklist } from "./domain/weekly-checklist.js";
 import { renderManualProjectionDialog } from "./ui/manual-projection-dialog.js";
 import { renderExternalProjectionDetail } from "./ui/external-projection-detail.js";
+import { renderStartSitComparison } from "./ui/start-sit-comparison.js";
 
 runCacheMigrations(globalThis.localStorage);
 
@@ -159,7 +160,7 @@ function renderLineup() {
     <div class="section-divider"><span>OPTIMIZATION SIGNALS</span></div><div class="recommendation-grid">${suggestions.length ? suggestions.map(s => `<article class="panel recommendation"><span class="recommendation-kicker">${escapeHtml(s.slot)} SWAP</span><div class="compare"><div><small>START</small><strong>${escapeHtml(s.start.name)}</strong><span>${projection(s.start.projection)}</span></div><span class="swap-arrow">→</span><div><small>SIT</small><strong>${escapeHtml(s.sit.name)}</strong><span>${projection(s.sit.projection)}</span></div></div><div class="gain">+${s.gain} projected points</div><p>${escapeHtml(s.reason)}. Verify late news before making a move.</p></article>`).join("") : emptyState("No lineup changes identified", "Available projections do not show a higher-scoring eligible bench option. This is not a guarantee that your lineup is optimal.")}</div>`;
   const updateComparison = () => {
     const result = compareRosterPlayers(state.snapshot, state.selectedTeamId, document.querySelector("#compare-first").value, document.querySelector("#compare-second").value);
-    document.querySelector("#comparison-result").innerHTML = comparisonResult(result);
+    document.querySelector("#comparison-result").innerHTML = renderStartSitComparison(result);
   };
   document.querySelector("#compare-first").addEventListener("change", updateComparison);
   document.querySelector("#compare-second").addEventListener("change", updateComparison);
@@ -297,13 +298,6 @@ function emptyState(title, text) { return `<div class="empty-state"><span>◇</s
 function emptyInline(text) { return `<p class="empty-inline">${text}</p>`; }
 function formatAvailability(status) { return status === "FREEAGENT" ? "FREE AGENT" : status === "WAIVERS" ? "WAIVERS" : "AVAILABLE"; }
 function comparisonOptions(players, selectedId) { return players.map((player) => `<option value="${escapeHtml(player.id)}" ${player.id === selectedId ? "selected" : ""}>${escapeHtml(player.name)} · ${escapeHtml(player.position)}</option>`).join(""); }
-function comparisonResult(result) {
-  if (result.status === "invalid") return `<div class="comparison-message neutral"><strong>Comparison unavailable</strong><span>${escapeHtml(result.reason)}</span></div>`;
-  if (result.status === "missing") return `<div class="comparison-message neutral"><strong>No data-based preference</strong><span>${escapeHtml(result.reason)}</span></div>`;
-  const firstValue = result.first.projection.toFixed(1); const secondValue = result.second.projection.toFixed(1);
-  if (result.status === "tossup") return `<div class="comparison-result-grid"><div><strong>${escapeHtml(result.first.name)}</strong><b>${firstValue}</b></div><div class="verdict neutral"><small>NEAR TIE</small><strong>${Math.abs(result.difference).toFixed(1)} pt apart</strong><span>${escapeHtml(result.reason)}</span></div><div><strong>${escapeHtml(result.second.name)}</strong><b>${secondValue}</b></div></div>`;
-  return `<div class="comparison-result-grid"><div class="${result.preferred.id === result.first.id ? "preferred" : ""}"><strong>${escapeHtml(result.first.name)}</strong><b>${firstValue}</b></div><div class="verdict"><small>PROJECTION LEAN</small><strong>${escapeHtml(result.preferred.name)}</strong><span>${Math.abs(result.difference).toFixed(1)} projected points</span></div><div class="${result.preferred.id === result.second.id ? "preferred" : ""}"><strong>${escapeHtml(result.second.name)}</strong><b>${secondValue}</b></div></div>`;
-}
 function qualityBar(label, value) { const percent = Math.round(value * 100); return `<div class="quality-row"><span>${label}</span><strong>${percent}%</strong><i><b style="width:${percent}%"></b></i></div>`; }
 function detailValue(value, formatter = String) { return value == null || value === "" ? '<span class="missing">Unavailable</span>' : escapeHtml(formatter(value)); }
 

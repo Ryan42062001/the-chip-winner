@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 190 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, separately sourced mapped weekly values in player detail, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 192 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, separately sourced mapped weekly values in player detail, reproducible start/sit data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -186,6 +186,8 @@ Acceptance criteria:
 
 ### 3.2 Start/sit comparisons
 
+Status: **Implemented for current ESPN snapshot inputs.** Comparisons separate projection edge from a reproducible data-confidence score based on projection, injury, opponent, kickoff, and snapshot-freshness completeness. The interface explains every reduction and states that confidence is not an outcome probability.
+
 - Compare two or more eligible players across available projection sources.
 - Show projection spread, floor/ceiling only when supplied, injury status, opponent, game time, and source freshness.
 - Provide a concise recommendation explanation with confidence derived from input completeness—not invented certainty.
@@ -245,6 +247,8 @@ Acceptance criteria:
 - Contradictory reports remain separately attributable.
 
 ### 4.3 Recommendation confidence
+
+Status: **Partially implemented.** Start/sit comparisons expose deterministic input completeness and freshness separately from projected advantage. Cross-provider agreement remains unavailable until multiple compatible projection sources exist.
 
 - Calculate input-completeness and source-agreement scores.
 - Separate data confidence from projected point advantage.
