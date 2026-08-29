@@ -140,7 +140,7 @@ Release exit: the app can construct and explain a complete legal lineup for the 
 
 Goal: evaluate waiver moves as roster changes rather than isolated weekly projection differences.
 
-Status: **In progress.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. IR eligibility transitions, multiweek projections, claim-cost strategy, and replacement-value modeling remain open because the current snapshot does not yet prove those inputs.
+Status: **In progress.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. IR eligibility transitions, claim-cost strategy, and replacement-value modeling remain open because the current snapshot does not yet prove those inputs.
 
 ### Candidate filtering
 

@@ -64,6 +64,8 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.matchups[0].homeTeamId, "2");
   assert.equal(snapshot.meta.kind, "live-companion");
   assert.deepEqual(snapshot.league.lineupSlots.find((item) => item.slot === "QB"), { slot: "QB", count: 1, espnSlotId: 0 });
+  assert.equal(snapshot.league.rosterRules.size, 10);
+  assert.deepEqual(snapshot.league.rosterRules.positionLimits.find((item) => item.position === "QB"), { position: "QB", limit: 3, espnPositionId: 1 });
   assert.equal(snapshot.league.waiver.budget, 100);
   assert.equal(snapshot.league.waiver.matchupAcquisitionLimit, 3);
   assert.deepEqual(snapshot.teams[0].acquisition, { waiverRank: 2, seasonAcquisitions: 3, matchupAcquisitions: 1, budgetSpent: 17 });
@@ -101,6 +103,11 @@ test("ESPN playoff weeks reject malformed explicit settings and remain absent wh
   const malformed = structuredClone(playoffResponse); malformed.settings.scheduleSettings.playoffWeeks = [15, 15];
   assert.throws(() => normalizeEspnLeagueResponse(malformed), /playoffWeeks/);
   assert.equal(normalizeEspnLeagueResponse(leagueResponse).league.playoffWeeks, undefined);
+});
+
+test("ESPN roster rules reject unknown explicit position-limit IDs", () => {
+  const malformed = structuredClone(leagueResponse); malformed.settings.rosterSettings.positionLimits[99] = 2;
+  assert.throws(() => normalizeEspnLeagueResponse(malformed), /position limit id 99/);
 });
 
 test("partial live fixture retains unknown injury state and missing NFL context", () => {

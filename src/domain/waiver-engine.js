@@ -14,6 +14,14 @@ entries: roster.entries.map((entry) => entry === dropEntry ? { playerId: addPlay
 })
 };
 }
+function rosterRuleViolation(snapshot, roster, dropEntry, add) {
+const rules = snapshot.league?.rosterRules; if (!rules) return null;
+if (rules.size != null && roster.entries.length > rules.size) return `ESPN roster size limit is ${rules.size}, but the selected roster contains ${roster.entries.length} players.`;
+const players = new Map(snapshot.players.map((player) => [player.id, player])); const counts = new Map();
+for (const entry of roster.entries) { const position = entry === dropEntry ? add.position : players.get(entry.playerId)?.position; if (position) counts.set(position, (counts.get(position) || 0) + 1); }
+const exceeded = (rules.positionLimits || []).find((rule) => rule.limit >= 0 && (counts.get(rule.position) || 0) > rule.limit);
+return exceeded ? `ESPN ${exceeded.position} roster limit is ${exceeded.limit}.` : null;
+}
 export function evaluateAcquisitionCapacity(snapshot, teamId) {
 const team = snapshot?.teams?.find((item) => item.id === teamId);
 if (!team) return Object.freeze({ status: "missing-team", seasonRemaining: null, matchupRemaining: null, reason: "Selected team acquisition data is unavailable." });
@@ -38,11 +46,12 @@ const baseline = optimizeLineup(snapshot, teamId, now);
 if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: [], limitations: [baseline.reason] };
 const dropEntries = roster.entries.filter((entry) => entry.lineupSlot === "BE" && !isLocked(entry, players.get(entry.playerId), now));
 const available = snapshot.availablePlayers.map((playerId) => players.get(playerId)).filter((player) => player?.projection != null && !isLocked({}, player, now));
-const candidates = [];
+const candidates = []; const rosterRuleBlocks = new Set();
 for (const add of available) {
 for (const dropEntry of dropEntries) {
 const drop = players.get(dropEntry.playerId);
 if (!drop) continue;
+const rosterViolation = rosterRuleViolation(snapshot, roster, dropEntry, add); if (rosterViolation) { rosterRuleBlocks.add(rosterViolation); continue; }
 const result = optimizeLineup(swappedSnapshot(snapshot, teamId, dropEntry, add.id), teamId, now);
 if (!result.assignments?.length) continue;
 const lineupGain = +(result.projectedTotal - baseline.projectedTotal).toFixed(1);
@@ -63,6 +72,8 @@ if (usedAdds.has(item.add.id) || usedDrops.has(item.drop.id)) return false;
 usedAdds.add(item.add.id); usedDrops.add(item.drop.id); return true;
 }).slice(0, limit);
 const team = snapshot.teams?.find((item) => item.id === teamId); const limitations = ["ESPN availability is authoritative at the latest refresh."];
+limitations.push(snapshot.league?.rosterRules ? "ESPN-reported roster size and position limits were enforced." : "ESPN roster and position limits are unavailable; no rule is inferred.");
+limitations.push(...rosterRuleBlocks);
 limitations.push(capacity.status === "available" ? "Known ESPN acquisition limits and usage were checked before evaluating moves." : "ESPN acquisition usage or limits are incomplete, so remaining moves cannot be verified.");
 limitations.push(team?.acquisition?.waiverRank == null ? "ESPN waiver priority is unavailable; no claim outcome is predicted." : `ESPN waiver priority is ${team.acquisition.waiverRank}; claim outcomes are not predicted.`);
 if (baseline.status === "best-known") limitations.push("Some roster projections are missing, so gains use the strongest complete lineup among known projections.");

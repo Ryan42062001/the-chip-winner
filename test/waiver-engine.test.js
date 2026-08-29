@@ -59,3 +59,15 @@ test("waiver engine suppresses moves only when ESPN proves an acquisition limit 
   value.league.waiver.matchupAcquisitionLimit = -1;
   assert.equal(evaluateAcquisitionCapacity(value, "mine").status, "available");
 });
+
+test("waiver engine enforces only explicit ESPN roster and position limits", () => {
+  const value = snapshot(); value.league.rosterRules = { size: 4, positionLimits: [{ position: "RB", limit: 1 }] };
+  const result = buildRosterAwareWaiverIdeas(value, "mine", 0);
+  assert.equal(result.items.some((item) => item.add.id === "add-rb"), false);
+  assert.match(result.limitations.join(" "), /RB roster limit is 1/);
+  value.league.rosterRules.size = 3;
+  const mismatch = buildRosterAwareWaiverIdeas(value, "mine", 0);
+  assert.equal(mismatch.items.length, 0); assert.match(mismatch.limitations.join(" "), /roster size limit is 3/);
+  delete value.league.rosterRules;
+  assert.match(buildRosterAwareWaiverIdeas(value, "mine", 0).limitations.join(" "), /no rule is inferred/);
+});

@@ -131,6 +131,7 @@ scoringPeriod: currentWeek,
 teamCount: response.teams.length,
 scoringType: response.settings.scoringSettings?.scoringType || null,
 lineupSlots: normalizeLineupSlotCounts(response.settings.rosterSettings?.lineupSlotCounts),
+rosterRules: normalizeRosterRules(response.settings.rosterSettings),
 waiver: normalizeWaiverSettings(response.settings.acquisitionSettings)
 },
 currentWeek,
@@ -150,6 +151,11 @@ function normalizeLineupSlotCounts(counts = {}) {
 return Object.entries(counts)
 .filter(([, count]) => Number(count) > 0)
 .map(([slotId, count]) => ({ slot: ESPN_LINEUP_SLOTS[slotId] || `ESPN_SLOT_${slotId}`, count: Number(count), espnSlotId: Number(slotId) }));
+}
+function normalizeRosterRules(settings = {}) {
+const counts = settings.lineupSlotCounts || {}; const size = Object.values(counts).reduce((total, count) => total + (Number(count) > 0 ? Number(count) : 0), 0);
+const positionLimits = Object.entries(settings.positionLimits || {}).filter(([, limit]) => Number(limit) !== 0).map(([positionId, limit]) => { const position = ESPN_PRO_POSITIONS[positionId]; if (!position) throw new Error(`Unsupported ESPN roster position limit id ${positionId}.`); if (!Number.isInteger(Number(limit)) || Number(limit) < -1) throw new Error(`Invalid ESPN roster position limit for ${position}.`); return { position, limit: Number(limit), espnPositionId: Number(positionId) }; });
+return { size: size || null, positionLimits };
 }
 function normalizeWaiverSettings(settings = {}) {
 return {
