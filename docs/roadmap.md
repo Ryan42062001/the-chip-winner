@@ -366,7 +366,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.51
+## Current execution plan — after v0.9.52
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -420,7 +420,7 @@ Acceptance criteria: every used value includes provider, scoring, season, week, 
 
 ### P1 — Finish season and playoff intelligence
 
-Status: **Partially implemented in v0.9.51.** The normalized ESPN contract now preserves only explicitly supplied playoff-week arrays and rejects malformed values. When ESPN omits the field, Season Plan requires a clearly labeled browser-local selection scoped to league and season; it never derives a boundary from schedule length or matchup numbering. Keyboard and mobile selection paths are covered. Future starter coverage and sourced schedule difficulty remain open.
+Status: **Partially implemented through v0.9.52.** The normalized ESPN contract preserves only explicitly supplied playoff-week arrays and rejects malformed values. When ESPN omits the field, Season Plan requires a clearly labeled browser-local selection scoped to league and season; it never derives a boundary from schedule length or matchup numbering. Season Plan now shows the optimized starter assignment for every completely mapped future week, an explicit hold-current-roster baseline, and weekly plus selected-horizon add/drop comparisons. A horizon total or delta is withheld if any selected week lacks complete baseline or simulated-roster coverage. Sourced schedule difficulty remains open.
 
 1. Read playoff weeks from ESPN when supplied; otherwise require and label local user configuration.
 2. Expand bye-collision, future starter coverage, and hold/add/drop horizon comparisons.

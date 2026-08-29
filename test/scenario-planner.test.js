@@ -48,6 +48,9 @@ test("scenario planner calculates a weekly baseline from explicitly mapped proje
   assert.equal(result.weeklyBaseline[0].projectedTotal > 0, true);
   assert.equal(result.weeklyBaseline[0].completeCoverage, true);
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, roster.entries.length);
+  assert.equal(result.weeklyBaseline[0].starters.length > 0, true);
+  assert.equal(result.weeklyBaseline[0].starters.every((item) => item.playerId && item.slot && item.points != null), true);
+  assert.equal(result.baselineHorizonTotal, result.weeklyBaseline[0].projectedTotal);
   assert.deepEqual(result.coverage, { readiness: "complete", completeWeeks: 1, totalWeeks: 1, readyWeeks: [15], blockedWeeks: [], mappedProjectionCells: roster.entries.length, requiredProjectionCells: roster.entries.length, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 100 });
 });
 
@@ -62,6 +65,7 @@ test("scenario planner compares an isolated add drop move without mutating ESPN 
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ id: "move-1", addPlayerId: addPlayer.id, dropPlayerId }] });
   assert.equal(result.scenarios.length, 1);
   assert.equal(result.scenarios[0].weekly[0].delta != null, true);
+  assert.equal(result.scenarios[0].horizonDelta, result.scenarios[0].weekly[0].delta);
   assert.equal(JSON.stringify(sampleSnapshot), before);
 });
 
@@ -70,6 +74,8 @@ test("scenario planner labels partial roster projection coverage", () => {
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap: new Map([["provider-one", playerId]]), projectionSet: { projections: [{ providerPlayerId: "provider-one", week: 15, points: 20 }] } });
   assert.equal(result.weeklyBaseline[0].mappedProjectionCount, 1);
   assert.equal(result.weeklyBaseline[0].completeCoverage, false);
+  assert.deepEqual(result.weeklyBaseline[0].starters, []);
+  assert.equal(result.baselineHorizonTotal, null);
   assert.equal(result.weeklyBaseline[0].unmappedPlayerIds.length, roster.entries.length - 1);
   assert.deepEqual(result.weeklyBaseline[0].missingProjectionPlayerIds, []);
 });
@@ -96,6 +102,7 @@ test("scenario planner identifies a mixed horizon without treating blocked weeks
   assert.equal(result.coverage.readiness, "mixed");
   assert.deepEqual(result.coverage.readyWeeks, [15]);
   assert.deepEqual(result.coverage.blockedWeeks, [16]);
+  assert.equal(result.baselineHorizonTotal, null);
 });
 
 test("scenario planner rejects starter drops and unavailable adds", () => {
@@ -111,6 +118,8 @@ test("scenario planner suppresses move deltas when either roster has partial cov
   const identityMap = new Map([[`p-${add.id}`, add.id]]); const projectionSet = { projections: [{ providerPlayerId: `p-${add.id}`, week: 15, points: 30 }] };
   const result = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, scenarios: [{ addPlayerId: add.id, dropPlayerId: drop.playerId }], now: 0 });
   assert.equal(result.scenarios[0].weekly[0].delta, null);
+  assert.equal(result.scenarios[0].horizonDelta, null);
+  assert.match(result.scenarios[0].horizonUnavailableReason, /At least one selected week/);
   assert.equal(result.scenarios[0].weekly[0].completeCoverage, false);
   assert.equal(result.scenarios[0].weekly[0].unmappedPlayerIds.length > 0, true);
   assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline roster projection coverage is incomplete/);
