@@ -366,15 +366,84 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Immediate next sprint
+## Current execution plan — after v0.9.48
 
-The next sprint should focus only on Phase 1.1 and 1.2:
+The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
-1. define a sanitized raw-capture fixture format;
-2. obtain representative ESPN response samples without credentials;
-3. complete the response-to-snapshot normalizer;
-4. add fixture tests for custom slots and missing data;
-5. add a developer-facing normalization report;
-6. document unsupported ESPN values and failure behavior.
+### P0 — Split the browser application entry point
 
-Sprint exit criteria: a raw ESPN fixture can be converted reproducibly into a valid snapshot without UI involvement, guessed identities, or fabricated fields.
+Why now: the measured browser JavaScript graph is 218.0 KiB of a 220 KiB budget and `src/app.js` is 78.7 KiB of an 80 KiB budget.
+
+Tasks:
+
+1. Extract section renderers, event binding, and projection-import orchestration into focused modules.
+2. Keep one application state owner; extracted modules receive explicit dependencies and cannot retain hidden snapshot copies.
+3. Add focused unit tests and browser coverage for navigation, player detail, and projection import.
+4. Do not raise performance budgets merely to make a check pass.
+
+Acceptance criteria:
+
+- `src/app.js` is below 60 KiB and primarily performs composition and top-level coordination.
+- The browser graph remains at or below 220 KiB with no circular dependencies.
+- Desktop/mobile smoke and accessibility checks show no regression.
+
+### P0 — Make multiweek imports atomic and inspectable
+
+Status: provenance-preserving projection and identity-map merges shipped in v0.9.48. Transactional orchestration and user-facing history remain.
+
+Tasks:
+
+1. Preflight projection and identity-map merges before writing either cache.
+2. Report added, updated, retained, ignored-older, and rejected-conflict records.
+3. Show oldest/newest retained capture times and per-week capture provenance.
+4. Keep guided weekly import as merge-by-default; add a confirmed replace-all workflow separately.
+5. Prove with tests that a failed merge cannot partially alter either cache.
+
+Acceptance criteria:
+
+- An import updates both caches or neither cache and identical re-import is idempotent.
+- Older data cannot overwrite newer data.
+- Equal-time projection conflicts and ambiguous IDs fail visibly without data loss.
+
+### P1 — Complete real projection coverage
+
+1. Import each available free FantasyPros weekly CSV.
+2. Approve provider-to-ESPN identities explicitly; never auto-join by display name.
+3. Display exact missing-mapping and missing-player-week repair reports and a roster/candidate coverage matrix.
+4. Enable multiweek deltas only when baseline and simulated rosters both have complete mapped coverage.
+
+Acceptance criteria: every used value includes provider, scoring, season, week, provider ID, points, and capture time; incompatibility blocks comparisons; partial coverage never produces a summed advantage.
+
+### P1 — Finish season and playoff intelligence
+
+1. Read playoff weeks from ESPN when supplied; otherwise require and label local user configuration.
+2. Expand bye-collision, future starter coverage, and hold/add/drop horizon comparisons.
+3. Approve and document a position-specific strength-of-schedule source and method before displaying difficulty grades.
+
+Acceptance criteria: no playoff boundary or schedule grade is inferred; scenarios never mutate ESPN snapshots; every blocked week identifies its exact missing input.
+
+### P1 — Complete waiver engine v2
+
+1. Model IR and roster limits only where ESPN supplies authoritative rules.
+2. Add multiweek impact after projection coverage gates pass.
+3. Define visible replacement-value methodology from the connected league’s available pool.
+4. Revalidate availability after refresh and mark obsolete recommendations.
+
+Acceptance criteria: every move remains legal after full-roster simulation; unsupported acquisition likelihood is never claimed; current-week, ROS ranking, and multiweek conclusions remain separately sourced.
+
+### P2 — Production-readiness closeout
+
+1. Complete manual keyboard, screen-reader, 200% zoom, and representative phone checks.
+2. Perform a manual Chrome companion threat review covering cookies, page bridge, logs, and permissions.
+3. Exercise refresh failure, cache recovery, disconnect, deletion, and mobile-sync revocation.
+4. Run authenticated read-only checks across materially different live league states and document limitations and rollback.
+
+Acceptance criteria: no unresolved high-severity accessibility, privacy, or security findings; the weekly workflow succeeds on desktop/mobile; every release passes all repository gates.
+
+### Later gated work
+
+- Trade analysis requires compatible ROS values, multiweek projections, replacement-pool modeling, and stable identity coverage.
+- External injury/news requires an approved trustworthy source, licensing review, timestamps, and privacy review.
+- Notifications require opt-in, real scheduling semantics, quiet hours, deduplication, and data-sharing review.
+- Server-side models require explicit provider, privacy, cost, secret-storage, contract, and evaluator approval.
+- ESPN write actions remain outside the current boundary until the read-only product proves reliable over a meaningful season period.

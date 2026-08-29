@@ -432,22 +432,22 @@ No UI placeholder should imply that a gated capability already works.
 - no-console-error check;
 - clean Git worktree and successful deployment.
 
-## Recommended next sprint: projection-backed season intelligence
+## Recommended next sprint: modular browser shell and atomic imports
 
-Sprint objective: connect a trustworthy weekly projection export and extend season planning without weakening source or identity requirements.
+Sprint objective: create safe capacity for remaining features and finish the trust boundary around accumulating weekly CSV imports.
 
 Planned work:
 
-1. Run the local FantasyPros API downloader for each available planning week; it preserves provider player IDs and HTTP response capture metadata without exposing the API key.
-2. Complete its provider-to-ESPN identity map without display-name joins.
-3. Validate complete player-week coverage for selected planning horizons.
-4. Add deeper bye, playoff-week, and schedule coverage explanations.
-5. Expand waiver-rule modeling only where ESPN supplies authoritative inputs.
-6. Keep model, keyboard/mobile, WCAG, security, and production gates green.
+1. Split `src/app.js` into focused rendering, event-binding, and projection-import modules with explicit dependencies.
+2. Keep snapshot ownership and application state centralized.
+3. Preflight projection and identity-map merges together so conflicts cannot partially update caches.
+4. Render added, updated, retained, ignored, and conflicted import counts plus capture range and week-level provenance.
+5. Test repeated imports, idempotency, older/newer records, conflicts, mobile operation, and keyboard focus.
+6. Keep the browser graph at or below 220 KiB while reducing `src/app.js` below 60 KiB.
 
 Sprint exit criteria:
 
-- Incompatible or stale external inputs are visible and excluded or warned appropriately.
-- Multiweek deltas appear only with complete mapped coverage for both rosters.
-- Every projected value remains attributable to its source and capture time.
-- All new domain and browser tests pass before deployment.
+- The guided importer updates both caches or neither cache.
+- Weeks accumulate without older records overwriting newer records.
+- Users can inspect what changed and why a record was rejected.
+- All required repository gates pass and the deployed production URL is verified.
