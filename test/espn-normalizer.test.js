@@ -94,6 +94,13 @@ test("completed playoff fixture reports a final matchup without inventing a proj
   assert.equal(snapshot.matchups[0].status, "final");
   assert.equal(snapshot.matchups[0].homeScore, 121.4);
   assert.equal(snapshot.players[0].projection, null);
+  assert.deepEqual(snapshot.league.playoffWeeks, [15, 16, 17]);
+});
+
+test("ESPN playoff weeks reject malformed explicit settings and remain absent when unreported", () => {
+  const malformed = structuredClone(playoffResponse); malformed.settings.scheduleSettings.playoffWeeks = [15, 15];
+  assert.throws(() => normalizeEspnLeagueResponse(malformed), /playoffWeeks/);
+  assert.equal(normalizeEspnLeagueResponse(leagueResponse).league.playoffWeeks, undefined);
 });
 
 test("partial live fixture retains unknown injury state and missing NFL context", () => {

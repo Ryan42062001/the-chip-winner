@@ -1,6 +1,6 @@
 {
   "id": 900003, "seasonId": 2026, "scoringPeriodId": 15,
-  "settings": { "name": "Synthetic Playoff League", "scoringSettings": { "scoringType": "H2H_POINTS" }, "rosterSettings": { "lineupSlotCounts": { "0": 1, "23": 1, "20": 4 } }, "acquisitionSettings": {} },
+  "settings": { "name": "Synthetic Playoff League", "scoringSettings": { "scoringType": "H2H_POINTS" }, "rosterSettings": { "lineupSlotCounts": { "0": 1, "23": 1, "20": 4 } }, "scheduleSettings": { "playoffWeeks": [15, 16, 17] }, "acquisitionSettings": {} },
   "teams": [
     { "id": 1, "name": "Synthetic Seed One", "abbrev": "S1", "record": { "overall": { "wins": 11, "losses": 3, "ties": 0 } }, "roster": { "entries": [{ "lineupSlotId": 0, "playerPoolEntry": { "player": { "id": 3001, "fullName": "Synthetic Playoff Player", "defaultPositionId": 1, "injuryStatus": "ACTIVE", "stats": [] } } }] } },
     { "id": 2, "name": "Synthetic Seed Two", "abbrev": "S2", "record": { "overall": { "wins": 10, "losses": 4, "ties": 0 } }, "roster": { "entries": [] } }

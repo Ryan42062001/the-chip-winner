@@ -26,6 +26,8 @@ const teamIds = new Set(teams.map((team) => team.id));
 if (playerIds.size !== players.length) errors.push("Player ids must be unique.");
 if (teamIds.size !== teams.length) errors.push("Team ids must be unique.");
 const waiver = snapshot.league?.waiver;
+const playoffWeeks = snapshot.league?.playoffWeeks;
+if (playoffWeeks && (!Array.isArray(playoffWeeks) || playoffWeeks.some((week) => !Number.isInteger(week) || week < 1 || week > 18) || new Set(playoffWeeks).size !== playoffWeeks.length)) errors.push("League playoffWeeks must contain unique integer weeks from 1 through 18.");
 if (waiver) {
 for (const key of ["acquisitionLimit", "matchupAcquisitionLimit"]) if (waiver[key] != null && (!Number.isInteger(waiver[key]) || waiver[key] < -1)) errors.push(`League waiver ${key} is invalid.`);
 if (waiver.waiverProcessDays != null && (!Number.isInteger(waiver.waiverProcessDays) || waiver.waiverProcessDays < 0)) errors.push("League waiver waiverProcessDays is invalid.");

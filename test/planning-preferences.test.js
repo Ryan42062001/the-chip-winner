@@ -19,3 +19,12 @@ test("planning preferences reject duplicate and out-of-range weeks", () => {
   assert.throws(() => normalizePlanningWeeks([15, 15]), /unique/);
   assert.throws(() => normalizePlanningWeeks([19]), /1 through 18/);
 });
+
+test("playoff preferences are scoped by ESPN league and season and clear together", () => {
+  const preferences = new PlanningPreferences({ storage: memoryStorage() });
+  preferences.savePlayoff("10", 2026, [17, 15, 16]); preferences.savePlayoff("10", 2027, [16, 17]);
+  assert.deepEqual(preferences.readPlayoff("10", 2026), [15, 16, 17]);
+  assert.deepEqual(preferences.readPlayoff("10", 2027), [16, 17]);
+  assert.equal(preferences.readPlayoff("11", 2026), null);
+  preferences.clear(); assert.equal(preferences.readPlayoff("10", 2026), null);
+});

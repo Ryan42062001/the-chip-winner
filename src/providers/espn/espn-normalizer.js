@@ -29,6 +29,11 @@ if (status === "INJURY_RESERVE") return { status: "INJURED_RESERVE", detail: det
 const supported = new Set(["ACTIVE", "QUESTIONABLE", "DOUBTFUL", "OUT", "INJURED_RESERVE", "PHYSICALLY_UNABLE_TO_PERFORM", "SUSPENSION"]);
 return supported.has(status) ? { status, detail: detail || null } : { status: "UNKNOWN", detail: detail || null, sourceStatus: String(injuryStatus) };
 }
+function normalizePlayoffWeeks(value) {
+if (value === undefined) return null;
+if (!Array.isArray(value) || value.some((week) => !Number.isInteger(week) || week < 1 || week > 18) || new Set(value).size !== value.length) throw new Error("ESPN scheduleSettings.playoffWeeks must contain unique integer weeks from 1 through 18.");
+return [...value].sort((a, b) => a - b);
+}
 // Converts a deliberately small, documented capture contract into the stable
 // application snapshot. Fetching/authentication stays outside this module.
 export function normalizeEspnCapture(capture) {
@@ -70,6 +75,8 @@ entries: roster.entries.map((entry) => ({ playerId: String(entry.playerId), line
 })),
 matchups: (capture.matchups || []).map((matchup) => ({ ...matchup, homeTeamId: String(matchup.homeTeamId), awayTeamId: String(matchup.awayTeamId) }))
 };
+const playoffWeeks = normalizePlayoffWeeks(capture.league.playoffWeeks);
+if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
 if (Array.isArray(capture.availablePlayerIds)) snapshot.availablePlayers = capture.availablePlayerIds.map(String);
 const errors = validateLeagueSnapshot(snapshot);
 if (errors.length) throw new Error(`Normalized ESPN capture is invalid: ${errors.join(" ")}`);
@@ -132,6 +139,8 @@ players: [...playerMap.values()],
 rosters,
 matchups
 };
+const playoffWeeks = normalizePlayoffWeeks(response.settings.scheduleSettings?.playoffWeeks);
+if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
 if (Array.isArray(supplemental.availablePlayers)) snapshot.availablePlayers = availablePlayers.map((player) => String(player.id));
 const errors = validateLeagueSnapshot(snapshot);
 if (errors.length) throw new Error(`Normalized ESPN response is invalid: ${errors.join(" ")}`);

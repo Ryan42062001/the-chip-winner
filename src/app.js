@@ -8,7 +8,7 @@ import { FutureProjectionProvider } from "./providers/projections/future-project
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
 import { buildApprovedManualImports, fantasyProsProviderId, parseManualFantasyProsExport } from "./providers/projections/fantasypros-manual-import.js";
 import { importProjectionBundle } from "./application/projection-import-transaction.js";
-import { buildModelContext } from "./domain/model-context.js";
+import { buildModelContextPacket } from "./domain/model-context-packet.js";
 import { AlertPreferences } from "./domain/alert-preferences.js";
 import { EspnConnectionPreferences, connectionKey, validateEspnConnection } from "./providers/espn/connection-preferences.js";
 import { EspnRefreshCooldown, evaluateCompanionPing, MINIMUM_COMPANION_VERSION } from "./providers/espn/connection-health.js";
@@ -54,7 +54,7 @@ store.subscribe((next) => { state = next; });
 const sectionRenderer = createSectionRenderer({
 content, store, alertPreferences, connectionPreferences, refreshCooldown, syncProvider,
 syncCredentialsKey: SYNC_CREDENTIALS_KEY, showNotice, loadRankingSet,
-getContext: () => ({ state, futureProjectionSet, projectionIdentityMap, selectedFutureWeeks, savedEspnConnections, espnConnection, companionHealth, leagueScheduleWeek, projectionImportSummary }),
+getContext: () => ({ state, futureProjectionSet, projectionIdentityMap, selectedFutureWeeks, selectedPlayoffWeeks: state.snapshot?.league.playoffWeeks || planningPreferences.readPlayoff(state.snapshot?.league.id, state.snapshot?.league.season), savedEspnConnections, espnConnection, companionHealth, leagueScheduleWeek, projectionImportSummary }),
 });
 const { render, openPlayerDetail, emptyState, escapeHtml, readStoredSyncCredentials, mobileUrl, createMobileSync, publishCurrentSync, loadMobileSyncFromUrl } = sectionRenderer;
 function hydrateControls() {
@@ -111,7 +111,7 @@ downloadCsv("the-chip-winner-projection-gaps.csv", [["week", "espn_player_id", "
 showNotice(`Downloaded ${report.records.length} missing projection input${report.records.length === 1 ? "" : "s"}. Names are for review only; imports still require explicit IDs.`);
 }
 function downloadModelContext() {
-const result = buildModelContext(state.snapshot, state.selectedTeamId);
+const result = buildModelContextPacket(state.snapshot, state.selectedTeamId);
 if (!result.packet) throw new Error(result.errors.join(" "));
 const blob = new Blob([JSON.stringify(result.packet, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a");
 link.href = url; link.download = `the-chip-winner-model-context-week-${state.snapshot.currentWeek}.json`; link.click(); URL.revokeObjectURL(url);
@@ -263,6 +263,11 @@ content.addEventListener("change", (event) => {
 if (!event.target.matches("[data-planning-week]")) return;
 selectedFutureWeeks = planningPreferences.save([...content.querySelectorAll("[data-planning-week]:checked")].map((input) => Number(input.dataset.planningWeek)));
 render(); showNotice(selectedFutureWeeks.length ? `Planning horizon updated to ${selectedFutureWeeks.length} week${selectedFutureWeeks.length === 1 ? "" : "s"}.` : "Planning horizon cleared. No future totals or deltas are shown.");
+});
+content.addEventListener("change", (event) => {
+if (!event.target.matches("[data-playoff-week]") || state.snapshot.league.playoffWeeks) return;
+const weeks = planningPreferences.savePlayoff(state.snapshot.league.id, state.snapshot.league.season, [...content.querySelectorAll("[data-playoff-week]:checked")].map((input) => Number(input.dataset.playoffWeek)));
+render(); showNotice(weeks.length ? `Local playoff weeks set to ${weeks.join(", ")}.` : "Local playoff weeks cleared.");
 });
 content.addEventListener("click", async (event) => {
 const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
