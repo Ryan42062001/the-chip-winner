@@ -31,6 +31,14 @@ test("waiver engine evaluates full legal lineup impact across positions", () => 
   assert.equal(result.items[0].lineupGain, 6);
   assert.equal(result.items[0].drop.id, "bench-qb");
   assert.match(result.items[0].reason, /30.0 to 36.0/);
+  assert.deepEqual(result.items[0].replacement, { status: "unavailable", playerId: null, projection: null, pointsAbove: null });
+});
+
+test("waiver replacement value uses the next ESPN-available same-position projection", () => {
+  const value = snapshot(); value.players.push({ id: "add-wr-2", name: "Other Receiver", position: "WR", projection: 12 }); value.availablePlayers.push("add-wr-2");
+  const result = buildRosterAwareWaiverIdeas(value, "mine", 0); const receiver = result.items.find((item) => item.add.id === "add-wr");
+  assert.deepEqual(receiver.replacement, { status: "ready", playerId: "add-wr-2", projection: 12, pointsAbove: 4 });
+  assert.match(result.limitations.join(" "), /Replacement value/);
 });
 
 test("waiver engine never drops starters, IR, or locked bench players", () => {

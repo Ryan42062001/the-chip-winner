@@ -60,6 +60,7 @@ candidates.push(Object.freeze({
 add, drop, lineupGain,
 projectedTotal: result.projectedTotal,
 changes: result.recommendedChanges,
+replacement: (() => { const benchmark = available.filter((player) => player.id !== add.id && player.position === add.position).sort((a, b) => b.projection - a.projection)[0]; return Object.freeze(benchmark ? { status: "ready", playerId: benchmark.id, projection: benchmark.projection, pointsAbove: +(add.projection - benchmark.projection).toFixed(1) } : { status: "unavailable", playerId: null, projection: null, pointsAbove: null }); })(),
 reason: `Raises the strongest known legal lineup from ${baseline.projectedTotal.toFixed(1)} to ${result.projectedTotal.toFixed(1)} projected points.`,
 horizon: "current-week"
 }));
@@ -72,6 +73,7 @@ if (usedAdds.has(item.add.id) || usedDrops.has(item.drop.id)) return false;
 usedAdds.add(item.add.id); usedDrops.add(item.drop.id); return true;
 }).slice(0, limit);
 const team = snapshot.teams?.find((item) => item.id === teamId); const limitations = ["ESPN availability is authoritative at the latest refresh."];
+limitations.push("Replacement value is the add player's current-week projection minus the highest projected other ESPN-available player at the same position; unavailable benchmarks stay missing.");
 limitations.push(snapshot.league?.rosterRules ? "ESPN-reported roster size and position limits were enforced." : "ESPN roster and position limits are unavailable; no rule is inferred.");
 limitations.push(...rosterRuleBlocks);
 limitations.push(capacity.status === "available" ? "Known ESPN acquisition limits and usage were checked before evaluating moves." : "ESPN acquisition usage or limits are incomplete, so remaining moves cannot be verified.");
