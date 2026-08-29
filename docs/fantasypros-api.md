@@ -21,6 +21,16 @@ npm.cmd run players:fantasypros
 
 This writes `local-data/fantasypros-player-directory.csv`. It preserves FantasyPros IDs and reference labels but creates no ESPN mapping or display-name join.
 
+## Free manual projection CSV staging
+
+FantasyPros QB, FLX, K, and DST exports can be staged into one review file after the season, week, and scoring format are explicitly supplied:
+
+```powershell
+npm.cmd run projections:fantasypros-csv -- --season 2026 --week 1 --scoring PPR --qb "C:\path\QB.csv" --flx "C:\path\FLX.csv" --k "C:\path\K.csv" --dst "C:\path\DST.csv"
+```
+
+The staging parser handles FantasyPros' duplicate stat headers and formatting-only rows, but reads only `Player`, `Team`, optional `POS`, and `FPTS`. Blank fantasy points are rejected rather than converted to zero. The generated review CSV keeps `fantasypros_player_id` and `espn_player_id` blank until they are explicitly verified. It is not accepted by the app as a projection set while either identity is missing.
+
 Generated files are written under ignored `local-data/`:
 
 - `fantasypros-2026-week-1-ppr.csv` is compatible with the app's weekly projection importer.
