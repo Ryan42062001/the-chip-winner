@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FutureProjectionProvider, evaluateFutureProjectionCompatibility, indexFutureProjections, normalizeFutureProjectionSet, parseFutureProjectionCsv } from "../src/providers/projections/future-projection-provider.js";
+import { FutureProjectionProvider, evaluateFutureProjectionCompatibility, indexFutureProjections, normalizeFutureProjectionSet, parseFutureProjectionCsv, selectMappedFutureProjection } from "../src/providers/projections/future-projection-provider.js";
 
 const validSet = { provider: "example", scoringFormat: "PPR", season: 2026, capturedAt: "2026-08-28T00:00:00Z", projections: [{ providerPlayerId: "p-1", week: 1, points: 18.4 }] };
 
@@ -32,6 +32,14 @@ test("future projections reject missing identities and invented numeric values",
   const result = normalizeFutureProjectionSet({ ...validSet, projections: [{ week: 19, points: null }] });
   assert.equal(result.valid, false);
   assert.match(result.errors.join(" "), /providerPlayerId/);
+});
+
+test("mapped projection lookup distinguishes ready mapping and value gaps", () => {
+  const map = new Map([["p-1", "espn-1"]]);
+  assert.deepEqual(selectMappedFutureProjection(validSet, map, "espn-1", 1), { status: "ready", points: 18.4 });
+  assert.equal(selectMappedFutureProjection(validSet, map, "espn-1", 2).status, "missing-week");
+  assert.equal(selectMappedFutureProjection(validSet, map, "espn-2", 1).status, "missing-mapping");
+  assert.equal(selectMappedFutureProjection(null, map, "espn-1", 1).status, "missing-source");
 });
 
 test("future projection compatibility reports ready and stale source states", () => {

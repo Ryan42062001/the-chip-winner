@@ -1,17 +1,17 @@
 import { EspnSnapshotProvider } from "./providers/espn/espn-provider.js";
 import { isStarter } from "./domain/model.js";
-import { buildLineupSuggestions, buildLineupVacancies, buildPrioritizedWarnings, buildWarnings, compareRosterPlayers } from "./domain/recommendations.js?v=0.9.1";
-import { selectDataCoverage, selectLeagueMatchups, selectLeagueStandings, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext, selectTeamSchedule } from "./domain/selectors.js?v=0.5.2";
+import { buildLineupSuggestions, buildLineupVacancies, buildPrioritizedWarnings, buildWarnings, compareRosterPlayers } from "./domain/recommendations.js";
+import { selectDataCoverage, selectLeagueMatchups, selectLeagueStandings, selectPlayerDetail, selectProjectedTotal, selectSnapshotFreshness, selectTeamContext, selectTeamSchedule } from "./domain/selectors.js";
 import { appReducer, createStore, initialAppState } from "./application/store.js";
 import { EspnCompanionClient } from "./providers/espn/companion-client.js";
-import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js?v=0.5.2";
+import { normalizeEspnLeagueResponse } from "./providers/espn/espn-normalizer.js";
 import { FantasyProsRankingProvider, evaluateFantasyProsCompatibility, reconcileFantasyProsRankings } from "./providers/rankings/ranking-provider.js";
 import { buildRosWaiverIdeas, selectRosterRosCoverage } from "./domain/ros-analysis.js";
 import { optimizeLineup } from "./domain/lineup-optimizer.js";
 import { changesForTeam, diffSnapshots } from "./domain/snapshot-diff.js";
 import { buildRosterAwareWaiverIdeas } from "./domain/waiver-engine.js";
 import { buildRosterPlan } from "./domain/roster-planning.js";
-import { buildProjectionGapReport, buildScenarioPlan } from "./domain/scenario-planner.js?v=0.2.0";
+import { buildProjectionGapReport, buildScenarioPlan } from "./domain/scenario-planner.js";
 import { FutureProjectionProvider, evaluateFutureProjectionCompatibility } from "./providers/projections/future-projection-provider.js";
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
 import { buildApprovedManualImports, fantasyProsProviderId, parseManualFantasyProsExport } from "./providers/projections/fantasypros-manual-import.js";
@@ -27,10 +27,11 @@ import { renderTeamScheduleCard } from "./ui/season-schedule.js";
 import { renderAcquisitionSettingsCard } from "./ui/acquisition-settings.js";
 import { OnboardingPreferences } from "./application/onboarding-preferences.js";
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "./sync/crypto.js";
-import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
+import { HttpSyncProvider } from "./sync/sync-provider.js";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
-import { buildWeeklyChecklist } from "./domain/weekly-checklist.js?v=0.1.0";
+import { buildWeeklyChecklist } from "./domain/weekly-checklist.js";
 import { renderManualProjectionDialog } from "./ui/manual-projection-dialog.js";
+import { renderExternalProjectionDetail } from "./ui/external-projection-detail.js";
 
 runCacheMigrations(globalThis.localStorage);
 
@@ -311,11 +312,12 @@ function openPlayerDetail(playerId) {
   if (!detail) return;
   const { player, rosterEntry, source } = detail;
   const ros = state.rankingReconciliation?.byPlayerId?.[player.id];
+  const external = renderExternalProjectionDetail(futureProjectionSet, projectionIdentityMap, state.snapshot, player.id);
   const dialog = document.querySelector("#player-dialog");
   document.querySelector("#player-dialog-content").innerHTML = `<div class="detail-head"><div><p class="eyebrow">${escapeHtml(player.position)} · ${escapeHtml(player.proTeam || "NFL team unavailable")}</p><h2 id="player-dialog-title">${escapeHtml(player.name)}</h2><p>${rosterEntry ? `Rostered · ${escapeHtml(rosterEntry.lineupSlot)}` : detail.isAvailable === true ? `${escapeHtml(formatAvailability(player.availabilityStatus))} in ECOG` : "Roster status unavailable"}</p></div><form method="dialog"><button class="dialog-close" aria-label="Close player details">×</button></form></div>
     <div class="detail-projection"><span>Week ${state.snapshot.currentWeek} projection</span><strong>${player.projection == null ? "—" : player.projection.toFixed(1)}</strong><small>Source: ${escapeHtml(source.projections || "Unavailable")}</small></div>
-    <dl class="detail-grid"><div><dt>Opponent</dt><dd>${detailValue(player.opponent)}</dd></div><div><dt>Kickoff</dt><dd>${detailValue(player.gameTime, gameTime)}</dd></div><div><dt>Injury</dt><dd>${detailValue(player.injury?.status)}</dd></div><div><dt>Bye week</dt><dd>${detailValue(player.byeWeek)}</dd></div><div><dt>Season average</dt><dd>${detailValue(player.seasonAverage, value => `${Number(value).toFixed(1)} pts`)}</dd></div><div><dt>Availability</dt><dd>${detail.isRostered ? "On roster" : detail.isAvailable === true ? escapeHtml(formatAvailability(player.availabilityStatus)) : detail.isAvailable === false ? "Not available" : "Unavailable"}</dd></div>${ros ? `<div><dt>FantasyPros ROS</dt><dd>#${ros.rank} overall · ${escapeHtml(ros.position)}${ros.positionRank}</dd></div><div><dt>Playoff SOS</dt><dd>${ros.playoffScheduleStrength == null ? '<span class="missing">Unavailable</span>' : `${ros.playoffScheduleStrength}/5`}</dd></div>` : ""}</dl>
-    <div class="detail-source"><strong>Data provenance</strong><span>League: ${escapeHtml(String(source.leagueProvider || "Unavailable").toUpperCase())}</span><span>Snapshot: ${source.capturedAt ? escapeHtml(new Date(source.capturedAt).toLocaleString()) : "Unavailable"}</span>${ros ? `<span>ROS rank: FantasyPros · PPR · top-10 expert filter</span>` : ""}<p>Missing fields are not inferred. Verify late injury news before making a move.</p></div>`;
+    <dl class="detail-grid"><div><dt>Opponent</dt><dd>${detailValue(player.opponent)}</dd></div><div><dt>Kickoff</dt><dd>${detailValue(player.gameTime, gameTime)}</dd></div><div><dt>Injury</dt><dd>${detailValue(player.injury?.status)}</dd></div><div><dt>Bye week</dt><dd>${detailValue(player.byeWeek)}</dd></div><div><dt>Season average</dt><dd>${detailValue(player.seasonAverage, value => `${Number(value).toFixed(1)} pts`)}</dd></div><div><dt>Availability</dt><dd>${detail.isRostered ? "On roster" : detail.isAvailable === true ? escapeHtml(formatAvailability(player.availabilityStatus)) : detail.isAvailable === false ? "Not available" : "Unavailable"}</dd></div>${external.grid}${ros ? `<div><dt>FantasyPros ROS</dt><dd>#${ros.rank} overall · ${escapeHtml(ros.position)}${ros.positionRank}</dd></div><div><dt>Playoff SOS</dt><dd>${ros.playoffScheduleStrength == null ? '<span class="missing">Unavailable</span>' : `${ros.playoffScheduleStrength}/5`}</dd></div>` : ""}</dl>
+    <div class="detail-source"><strong>Data provenance</strong><span>League: ${escapeHtml(String(source.leagueProvider || "Unavailable").toUpperCase())}</span><span>Snapshot: ${source.capturedAt ? escapeHtml(new Date(source.capturedAt).toLocaleString()) : "Unavailable"}</span>${external.source}${ros ? `<span>ROS rank: FantasyPros · PPR · top-10 expert filter</span>` : ""}<p>Missing fields are not inferred. Verify late injury news before making a move.</p></div>`;
   dialog.showModal();
 }
 

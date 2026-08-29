@@ -78,6 +78,8 @@ Acceptance criteria:
 
 ### Player detail view
 
+Status: **Implemented for the current source contracts.** ESPN league facts, FantasyPros ROS rank metadata, and explicitly mapped external weekly projections render separately with capture provenance and honest missing, blocked, and unmapped states.
+
 - Add player cards or a detail drawer accessible from roster, waivers, alerts, and comparisons.
 - Show ESPN roster status, lineup slot, NFL opponent, kickoff, injury status, bye, and available projections.
 - Show recent fantasy scoring only when the scoring basis is compatible with the connected league.

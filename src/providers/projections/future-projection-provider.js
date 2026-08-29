@@ -23,6 +23,15 @@ export function indexFutureProjections(set) {
   return index;
 }
 
+export function selectMappedFutureProjection(set, identityMap, espnPlayerId, week) {
+  const result = (status, points = null) => Object.freeze({ status, points });
+  if (!set) return result("missing-source"); if (!(identityMap instanceof Map)) return result("missing-mapping");
+  const ids = [...identityMap].filter(([, id]) => id === espnPlayerId).map(([id]) => id);
+  if (ids.length !== 1) return result(ids.length ? "identity-conflict" : "missing-mapping");
+  const record = set.projections.find((item) => item.providerPlayerId === ids[0] && item.week === week);
+  return record ? result("ready", record.points) : result("missing-week");
+}
+
 export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Date.now(), staleAfterMs = 7 * 24 * 60 * 60 * 1000 } = {}) {
   const normalized = normalizeFutureProjectionSet(set);
   if (!normalized.valid) return Object.freeze({ usable: false, status: "invalid", ageMs: null, errors: Object.freeze(normalized.errors), warnings: Object.freeze([]) });

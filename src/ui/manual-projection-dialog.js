@@ -1,9 +1,9 @@
-const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+export const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 
 export function renderManualProjectionDialog(session, snapshot, selectedTeamId) {
   if (!session) return;
   const usedRows = new Set(session.approvals.map((item) => item.sourceKey)); const usedEspn = new Set(session.approvals.map((item) => item.espnPlayerId));
-  const rosterIds = new Set(snapshot.teams.find((team) => team.id === selectedTeamId)?.roster?.map((item) => item.playerId) || []);
+  const rosterIds = new Set(snapshot.rosters.find((roster) => roster.teamId === selectedTeamId)?.entries?.map((item) => item.playerId) || []);
   const players = [...snapshot.players].sort((a, b) => Number(rosterIds.has(b.id)) - Number(rosterIds.has(a.id)) || a.name.localeCompare(b.name));
   document.querySelector("#manual-source-row").innerHTML = session.records.filter((item) => !usedRows.has(item.sourceKey)).map((item) => `<option value="${escapeHtml(item.sourceKey)}">${escapeHtml(item.playerName)} · ${escapeHtml(item.team || "team unavailable")} · ${escapeHtml(item.position)} · ${item.points.toFixed(1)} pts</option>`).join("");
   document.querySelector("#manual-espn-player").innerHTML = players.filter((item) => !usedEspn.has(item.id)).map((item) => `<option value="${escapeHtml(item.id)}">${rosterIds.has(item.id) ? "My roster · " : ""}${escapeHtml(item.name)} · ${escapeHtml(item.proTeam || "team unavailable")} · ${escapeHtml(item.position)}</option>`).join("");

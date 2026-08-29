@@ -70,11 +70,17 @@ try {
   ]);
   await page.locator("#fantasypros-manual-dialog[open]").waitFor();
   await page.locator("#manual-profile-url").fill("https://www.fantasypros.com/nfl/players/manual-qb.php");
+  const mappedEspnId = await page.locator("#manual-espn-player").inputValue();
   await page.getByRole("button", { name: "Approve mapping" }).click();
   await page.getByText("1 approved mapping", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Import approved players" }).click();
   if (await page.locator("#fantasypros-manual-dialog").isVisible()) throw new Error("Manual FantasyPros import did not close after a valid explicit mapping.");
   await page.getByText("FantasyPros manual CSV", { exact: true }).waitFor();
+  await page.locator('a[data-section="overview"]').click();
+  await page.locator(`[data-player-id="${mappedEspnId}"]`).first().click();
+  await page.locator("#player-dialog[open]").getByText("21.4 pts", { exact: true }).waitFor();
+  await page.locator("#player-dialog[open]").getByText(/External: FantasyPros manual CSV/).waitFor();
+  await page.getByRole("button", { name: "Close player details" }).click();
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
 
