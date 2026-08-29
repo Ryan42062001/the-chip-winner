@@ -90,6 +90,8 @@ export class FutureProjectionProvider {
   constructor({ storage = globalThis.localStorage } = {}) { this.storage = storage; }
   importCsv(text) { const set = parseFutureProjectionCsv(text); this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
   mergeCsv(text) { const incoming = parseFutureProjectionCsv(text); const current = this.readCache(); const set = current ? mergeFutureProjectionSets(current, incoming) : incoming; this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
+  preflightMergeCsv(text) { const incoming = parseFutureProjectionCsv(text); const current = this.readCache(); return { current, incoming, merged: current ? mergeFutureProjectionSets(current, incoming) : incoming }; }
+  saveCache(set) { const normalized = normalizeFutureProjectionSet(set); if (!normalized.valid) throw new Error(normalized.errors.join(" ")); this.storage?.setItem(CACHE_KEY, JSON.stringify(normalized.value)); return normalized.value; }
   readCache() {
     try { const value = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); if (!value) return null; const normalized = normalizeFutureProjectionSet(value); return normalized.valid ? normalized.value : null; }
     catch { this.clearCache(); return null; }

@@ -5,7 +5,7 @@ const kib = 1024;
 const budgets = Object.freeze({
   "index.html": 12 * kib,
   "src/styles.css": 32 * kib,
-  "src/app.js": 80 * kib,
+  "src/app.js": 60 * kib,
   "src/data/sample-espn-snapshot.json": 32 * kib,
   "browser JavaScript graph": 220 * kib,
 });

@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 199 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 205 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -366,11 +366,13 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.48
+## Current execution plan — after v0.9.49
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
 ### P0 — Split the browser application entry point
+
+Status: **Complete in v0.9.49.** Section rendering, shell event binding, and projection-import transactions now use focused modules with explicit dependencies. The application store remains the single snapshot and UI-state owner. `src/app.js` is 24.9 KiB against a tightened 60 KiB limit, and the complete browser graph remains within 220 KiB.
 
 Why now: the measured browser JavaScript graph is 218.0 KiB of a 220 KiB budget and `src/app.js` is 78.7 KiB of an 80 KiB budget.
 
@@ -389,7 +391,7 @@ Acceptance criteria:
 
 ### P0 — Make multiweek imports atomic and inspectable
 
-Status: provenance-preserving projection and identity-map merges shipped in v0.9.48. Transactional orchestration and user-facing history remain.
+Status: **Complete in v0.9.49.** Guided imports preflight projections and identity mappings before either write, roll both caches back on commit failure, classify deterministic merge outcomes, and expose capture ranges plus week-level provenance in League Setup.
 
 Tasks:
 

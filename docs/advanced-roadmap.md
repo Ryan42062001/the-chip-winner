@@ -432,7 +432,9 @@ No UI placeholder should imply that a gated capability already works.
 - no-console-error check;
 - clean Git worktree and successful deployment.
 
-## Recommended next sprint: modular browser shell and atomic imports
+## Completed sprint: modular browser shell and atomic imports
+
+Status: **Shipped in v0.9.49.** The browser shell is modular, guided projection imports are atomic and inspectable, and all size, desktop/mobile, keyboard, accessibility, and safety gates pass.
 
 Sprint objective: create safe capacity for remaining features and finish the trust boundary around accumulating weekly CSV imports.
 
@@ -451,3 +453,8 @@ Sprint exit criteria:
 - Weeks accumulate without older records overwriting newer records.
 - Users can inspect what changed and why a record was rejected.
 - All required repository gates pass and the deployed production URL is verified.
+
+
+## Recommended next sprint: complete real projection coverage
+
+Import and explicitly map each available weekly FantasyPros export, expand the roster/candidate coverage matrix, and keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage. Do not add a new provider or infer identities by display name.

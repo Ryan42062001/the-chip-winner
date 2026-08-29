@@ -33,6 +33,8 @@ export class ProjectionIdentityMapProvider {
     const incoming = parseProjectionIdentityMapCsv(text); const merged = mergeProjectionIdentityMaps(this.readCache(), incoming);
     this.storage?.setItem(CACHE_KEY, JSON.stringify([...merged].map(([providerPlayerId, espnPlayerId]) => ({ providerPlayerId, espnPlayerId })))); return merged;
   }
+  preflightMergeCsv(text) { const incoming = parseProjectionIdentityMapCsv(text); const current = this.readCache(); return { current, incoming, merged: mergeProjectionIdentityMaps(current, incoming) }; }
+  saveCache(map) { const value = map instanceof Map ? map : new Map(map || []); this.storage?.setItem(CACHE_KEY, JSON.stringify([...value].map(([providerPlayerId, espnPlayerId]) => ({ providerPlayerId, espnPlayerId })))); return value; }
   readCache() {
     try { const entries = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); return Array.isArray(entries) ? new Map(entries.map((item) => [item.providerPlayerId, item.espnPlayerId])) : null; }
     catch { this.clearCache(); return null; }
