@@ -10,5 +10,5 @@ export function renderExternalProjectionDetail(set, identityMap, snapshot, playe
   if (["missing-mapping", "identity-conflict"].includes(first.status)) return unavailable(first.status === "identity-conflict" ? "Mapping conflict" : "Unmapped");
   const values = weeks.map((week) => ({ week, ...selectMappedFutureProjection(set, identityMap, playerId, week) })); const known = values.filter((item) => item.status === "ready").length;
   const grid = values.map((item) => `<div><dt>${escape(set.provider)} Week ${item.week}</dt><dd>${item.status === "ready" ? `${item.points.toFixed(1)} pts` : '<span class="missing">Unavailable</span>'}</dd></div>`).join("");
-  return { grid, source: `<span>External: ${escape(set.provider)} · ${escape(set.scoringFormat)} · ${known}/${weeks.length} imported weeks · captured ${escape(new Date(set.capturedAt).toLocaleString())}</span>` };
+  return { grid, source: `<span>External: ${escape(set.provider)} · ${escape(set.scoringFormat)} · ${known}/${weeks.length} imported weeks · oldest retained capture ${escape(new Date(set.capturedAt).toLocaleString())}</span>` };
 }

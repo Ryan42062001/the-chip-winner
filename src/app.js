@@ -524,7 +524,7 @@ document.querySelector("#manual-approved-list").addEventListener("click", (event
 document.querySelector("#manual-import-confirm").addEventListener("click", () => {
   try {
     const result = buildApprovedManualImports({ records: manualProjectionSession.records, approvals: manualProjectionSession.approvals, season: Number(document.querySelector("#manual-projection-season").value), week: Number(document.querySelector("#manual-projection-week").value), scoringFormat: document.querySelector("#manual-projection-scoring").value, capturedAt: manualProjectionSession.capturedAt });
-    futureProjectionSet = futureProjectionProvider.importCsv(result.projectionsCsv); projectionIdentityMap = projectionIdentityMapProvider.importCsv(result.identityMapCsv); selectedFutureWeeks = planningPreferences.save([...new Set(futureProjectionSet.projections.map((item) => item.week))]);
+    futureProjectionSet = futureProjectionProvider.mergeCsv(result.projectionsCsv); projectionIdentityMap = projectionIdentityMapProvider.mergeCsv(result.identityMapCsv); selectedFutureWeeks = planningPreferences.save([...new Set(futureProjectionSet.projections.map((item) => item.week))]);
     document.querySelector("#fantasypros-manual-dialog").close(); manualProjectionSession = null; render(); showNotice(`Imported ${result.count} explicitly approved FantasyPros projection${result.count === 1 ? "" : "s"}. Unapproved CSV rows were not used.`);
   } catch (error) { showNotice(error.message, "error"); }
 });

@@ -16,9 +16,23 @@ export function parseProjectionIdentityMapCsv(text) {
   return Object.freeze(entries);
 }
 
+export function mergeProjectionIdentityMaps(existing, incomingEntries) {
+  const merged = new Map(existing || []); const espnIds = new Map([...merged].map(([providerId, espnId]) => [espnId, providerId]));
+  for (const { providerPlayerId, espnPlayerId } of incomingEntries) {
+    if (merged.has(providerPlayerId) && merged.get(providerPlayerId) !== espnPlayerId) throw new Error(`Provider ID ${providerPlayerId} conflicts with an existing ESPN mapping.`);
+    if (espnIds.has(espnPlayerId) && espnIds.get(espnPlayerId) !== providerPlayerId) throw new Error(`ESPN ID ${espnPlayerId} conflicts with an existing provider mapping.`);
+    merged.set(providerPlayerId, espnPlayerId); espnIds.set(espnPlayerId, providerPlayerId);
+  }
+  return merged;
+}
+
 export class ProjectionIdentityMapProvider {
   constructor({ storage = globalThis.localStorage } = {}) { this.storage = storage; }
   importCsv(text) { const entries = parseProjectionIdentityMapCsv(text); this.storage?.setItem(CACHE_KEY, JSON.stringify(entries)); return new Map(entries.map((item) => [item.providerPlayerId, item.espnPlayerId])); }
+  mergeCsv(text) {
+    const incoming = parseProjectionIdentityMapCsv(text); const merged = mergeProjectionIdentityMaps(this.readCache(), incoming);
+    this.storage?.setItem(CACHE_KEY, JSON.stringify([...merged].map(([providerPlayerId, espnPlayerId]) => ({ providerPlayerId, espnPlayerId })))); return merged;
+  }
   readCache() {
     try { const entries = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); return Array.isArray(entries) ? new Map(entries.map((item) => [item.providerPlayerId, item.espnPlayerId])) : null; }
     catch { this.clearCache(); return null; }

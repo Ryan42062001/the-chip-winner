@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FutureProjectionProvider, evaluateFutureProjectionCompatibility, indexFutureProjections, normalizeFutureProjectionSet, parseFutureProjectionCsv, selectMappedFutureProjection } from "../src/providers/projections/future-projection-provider.js";
+import { FutureProjectionProvider, evaluateFutureProjectionCompatibility, indexFutureProjections, mergeFutureProjectionSets, normalizeFutureProjectionSet, parseFutureProjectionCsv, selectMappedFutureProjection } from "../src/providers/projections/future-projection-provider.js";
 
 const validSet = { provider: "example", scoringFormat: "PPR", season: 2026, capturedAt: "2026-08-28T00:00:00Z", projections: [{ providerPlayerId: "p-1", week: 1, points: 18.4 }] };
 
@@ -21,6 +21,24 @@ test("future projection CSV imports and caches explicit weekly records", () => {
 
 test("future projection CSV rejects duplicate player weeks", () => {
   assert.throws(() => parseFutureProjectionCsv("provider,scoring_format,season,captured_at,provider_player_id,week,points\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,15,10\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,15,11"), /duplicate/);
+});
+
+test("future projection merges retain prior weeks and newest player-week provenance", () => {
+  const newer = { ...validSet, capturedAt: "2026-08-29T00:00:00Z", projections: [{ providerPlayerId: "p-1", week: 1, points: 19, capturedAt: "2026-08-29T00:00:00Z" }, { providerPlayerId: "p-1", week: 2, points: 20, capturedAt: "2026-08-29T00:00:00Z" }] };
+  const merged = mergeFutureProjectionSets(validSet, newer);
+  assert.deepEqual(merged.projections.map(({ week, points }) => [week, points]), [[1, 19], [2, 20]]);
+  assert.equal(merged.capturedAt, "2026-08-29T00:00:00.000Z");
+});
+
+test("future projection merges reject equal-time conflicts and incompatible sources", () => {
+  assert.throws(() => mergeFutureProjectionSets(validSet, { ...validSet, projections: [{ providerPlayerId: "p-1", week: 1, points: 99 }] }), /conflict/);
+  assert.throws(() => mergeFutureProjectionSets(validSet, { ...validSet, scoringFormat: "Standard" }), /scoringFormat/);
+});
+
+test("future projection CSV preserves per-record capture times", () => {
+  const set = parseFutureProjectionCsv("provider,scoring_format,season,captured_at,provider_player_id,week,points\nx,PPR,2026,2026-08-28T00:00:00Z,p-1,1,10\nx,PPR,2026,2026-08-29T00:00:00Z,p-1,2,11");
+  assert.equal(set.capturedAt, "2026-08-28T00:00:00.000Z");
+  assert.equal(set.projections[1].capturedAt, "2026-08-29T00:00:00Z");
 });
 
 test("future projection CSV requires consistent explicit source metadata", () => {

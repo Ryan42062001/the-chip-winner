@@ -11,10 +11,26 @@ export function normalizeFutureProjectionSet(input) {
     if (typeof item?.providerPlayerId !== "string" || !item.providerPlayerId.trim()) { errors.push(`Projection ${index} requires providerPlayerId.`); continue; }
     if (!Number.isInteger(item.week) || item.week < 1 || item.week > 18) { errors.push(`Projection ${index} has an invalid week.`); continue; }
     if (!Number.isFinite(item.points) || item.points < 0) { errors.push(`Projection ${index} has invalid points.`); continue; }
-    records.push(Object.freeze({ providerPlayerId: item.providerPlayerId, week: item.week, points: item.points }));
+    const capturedAt = item.capturedAt || input.capturedAt;
+    if (!capturedAt || !Number.isFinite(Date.parse(capturedAt))) { errors.push(`Projection ${index} requires a valid capturedAt.`); continue; }
+    records.push(Object.freeze({ providerPlayerId: item.providerPlayerId, week: item.week, points: item.points, capturedAt }));
   }
   if (errors.length) return { valid: false, errors, value: null };
-  return { valid: true, errors: [], value: Object.freeze({ provider: input.provider, scoringFormat: input.scoringFormat, season: input.season, capturedAt: input.capturedAt, projections: Object.freeze(records) }) };
+  const oldestCapture = records.length ? new Date(Math.min(...records.map((item) => Date.parse(item.capturedAt)))).toISOString() : input.capturedAt;
+  return { valid: true, errors: [], value: Object.freeze({ provider: input.provider, scoringFormat: input.scoringFormat, season: input.season, capturedAt: oldestCapture, projections: Object.freeze(records) }) };
+}
+
+export function mergeFutureProjectionSets(existing, incoming) {
+  const left = normalizeFutureProjectionSet(existing); const right = normalizeFutureProjectionSet(incoming);
+  if (!left.valid || !right.valid) throw new Error([...left.errors, ...right.errors].join(" "));
+  for (const field of ["provider", "scoringFormat", "season"]) if (left.value[field] !== right.value[field]) throw new Error(`Cannot merge projection sets with different ${field}.`);
+  const records = new Map(left.value.projections.map((item) => [`${item.providerPlayerId}:${item.week}`, item]));
+  for (const item of right.value.projections) {
+    const key = `${item.providerPlayerId}:${item.week}`; const current = records.get(key);
+    if (!current || Date.parse(item.capturedAt) > Date.parse(current.capturedAt)) records.set(key, item);
+    else if (Date.parse(item.capturedAt) === Date.parse(current.capturedAt) && item.points !== current.points) throw new Error(`Projection conflict for ${item.providerPlayerId} Week ${item.week} at the same capture time.`);
+  }
+  return normalizeFutureProjectionSet({ ...right.value, projections: [...records.values()] }).value;
 }
 
 export function indexFutureProjections(set) {
@@ -40,8 +56,9 @@ export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Dat
   if (Number.isInteger(leagueSeason) && value.season !== leagueSeason) errors.push(`Projection season ${value.season} does not match ESPN league season ${leagueSeason}.`);
   const leagueScoring = String(snapshot?.league?.scoringType || "").trim();
   if (leagueScoring && leagueScoring.toLowerCase() !== "unknown" && value.scoringFormat.trim().toLowerCase() !== leagueScoring.toLowerCase()) errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN league scoring ${leagueScoring}.`);
+  const captureTimes = value.projections.map((item) => Date.parse(item.capturedAt));
   const capturedTime = Date.parse(value.capturedAt); const ageMs = Number.isFinite(capturedTime) ? now - capturedTime : null;
-  if (ageMs != null && ageMs < -5 * 60 * 1000) errors.push("Projection capture time is in the future.");
+  if (captureTimes.some((time) => time - now > 5 * 60 * 1000)) errors.push("A projection capture time is in the future.");
   else if (ageMs != null && ageMs > staleAfterMs) warnings.push(`Projection source is ${Math.floor(ageMs / 86_400_000)} days old.`);
   return Object.freeze({ usable: errors.length === 0, status: errors.length ? "blocked" : warnings.length ? "stale" : "ready", ageMs, errors: Object.freeze(errors), warnings: Object.freeze(warnings) });
 }
@@ -55,9 +72,10 @@ export function parseFutureProjectionCsv(text) {
   const rows = lines.slice(1).map((line) => {
     const values = line.split(",");
     const week = at(values, "week"); const points = at(values, "points");
-    return { provider: at(values, "provider"), scoringFormat: at(values, "scoring_format"), season: at(values, "season"), capturedAt: at(values, "captured_at"), projection: { providerPlayerId: at(values, "provider_player_id"), week: week === "" ? Number.NaN : Number(week), points: points === "" ? Number.NaN : Number(points) } };
+    const capturedAt = at(values, "captured_at");
+    return { provider: at(values, "provider"), scoringFormat: at(values, "scoring_format"), season: at(values, "season"), capturedAt, projection: { providerPlayerId: at(values, "provider_player_id"), week: week === "" ? Number.NaN : Number(week), points: points === "" ? Number.NaN : Number(points), capturedAt } };
   });
-  const metadataKeys = rows.map((row) => JSON.stringify([row.provider, row.scoringFormat, row.season, row.capturedAt]));
+  const metadataKeys = rows.map((row) => JSON.stringify([row.provider, row.scoringFormat, row.season]));
   if (new Set(metadataKeys).size !== 1) throw new Error("Future projection CSV source metadata must be identical on every row.");
   const first = rows[0];
   const result = normalizeFutureProjectionSet({ provider: first.provider, scoringFormat: first.scoringFormat, season: Number(first.season), capturedAt: first.capturedAt, projections: rows.map((row) => row.projection) });
@@ -71,8 +89,9 @@ const CACHE_KEY = "chip-winner:future-projections:v1";
 export class FutureProjectionProvider {
   constructor({ storage = globalThis.localStorage } = {}) { this.storage = storage; }
   importCsv(text) { const set = parseFutureProjectionCsv(text); this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
+  mergeCsv(text) { const incoming = parseFutureProjectionCsv(text); const current = this.readCache(); const set = current ? mergeFutureProjectionSets(current, incoming) : incoming; this.storage?.setItem(CACHE_KEY, JSON.stringify(set)); return set; }
   readCache() {
-    try { const value = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); return value && normalizeFutureProjectionSet(value).valid ? value : null; }
+    try { const value = JSON.parse(this.storage?.getItem(CACHE_KEY) || "null"); if (!value) return null; const normalized = normalizeFutureProjectionSet(value); return normalized.valid ? normalized.value : null; }
     catch { this.clearCache(); return null; }
   }
   clearCache() { this.storage?.removeItem(CACHE_KEY); }
