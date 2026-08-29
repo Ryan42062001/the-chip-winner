@@ -83,6 +83,9 @@ try {
   await page.locator("#player-dialog[open]").getByText("21.4 pts", { exact: true }).waitFor();
   await page.locator("#player-dialog[open]").getByText(/External: FantasyPros manual CSV/).waitFor();
   await page.getByRole("button", { name: "Close player details" }).click();
+  await page.locator('a[data-section="lineup"]').click();
+  await page.locator(".external-comparison").getByText(/FantasyPros manual CSV/).waitFor();
+  await page.locator(".external-comparison").getByText(/Comparison withheld/).waitFor();
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
 

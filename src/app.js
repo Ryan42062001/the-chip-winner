@@ -160,7 +160,7 @@ function renderLineup() {
     <div class="section-divider"><span>OPTIMIZATION SIGNALS</span></div><div class="recommendation-grid">${suggestions.length ? suggestions.map(s => `<article class="panel recommendation"><span class="recommendation-kicker">${escapeHtml(s.slot)} SWAP</span><div class="compare"><div><small>START</small><strong>${escapeHtml(s.start.name)}</strong><span>${projection(s.start.projection)}</span></div><span class="swap-arrow">→</span><div><small>SIT</small><strong>${escapeHtml(s.sit.name)}</strong><span>${projection(s.sit.projection)}</span></div></div><div class="gain">+${s.gain} projected points</div><p>${escapeHtml(s.reason)}. Verify late news before making a move.</p></article>`).join("") : emptyState("No lineup changes identified", "Available projections do not show a higher-scoring eligible bench option. This is not a guarantee that your lineup is optimal.")}</div>`;
   const updateComparison = () => {
     const result = compareRosterPlayers(state.snapshot, state.selectedTeamId, document.querySelector("#compare-first").value, document.querySelector("#compare-second").value);
-    document.querySelector("#comparison-result").innerHTML = renderStartSitComparison(result);
+    document.querySelector("#comparison-result").innerHTML = renderStartSitComparison(result, futureProjectionSet, projectionIdentityMap, state.snapshot);
   };
   document.querySelector("#compare-first").addEventListener("change", updateComparison);
   document.querySelector("#compare-second").addEventListener("change", updateComparison);
