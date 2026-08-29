@@ -78,7 +78,7 @@ Acceptance criteria:
 
 ### Player detail view
 
-Status: **Implemented for the current source contracts.** ESPN league facts, FantasyPros ROS rank metadata, and explicitly mapped external weekly projections render separately with capture provenance and honest missing, blocked, and unmapped states.
+Status: **Implemented for the current source contracts.** ESPN league facts, FantasyPros ROS rank metadata, and explicitly mapped external weekly projections render separately with capture provenance, week-by-week coverage, and honest missing, blocked, and unmapped states. Partial week coverage is never presented as a combined total.
 
 - Add player cards or a detail drawer accessible from roster, waivers, alerts, and comparisons.
 - Show ESPN roster status, lineup slot, NFL opponent, kickoff, injury status, bye, and available projections.

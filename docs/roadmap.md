@@ -150,7 +150,7 @@ Acceptance criteria:
 
 ### 2.3 Player detail surface
 
-Status: **Implemented for ESPN facts, FantasyPros ROS ranks, and explicitly mapped external weekly projections.** External values remain separate from ESPN projections and show provider, scoring basis, capture time, blocked compatibility, missing week, and missing mapping states.
+Status: **Implemented for ESPN facts, FantasyPros ROS ranks, and explicitly mapped external weekly projections.** Player detail shows every imported week and mapped-week coverage without summing partial data. External values remain separate from ESPN projections and show provider, scoring basis, capture time, blocked compatibility, missing week, and missing mapping states.
 
 - Display player identity, team, position, opponent, status, bye, recent scoring, and source-specific projections.
 - Show source timestamps and missing fields.
