@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.42" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.43" />
   </head>
   <body>
     <a class="skip-link" href="#app-content">Skip to main content</a>
@@ -51,6 +51,7 @@
             <input type="file" id="rankings-input" accept="text/csv,.csv" hidden />
             <input type="file" id="future-projections-input" accept="text/csv,.csv" hidden />
             <input type="file" id="projection-identity-input" accept="text/csv,.csv" hidden />
+            <input type="file" id="fantasypros-manual-input" accept="text/csv,.csv" multiple hidden />
           </div>
         </header>
 
@@ -88,6 +89,23 @@
       </div>
       <div class="onboarding-actions"><button class="button primary" id="rankings-import-confirm" type="button">Import rankings</button><button class="button secondary" id="rankings-import-cancel" type="button">Cancel</button></div>
     </dialog>
-    <script type="module" src="src/app.js?v=0.9.42"></script>
+    <dialog id="fantasypros-manual-dialog" class="onboarding-dialog manual-projection-dialog" aria-labelledby="fantasypros-manual-title" aria-describedby="fantasypros-manual-description">
+      <div class="onboarding-copy"><p class="eyebrow">FREE CSV IMPORT</p><h2 id="fantasypros-manual-title">Approve player mappings</h2><p id="fantasypros-manual-description">Choose a FantasyPros export row, paste that player's FantasyPros profile URL, and select the matching ESPN player. Nothing is matched automatically.</p></div>
+      <div class="connection-form manual-metadata">
+        <label>Season<input id="manual-projection-season" inputmode="numeric" autocomplete="off"></label>
+        <label>Week<input id="manual-projection-week" inputmode="numeric" autocomplete="off"></label>
+        <label>Scoring<input id="manual-projection-scoring" autocomplete="off" placeholder="PPR"></label>
+      </div>
+      <div class="manual-mapping-form">
+        <label>FantasyPros CSV row<select id="manual-source-row"></select></label>
+        <label>FantasyPros player profile URL<input id="manual-profile-url" type="url" autocomplete="off" placeholder="https://www.fantasypros.com/nfl/players/…php"></label>
+        <label>Matching ESPN player<select id="manual-espn-player"></select></label>
+        <button class="button secondary" id="manual-approve-button" type="button">Approve mapping</button>
+      </div>
+      <div id="manual-approved-list" class="manual-approved-list" aria-live="polite"></div>
+      <p class="onboarding-note">The CSV file's local modified time is stored as capture metadata. It does not claim when FantasyPros recalculated the projections.</p>
+      <div class="onboarding-actions"><button class="button primary" id="manual-import-confirm" type="button">Import approved players</button><button class="button secondary" id="manual-import-cancel" type="button">Cancel</button></div>
+    </dialog>
+    <script type="module" src="src/app.js?v=0.9.43"></script>
   </body>
 </html>

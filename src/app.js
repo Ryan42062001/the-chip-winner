@@ -14,6 +14,7 @@ import { buildRosterPlan } from "./domain/roster-planning.js";
 import { buildProjectionGapReport, buildScenarioPlan } from "./domain/scenario-planner.js?v=0.2.0";
 import { FutureProjectionProvider, evaluateFutureProjectionCompatibility } from "./providers/projections/future-projection-provider.js";
 import { ProjectionIdentityMapProvider } from "./providers/projections/projection-identity-map.js";
+import { buildApprovedManualImports, fantasyProsProviderId, parseManualFantasyProsExport } from "./providers/projections/fantasypros-manual-import.js";
 import { buildModelContext } from "./domain/model-context.js";
 import { AlertPreferences, alertId } from "./domain/alert-preferences.js";
 import { diffLineupRecommendations } from "./domain/recommendation-change.js";
@@ -29,6 +30,7 @@ import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragmen
 import { HttpSyncProvider } from "./sync/sync-provider.js?v=0.6.1";
 import { publishSyncState, readSyncState } from "./sync/sync-session.js";
 import { buildWeeklyChecklist } from "./domain/weekly-checklist.js?v=0.1.0";
+import { renderManualProjectionDialog } from "./ui/manual-projection-dialog.js";
 
 runCacheMigrations(globalThis.localStorage);
 
@@ -50,6 +52,7 @@ let espnConnection = connectionPreferences.read();
 let savedEspnConnections = connectionPreferences.list();
 let selectedFutureWeeks = planningPreferences.read();
 let pendingRankingFile = null;
+let manualProjectionSession = null;
 let leagueScheduleWeek = null;
 let companionHealth = { status: "checking", version: null, message: "Checking for the Chrome companion…" };
 const localDataManager = new LocalDataManager({ providers: [provider, rankingProvider, futureProjectionProvider, projectionIdentityMapProvider, alertPreferences, connectionPreferences, refreshCooldown, planningPreferences, onboardingPreferences], extraKeys: [SYNC_CREDENTIALS_KEY] });
@@ -246,7 +249,7 @@ function renderLeague() {
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ROSTER RULES</p><h3>Lineup slots</h3></div></div>${slots.length ? `<div class="slot-grid">${slots.map(item => `<div><strong>${escapeHtml(item.slot)}</strong><span>× ${item.count}</span></div>`).join("")}</div>` : emptyInline("Lineup-slot settings were not included in this snapshot.")}</article>
     ${acquisitionCard}
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">EXTERNAL RANKINGS</p><h3>FantasyPros ROS</h3></div>${state.rankingSet ? `<span class="record">${escapeHtml(state.rankingSet.scoringFormat)}</span>` : ""}</div>${state.rankingSet ? `<dl class="settings-list"><div><dt>Compatibility</dt><dd>${escapeHtml(state.rankingCompatibility?.status || "Unavailable")}</dd></div><div><dt>Season</dt><dd>${escapeHtml(state.rankingSet.season)}</dd></div><div><dt>Expert filter</dt><dd>${escapeHtml(state.rankingSet.expertFilter)}</dd></div><div><dt>Records</dt><dd>${state.rankingSet.rankings.length}</dd></div><div><dt>Matched to ESPN</dt><dd>${Object.keys(state.rankingReconciliation?.byPlayerId || {}).length}</dd></div><div><dt>Unresolved</dt><dd>${state.rankingReconciliation?.unresolved.length || 0}</dd></div><div><dt>Conflicts</dt><dd>${state.rankingReconciliation?.conflicts.length || 0}</dd></div></dl><button class="button ghost" id="clear-rankings-button">Remove rankings</button><p class="data-note">${escapeHtml(state.rankingCompatibility?.errors.join(" ") || state.rankingCompatibility?.warnings.join(" ") || "Rankings match the known ESPN season and scoring family.")}</p>` : `<p class="data-note">Import the FantasyPros ROS PPR CSV to add season-long context without replacing ESPN league data.</p>`}</article>
-    <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Import a strict CSV containing provider, scoring_format, season, captured_at, provider_player_id, week, and points. Player-ID mapping is still required before scenarios can use it.</p><button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}<div class="sync-actions"><button class="button secondary" id="download-projection-template">Download projection template</button><button class="button secondary" id="download-identity-template">Download ESPN ID template</button></div></article>
+    <article class="panel"><div class="panel-head"><div><p class="eyebrow">WEEKLY PROJECTIONS</p><h3>Future scenario input</h3></div>${futureProjectionSet ? `<span class="record">${escapeHtml(futureProjectionSet.scoringFormat)}</span>` : ""}</div>${futureProjectionSet ? `<dl class="settings-list"><div><dt>Provider</dt><dd>${escapeHtml(futureProjectionSet.provider)}</dd></div><div><dt>Season</dt><dd>${futureProjectionSet.season}</dd></div><div><dt>Records</dt><dd>${futureProjectionSet.projections.length}</dd></div><div><dt>Weeks</dt><dd>${[...new Set(futureProjectionSet.projections.map(item => item.week))].sort((a,b) => a-b).join(", ")}</dd></div><div><dt>Explicit ID mappings</dt><dd>${projectionIdentityMap?.size || 0}</dd></div></dl><button class="button ghost" id="manual-projections-button">Import FantasyPros exports</button> <button class="button ghost" id="future-projections-button">Replace projections</button> <button class="button ghost" id="projection-identity-button">${projectionIdentityMap ? "Replace ID map" : "Import ID map"}</button> <button class="button ghost" id="clear-future-projections-button">Remove all</button>` : `<p class="data-note">Use free FantasyPros QB, FLX, K, and DST exports with explicit profile-URL and ESPN-player approval, or import strict projection and identity CSVs separately.</p><button class="button primary" id="manual-projections-button">Import FantasyPros exports</button> <button class="button ghost" id="future-projections-button">Import weekly CSV</button> <button class="button ghost" id="projection-identity-button">Import ID map</button>`}<div class="sync-actions"><button class="button secondary" id="download-projection-template">Download projection template</button><button class="button secondary" id="download-identity-template">Download ESPN ID template</button></div></article>
     ${mobileSyncCard()}
     <article class="panel privacy-card"><div class="panel-head"><div><p class="eyebrow">PRIVACY</p><h3>Your league stays local</h3></div></div><p>The Chrome companion reads ESPN through your existing session. Cookies never enter this website, and the latest normalized snapshot is cached only in this browser.</p><a href="https://github.com/Ryan42062001/the-chip-winner/blob/master/docs/privacy.md" target="_blank" rel="noreferrer">Read the data policy →</a><div class="sync-actions"><button class="button secondary" id="clear-local-data-button">Disconnect and clear local data</button></div></article>
     <article class="panel"><div class="panel-head"><div><p class="eyebrow">ADVANCED MODELS</p><h3>Privacy-safe context packet</h3></div></div><p class="data-note">Export the selected team’s normalized context without browser credentials or unrelated league data. Invalid recommendations are excluded by the offline evaluator.</p><button class="button ghost" id="download-model-context">Download model context</button></article>
@@ -353,6 +356,16 @@ function downloadCsv(filename, rows) {
   const blob = new Blob([rows.map((row) => row.map(csvCell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob); const link = document.createElement("a");
   link.href = url; link.download = filename; link.click(); URL.revokeObjectURL(url);
+}
+
+async function openManualProjectionImport(files) {
+  if (!files.length) return;
+  const records = [];
+  for (const file of files) { const fallbackPosition = file.name.match(/_(QB|FLX|K|DST)\.csv$/i)?.[1]?.toUpperCase() || ""; records.push(...parseManualFantasyProsExport(await file.text(), { fileName: file.name, fallbackPosition })); }
+  if (new Set(records.map((item) => item.sourceKey)).size !== records.length) throw new Error("Selected FantasyPros files have duplicate names and source rows.");
+  manualProjectionSession = { records, approvals: [], capturedAt: new Date(Math.max(...files.map((file) => file.lastModified))).toISOString() };
+  document.querySelector("#manual-projection-season").value = state.snapshot.league.season || ""; document.querySelector("#manual-projection-week").value = state.snapshot.currentWeek || ""; document.querySelector("#manual-projection-scoring").value = state.snapshot.league.scoringType === "Unknown" ? "" : state.snapshot.league.scoringType || "";
+  renderManualProjectionDialog(manualProjectionSession, state.snapshot, state.selectedTeamId); document.querySelector("#fantasypros-manual-dialog").showModal();
 }
 
 function downloadIdentityTemplate() {
@@ -499,6 +512,27 @@ document.querySelector("#projection-identity-input").addEventListener("change", 
   } catch (error) { showNotice(error.message, "error"); }
   event.target.value = "";
 });
+document.querySelector("#fantasypros-manual-input").addEventListener("change", async (event) => {
+  try { await openManualProjectionImport([...event.target.files]); }
+  catch (error) { showNotice(error.message, "error"); }
+  event.target.value = "";
+});
+document.querySelector("#manual-approve-button").addEventListener("click", () => {
+  try {
+    const sourceKey = document.querySelector("#manual-source-row").value; const espnPlayerId = document.querySelector("#manual-espn-player").value; const profileUrl = document.querySelector("#manual-profile-url").value.trim();
+    if (!sourceKey || !espnPlayerId) throw new Error("Choose both a FantasyPros row and ESPN player."); fantasyProsProviderId(profileUrl);
+    manualProjectionSession.approvals.push({ sourceKey, espnPlayerId, profileUrl }); document.querySelector("#manual-profile-url").value = ""; renderManualProjectionDialog(manualProjectionSession, state.snapshot, state.selectedTeamId);
+  } catch (error) { showNotice(error.message, "error"); }
+});
+document.querySelector("#manual-approved-list").addEventListener("click", (event) => { const button = event.target.closest("[data-remove-manual-approval]"); if (!button) return; manualProjectionSession.approvals.splice(Number(button.dataset.removeManualApproval), 1); renderManualProjectionDialog(manualProjectionSession, state.snapshot, state.selectedTeamId); });
+document.querySelector("#manual-import-confirm").addEventListener("click", () => {
+  try {
+    const result = buildApprovedManualImports({ records: manualProjectionSession.records, approvals: manualProjectionSession.approvals, season: Number(document.querySelector("#manual-projection-season").value), week: Number(document.querySelector("#manual-projection-week").value), scoringFormat: document.querySelector("#manual-projection-scoring").value, capturedAt: manualProjectionSession.capturedAt });
+    futureProjectionSet = futureProjectionProvider.importCsv(result.projectionsCsv); projectionIdentityMap = projectionIdentityMapProvider.importCsv(result.identityMapCsv); selectedFutureWeeks = planningPreferences.save([...new Set(futureProjectionSet.projections.map((item) => item.week))]);
+    document.querySelector("#fantasypros-manual-dialog").close(); manualProjectionSession = null; render(); showNotice(`Imported ${result.count} explicitly approved FantasyPros projection${result.count === 1 ? "" : "s"}. Unapproved CSV rows were not used.`);
+  } catch (error) { showNotice(error.message, "error"); }
+});
+document.querySelector("#manual-import-cancel").addEventListener("click", () => { document.querySelector("#fantasypros-manual-dialog").close(); manualProjectionSession = null; });
 document.querySelector("#reset-button").addEventListener("click", () => { provider.clearCache(); showNotice("Imported snapshot cleared. Loading sample data…"); setTimeout(() => location.reload(), 250); });
 window.addEventListener("hashchange", () => { store.dispatch({ type: "section/select", section: appSection() }); render(); content.focus({ preventScroll: true }); });
 document.querySelector(".mobile-menu").addEventListener("click", (event) => { const open = document.querySelector(".sidebar").classList.toggle("open"); event.currentTarget.setAttribute("aria-expanded", String(open)); event.currentTarget.setAttribute("aria-label", open ? "Close navigation" : "Open navigation"); });
@@ -530,6 +564,7 @@ content.addEventListener("click", (event) => {
 });
 content.addEventListener("click", (event) => { if (event.target.closest("#clear-rankings-button")) { rankingProvider.clearCache(); store.dispatch({ type: "rankings/clear" }); render(); showNotice("FantasyPros rankings removed from this browser."); } });
 content.addEventListener("click", (event) => {
+  if (event.target.closest("#manual-projections-button")) document.querySelector("#fantasypros-manual-input").click();
   if (event.target.closest("#future-projections-button")) document.querySelector("#future-projections-input").click();
   if (event.target.closest("#projection-identity-button")) document.querySelector("#projection-identity-input").click();
   if (event.target.closest("#clear-future-projections-button")) { futureProjectionProvider.clearCache(); projectionIdentityMapProvider.clearCache(); planningPreferences.clear(); futureProjectionSet = null; projectionIdentityMap = null; selectedFutureWeeks = null; render(); showNotice("Weekly projections and ID mappings removed from this browser."); }

@@ -62,6 +62,19 @@ try {
   await page.locator('a[data-section="league"]').click();
   await page.getByRole("heading", { name: "Standings overview", level: 3 }).waitFor();
   await page.getByRole("heading", { name: "Reported schedule", level: 3 }).waitFor();
+  await page.locator("#fantasypros-manual-input").setInputFiles([
+    { name: "FantasyPros_QB.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,FPTS\nManual QB,PHI,21.4") },
+    { name: "FantasyPros_FLX.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,POS,FPTS\nManual RB,DAL,RB,12.2") },
+    { name: "FantasyPros_K.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,FPTS\nManual K,BUF,8.1") },
+    { name: "FantasyPros_DST.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,FPTS\nManual DST,SF,7.3") },
+  ]);
+  await page.locator("#fantasypros-manual-dialog[open]").waitFor();
+  await page.locator("#manual-profile-url").fill("https://www.fantasypros.com/nfl/players/manual-qb.php");
+  await page.getByRole("button", { name: "Approve mapping" }).click();
+  await page.getByText("1 approved mapping", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Import approved players" }).click();
+  if (await page.locator("#fantasypros-manual-dialog").isVisible()) throw new Error("Manual FantasyPros import did not close after a valid explicit mapping.");
+  await page.getByText("FantasyPros manual CSV", { exact: true }).waitFor();
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
 

@@ -23,6 +23,10 @@ This writes `local-data/fantasypros-player-directory.csv`. It preserves FantasyP
 
 ## Free manual projection CSV staging
 
+The simplest path is available in **League Setup → Import FantasyPros exports**. Select the free QB, FLX, K, and DST CSVs together. For each player you want to activate, paste the player's canonical FantasyPros profile URL and explicitly choose the matching ESPN player. Roster players are listed first. The browser imports only approved pairs and keeps the projection source separate from the ESPN snapshot.
+
+The command-line review workflow below remains useful for bulk spreadsheet review.
+
 FantasyPros QB, FLX, K, and DST exports can be staged into one review file after the season, week, and scoring format are explicitly supplied:
 
 ```powershell
