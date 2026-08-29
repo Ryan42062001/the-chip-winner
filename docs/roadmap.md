@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 205 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 207 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -366,7 +366,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.49
+## Current execution plan — after v0.9.50
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -408,6 +408,8 @@ Acceptance criteria:
 - Equal-time projection conflicts and ambiguous IDs fail visibly without data loss.
 
 ### P1 — Complete real projection coverage
+
+Status: **Partially implemented in v0.9.50.** Season Plan now renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon. Each cell distinguishes ready, missing explicit identity mapping, and missing player-week projection states; ready cells retain the provider-owned ID, value, and record capture time. User-supplied weekly exports and explicit identity approvals are still required to complete real coverage.
 
 1. Import each available free FantasyPros weekly CSV.
 2. Approve provider-to-ESPN identities explicitly; never auto-join by display name.

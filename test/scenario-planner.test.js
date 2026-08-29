@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildProjectionGapReport, buildScenarioPlan } from "../src/domain/scenario-planner.js";
+import { buildProjectionCoverageMatrix, buildProjectionGapReport, buildScenarioPlan } from "../src/domain/scenario-planner.js";
 import sampleSnapshot from "../src/data/sample-espn-snapshot.json" with { type: "json" };
 
 test("scenario planner reports missing future inputs honestly", () => {
@@ -20,6 +20,20 @@ test("scenario planner reports zero coverage when no projection source is import
   const result = buildScenarioPlan(sampleSnapshot, sampleSnapshot.teams[0].id, { weeks: [15, 16] });
   assert.equal(result.source, null);
   assert.deepEqual(result.coverage, { readiness: "unavailable", completeWeeks: 0, totalWeeks: 0, readyWeeks: [], blockedWeeks: [], mappedProjectionCells: 0, requiredProjectionCells: 0, unmappedPlayerCells: 0, missingProjectionCells: 0, percentage: 0 });
+});
+
+test("projection coverage matrix separates roster and ESPN-available candidates", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const candidate = sampleSnapshot.players.find((player) => sampleSnapshot.availablePlayers.includes(player.id));
+  const identityMap = new Map([...roster.entries.map((entry) => [`p-${entry.playerId}`, entry.playerId]), [`p-${candidate.id}`, candidate.id]]);
+  const projectionSet = { projections: [...roster.entries.map((entry) => ({ providerPlayerId: `p-${entry.playerId}`, week: 15, points: 10, capturedAt: "2026-08-29T00:00:00Z" })), { providerPlayerId: `p-${candidate.id}`, week: 15, points: 12, capturedAt: "2026-08-29T01:00:00Z" }] };
+  const matrix = buildProjectionCoverageMatrix(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet, candidatePlayerIds: [candidate.id] });
+  assert.equal(matrix.status, "complete"); assert.equal(matrix.rows.length, roster.entries.length + 1); assert.equal(matrix.rows.at(-1).scope, "candidate"); assert.equal(matrix.rows.at(-1).cells[0].points, 12); assert.equal(matrix.rows.at(-1).cells[0].capturedAt, "2026-08-29T01:00:00Z");
+});
+
+test("projection coverage matrix reports exact mapping and player-week gaps without name joins", () => {
+  const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId); const mappedId = roster.entries[0].playerId;
+  const matrix = buildProjectionCoverageMatrix(sampleSnapshot, teamId, { weeks: [15, 16], identityMap: new Map([["provider-owned-id", mappedId]]), projectionSet: { projections: [{ providerPlayerId: "provider-owned-id", week: 15, points: 9, capturedAt: "2026-08-29T00:00:00Z" }] } });
+  assert.equal(matrix.status, "gaps"); assert.deepEqual(matrix.rows[0].cells.map((cell) => cell.status), ["ready", "missing-week"]); assert.equal(matrix.rows[1].cells[0].status, "missing-mapping"); assert.equal(matrix.rows[0].providerPlayerId, "provider-owned-id");
 });
 
 test("scenario planner calculates a weekly baseline from explicitly mapped projections", () => {
