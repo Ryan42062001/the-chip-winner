@@ -89,7 +89,7 @@ const records = [...rosterGaps, ...candidateGaps].map((record) => {
 const player = players.get(record.playerId);
 return Object.freeze({ week: record.week, scope: record.scope, espnPlayerId: record.playerId, playerName: player?.name || null, proTeam: player?.proTeam || null, position: player?.position || null, gapType: record.gapType, providerPlayerId: record.providerPlayerId });
 });
-return Object.freeze({ status: records.length ? "gaps" : "complete", records: Object.freeze(records), limitation: records.length ? "Roster gaps precede top ESPN-available candidate gaps. Names are review-only; joins require explicit IDs." : null });
+return Object.freeze({ status: records.length ? "gaps" : "complete", records: Object.freeze(records), limitation: records.length ? "Roster gaps precede top ESPN-available candidate gaps. Names are for human review only; joins require explicit IDs." : null });
 }
 export function buildProjectionCoverageMatrix(snapshot, teamId, { weeks = [], projectionSet = null, identityMap = null, candidatePlayerIds = [] } = {}) {
 const roster = snapshot?.rosters?.find((item) => item.teamId === teamId); if (!roster) return Object.freeze({ status: "missing-roster", rows: Object.freeze([]), weeks: Object.freeze([]) });
