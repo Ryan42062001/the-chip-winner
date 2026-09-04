@@ -23,10 +23,10 @@
     "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
     "axe-core": "^4.13.0",
-    "playwright-core": "^1.55.0"
+    "playwright-core": "^1.62.1"
   }
 }
