@@ -38,6 +38,17 @@ const match = url.pathname.match(/^\/nfl\/(?:players|projections)\/([a-z0-9-]+)\
 if (!match) throw new Error("Use a FantasyPros NFL player or projection profile URL ending in the player's .php slug.");
 return `fantasypros:${match[1].toLowerCase()}`;
 }
+export function fantasyProsProfileUrlFromProviderId(providerPlayerId) {
+const match = String(providerPlayerId || "").trim().match(/^fantasypros:([a-z0-9-]+)$/i);
+return match ? `https://www.fantasypros.com/nfl/players/${match[1].toLowerCase()}.php` : null;
+}
+export function fantasyProsProfileUrlForEspnPlayer(identityMap, espnPlayerId) {
+if (!(identityMap instanceof Map) || !String(espnPlayerId || "").trim()) return null;
+const matches = [...identityMap].filter(([providerPlayerId, mappedEspnId]) =>
+String(mappedEspnId) === String(espnPlayerId) && fantasyProsProfileUrlFromProviderId(providerPlayerId)
+);
+return matches.length === 1 ? fantasyProsProfileUrlFromProviderId(matches[0][0]) : null;
+}
 export function buildApprovedManualImports({ records, approvals, season, week, scoringFormat, capturedAt }) {
 if (!Number.isInteger(season) || season < 2000 || season > 2100) throw new Error("Enter a valid four-digit season.");
 if (!Number.isInteger(week) || week < 1 || week > 18) throw new Error("Enter a valid NFL week.");
