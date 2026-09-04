@@ -9,20 +9,22 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, and docs/architecture.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: master; v0.9.54; feature commit e809244b87c9ee77283d15e71441cb7eb285e2c3 (“Show ESPN pool replacement value”); public site https://ryan42062001.github.io/the-chip-winner/; 212 automated tests and 21 model-safety fixtures passed at this checkpoint.
+Checkpoint: master; v0.9.55 release candidate based on bb0f42e1b175a06720d2246675a8a0bb1ac91675; public site https://ryan42062001.github.io/the-chip-winner/; 212 automated tests and 21 model-safety fixtures passed before the release-marker bump.
 
 Completed foundation to preserve:
 - The browser entry-point split and atomic/inspectable multiweek imports are complete.
 - The app has a single application state owner and focused projection-import/event/rendering modules.
 - FantasyPros weekly projection infrastructure, explicit provider-to-ESPN identity mapping, coverage diagnostics, Season Plan scenarios, and selected-horizon completeness gates are implemented.
+- Candidate-aware future coverage now checks the top current ESPN waiver adds across the selected horizon and distinguishes missing identity mappings from missing player-week projections.
 - The lineup optimizer, roster-aware waiver simulation, acquisition/roster/position-limit enforcement, snapshot differencing, alerts, multiple local ESPN connections, encrypted mobile sync, accessibility automation, security scanning, and production smoke checks are implemented.
 - Current-week waiver candidates show a separate ESPN-pool replacement benchmark; do not collapse replacement value into legal-lineup gain.
 
 Primary execution sequence:
 1. Complete real projection coverage when the required user-supplied FantasyPros weekly exports and explicit identity approvals are available. Never fabricate provider data, scrape unsupported pages, or auto-join by display name.
-2. If required private/local projection files are not present, move to the next code-only Waiver Engine v2 item: make recommendations refresh-aware so an add/drop recommendation derived from an older ESPN snapshot is visibly obsolete when availability or relevant source state changes.
-3. Model IR transitions only if the connected ESPN payload supplies authoritative eligibility/rule inputs. Otherwise preserve an explicit limitation instead of inferring eligibility.
-4. Add multiweek waiver impact only after both baseline and simulated rosters have complete mapped player-week projection coverage for every included week.
+2. Before adding more projection UI, reclaim browser JavaScript headroom: the v0.9.55 candidate-aware coverage build measured 219.9 KiB against the 220 KiB release budget.
+3. If required private/local projection files are not present, move to the next code-only Waiver Engine v2 item: make recommendations refresh-aware so an add/drop recommendation derived from an older ESPN snapshot is visibly obsolete when availability or relevant source state changes.
+4. Model IR transitions only if the connected ESPN payload supplies authoritative eligibility/rule inputs. Otherwise preserve an explicit limitation instead of inferring eligibility.
+5. Add multiweek waiver impact only after both baseline and simulated rosters have complete mapped player-week projection coverage for every included week.
 
 Requirements:
 - Keep ESPN authoritative for league state, roster rules, availability, locks, and acquisition state.
