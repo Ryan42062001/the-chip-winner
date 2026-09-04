@@ -1,6 +1,6 @@
 # The Chip Winner
 
-An ESPN-only, in-season fantasy football companion. This MVP presents roster, matchup, lineup, waiver, injury, and bye-week information from a normalized ESPN snapshot. It deliberately distinguishes imported/source data from locally derived suggestions.
+A read-only, in-season fantasy football decision companion built around a normalized ESPN league snapshot. It connects roster, matchup, lineup, waiver, acquisition, schedule, and availability data with deterministic recommendations while keeping ESPN source facts separate from external rankings/projections and locally derived analysis.
 
 ## Live website
 
@@ -17,11 +17,13 @@ npm run dev
 
 Open `http://localhost:4173`. The app initially uses realistic sample data. Choose **Import ESPN snapshot** to load a compatible JSON file; validated imports are cached only in the current browser.
 
-Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The import dialog requires you to record the export's season, scoring format, and expert filter; the app does not infer them from the filename. Players are reconciled using name plus NFL team plus position, and unresolved or conflicting identities are reported. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
+Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The import dialog requires you to record the export's season, scoring format, and expert filter; the app does not infer them from the filename. Players are reconciled using name plus NFL team plus position because the consumer ROS export does not supply provider IDs; unresolved or conflicting identities are reported. Rankings stay in browser-local storage and never overwrite ESPN weekly projections.
+
+Weekly FantasyPros projection imports use a stricter provider-ID boundary. See [FantasyPros weekly projection acquisition](docs/fantasypros-api.md).
 
 ## Connect an ESPN league
 
-League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. You may paste the full ESPN team URL into the first field; the app extracts and stores only its numeric connection IDs. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
+League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. Multiple league/season/team profiles can be saved locally. You may paste the full ESPN team URL into the first field; the app extracts and stores only its numeric connection IDs. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
 
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode**.
@@ -45,30 +47,24 @@ Production releases and safe rollback are documented in [`docs/deployment.md`](d
 
 ## Current capabilities
 
-- Responsive weekly roster dashboard with starters, bench, matchup, and projections
-- Team switching for snapshots with multiple teams
-- Projection-based, position-eligible lineup comparisons
-- Complete supported-slot lineup search with explicit ESPN and reported-kickoff lock handling
-- Honest “best known” labeling whenever any roster projection is missing
-- Interactive start/sit comparisons with near-tie and missing-data handling
-- Roster-aware waiver add/drop simulations based on explicit ESPN availability and full legal-lineup impact
-- Live free-agent versus waiver status and non-conflicting drop suggestions
-- Injury and current-week bye flags
-- Validated JSON import and browser-local snapshot cache
-- One-click return from an imported snapshot to bundled sample data
-- Snapshot freshness and field-coverage indicators
-- Honest missing states when projections, opponents, availability, or other fields are absent
-- Reducer-based application state and reusable domain selectors
-- Independent projection-provider contract for future non-ESPN projections
-- Connected ESPN scoring, lineup-slot, and waiver settings
-- Local FantasyPros ROS PPR CSV import and caching
-- Strict ESPN/FantasyPros player reconciliation with visible coverage
-- Separate weekly-projection and rest-of-season waiver comparisons
-- FantasyPros overall/positional rank and playoff schedule strength in player details
+- Responsive weekly roster dashboard with starters, bench, matchup, projections, freshness, and coverage
+- Multiple browser-local ESPN league/season/team connection profiles with companion health and refresh cooldowns
+- Complete supported-slot lineup optimization with duplicate prevention, ESPN/reported-kickoff locks, and explicit missing-data limitations
+- Interactive start/sit comparisons with source-separated external weekly projection detail when explicitly mapped
+- Roster-aware waiver add/drop simulations based on ESPN availability and full legal-lineup impact
+- ESPN-reported acquisition limits, roster size, and provider-position limits enforced without inferring absent rules
+- Current-week ESPN-pool replacement benchmark kept separate from legal-lineup gain
+- FantasyPros ROS PPR CSV import with visible reconciliation coverage and separate ROS waiver comparisons
+- Strict provider-ID weekly projection imports, explicit FantasyPros-to-ESPN identity approvals, atomic multiweek merges, capture provenance, and coverage repair reports
+- Season Plan depth, bye-collision, fantasy-opponent schedule coverage, explicit playoff-week configuration, optimized future lineups, and isolated hold/add/drop scenarios
+- Multiweek scenario totals withheld unless every included week has complete mapped coverage for both baseline and simulated rosters
+- Snapshot differencing, a team-specific **What Changed** timeline, recommendation-change explanations, and persistent prioritized alerts
+- Validated JSON import, versioned browser-cache migrations, complete local-data deletion, and recovery-safe last-valid-snapshot behavior
 - End-to-end encrypted mobile sync through a deployed Cloudflare Worker and KV storage
-- Local snapshot differencing and a team-specific What Changed timeline
+- Provider-neutral recommendation/model contracts with deterministic offline evaluation and privacy-safe aggregate issue reporting
+- Automated GitHub Pages release gates covering tests, model safety, dependency audit, secret scanning, companion least privilege, browser smoke, accessibility, performance, and production verification
 
-This version reads a locally configured private ESPN league through the Chrome companion but does **not** mutate an ESPN lineup. All bundled player data is fictionalized development context using recognizable names; projections and statuses are explicitly marked as sample data and must not be treated as current facts.
+This version reads a locally configured private ESPN league through the Chrome companion but does **not** mutate an ESPN lineup or submit transactions. Bundled development data is sample context and must not be treated as current fantasy-football facts.
 
 ## Import format
 
@@ -78,28 +74,30 @@ See [`docs/snapshot-schema.md`](docs/snapshot-schema.md) and [`src/data/sample-e
 
 ```text
 src/
-  app.js                         UI composition and browser state
-  application/                   State transitions and store
+  app.js                         Browser composition and top-level coordination
+  application/                   State transitions and the single application store
   styles.css                     Responsive visual system
   data/                          Local development snapshots
-  domain/                        Platform-neutral model and recommendations
-  providers/espn/                ESPN snapshot ingestion and caching
-  providers/projections/         Projection source contract and overlay
-  providers/rankings/            FantasyPros CSV parsing, cache, reconciliation
+  domain/                        Platform-neutral model, optimization, scenarios, and recommendations
+  providers/espn/                ESPN acquisition, connection state, normalization, and caching
+  providers/projections/         Weekly/multiweek projection contracts, imports, catalogs, and identity maps
+  providers/rankings/            FantasyPros ROS CSV parsing, cache, and reconciliation
+  ui/                            View rendering and focused interface helpers
 extensions/espn-companion/       Read-only Chrome bridge for private ESPN leagues
-schema/                           Machine-readable snapshot contract
-scripts/dev-server.js            Dependency-free local server
-test/                            Node unit tests
-docs/                            Architecture and data-contract notes
+worker/                          Encrypted mobile-sync transport
+schema/                          Machine-readable external contracts
+scripts/                         Development, acquisition, evaluation, audit, and smoke tooling
+test/                            Node regression, browser-boundary, and domain tests
+docs/                            Architecture, security, data-source, deployment, and roadmap notes
 ```
 
 See [`docs/architecture.md`](docs/architecture.md) for boundaries and extension guidance.
 
-See the [`product roadmap`](docs/roadmap.md) for planned releases, acceptance criteria, and the immediate next sprint.
+See the [`product roadmap`](docs/roadmap.md) for the authoritative current execution plan, completion status, and immediate dependency order.
 
-See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the post-foundation release sequence from player intelligence through optional confirmed ESPN actions.
+See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the longer release sequence from player intelligence through optional confirmed ESPN actions.
 
-See [`AI readiness`](docs/ai-readiness.md) for model context boundaries, recommendation guardrails, and the evaluation roadmap.
+See [`AI readiness`](docs/ai-readiness.md) for model context boundaries, recommendation guardrails, and deterministic evaluation.
 
 See [`Security model`](docs/security.md) for browser trust boundaries, Content Security Policy, mobile-sync behavior, and local-data deletion.
 
@@ -109,14 +107,20 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Data safety and provenance
 
-- ESPN imports and cached snapshots remain in browser `localStorage`. Mobile sync is optional and uploads only an AES-256-GCM encrypted envelope with a 30-day expiry.
+- ESPN imports and cached snapshots remain in browser `localStorage`. Mobile sync is optional and uploads only an AES-256-GCM encrypted envelope with a bounded expiry.
 - The app never writes to ESPN and contains no ESPN credentials.
 - A projection value of `0` is distinct from a missing value of `null`.
 - Derived suggestions are calculated at runtime and never written back into source snapshots.
-- Imported files are rejected when identities, lineup slots, references, or numeric values violate the v1 contract.
+- Imported files are rejected when identities, lineup slots, references, source metadata, or numeric values violate their contracts.
+- Projection-driven multiweek claims are withheld when explicit identity or player-week coverage is incomplete.
 
-## Foundation roadmap
+## Current focus
 
-The read-only ESPN connection, full known-projection lineup assignment, FantasyPros ROS rankings, encrypted mobile sync, snapshot-change timeline, roster-aware waivers, and Season Plan depth/bye analysis are in place. Next priorities are multiweek scenario planning and deeper schedule intelligence. See the advanced roadmap for the dependency order and acceptance criteria.
+The read-only foundation is substantially implemented. The active work is to finish it rather than start a new product layer:
 
-Weekly FantasyPros API projections can be downloaded locally without exposing the API key to the browser or repository. See [FantasyPros weekly projection acquisition](docs/fantasypros-api.md).
+1. Complete real multiweek FantasyPros projection coverage and explicit provider-to-ESPN mappings.
+2. Finish Waiver Engine v2 refresh-obsolete state and authoritative IR handling, then add multiweek waiver impact after projection coverage gates pass.
+3. Add position-specific schedule difficulty only after approving and documenting a trustworthy source and methodology.
+4. Complete manual accessibility, companion security, recovery/deletion, and materially different live-league validation for the v1.0 read-only release gate.
+
+Trade analysis, notifications, server-side model integrations, and ESPN write actions remain later gated work. See [`docs/roadmap.md`](docs/roadmap.md) for the authoritative execution status.

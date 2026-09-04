@@ -1,53 +1,62 @@
 # Advanced-model readiness
 
-The Chip Winner is designed so an advanced model can explain and rank decisions without becoming the source of truth. ESPN remains the league-state provider; projection and ranking providers remain replaceable; recommendations are derived locally.
+The Chip Winner is designed so an advanced model can explain and rank decisions without becoming the source of truth. ESPN remains the league-state provider; projection and ranking providers remain replaceable; recommendations are derived and validated locally.
 
 ## Guardrails
 
-- Models receive normalized snapshots and derived recommendation envelopes, never ESPN cookies or raw private-session credentials.
+- Models receive normalized, privacy-scoped context and derived recommendation envelopes, never ESPN cookies or raw private-session credentials.
 - Every recommendation must name its inputs, capture time, confidence, and limitations.
-- `null` means unavailable. A model must not fill missing rankings, projections, injuries, player identities, or availability.
+- `null` means unavailable. A model must not fill missing rankings, projections, injuries, player identities, availability, or league rules.
 - Model output is advisory and read-only. No lineup, waiver, trade, or league mutation is authorized by the interface.
-- Recommendations are evaluated against legal lineup rules before display.
+- Deterministic legality and recommendation evaluation remain authoritative even if a future network model produces an explanation.
 
 ## Context packet contract
 
-An eventual model adapter should receive: the selected team and week, normalized league settings, roster entries, opponent, source coverage, imported ranking metadata, and the recommendation envelopes relevant to the current view. It should not receive unrelated browser storage or credentials.
+The app can export a versioned model context packet for the selected team. It includes the approved normalized team/week context, source coverage, and recommendation envelopes relevant to the decision while excluding browser credentials, unrelated teams' rosters, raw private-session state, and recommendations that fail offline evaluation.
 
-## Evaluation roadmap
+A provider-neutral model adapter defines the explanation boundary. Its deterministic fallback can produce traceable summaries without network access, while unconfigured network providers fail explicitly. Any future external provider must stay downstream of the same deterministic gate and requires explicit approval for provider choice, privacy, cost, secret storage, and data handling.
 
-1. Add deterministic fixtures for missing data, locked players, bye conflicts, ambiguous identities, and incomplete lineups.
-2. Validate recommendation envelopes against `schema/recommendation.schema.json`.
-3. Measure constraint adherence (no invented facts, legal slots, locked-player protection) before measuring helpfulness.
-4. Add explanation regression tests that require source fields and explicit uncertainty.
-5. Introduce a model adapter only after offline evaluation passes; keep the deterministic engine as the final gate.
+## Implemented evaluation baseline
 
-The offline batch evaluator rejects malformed recommendation envelopes, invented player IDs, waiver/scenario adds that ESPN does not explicitly report as available, selected-team starter/IR/locked drops, opponent-roster drops, stale capture timestamps, and review output without named inputs.
+The repository already has the deterministic model-safety foundation that earlier plans treated as future work:
 
-The app can export a versioned, privacy-safe model context packet for the selected team. The packet excludes browser credentials, unrelated teams' rosters, raw availability pools, and any recommendation that fails offline evaluation.
+- recommendation envelopes are validated against the runtime contract corresponding to `schema/recommendation.schema.json`;
+- fixtures cover missing data, locks, lineup/waiver legality, identity and availability failures, acquisition limits, and scenario boundaries;
+- recommendation evaluation rejects invented player IDs, unavailable waiver/scenario adds, illegal selected-team drops, opponent-roster drops, stale capture timestamps, and output without named inputs;
+- explanation regression fixtures require the correct recommendation ID, provider attribution, named source inputs, every stated limitation, strict metadata, bounded text, and valid response shape;
+- per-recommendation failures are isolated rather than aborting unrelated explanations;
+- stable machine-readable issue codes feed a versioned aggregate evaluation report with recommendation/explanation counts and runtime consistency checks;
+- aggregate observability contains counts and issue codes, not recommendation IDs, player IDs, prompts, explanation text, or league details.
 
-A provider-neutral model adapter now defines the explanation boundary. Its deterministic fallback produces traceable summaries without network access, while unconfigured model providers fail explicitly.
+`npm run eval:model` exercises the current versioned recommendation and adversarial explanation fixtures, and the GitHub Pages release workflow requires the model-safety gate to pass.
 
-`npm run eval:model` executes fourteen versioned recommendation fixtures and seven adversarial explanation fixtures, and the deployment workflow requires all of them to pass. Runtime recommendation validation mirrors the JSON Schema boundary, including timestamp, payload, and additional-field checks. A drop proposal is blocked when selected-team context is absent because bench and lock legality cannot be verified. Waiver and scenario adds are blocked when ESPN proves the selected team's weekly or season acquisition limit is exhausted. Explanation output is separately evaluated for the correct recommendation ID, provider attribution, named source inputs, every stated limitation, strict metadata, unexpected fields, and invalid response shapes. Per-recommendation failures are returned without exposing credentials or aborting unrelated explanations.
+`schema/model-explanation.schema.json` strictly limits provider explanation fields and output length. Runtime evaluation rejects unexpected fields, malformed provider metadata, invalid timestamps, and text beyond the approved boundary before an explanation can be accepted.
 
-The evaluator also emits stable machine-readable issue codes and a versioned aggregate run report defined by `schema/model-evaluation-report.schema.json`. Report version 2 separates recommendation-gate issues from explanation/adapter issues while retaining combined totals. Runtime validation enforces count consistency and rejects unexpected telemetry fields. The report contains only accepted/rejected totals and issue-code counts—never recommendation IDs, player IDs, explanation text, prompts, or league details. This provides an observability boundary without turning private model inputs into logs.
+`schema/model-evaluation-report.schema.json` defines the privacy-safe aggregate run report. Runtime validation enforces count consistency and rejects unexpected telemetry fields.
 
-`schema/model-explanation.schema.json` defines the provider-neutral explanation response. Runtime evaluation rejects unexpected fields, malformed provider metadata, invalid timestamps, and text beyond the 4,000-character boundary before an explanation can be accepted. This prevents raw prompts, hidden metadata, or unbounded provider output from passing through the approved explanation shape.
+## Current model priorities
 
-## Open model capabilities
+Model work is not the primary product bottleneck. Before adding a network-backed model, continue to strengthen deterministic safety only when product changes create new recommendation shapes or failure modes.
 
-Future work may summarize decisions, compare scenarios, and answer natural-language roster questions. It must remain downstream of the deterministic engine and must not replace provider normalization or legality checks.
+Current model-related work should therefore be limited to:
+
+1. Add or update safety fixtures when lineup, waiver, scenario, schedule, or trade-domain behavior changes.
+2. Keep explanation evaluation synchronized with recommendation contracts and new limitation fields.
+3. Preserve privacy-safe observability and avoid logging raw model context or private league data.
+4. Delay server-side or external model integration until the provider, privacy, cost, secret-storage, and evaluator gates in the roadmap are explicitly approved.
+
+A model must never replace provider normalization, identity reconciliation, projection-coverage gates, or roster legality checks.
 
 ## Future projection input
 
 `schema/future-projection-set.schema.json` defines the provider-neutral weekly projection format. Imports require provider-owned player IDs and explicit week-level values; display-name matching is intentionally excluded from this boundary.
 
-The scenario engine can now calculate an optimized weekly baseline when both a validated projection set and an explicit provider-to-ESPN identity map are supplied. Partial identity coverage produces missing projections rather than automatic name matches.
+The scenario engine can calculate an optimized weekly baseline when both a validated projection set and an explicit provider-to-ESPN identity map are supplied. Partial identity or player-week coverage produces missing projections rather than automatic matches or invented values.
 
-Read-only add/drop scenarios can be evaluated against that baseline across selected weeks. Every scenario uses an isolated roster copy and reruns legal lineup assignment; the ESPN snapshot remains unchanged.
+Read-only add/drop scenarios are evaluated against isolated roster copies and rerun legal lineup assignment; the ESPN snapshot remains unchanged. Selected-horizon totals and deltas are withheld unless both baseline and simulated rosters have complete mapped coverage for every included week.
 
-Weekly projections can be imported from a strict CSV with `provider`, `scoring_format`, `season`, `captured_at`, `provider_player_id`, `week`, and `points` columns. Source metadata must be explicit and identical on every row; the app never substitutes import time for source capture time. Validated imports may be cached locally, while duplicate player-week rows and inconsistent metadata are rejected.
+Weekly projections can be imported from strict provider data containing explicit provider, scoring, season, week, provider player ID, points, and capture metadata. Source metadata must be compatible and explicit; the app never substitutes import time for provider capture time.
 
-The local FantasyPros API downloader reads its key only from `FANTASYPROS_API_KEY`, requests each supported lineup position, and emits an app-ready CSV plus a separate identity-reference CSV under ignored `local-data/`. Missing provider IDs or scoring-specific point values are excluded, conflicting values fail the download, and no display name becomes an automatic identity join. The API response's HTTP date records retrieval/capture time; it is not described as FantasyPros' calculation time.
+The local FantasyPros API downloader reads its key only from `FANTASYPROS_API_KEY`, requests supported lineup positions, and emits app-ready projection data plus a separate identity reference under ignored `local-data/`. Missing provider IDs or scoring-specific point values are excluded, conflicting values fail the download, and display names never become an automatic projection identity join.
 
-For free accounts without live projection API access, a separate manual-CSV staging boundary combines QB, FLX, K, and DST exports only after season, week, and scoring metadata are supplied. It preserves source rows and fantasy points while leaving both FantasyPros and ESPN IDs blank for explicit review. Blank `FPTS` values remain missing and never become zero.
+For users without live projection API access, the manual FantasyPros workflow combines user-supplied QB, FLX, K, and DST exports only after season, week, and scoring metadata are supplied. It preserves source values while requiring explicit provider-to-ESPN identity approval before records can influence scenarios. Blank fantasy-point values remain missing and never become zero.
