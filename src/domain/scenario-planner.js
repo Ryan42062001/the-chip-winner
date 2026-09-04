@@ -6,17 +6,8 @@ import { indexFutureProjections } from "../providers/projections/future-projecti
 function projectionCoverage(playerIds, week, espnToProvider, projectionIndex) {
 const unmappedPlayerIds = playerIds.filter((id) => !espnToProvider.has(id));
 const missingProjectionPlayerIds = playerIds.filter((id) => espnToProvider.has(id) && !projectionIndex.has(`${espnToProvider.get(id)}:${week}`));
-return Object.freeze({
-mappedProjectionCount: playerIds.length - unmappedPlayerIds.length - missingProjectionPlayerIds.length,
-completeCoverage: !unmappedPlayerIds.length && !missingProjectionPlayerIds.length,
-unmappedPlayerIds: Object.freeze(unmappedPlayerIds),
-missingProjectionPlayerIds: Object.freeze(missingProjectionPlayerIds)
-});
+return Object.freeze({ mappedProjectionCount: playerIds.length - unmappedPlayerIds.length - missingProjectionPlayerIds.length, completeCoverage: !unmappedPlayerIds.length && !missingProjectionPlayerIds.length, unmappedPlayerIds: Object.freeze(unmappedPlayerIds), missingProjectionPlayerIds: Object.freeze(missingProjectionPlayerIds) });
 }
-/**
-* Build a read-only scenario planning result from explicitly supplied future inputs.
-* ESPN league state is never mutated and missing projections remain unavailable.
-*/
 export function buildScenarioPlan(snapshot, teamId, options = {}) {
 const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
 const weeks = Array.isArray(options.weeks) ? options.weeks.filter(Number.isInteger) : [];
@@ -27,10 +18,7 @@ const recommendation = createRecommendation({ id: `waiver-${teamId}-${index}`, k
 const validation = validateRecommendation(recommendation);
 return validation.valid ? Object.freeze(recommendation) : null;
 }).filter(Boolean);
-const weeklyBaseline = [];
-const scenarioResults = [];
-const rejectedScenarios = [];
-const candidateProjectionCoverage = [];
+const weeklyBaseline = [], scenarioResults = [], rejectedScenarios = [], candidateCoverage = [];
 if (options.projectionSet && options.identityMap instanceof Map) {
 const projectionIndex = indexFutureProjections(options.projectionSet);
 const espnToProvider = new Map([...options.identityMap].map(([providerId, espnId]) => [espnId, providerId]));
@@ -44,13 +32,13 @@ weeklyBaseline.push(Object.freeze({ week, status: result.status, projectedTotal:
 }
 const candidatePlayerIds = [...new Set(currentWeekScenarios.slice(0, 3).map((item) => item.payload?.add?.id).filter(Boolean))];
 for (const playerId of candidatePlayerIds) {
-const unmappedWeeks = []; const missingProjectionWeeks = [];
+const unmapped = [], missingWeeks = [];
 for (const week of weeks) {
-const weekCoverage = projectionCoverage([playerId], week, espnToProvider, projectionIndex);
-if (weekCoverage.unmappedPlayerIds.length) unmappedWeeks.push(week);
-else if (weekCoverage.missingProjectionPlayerIds.length) missingProjectionWeeks.push(week);
+const coverage = projectionCoverage([playerId], week, espnToProvider, projectionIndex);
+if (coverage.unmappedPlayerIds.length) unmapped.push(week);
+else if (coverage.missingProjectionPlayerIds.length) missingWeeks.push(week);
 }
-candidateProjectionCoverage.push(Object.freeze({ playerId, unmappedWeeks: Object.freeze(unmappedWeeks), missingProjectionWeeks: Object.freeze(missingProjectionWeeks) }));
+candidateCoverage.push(Object.freeze({ playerId, unmappedWeeks: Object.freeze(unmapped), missingProjectionWeeks: Object.freeze(missingWeeks) }));
 }
 for (const scenario of options.scenarios || []) {
 const dropEntry = roster.entries.find((entry) => entry.playerId === scenario.dropPlayerId);
@@ -89,25 +77,19 @@ const readiness = !weeklyBaseline.length ? "unavailable" : blockedWeeks.length =
 const baselineHorizonTotal = weeklyBaseline.length === weeks.length && weeklyBaseline.every((item) => item.completeCoverage && item.projectedTotal != null) ? +weeklyBaseline.reduce((sum, item) => sum + item.projectedTotal, 0).toFixed(1) : null;
 const coverage = Object.freeze({ readiness, completeWeeks: readyWeeks.length, totalWeeks: weeklyBaseline.length, readyWeeks: Object.freeze(readyWeeks), blockedWeeks: Object.freeze(blockedWeeks), mappedProjectionCells, requiredProjectionCells, unmappedPlayerCells, missingProjectionCells, percentage: requiredProjectionCells ? Math.round((mappedProjectionCells / requiredProjectionCells) * 100) : 0 });
 const source = options.projectionSet ? Object.freeze({ provider: options.projectionSet.provider || null, scoringFormat: options.projectionSet.scoringFormat || null, capturedAt: options.projectionSet.capturedAt || null, projectionCount: options.projectionSet.projections?.length || 0, identityMappingCount: options.identityMap instanceof Map ? options.identityMap.size : 0 }) : null;
-return Object.freeze({ status, weeks: Object.freeze(weeks), source, coverage, baselineHorizonTotal, scenarios: Object.freeze(scenarioResults), rejectedScenarios: Object.freeze(rejectedScenarios), weeklyBaseline: Object.freeze(weeklyBaseline), candidateProjectionCoverage: Object.freeze(candidateProjectionCoverage), currentWeekScenarios: Object.freeze(currentWeekScenarios), limitations: Object.freeze(status === "ready" ? ["Weekly totals and starter coverage use only explicitly mapped provider projections.", "Horizon totals are withheld unless every selected week is complete.", "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.", "Only ESPN-available adds and unlocked bench drops are evaluated.", "This planner is read-only and does not modify ESPN league state."] : ["Future-week projections and an explicit identity map were not both supplied.", "Current-week scenarios remain available when ESPN availability and projections are present.", "No future fantasy points or scenario winner are inferred."]) });
+return Object.freeze({ status, weeks: Object.freeze(weeks), source, coverage, baselineHorizonTotal, scenarios: Object.freeze(scenarioResults), rejectedScenarios: Object.freeze(rejectedScenarios), weeklyBaseline: Object.freeze(weeklyBaseline), candidateProjectionCoverage: Object.freeze(candidateCoverage), currentWeekScenarios: Object.freeze(currentWeekScenarios), limitations: Object.freeze(status === "ready" ? ["Weekly totals and starter coverage use only explicitly mapped provider projections.", "Horizon totals are withheld unless every selected week is complete.", "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.", "Only ESPN-available adds and unlocked bench drops are evaluated.", "This planner is read-only and does not modify ESPN league state."] : ["Future-week projections and an explicit identity map were not both supplied.", "Current-week scenarios remain available when ESPN availability and projections are present.", "No future fantasy points or scenario winner are inferred."]) });
 }
 export function buildProjectionGapReport(snapshot, plan, identityMap) {
 if (!Array.isArray(plan?.weeklyBaseline) || !plan.weeklyBaseline.length) return Object.freeze({ status: "unavailable", records: Object.freeze([]), limitation: "No evaluated future weeks are available." });
 const players = new Map((snapshot?.players || []).map((player) => [player.id, player]));
 const espnToProvider = identityMap instanceof Map ? new Map([...identityMap].map(([providerId, espnId]) => [espnId, providerId])) : new Map();
-const rosterRecords = plan.weeklyBaseline.flatMap((week) => [
-...week.unmappedPlayerIds.map((playerId) => ({ week: week.week, playerId, scope: "roster", gapType: "missing-identity-map", providerPlayerId: null })),
-...week.missingProjectionPlayerIds.map((playerId) => ({ week: week.week, playerId, scope: "roster", gapType: "missing-week-projection", providerPlayerId: espnToProvider.get(playerId) || null }))
-]);
-const candidateRecords = (plan.candidateProjectionCoverage || []).flatMap((item) => [
-...item.unmappedWeeks.map((week) => ({ week, playerId: item.playerId, scope: "candidate", gapType: "candidate-missing-identity-map", providerPlayerId: null })),
-...item.missingProjectionWeeks.map((week) => ({ week, playerId: item.playerId, scope: "candidate", gapType: "candidate-missing-week-projection", providerPlayerId: espnToProvider.get(item.playerId) || null }))
-]);
-const records = [...rosterRecords, ...candidateRecords].map((record) => {
+const rosterGaps = plan.weeklyBaseline.flatMap((week) => [...week.unmappedPlayerIds.map((playerId) => ({ week: week.week, playerId, scope: "roster", gapType: "missing-identity-map", providerPlayerId: null })), ...week.missingProjectionPlayerIds.map((playerId) => ({ week: week.week, playerId, scope: "roster", gapType: "missing-week-projection", providerPlayerId: espnToProvider.get(playerId) || null }))]);
+const candidateGaps = (plan.candidateProjectionCoverage || []).flatMap((item) => [...item.unmappedWeeks.map((week) => ({ week, playerId: item.playerId, scope: "candidate", gapType: "candidate-missing-identity-map", providerPlayerId: null })), ...item.missingProjectionWeeks.map((week) => ({ week, playerId: item.playerId, scope: "candidate", gapType: "candidate-missing-week-projection", providerPlayerId: espnToProvider.get(item.playerId) || null }))]);
+const records = [...rosterGaps, ...candidateGaps].map((record) => {
 const player = players.get(record.playerId);
 return Object.freeze({ week: record.week, scope: record.scope, espnPlayerId: record.playerId, playerName: player?.name || null, proTeam: player?.proTeam || null, position: player?.position || null, gapType: record.gapType, providerPlayerId: record.providerPlayerId });
 });
-return Object.freeze({ status: records.length ? "gaps" : "complete", records: Object.freeze(records), limitation: records.length ? "Roster gaps are listed before top ESPN-available candidate gaps. Player names are included for human review only; provider joins still require explicit IDs." : null });
+return Object.freeze({ status: records.length ? "gaps" : "complete", records: Object.freeze(records), limitation: records.length ? "Roster gaps precede top ESPN-available candidate gaps. Names are review-only; joins require explicit IDs." : null });
 }
 export function buildProjectionCoverageMatrix(snapshot, teamId, { weeks = [], projectionSet = null, identityMap = null, candidatePlayerIds = [] } = {}) {
 const roster = snapshot?.rosters?.find((item) => item.teamId === teamId); if (!roster) return Object.freeze({ status: "missing-roster", rows: Object.freeze([]), weeks: Object.freeze([]) });
