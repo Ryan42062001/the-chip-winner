@@ -154,12 +154,10 @@ test("projection gap report separates mapping gaps from week-value gaps using ES
   assert.match(report.limitation, /human review only/);
 });
 
-test("projection gap report is empty only when every selected roster and top-candidate player-week is supplied", () => {
+test("projection gap report is empty only when every selected player-week is supplied", () => {
   const teamId = sampleSnapshot.teams[0].id; const roster = sampleSnapshot.rosters.find((item) => item.teamId === teamId);
-  const currentPlan = buildScenarioPlan(sampleSnapshot, teamId); const candidateIds = currentPlan.currentWeekScenarios.slice(0, 3).map((item) => item.payload.add.id);
-  const requiredIds = [...new Set([...roster.entries.map((entry) => entry.playerId), ...candidateIds])];
-  const identityMap = new Map(requiredIds.map((playerId) => [`provider-${playerId}`, playerId]));
-  const projectionSet = { projections: requiredIds.map((playerId) => ({ providerPlayerId: `provider-${playerId}`, week: 15, points: 10 })) };
+  const identityMap = new Map(roster.entries.map((entry) => [`provider-${entry.playerId}`, entry.playerId]));
+  const projectionSet = { projections: roster.entries.map((entry) => ({ providerPlayerId: `provider-${entry.playerId}`, week: 15, points: 10 })) };
   const plan = buildScenarioPlan(sampleSnapshot, teamId, { weeks: [15], identityMap, projectionSet });
   assert.deepEqual(buildProjectionGapReport(sampleSnapshot, plan, identityMap), { status: "complete", records: [], limitation: null });
   assert.equal(buildProjectionGapReport(sampleSnapshot, { weeklyBaseline: [] }, identityMap).status, "unavailable");

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.55" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.54" />
   </head>
   <body>
     <a class="skip-link" href="#app-content">Skip to main content</a>
@@ -90,7 +90,7 @@
       <div class="onboarding-actions"><button class="button primary" id="rankings-import-confirm" type="button">Import rankings</button><button class="button secondary" id="rankings-import-cancel" type="button">Cancel</button></div>
     </dialog>
     <dialog id="fantasypros-manual-dialog" class="onboarding-dialog manual-projection-dialog" aria-labelledby="fantasypros-manual-title" aria-describedby="fantasypros-manual-description">
-      <div class="onboarding-copy"><p class="eyebrow">FREE CSV IMPORT</p><h2 id="fantasypros-manual-title">Approve player mappings</h2><p id="fantasypros-manual-description">Choose a FantasyPros export row and matching ESPN player. Previously approved FantasyPros IDs may prefill the profile URL, but every row still requires explicit approval.</p></div>
+      <div class="onboarding-copy"><p class="eyebrow">FREE CSV IMPORT</p><h2 id="fantasypros-manual-title">Approve player mappings</h2><p id="fantasypros-manual-description">Choose a FantasyPros export row, paste that player's FantasyPros profile URL, and select the matching ESPN player. Nothing is matched automatically.</p></div>
       <div class="connection-form manual-metadata">
         <label>Season<input id="manual-projection-season" inputmode="numeric" autocomplete="off"></label>
         <label>Week<input id="manual-projection-week" inputmode="numeric" autocomplete="off"></label>
@@ -106,6 +106,6 @@
       <p class="onboarding-note">The CSV file's local modified time is stored as capture metadata. It does not claim when FantasyPros recalculated the projections.</p>
       <div class="onboarding-actions"><button class="button primary" id="manual-import-confirm" type="button">Import approved players</button><button class="button secondary" id="manual-import-cancel" type="button">Cancel</button></div>
     </dialog>
-    <script type="module" src="src/app-bootstrap.js?v=0.9.55"></script>
+    <script type="module" src="src/app.js?v=0.9.54"></script>
   </body>
 </html>

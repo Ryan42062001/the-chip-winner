@@ -24,7 +24,7 @@ const measurements = {
   "src/styles.css": statSync("src/styles.css").size,
   "src/app.js": statSync("src/app.js").size,
   "src/data/sample-espn-snapshot.json": statSync("src/data/sample-espn-snapshot.json").size,
-  "browser JavaScript graph": browserGraph("src/app-bootstrap.js").reduce((total, path) => total + statSync(path).size, 0),
+  "browser JavaScript graph": browserGraph("src/app.js").reduce((total, path) => total + statSync(path).size, 0),
 };
 
 const failures = [];
