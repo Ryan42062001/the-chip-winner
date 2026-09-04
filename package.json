@@ -27,6 +27,6 @@
   },
   "devDependencies": {
     "axe-core": "^4.10.3",
-    "playwright-core": "^1.55.0"
+    "playwright-core": "^1.62.1"
   }
 }
