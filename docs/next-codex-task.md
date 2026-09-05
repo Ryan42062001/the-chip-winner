@@ -9,7 +9,7 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, and docs/architecture.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: master; v0.9.55; dependency-cleanup commit 9d4ca38560ee977398b63022be6081f8a46b7538 (“Update Playwright and Node baseline”); public site https://ryan42062001.github.io/the-chip-winner/; 212 automated tests and 21 model-safety fixtures pass at this checkpoint. The production workflow also passes deployment and production smoke verification.
+Checkpoint: master; application release v0.9.55 after the dependency and performance-policy cleanup. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified baseline has 212 automated tests and 21 model-safety fixtures, and the GitHub Pages workflow passes deployment and production smoke verification.
 
 Current tooling baseline:
 - Node.js >=20.
