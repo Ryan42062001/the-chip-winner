@@ -7,9 +7,9 @@ Copy the block below into a new Codex task.
 ```text
 Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documents\ChatGPT\The Chip Winner.
 
-Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, docs/ir-eligibility.md, and docs/season-playoff-intelligence.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
+Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, docs/ir-eligibility.md, docs/season-playoff-intelligence.md, docs/production-readiness.md, docs/field-validation.md, and config/field-validation.json. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: expected protected master after the v0.9.70 Season/Playoff Intelligence release. Do not trust a SHA copied into this handoff; fetch origin/master and verify the actual tip before editing. The expected release baseline is 313 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass test, deploy, and production smoke verification.
+Checkpoint: expected protected master after the v0.9.72 Roadmap + Field Validation release. Do not trust a SHA copied into this handoff; fetch origin/master and verify the actual tip before editing. The expected release baseline is 322 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass test, deploy, and production smoke verification.
 
 Core product boundary:
 - ESPN-only, read-only in-season fantasy football companion.
@@ -65,25 +65,32 @@ Season/Playoff Intelligence is complete for the reviewed deterministic scope in 
 - Playoff weekly outlook uses only compatible explicitly mapped future weekly projections.
 - Playoff total, average, high/low week, stable starters, and starter turnover are withheld unless every configured playoff week has complete baseline-roster coverage.
 - FantasyPros `SOS SEASON` / `SOS PLAYOFFS` are optional values from the user's imported ROS CSV only. Do not scrape or silently refresh FantasyPros SOS.
-- FantasyPros publicly describes its 2026 fantasy SOS as position-specific Fantasy Points Allowed adjusted for strength of schedule. The Chip Winner does not recompute that methodology.
 - The imported CSV does not prove the exact week range behind `SOS PLAYOFFS`; label it as source-defined FantasyPros playoff context and never claim it matches this ESPN league's configured playoff window.
 - Keep ESPN schedule facts, DynastyProcess weekly future points, and FantasyPros SOS stars separately inspectable. Never combine them into a hidden playoff score or championship probability.
 
-Current priorities after v0.9.70:
-1. Accumulate real DynastyProcess multiweek coverage through the explicit browser workflow as new weekly publications appear.
-2. Complete production-readiness closeout: manual keyboard/screen-reader/200% zoom/mobile checks, Chrome companion threat review, recovery/deletion/mobile-sync revocation, and authenticated materially different ESPN league states.
-3. Use authenticated league states as field validation of the already-complete Waiver Engine v2 and Season/Playoff Intelligence. Reopen deterministic implementation only for a reproduced defect.
-4. Observe real waiver candidate volume/timing as multiweek coverage grows. If exhaustive enumeration becomes materially slow, define a visible documented shortlist policy before changing behavior; never silently truncate candidates.
-5. Keep the browser UI maintainable as feature depth grows without creating a second application state owner.
-6. Keep playoff qualification/championship probability separate until a calibrated model and explicit data policy are reviewed.
+Production-readiness state:
+- v0.9.71 completed the automatable engineering closeout: lifecycle/recovery contracts, browser/mobile smoke, WCAG 2.2 A/AA audit, 200%-equivalent/390px reflow audit, Chrome companion v0.2.2 threat audit, performance/security gates, and production smoke.
+- v0.9.72 defines the finite Release 1.0 field gate in config/field-validation.json and docs/field-validation.md.
+- Field statuses are pending, passed, blocked, or failed. Passed/failed require privacy-safe evidence. Blocked does not count as complete.
+- `npm run field:status` reports current field state. `npm run field:status -- --require-complete` is the strict Release 1.0 gate.
+- Never put ESPN cookies, credentials, raw private snapshots, member identifiers, or private sync tokens/URLs into field evidence.
+- A newly observed deterministic ESPN shape or reproduced field defect should become a sanitized permanent regression fixture where practical.
+
+Current priorities after v0.9.72:
+1. Complete the Release 1.0 field-validation registry honestly as real devices, assistive technology, ESPN league states, failure conditions, and projection coverage become available.
+2. Accumulate real DynastyProcess multiweek coverage through the explicit browser workflow as new weekly publications appear.
+3. Use field observations to validate the already-complete Waiver Engine v2 and Season/Playoff Intelligence. Reopen deterministic implementation only for a reproduced defect.
+4. Observe real waiver candidate volume/timing; if exhaustive enumeration becomes materially slow, define a visible documented shortlist policy before changing behavior and never silently truncate candidates.
+5. Keep the browser UI maintainable without creating a second application state owner.
+6. Label the product 1.0 only after every field item passes with evidence and the exact final 1.0 PR/master production gates are green.
 
 Still gated:
-- future-only IR-assisted stash discovery (separate policy review);
-- playoff qualification/championship probability modeling;
 - trade analysis;
 - external notifications;
+- future-only IR-assisted stash discovery (separate policy review);
+- playoff qualification/championship probability modeling;
 - server-side model integration;
 - ESPN write actions.
 
-Before completion run npm test, npm run eval:model, npm run check, and git diff --check. Update documented test counts only after the complete suite is verified. For feature releases, work on a task branch, open a PR to protected master, require the exact final PR head to pass the full protected test job, merge only while up to date, then verify master test, GitHub Pages deploy, and npm run smoke:production. Never bypass the ruleset or push feature work directly to master.
+Before completion run npm test, npm run eval:model, npm run check, npm run field:status, and git diff --check. Update documented test counts only after the complete suite is verified. For feature releases, work on a task branch, open a PR to protected master, require the exact final PR head to pass the full protected test job, merge only while up to date, then verify master test, GitHub Pages deploy, and npm run smoke:production. Never bypass the ruleset or push feature work directly to master.
 ```
