@@ -62,7 +62,7 @@ Acceptance criteria:
 
 ### Projection-provider implementation
 
-Status: **Implemented for strict local imports, with a zero-cost weekly PPR acquisition path added in v0.9.57.** The app's provider-neutral weekly contract remains independent from ESPN ingestion. The local DynastyProcess stager reads its public FantasyPros-derived weekly file, retains the source-published PPR `r2p_pts` estimate, joins only through the published FantasyPros-to-ESPN ID crosswalk, requires the NFL week explicitly because the upstream file omits it, records publication provenance, and excludes unresolved or ambiguous IDs rather than using names. The third-party weekly dataset is not bundled into the public site, and the PPR estimate is not relabeled as a custom ESPN-scoring projection.
+Status: **Implemented for strict local imports, with a zero-cost weekly PPR acquisition path added in v0.9.57 and a guarded browser update path added in v0.9.62.** The app's provider-neutral weekly contract remains independent from ESPN ingestion. The DynastyProcess route retains the source-published PPR `r2p_pts` estimate, joins only through reviewed stable-ID evidence, requires explicit week approval because the upstream file omits an NFL week, records publication provenance, and excludes unresolved or ambiguous IDs rather than using names. The third-party weekly dataset is not bundled into the public site, and the PPR estimate is not relabeled as a custom ESPN-scoring projection.
 
 - Implement the existing projection-provider contract for one trustworthy source.
 - Follow the source selection, licensing gate, and shadow-mode bake-off in [`projection-source-research.md`](projection-source-research.md).
@@ -103,7 +103,7 @@ Release exit: reliable player identities and at least one independent projection
 
 Goal: replace pairwise swaps with a full legal-lineup optimizer.
 
-Status: **In progress.** Complete assignment search, duplicate prevention, supported-slot eligibility including OP/superflex, explicit ESPN locks, automatic ISO kickoff-time locks, missing-projection limitations, and UI explanations are implemented. Unparseable or missing kickoff times remain honestly unlocked. Broader live fixture coverage remains before release exit.
+Status: **Deterministic implementation complete for the supported snapshot contract; Release 1.0 field validation remains active.** Complete assignment search, duplicate prevention, supported-slot eligibility including OP/superflex, explicit ESPN locks, automatic ISO kickoff-time locks, missing-projection limitations, and UI explanations are implemented. Unparseable or missing kickoff times remain honestly unlocked. Real authenticated FLEX/OP and physical-device observations are now tracked through the v0.9.72 field-validation registry instead of keeping the optimizer implementation perpetually “in progress.”
 
 ### Constraint model
 
@@ -143,7 +143,7 @@ Release exit: the app can construct and explain a complete legal lineup for the 
 
 Goal: evaluate waiver moves as roster changes rather than isolated weekly projection differences.
 
-Status: **In progress through v0.9.56.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. A current-week same-position ESPN-pool replacement benchmark is implemented and remains separate from legal-lineup gain. Refresh-aware revalidation now reconstructs prior current-week add/drop advice from the previous valid capture, checks it against the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain, and marks unsupported moves obsolete with a concrete **What Changed** reason while missing refresh inputs remain unverified. IR eligibility transitions, richer claim-cost strategy, and projection-gated multiweek waiver impact remain open.
+Status: **Complete in v0.9.69 for the reviewed deterministic scope.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, current-week and projection-gated multiweek evaluation, acquisition-limit enforcement, explicit roster-size and provider-position limits, ESPN IR legality, no-drop IR-assisted adds, refresh-aware revalidation, transparent Pareto priority bands, future-only ordinary stash discovery, and exhaustive visible candidate enumeration are implemented. Real authenticated caps/limits, IR states, lock transitions, and candidate-scale observations are Release 1.0 field validation, not unfinished Waiver Engine v2 logic.
 
 ### Candidate filtering
 
@@ -162,20 +162,21 @@ Status: **In progress through v0.9.56.** ESPN availability filtering, unlocked-b
 
 ### Waiver presentation
 
-- Rank a small compatible set rather than dozens of conflicting pairs.
+- Rank a small compatible presentation set after exhaustive legal candidate evaluation rather than silently capping discovery.
 - Explain add value, drop cost, intended time horizon, and legal constraints.
-- Show acquisition status and likely processing time.
-- Add watchlist and dismiss controls stored locally.
+- Show acquisition status when ESPN supplies it without claiming unsupported processing probability.
+- Preserve no-drop IR-assisted provenance when that exact path is supported.
 
 Acceptance criteria:
 
 - Recommended players are available at refresh time.
 - Every add/drop pair leaves a legal roster.
 - The same player is not reused across a supposedly compatible set of moves.
-- Rest-of-season claims disappear when ROS data is missing.
+- Rest-of-season or future claims disappear when the required data is missing.
 - Refresh revalidates availability and relevant supported state, marks changed recommendations obsolete with the reason, and treats missing refresh inputs as unverified rather than inventing a failure.
+- Future-only discovery cannot silently truncate the eligible add/drop search space.
 
-Release exit: waiver guidance is legal, time-horizon aware, and based on full-roster impact.
+Release exit: waiver guidance is legal, time-horizon aware, based on full-roster impact, and transparent about missing evidence.
 
 ---
 
@@ -218,13 +219,13 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
-Status: in progress through v0.9.57. Season Plan reports positional depth, starter bye conflicts, ESPN-reported fantasy opponents and complete/partial/ambiguous schedule coverage for the selected horizon, repeated opponents matched only by ESPN team ID, explicitly supplied playoff weeks, and explicitly supplied playoff schedule-strength fields. When ESPN omits playoff weeks, the app requires a labeled league/season-scoped browser-local selection and never infers the boundary. Completely mapped future weeks expose optimized starter assignments and the hold-current-roster baseline. Isolated add/drop scenarios show weekly and selected-horizon deltas only when both baseline and simulated rosters have complete coverage for every included week. Missing and duplicate ESPN matchup records are visible, and no opponent strength is inferred. Projection provider, scoring format, source capture time, freshness, ESPN season/scoring compatibility, ID-map size, player-week coverage, persisted user-selectable horizons, per-week usable/blocked readiness and withheld-delta reasons are visible. CSV imports require consistent source metadata on every row; import time is never mislabeled as source capture time. Incompatible sources are blocked; stale sources remain explicitly warned. Missing identity mappings are distinguished from missing week-specific projection values for both the selected roster and top current ESPN waiver candidates, with exact ESPN identities available in the repair report; names are informational and never used for provider joins. v0.9.57 adds a zero-cost local PPR staging route for each actually published DynastyProcess weekly file so coverage can accumulate without a paid API while retaining stable ID and provenance gates. Position-specific NFL schedule strength still requires a documented external data source and method.
+Status: **Core deterministic scope complete in v0.9.70.** Season Plan reports positional depth, known-bye coverage, ESPN-reported fantasy opponents, explicit or labeled fallback playoff-week boundaries, complete/partial schedule coverage, and complete-coverage future projection scenarios. Season/Playoff Intelligence separates four lenses: current-roster bye fillability, ESPN fantasy playoff opponents, a projection-gated optimized playoff window, and optional imported FantasyPros `SOS SEASON` / `SOS PLAYOFFS` stars. Missing projections or identity mappings block aggregate future claims; no opponent strength, hidden playoff score, or championship probability is invented. Real playoff/bye states are tracked under `FV-SEASON-01` for Release 1.0.
 
 Goal: support roster construction beyond the immediate week.
 
 ### Schedule intelligence
 
-- Strength-of-schedule views by position and week.
+- Strength-of-schedule views by position and week from an explicitly attributed source.
 - Bye-week collision analysis.
 - Fantasy playoff schedule views based on connected league settings.
 - Starter and bench coverage across future weeks.
@@ -232,30 +233,31 @@ Goal: support roster construction beyond the immediate week.
 ### Roster portfolio analysis
 
 - Positional depth and replaceability.
-- Bench utility by future starter probability.
-- Injury and bye concentration.
-- Stacking and correlated exposure as descriptive context, not guaranteed advantage.
+- Bench utility through existing replacement and scenario views where supported.
+- Injury and bye concentration from known facts only.
+- Stacking and correlated exposure only as descriptive context if later added from explicit inputs.
 
 ### Scenario planner
 
-- Compare holding, adding, dropping, or trading players without modifying ESPN.
-- Show weekly lineup impact across a selectable horizon.
+- Compare holding, adding, dropping, or reviewed IR-assisted no-drop paths without modifying ESPN.
+- Show weekly lineup impact across a selectable horizon only with complete mapped coverage.
 - Separate baseline projections from scenario-derived changes.
 
 Acceptance criteria:
 
-- Playoff weeks come from connected league settings when available.
+- Playoff weeks come from connected league settings when available; local fallback is labeled.
 - Schedule difficulty names its source and methodology.
 - Scenario plans never mutate the cached ESPN snapshot.
 - Missing future projections prevent future-score claims.
+- Source-defined FantasyPros playoff SOS is not relabeled as the connected league's exact playoff window.
 
-Release exit: managers can evaluate roster moves across the season and playoffs with visible assumptions.
+Release exit: managers can evaluate supported roster moves across the season and playoffs with visible assumptions.
 
 ---
 
 ## Release 1.0 — Production-grade read-only companion
 
-Status: **In progress.** Accessible first-run connection/sample onboarding, multiple browser-local ESPN league/season/team profiles, companion health/version compatibility, per-league refresh cooldowns and recovery guidance, versioned browser-cache migrations, complete browser-local deletion, best-effort mobile-sync revocation, Content Security Policy, accessibility controls, desktop/mobile browser smoke automation, an automated WCAG 2.2 A/AA audit, and a least-privilege companion audit are implemented. Independent manual accessibility and security review remain open.
+Status: **Field validation active in v0.9.72.** v0.9.71 completed the automatable production-readiness engineering: accessible onboarding, multiple browser-local ESPN profiles, companion health/version compatibility, refresh cooldown and recovery guidance, cache migrations, complete local deletion, mobile-sync revocation semantics, Content Security Policy, browser smoke automation, automated WCAG 2.2 A/AA checks, 200%-equivalent and 390px reflow auditing, Chrome companion v0.2.2 threat hardening/auditing, performance/security gates, lifecycle/recovery regression coverage, and post-deployment production smoke. v0.9.72 defines the remaining human and authenticated-real-state work as a finite evidence-backed registry in `config/field-validation.json` and `docs/field-validation.md`.
 
 Goal: graduate the read-only product from a personal connected preview to a reliable weekly tool.
 
@@ -266,6 +268,8 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Keep connection health, extension version compatibility, per-league refresh cooldown, and recovery guidance covered as the companion evolves.
 - Add explicit disconnect and complete local-data deletion.
 
+Status: **Implemented; live reconnect/failure observation remains under `FV-RECOVERY-01`.**
+
 ### Reliability
 
 - Expand cache migrations whenever a persisted schema changes.
@@ -273,6 +277,8 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Continue expanding the synthetic regular, superflex, playoff-final, partial-live, and offseason fixture matrix when new ESPN response shapes appear.
 - Graceful partial-data behavior for every provider request.
 - Keep deployment and extension rollback instructions current with the release workflow.
+
+Status: **Automated contracts complete; authenticated field states are tracked by `FV-ESPN-01` through `FV-ESPN-05`, `FV-SEASON-01`, `FV-RECOVERY-01`, `FV-SYNC-01`, and `FV-WAIVER-01`.**
 
 ### Accessibility and performance
 
@@ -282,6 +288,8 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Keep focused HTML, CSS, app-entry, and sample-data budgets green; report aggregate browser JavaScript graph size as a trend signal rather than a deployment-blocking hard cap. Add runtime performance thresholds when production telemetry has an approved privacy policy.
 - Reduced-motion behavior.
 
+Status: **Automated browser/WCAG/reflow gates complete; `FV-A11Y-01`, `FV-A11Y-02`, `FV-A11Y-03`, and `FV-MOBILE-01` track the remaining human/device checks.**
+
 ### Security and privacy
 
 - Threat model for the Chrome companion and page bridge.
@@ -290,14 +298,18 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Secret scanning and dependency review.
 - Documented data deletion and extension removal.
 
+Status: **Automated least-privilege boundary complete for unpacked companion v0.2.2. Chrome Web Store packaging/privacy/distribution review is a separate gate only if distribution expands before 1.0.**
+
 Acceptance criteria:
 
-- Full weekly workflow passes on desktop and mobile.
-- Refresh failures preserve the last valid snapshot.
-- No credentials, cookies, raw private payloads, or member identifiers enter repository fixtures or logs.
-- Accessibility and security reviews have no unresolved high-severity findings.
+- every item in `config/field-validation.json` is `passed` with privacy-safe evidence;
+- full weekly workflow passes across the registered desktop/mobile/assistive-technology and authenticated ESPN field paths;
+- refresh failures preserve the last valid snapshot and live failure/reconnect behavior is observed honestly;
+- no credentials, cookies, raw private payloads, member identifiers, or private sync secrets enter repository fixtures, logs, or field evidence;
+- accessibility, privacy, security, ESPN-normalization, waiver-legality, and season-planning review has no unresolved high-severity finding;
+- newly observed deterministic provider shapes or reproduced defects become permanent regression coverage where practical.
 
-Release exit: a trustworthy, accessible, read-only ESPN companion ready for regular in-season use.
+Release exit: after `npm run field:status -- --require-complete` succeeds, the exact final 1.0 PR head must pass the protected test job and post-merge `master` must pass test, deploy, and production verification. The product remains read-only.
 
 ---
 
@@ -392,7 +404,7 @@ Advanced features must remain disabled until their data gates are satisfied:
 | --- | --- |
 | Floor/ceiling optimizer | Sourced floor and ceiling projections |
 | ROS waivers | Compatible ROS projections and identity mapping |
-| Strength of schedule | Documented NFL schedule and difficulty method |
+| Strength of schedule | Explicit imported or documented NFL schedule-difficulty source/method |
 | Trade analyzer | ROS values, schedule, league rosters, replacement pool |
 | News summaries | Licensed or trustworthy timestamped news source |
 | Win probability | Calibrated historical model and validation set |
@@ -409,7 +421,8 @@ No UI placeholder should imply that a gated capability already works.
 - identity reconciliation conflicts;
 - confidence and freshness calculations;
 - snapshot differences and alert deduplication;
-- scenario isolation.
+- scenario isolation;
+- field-validation registry integrity.
 
 ### Provider tests
 
@@ -425,15 +438,17 @@ No UI placeholder should imply that a gated capability already works.
 - start/sit, optimizer, waiver, and detail interactions;
 - keyboard and mobile workflows;
 - production asset-version behavior;
-- extension-version mismatch guidance.
+- extension-version mismatch guidance;
+- deployment-blocking responsive/reflow checks.
 
 ### Release tests
 
 - automated unit suite;
+- model safety fixtures;
+- browser/WCAG/reflow/extension/performance/security audits;
 - production URL smoke test;
-- authenticated read-only Chrome verification;
-- no-console-error check;
-- clean Git worktree and successful deployment.
+- evidence-backed field registry for the 1.0 milestone;
+- clean protected-branch PR/merge/deploy workflow.
 
 ## Completed sprint: modular browser shell and atomic imports
 
@@ -457,6 +472,8 @@ Sprint exit criteria:
 - Users can inspect what changed and why a record was rejected.
 - All required repository gates pass and the deployed production URL is verified.
 
-## Recommended next sprint: accumulate real zero-cost weekly coverage
+## Recommended next sprint: complete Release 1.0 field validation
 
-Use `npm run projections:dynastyprocess-weekly -- --season <year> --week <week>` for each actually published PPR week, review the provenance sidecar and unresolved-ID list, and merge the generated projection/identity files through the existing atomic local import flow. Keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage across the selected horizon. Do not infer an NFL week from the scrape date, mirror the third-party weekly dataset into the public site, or repair unresolved IDs by display name.
+Use `npm run field:status` as the live checklist and complete the registered checks with privacy-safe evidence as real devices, assistive technology, ESPN league states, failure conditions, and projection coverage become available. Continue using the one-click DynastyProcess browser workflow for each actually published week; projection accumulation and field validation can proceed together.
+
+Do not mark a field check passed because a synthetic test covers the same rule. Do not commit private ESPN payloads or secrets as evidence. If a real observation exposes a new provider shape or deterministic defect, reproduce it with sanitized fixture data, add regression coverage, fix it on a protected task branch, and retest the field item before marking it passed.

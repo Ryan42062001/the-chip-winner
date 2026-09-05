@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "releaseTarget": "1.0",
+  "baselineVersion": "0.9.72",
+  "items": [
+    {
+      "id": "FV-A11Y-01",
+      "area": "accessibility",
+      "title": "Keyboard-only critical workflow",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Complete onboarding/sample or ESPN connection, navigation, player detail, lineup comparison, waivers, Season Plan, League Setup, disconnect, and destructive-action confirmation without a pointing device."
+    },
+    {
+      "id": "FV-A11Y-02",
+      "area": "accessibility",
+      "title": "Screen-reader critical workflow",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Run the critical workflow with NVDA, VoiceOver, or an equivalent assistive technology and record browser/AT versions plus any defects."
+    },
+    {
+      "id": "FV-A11Y-03",
+      "area": "accessibility",
+      "title": "Real browser 200 percent zoom",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Spot-check all primary sections at actual 200% browser zoom. The automated 720 CSS-pixel reflow audit remains a separate deterministic gate."
+    },
+    {
+      "id": "FV-MOBILE-01",
+      "area": "mobile",
+      "title": "Representative physical phone workflow",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Exercise navigation, player detail, waiver review, Season Plan, and League Setup on a representative physical phone/browser."
+    },
+    {
+      "id": "FV-ESPN-01",
+      "area": "espn-live-state",
+      "title": "Authenticated standard ESPN league",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Validate connect, refresh, roster, matchup, lineup, waiver, change timeline, and Season Plan against a real standard-format league."
+    },
+    {
+      "id": "FV-ESPN-02",
+      "area": "espn-live-state",
+      "title": "Authenticated custom FLEX or OP league",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Validate custom lineup slots, including FLEX/OP or superflex-style eligibility, without assuming unsupported slot mappings."
+    },
+    {
+      "id": "FV-ESPN-03",
+      "area": "espn-live-state",
+      "title": "Authenticated acquisition and position limits",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Observe real acquisition caps, roster-size rules, and provider-position limits and confirm waiver legality matches ESPN-reported state."
+    },
+    {
+      "id": "FV-ESPN-04",
+      "area": "espn-live-state",
+      "title": "Authenticated IR edge states",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Observe supported eligible, grandfathered, filled, invalid, and/or unverified IR states as real league opportunities arise; never manufacture a live state."
+    },
+    {
+      "id": "FV-ESPN-05",
+      "area": "espn-live-state",
+      "title": "Authenticated lock and availability transitions",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Observe at least one real game-lock or availability transition across refreshes and verify prior advice is revalidated or obsoleted correctly."
+    },
+    {
+      "id": "FV-SEASON-01",
+      "area": "season-playoff",
+      "title": "Real playoff and bye intelligence states",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Validate ESPN playoff-week boundaries or labeled local fallback, fantasy playoff opponents, bye coverage, and partial/full future projection behavior against real league state."
+    },
+    {
+      "id": "FV-RECOVERY-01",
+      "area": "recovery",
+      "title": "Live ESPN session or network refresh failure and reconnect",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Observe an actual expired-session, companion, ESPN service, or network failure; verify the last valid snapshot survives and reconnect/refresh guidance is accurate."
+    },
+    {
+      "id": "FV-SYNC-01",
+      "area": "mobile-sync",
+      "title": "Live deployed sync revoke and delete",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Exercise encrypted mobile-sync creation plus remote revoke/delete against the deployed worker and confirm local state reflects the real outcome."
+    },
+    {
+      "id": "FV-WAIVER-01",
+      "area": "waiver-performance",
+      "title": "Real waiver candidate volume and timing",
+      "status": "pending",
+      "evidence": [],
+      "notes": "Record consideredAdds, completeAdds, scenarioCount, qualifiedAdds, and observed browser responsiveness as projection coverage grows. Do not introduce a hidden candidate cap."
+    }
+  ]
+}

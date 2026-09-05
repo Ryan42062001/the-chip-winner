@@ -11,6 +11,7 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - `package.json` owns the current application version.
 - The **Current execution plan** in `docs/roadmap.md` owns the active implementation backlog and completion status.
 - `docs/advanced-roadmap.md` owns the longer release sequence and feature gates.
+- `config/field-validation.json` owns Release 1.0 field-check status; `docs/field-validation.md` owns the evidence policy and completion rule.
 - `docs/next-codex-task.md` is a point-in-time handoff. Refresh it when its checkpoint or primary task changes; do not treat an older handoff as more authoritative than the repository state or roadmap.
 - Preserve user changes. Do not reimplement work already marked complete without first proving the current implementation is missing or incorrect.
 
@@ -56,6 +57,8 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - Model output is advisory. Pass recommendations through the contract and offline evaluator before an adapter receives them.
 - Multiweek deltas require complete mapped projection coverage for both baseline and simulated rosters across every included week.
 - Keep ESPN writes outside the current product boundary. No silent, scheduled, or automatic transactions.
+- Release 1.0 field-validation status is evidence-backed. `passed` or `failed` checks in `config/field-validation.json` require privacy-safe evidence; `blocked` remains incomplete. Do not mark a field check passed merely because deterministic tests cover the same rule.
+- Field evidence must not contain ESPN cookies, credentials, private raw snapshots, member identifiers, private sync URLs/tokens, or other secrets. Newly observed deterministic provider shapes or reproducible defects should become sanitized permanent regression coverage where practical.
 
 ## Architecture
 
@@ -68,6 +71,7 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - `src/models`: provider-neutral model boundary; no provider credentials belong in the browser bundle.
 - `src/sync` and `worker`: client-side encrypted mobile snapshot transport.
 - `schema`: machine-readable external contracts.
+- `config/field-validation.json`: evidence-gated Release 1.0 field checks.
 - `test/fixtures`: deterministic regression and safety cases.
 
 ## Verification
@@ -78,10 +82,11 @@ Use the repository's configured Node runtime and run:
 npm test
 npm run eval:model
 npm run check
+npm run field:status
 git diff --check
 ```
 
-Every pushed branch change must keep the GitHub Pages workflow passing. Add tests for changed domain behavior, missing-data states, browser flow, accessibility, or security boundaries as appropriate. Update documented test counts only after verifying the complete suite.
+Every pushed branch change must keep the GitHub Pages workflow passing. Add tests for changed domain behavior, missing-data states, browser flow, accessibility, security boundaries, or field-registry contracts as appropriate. Update documented test counts only after verifying the complete suite.
 
 Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain deployment-blocking guardrails. The aggregate browser JavaScript graph size is measured and reported as an informational trend only; do not fail or reshape a useful feature solely to stay below a historical total-source-size number. Optimize when user-experienced performance, maintainability, or a focused budget warrants it.
 
@@ -89,9 +94,10 @@ Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain
 
 Work in the dependency order maintained in `docs/roadmap.md`. At the current stage that means:
 
-1. Accumulate real multiweek projection coverage through the one-click browser workflow as each source publication becomes available. Preserve the explicit week-approval boundary, guarded publication rollover, stable-ID crosswalk, D/ST bridge, fail-closed reviewed identity bridges, explicit provider-ID supersession semantics, reviewed stale-source exclusions, and classification-only diagnostics. Never chase 100% coverage by weakening identity rules.
-2. Complete production-readiness closeout: manual accessibility, companion threat review, recovery/deletion checks, materially different live ESPN league states, and field validation of the completed Waiver Engine v2 and Season/Playoff Intelligence surfaces.
-3. Keep the browser UI maintainable as features grow; split oversized rendering modules along view boundaries without creating a second application store.
-4. Keep separately gated intelligence work separate from current facts: playoff qualification/championship probability needs a calibrated model, and future-only IR-assisted stash discovery needs a reviewed ESPN IR policy expansion.
+1. Complete the Release 1.0 field-validation registry in `config/field-validation.json` using the privacy-safe evidence rules in `docs/field-validation.md`. A real field defect reopens deterministic implementation only when reproduced; a missing real-world opportunity may remain `blocked` but cannot be silently counted as passed.
+2. Accumulate real multiweek projection coverage through the one-click browser workflow as each source publication becomes available. Preserve the explicit week-approval boundary, guarded publication rollover, stable-ID crosswalk, D/ST bridge, fail-closed reviewed identity bridges, explicit provider-ID supersession semantics, reviewed stale-source exclusions, and classification-only diagnostics. Never chase 100% coverage by weakening identity rules.
+3. Use authenticated field states to validate the already-complete Waiver Engine v2 and Season/Playoff Intelligence surfaces, including real caps/limits, IR states, locks, playoff boundaries, bye patterns, and candidate scale. Turn reproducible defects into sanitized regression fixtures.
+4. Keep the browser UI maintainable as features grow; split oversized rendering modules along view boundaries without creating a second application store.
+5. Keep separately gated intelligence work separate from current facts: playoff qualification/championship probability needs a calibrated model, and future-only IR-assisted stash discovery needs a reviewed ESPN IR policy expansion.
 
-Waiver Engine v2 is complete in v0.9.69. Season/Playoff Intelligence is complete for the reviewed deterministic scope in v0.9.70. Trade analysis, external notifications, server-side models, playoff probability models, future-only IR-assisted stash discovery, and ESPN write actions remain gated by the roadmap. Do not pull them forward merely because their interfaces or schemas already exist.
+v0.9.71 completed the automatable production-readiness engineering work. v0.9.72 defines the finite evidence-backed field gate for Release 1.0. Waiver Engine v2 is complete in v0.9.69 and Season/Playoff Intelligence is complete for the reviewed deterministic scope in v0.9.70. Trade analysis, external notifications, server-side models, playoff probability models, future-only IR-assisted stash discovery, and ESPN write actions remain gated by the roadmap. Do not pull them forward merely because their interfaces or schemas already exist.
