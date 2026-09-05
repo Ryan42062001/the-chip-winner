@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 212 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, explicit ESPN playoff-week settings and league/season-scoped local fallback, ESPN-reported roster size and position-limit enforcement, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 218 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, explicit ESPN playoff-week settings and league/season-scoped local fallback, ESPN-reported roster size and position-limit enforcement, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, lineup and refresh-aware waiver recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -47,7 +47,7 @@ Additional connected foundation capabilities now include:
 - versioned browser modules for reliable production updates;
 - deployed end-to-end encrypted mobile snapshot synchronization through Cloudflare Workers KV;
 - locally derived change detection between the two most recent valid ESPN snapshots;
-- a team-filtered **What Changed** timeline for roster, lineup, injury, projection, availability, and matchup-score changes.
+- a team-filtered **What Changed** timeline for roster, lineup, injury, projection, availability, matchup-score, and refresh-obsolete waiver recommendation changes.
 
 The website retains sample and manual-import modes for development. The configured private league can authenticate and refresh through the local Chrome companion. The product remains deliberately read-only and makes no ESPN transactions.
 
@@ -368,7 +368,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.55
+## Current execution plan — after v0.9.56
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -432,13 +432,12 @@ Acceptance criteria: no playoff boundary or schedule grade is inferred; scenario
 
 ### P1 — Complete waiver engine v2
 
-Status: **Partially implemented through v0.9.55.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. IR eligibility transitions, refresh-obsolete recommendation state, and projection-gated multiweek waiver impact remain open.
+Status: **Partially implemented through v0.9.56.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. Refresh-aware recommendation revalidation is implemented: prior current-week add/drop advice is reconstructed from the previous valid capture and checked against the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain. Moves that are no longer supported appear in **What Changed** as obsolete with the exact reason; missing latest inputs remain explicitly unverified. IR eligibility transitions and projection-gated multiweek waiver impact remain open.
 
 1. Model IR eligibility transitions only where ESPN supplies authoritative rules and inputs.
-2. Revalidate availability and relevant source state after refresh and mark older recommendations visibly obsolete.
-3. Add multiweek impact only after projection coverage gates pass.
+2. Add multiweek impact only after projection coverage gates pass.
 
-Acceptance criteria: every move remains legal after full-roster simulation; unsupported acquisition likelihood is never claimed; current-week, replacement-value, ROS ranking, and multiweek conclusions remain separately sourced.
+Acceptance criteria: every move remains legal after full-roster simulation; prior advice that no longer satisfies the latest supported state is marked obsolete while missing latest inputs remain unverified; unsupported acquisition likelihood is never claimed; current-week, replacement-value, ROS ranking, and multiweek conclusions remain separately sourced.
 
 ### P2 — Production-readiness closeout
 

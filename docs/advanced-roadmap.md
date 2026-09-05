@@ -140,7 +140,7 @@ Release exit: the app can construct and explain a complete legal lineup for the 
 
 Goal: evaluate waiver moves as roster changes rather than isolated weekly projection differences.
 
-Status: **In progress.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. A current-week same-position ESPN-pool replacement benchmark is implemented and remains separate from legal-lineup gain. IR eligibility transitions, refresh-obsolete recommendation state, richer claim-cost strategy, and projection-gated multiweek waiver impact remain open.
+Status: **In progress through v0.9.56.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. A current-week same-position ESPN-pool replacement benchmark is implemented and remains separate from legal-lineup gain. Refresh-aware revalidation now reconstructs prior current-week add/drop advice from the previous valid capture, checks it against the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain, and marks unsupported moves obsolete with a concrete **What Changed** reason while missing refresh inputs remain unverified. IR eligibility transitions, richer claim-cost strategy, and projection-gated multiweek waiver impact remain open.
 
 ### Candidate filtering
 
@@ -170,7 +170,7 @@ Acceptance criteria:
 - Every add/drop pair leaves a legal roster.
 - The same player is not reused across a supposedly compatible set of moves.
 - Rest-of-season claims disappear when ROS data is missing.
-- Refresh revalidates availability and marks changed recommendations obsolete.
+- Refresh revalidates availability and relevant supported state, marks changed recommendations obsolete with the reason, and treats missing refresh inputs as unverified rather than inventing a failure.
 
 Release exit: waiver guidance is legal, time-horizon aware, and based on full-roster impact.
 
@@ -180,7 +180,7 @@ Release exit: waiver guidance is legal, time-horizon aware, and based on full-ro
 
 Goal: tell the manager what changed and what requires action.
 
-Status: **Feature-complete for the current snapshot contract.** Two-snapshot local retention, deterministic differencing, team relevance filtering, identical-refresh suppression, recommendation appearance/change/clear explanations, acquisition-usage and waiver-setting changes, the **What Changed** timeline, week-scoped persistent alert dismissal/restoration, and kickoff-aware urgency ranking are implemented.
+Status: **Feature-complete for the current snapshot contract through v0.9.56.** Two-snapshot local retention, deterministic differencing, team relevance filtering, identical-refresh suppression, lineup recommendation appearance/change/clear explanations, refresh-obsolete or unverified waiver recommendation explanations, acquisition-usage and waiver-setting changes, the **What Changed** timeline, week-scoped persistent alert dismissal/restoration, and kickoff-aware urgency ranking are implemented.
 
 ### Snapshot differencing
 
