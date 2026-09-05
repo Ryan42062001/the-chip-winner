@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 218 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, explicit ESPN playoff-week settings and league/season-scoped local fallback, ESPN-reported roster size and position-limit enforcement, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, lineup and refresh-aware waiver recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
+- 223 automated tests plus 21 deployment-blocking model safety fixtures covering league normalization across regular, superflex, offseason, playoff and partial-live fixtures, explicit ESPN playoff-week settings and league/season-scoped local fallback, ESPN-reported roster size and position-limit enforcement, full reported matchup schedules and locally sorted record overviews, exact configured-lineup vacancy detection, a kickoff-aware weekly checklist with acquisition blockers, recommendations, identity reconciliation, encrypted sync, snapshot differencing including acquisition state, lineup locks, roster-aware waiver simulation, ESPN acquisition-limit enforcement including the offline model gate, lineup and refresh-aware waiver recommendation-change explanations, season planning, explicit ESPN schedule coverage states and repeated-opponent explanations for selected horizons, persisted horizons and projection coverage diagnostics, explicit ranking/projection metadata and compatibility gates, secret-safe FantasyPros API downloaders and manual CSV staging with explicit in-app URL and ESPN identity approval, zero-cost DynastyProcess weekly PPR staging with stable FantasyPros-to-ESPN ID crosswalks, provenance-preserving multiweek projection merges, separately sourced mapped weekly values in player detail and start/sit comparisons, reproducible data-confidence explanations, per-week readiness and repair reports, persistent prioritized alerts, accessible first-run onboarding, multiple local ESPN connections, safe team-URL parsing, companion compatibility and cooldowns, versioned cache migrations and deletion, recommendation contracts, privacy-safe phase-specific model evaluation reports, guarded model adapters, strict explanation contracts and evaluation, and future projection inputs.
 
 Additional connected foundation capabilities now include:
 
@@ -368,7 +368,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.56
+## Current execution plan — after v0.9.57
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -411,14 +411,15 @@ Acceptance criteria:
 
 ### P1 — Complete real projection coverage
 
-Status: **Partially implemented through v0.9.55.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon. Candidate-aware future coverage also checks the top current ESPN waiver adds and distinguishes missing explicit identity mappings from missing player-week projections. Ready cells retain the provider-owned ID, value, and record capture time, and the projection-gap report names exact repair needs without display-name joins. User-supplied weekly exports and explicit identity approvals are still required to complete real coverage.
+Status: **Partially implemented through v0.9.57.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon. Candidate-aware future coverage checks the top current ESPN waiver adds and distinguishes missing explicit identity mappings from missing player-week projections. v0.9.57 adds a zero-cost local staging path for DynastyProcess's public FantasyPros-derived weekly file: it retains the source-published PPR `r2p_pts` estimate, uses DynastyProcess's published FantasyPros-to-ESPN ID crosswalk only, requires the NFL week explicitly because the source file omits it, records GitHub publication provenance, and emits the existing projection/identity contracts into ignored `local-data/`. Unresolved or ambiguous mappings are excluded rather than repaired by name. Real multiweek coverage still depends on accumulating each actually published week and on stable ID coverage; no future week is fabricated or inferred.
 
-1. Import each available free FantasyPros weekly CSV.
-2. Approve provider-to-ESPN identities explicitly; never auto-join by display name.
-3. Keep exact missing-mapping and missing-player-week repair reports and the roster/candidate coverage matrix visible as coverage changes.
-4. Enable multiweek deltas only when baseline and simulated rosters both have complete mapped coverage.
+1. Run `npm run projections:dynastyprocess-weekly -- --season <year> --week <week>` for each live PPR week that should be retained.
+2. Review the metadata sidecar and coverage repair report for excluded or unmapped provider IDs; never repair gaps by display name.
+3. Merge the staged projection and identity-map CSVs through the existing atomic import flow, preserving source/publication provenance.
+4. Keep exact missing-mapping and missing-player-week repair reports and the roster/candidate coverage matrix visible as coverage accumulates.
+5. Enable multiweek deltas only when baseline and simulated rosters both have complete mapped coverage for every selected week.
 
-Acceptance criteria: every used value includes provider, scoring, season, week, provider ID, points, and capture time; incompatibility blocks comparisons; partial coverage never produces a summed advantage.
+Acceptance criteria: every used value includes provider, scoring, season, explicitly assigned week, provider ID, points, and capture/publication provenance; incompatible scoring blocks comparisons; missing or ambiguous IDs remain excluded; partial coverage never produces a summed advantage; third-party weekly source data is not bundled into the public site.
 
 ### P1 — Finish season and playoff intelligence
 

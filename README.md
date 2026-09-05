@@ -21,6 +21,18 @@ Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The imp
 
 Weekly FantasyPros projection imports use a stricter provider-ID boundary. See [FantasyPros weekly projection acquisition](docs/fantasypros-api.md).
 
+### Zero-cost weekly PPR staging
+
+For a no-subscription weekly input, the repository can stage DynastyProcess's public FantasyPros-derived weekly data into the same local projection contracts:
+
+```bash
+npm run projections:dynastyprocess-weekly -- --season 2026 --week 1
+```
+
+The command downloads the current `fp_latest_weekly.csv` plus DynastyProcess's cross-platform player-ID database, keeps the source-published PPR `r2p_pts` estimate, and joins FantasyPros IDs to ESPN IDs only through the published ID crosswalk. The upstream weekly file does not contain an NFL week column, so `--week` is required explicitly and is never inferred from the date.
+
+Output is written under ignored `local-data/` as a projection CSV, identity-map CSV, and metadata JSON. The metadata records source/publication provenance, excluded rows, unresolved IDs, and limitations. The weekly dataset is not bundled into or rehosted by the public website. Missing or conflicting IDs are excluded rather than repaired by player name. This path is PPR-only; incompatible ESPN scoring remains blocked by the existing projection compatibility gate.
+
 ## Connect an ESPN league
 
 League ID, season, and team ID are entered during first-run setup or in **League Setup** and stored only in that browser. Multiple league/season/team profiles can be saved locally. You may paste the full ESPN team URL into the first field; the app extracts and stores only its numeric connection IDs. The repository contains no configured user league. Private leagues require Chrome to make the read request through the local ESPN Companion extension while signed in to ESPN.
@@ -56,6 +68,7 @@ Production releases and safe rollback are documented in [`docs/deployment.md`](d
 - Current-week ESPN-pool replacement benchmark kept separate from legal-lineup gain
 - FantasyPros ROS PPR CSV import with visible reconciliation coverage and separate ROS waiver comparisons
 - Strict provider-ID weekly projection imports, explicit FantasyPros-to-ESPN identity approvals, atomic multiweek merges, capture provenance, and coverage repair reports
+- Zero-cost local DynastyProcess weekly PPR staging with stable FantasyPros-to-ESPN ID crosswalks, explicit week assignment, publication provenance, and fail-closed unresolved mappings
 - Season Plan depth, bye-collision, fantasy-opponent schedule coverage, explicit playoff-week configuration, optimized future lineups, and isolated hold/add/drop scenarios
 - Multiweek scenario totals withheld unless every included week has complete mapped coverage for both baseline and simulated rosters
 - Snapshot differencing, a team-specific **What Changed** timeline, recommendation-change explanations, and persistent prioritized alerts
@@ -113,13 +126,14 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 - Derived suggestions are calculated at runtime and never written back into source snapshots.
 - Imported files are rejected when identities, lineup slots, references, source metadata, or numeric values violate their contracts.
 - Projection-driven multiweek claims are withheld when explicit identity or player-week coverage is incomplete.
+- Free weekly staging never falls back to player-name joins and never claims its source-published PPR estimate is a custom ESPN scoring projection.
 
 ## Current focus
 
 The read-only foundation is substantially implemented. The active work is to finish it rather than start a new product layer:
 
-1. Complete real multiweek FantasyPros projection coverage and explicit provider-to-ESPN mappings.
-2. Finish Waiver Engine v2 refresh-obsolete state and authoritative IR handling, then add multiweek waiver impact after projection coverage gates pass.
+1. Use the zero-cost weekly PPR staging path to accumulate real player-week coverage where the source and stable ID crosswalk are available; keep exact gaps visible and never infer missing weeks or identities.
+2. Finish the remaining Waiver Engine v2 gaps: authoritative IR handling only when ESPN supplies the required rules/eligibility inputs, then projection-gated multiweek waiver impact after coverage is complete.
 3. Add position-specific schedule difficulty only after approving and documenting a trustworthy source and methodology.
 4. Complete manual accessibility, companion security, recovery/deletion, and materially different live-league validation for the v1.0 read-only release gate.
 

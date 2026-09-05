@@ -9,7 +9,7 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, and docs/architecture.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: protected master; application release v0.9.56 after refresh-aware waiver recommendation revalidation. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified baseline has 218 automated tests and 21 model-safety fixtures, and the GitHub Pages workflow passes deployment and production smoke verification.
+Checkpoint: protected master; application release v0.9.57 adds a zero-cost local weekly PPR projection staging path using DynastyProcess public data plus its stable FantasyPros-to-ESPN ID crosswalk. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified release baseline has 223 automated tests and 21 model-safety fixtures, and the GitHub Pages workflow must pass deployment and production smoke verification.
 
 Current tooling baseline:
 - Node.js >=20.
@@ -18,18 +18,20 @@ Current tooling baseline:
 - playwright-core 1.62.1 powers browser smoke and accessibility journeys.
 - master is protected by an active repository ruleset. Work on a task branch, open a pull request to master, and require the GitHub Actions `test` status check to pass before merge.
 - Total browser JavaScript graph size is measured and reported as an informational trend; it is not a deployment-blocking hard cap. Focused HTML, CSS, app-entry, and sample-data budgets remain release guardrails.
+- `scripts/smoke-static.js` derives its asset-version assertion from package.json so release markers cannot silently drift from the package version.
 
 Completed foundation to preserve:
 - The browser entry-point split and atomic/inspectable multiweek imports are complete.
 - The app has a single application state owner and focused projection-import/event/rendering modules.
 - FantasyPros weekly projection infrastructure, explicit provider-to-ESPN identity mapping, coverage diagnostics, Season Plan scenarios, and selected-horizon completeness gates are implemented.
 - Candidate-aware future coverage checks the top current ESPN waiver adds across the selected horizon and distinguishes missing identity mappings from missing player-week projections.
+- The zero-cost command `npm run projections:dynastyprocess-weekly -- --season <year> --week <1-18>` stages the current DynastyProcess FantasyPros-derived weekly PPR `r2p_pts` signal plus its published FantasyPros-to-ESPN ID crosswalk into ignored local-data projection/identity CSVs and a provenance sidecar. The upstream weekly file has no NFL week column, so week must remain explicit; unresolved or ambiguous IDs must never fall back to names; the PPR estimate must never be relabeled as a custom ESPN scoring projection.
 - The lineup optimizer, roster-aware waiver simulation, acquisition/roster/position-limit enforcement, snapshot differencing, alerts, multiple local ESPN connections, encrypted mobile sync, accessibility automation, security scanning, and production smoke checks are implemented.
 - Current-week waiver candidates show a separate ESPN-pool replacement benchmark; do not collapse replacement value into legal-lineup gain.
 - Prior current-week waiver recommendations are reconstructed from the previous valid ESPN capture and revalidated against the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain. Moves that are no longer supported appear in What Changed as obsolete with the exact reason; missing refresh inputs remain explicitly unverified rather than being treated as a proven failure.
 
 Primary execution sequence:
-1. Complete real projection coverage when the required user-supplied FantasyPros weekly exports and explicit identity approvals are available. Never fabricate provider data, scrape unsupported pages, or auto-join by display name.
+1. Use the zero-cost DynastyProcess staging path to accumulate real PPR player-week coverage whenever the live source and stable ID crosswalk provide it. Keep exact player-week and mapping gaps visible; never fabricate future weeks, infer the source's missing week field, mirror the third-party weekly dataset into the public site, or auto-join by display name.
 2. Model IR transitions only if the connected ESPN payload supplies authoritative eligibility and rule inputs. Otherwise preserve the limitation and do not infer eligibility.
 3. Add multiweek waiver impact only after both baseline and simulated rosters have complete mapped player-week projection coverage for every included week.
 4. Finish season/playoff intelligence only after a documented, approved position-specific strength-of-schedule source and methodology exist; do not invent schedule difficulty.
@@ -37,12 +39,13 @@ Primary execution sequence:
 
 Requirements:
 - Keep ESPN authoritative for league state, roster rules, availability, locks, and acquisition state.
-- Preserve `null`; never fill missing facts with zero or inferred values.
+- Preserve `null`; never fill missing facts with zero or inferred values. Preserve an explicit source-provided projection value of zero as zero.
 - Use provider-owned IDs and explicit maps for projection joins.
+- For DynastyProcess weekly staging, accept only the source's supported PPR pages, publication provenance, FantasyPros IDs, and published ESPN ID crosswalk. Reject or exclude missing/ambiguous mappings instead of using names.
 - Revalidate derived recommendations against the latest valid snapshot and make stale/obsolete state explainable.
 - Do not mutate cached ESPN snapshots during scenarios or revalidation.
 - Keep current-week projection, replacement value, ROS rank, and multiweek scenario conclusions separately sourced and labeled.
-- Add deterministic tests for every new legality, stale-state, missing-data, and rollback condition.
+- Add deterministic tests for every new legality, stale-state, missing-data, source-shape, identity-conflict, and rollback condition.
 - Preserve mobile navigation, keyboard behavior, accessibility, CSP, cache migrations, companion least privilege, focused static-asset budgets, and production performance quality.
 - Do not treat aggregate raw source-JavaScript size as a release blocker. Use it as a trend signal and optimize when user-experienced performance or maintainability warrants it.
 - If UI work expands src/ui/section-renderer.js, prefer cohesive view-level extraction rather than adding more application state there.
