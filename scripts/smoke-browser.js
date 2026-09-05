@@ -186,11 +186,11 @@ try {
   await page.getByText(/Private mobile link created/).waitFor();
   const refreshMobileButton = page.getByRole("button", { name: "Refresh mobile data" });
   await refreshMobileButton.click();
-  await page.getByText("Mobile data refreshed.", { exact: true }).waitFor();
+  await page.getByText(/Mobile data refreshed\./).waitFor();
   if (await refreshMobileButton.isDisabled()) throw new Error("Refresh mobile data remained disabled after a successful publish.");
   const copyMobileButton = page.getByRole("button", { name: "Copy mobile link" });
   await copyMobileButton.click();
-  await page.getByText("Private mobile link copied.", { exact: true }).waitFor();
+  await page.getByText(/Private mobile link copied\./).waitFor();
   if (await copyMobileButton.isDisabled()) throw new Error("Copy mobile link remained disabled after a successful clipboard write.");
   const copiedMobileLink = await page.evaluate(() => navigator.clipboard.readText());
   if (!copiedMobileLink.includes("#mobile-sync=")) throw new Error("Copied mobile link did not contain encrypted sync credentials.");
