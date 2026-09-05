@@ -135,13 +135,37 @@ const publishButton = panel.querySelector("#refresh-sync-button");
 if (publishButton) publishButton.textContent = "Publish mobile data now";
 }
 
+function bindMobileCheckButton(panel) {
+const button = panel?.querySelector("#check-mobile-sync-button");
+const status = panel?.querySelector("#mobile-sync-check-status");
+if (!button || !status) return;
+button.addEventListener("click", async () => {
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Checking…";
+  status.textContent = "Checking encrypted mobile data…";
+  try {
+    const result = await mobileUpdater.check({ force: true });
+    if (result.status === "current") status.textContent = "Mobile data is already current.";
+    else if (result.status === "error") status.textContent = "Could not check for newer mobile data. Your last valid snapshot is still available.";
+    else if (result.status === "revoked") status.textContent = "This mobile sync link has expired or was revoked.";
+  } finally {
+    if (button.isConnected) {
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+});
+}
+
 function decorateSyncedLeagueSetup(state) {
 replacePanelByHeading("Local league settings", `<div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Synced mobile viewer</h3></div><span class="quality fresh">Read-only</span></div><div class="connection-health"><strong>ESPN refresh is managed from your desktop browser.</strong><span>This phone reads the encrypted snapshot published by The Chip Winner. It does not use your ESPN session or Chrome companion.</span></div><p class="data-note">When the desktop refreshes ESPN, an active private mobile link is updated automatically.</p>`);
 const captured = state.snapshot?.meta?.capturedAt ? new Date(state.snapshot.meta.capturedAt).toLocaleString() : "Capture time unavailable";
-replacePanelByHeading("Encrypted device sync", `<div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Private synced viewer</h3></div><span class="quality fresh">Read-only</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>AES-256-GCM</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Latest ESPN capture</dt><dd>${base.escapeHtml(captured)}</dd></div></dl><p class="data-note">This phone checks the encrypted channel when you reopen or return to the app. Use the button below any time you want to check immediately.</p><div class="sync-actions"><button class="button secondary" id="check-mobile-sync-button">Check for updates</button></div><p class="data-note">The mobile sync carries current ESPN state, the matching prior ESPN capture when available, ROS rankings, and the desktop-selected team. Desktop-only projection catalogs and import tools are not silently copied.</p>`);
+const syncPanel = replacePanelByHeading("Encrypted device sync", `<div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Private synced viewer</h3></div><span class="quality fresh">Read-only</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>AES-256-GCM</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Latest ESPN capture</dt><dd>${base.escapeHtml(captured)}</dd></div></dl><p class="data-note">This phone checks the encrypted channel when you reopen or return to the app. Use the button below any time you want to check immediately.</p><div class="sync-actions"><button class="button secondary" id="check-mobile-sync-button" type="button">Check for updates</button></div><p class="data-note" id="mobile-sync-check-status" aria-live="polite"></p><p class="data-note">The mobile sync carries current ESPN state, the matching prior ESPN capture when available, ROS rankings, and the desktop-selected team. Desktop-only projection catalogs and import tools are not silently copied.</p>`);
 for (const button of deps.content.querySelectorAll(".league-grid button")) {
   if (button.id !== "check-mobile-sync-button") button.hidden = true;
 }
+bindMobileCheckButton(syncPanel);
 }
 
 function decorateRenderedSource() {
@@ -162,25 +186,6 @@ function render(...args) {
 const result = base.render(...args);
 decorateRenderedSource();
 return result;
-}
-
-if (deps.content?.addEventListener) {
-  deps.content.addEventListener("click", async (event) => {
-    const button = event.target.closest?.("#check-mobile-sync-button");
-    if (!button) return;
-    const originalLabel = button.textContent;
-    button.disabled = true;
-    button.textContent = "Checking…";
-    try {
-      const result = await mobileUpdater.check({ force: true });
-      if (result.status === "current") deps.showNotice("Mobile data is already current.", "success");
-    } finally {
-      if (button.isConnected) {
-        button.disabled = false;
-        button.textContent = originalLabel;
-      }
-    }
-  });
 }
 
 return Object.freeze({
