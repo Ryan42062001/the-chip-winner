@@ -94,9 +94,11 @@ The weekly checklist surfaces both actionable IR-space opportunities and IR-inva
 
 ## Multiweek boundary
 
-The current Season Plan multiweek scenario engine still models explicit add/drop rosters. IR-assisted no-drop recommendations are deliberately excluded from that older planner until it can carry the retained player in IR across every future week and enforce complete player-week coverage for both the active and IR-retained rosters.
+Season Plan may carry a current `ir-assisted-add` recommendation into the multiweek scenario engine only through the explicit IR-aware path introduced in v0.9.65. The future simulation preserves the same two-step meaning: the supported bench player is retained on the roster in an ESPN `IR` slot and the waiver target is added to the active roster with no drop.
 
-This prevents a current-week IR convenience from silently becoming an unsupported multiweek roster assumption.
+Before the planner evaluates future weeks it independently confirms that the latest ESPN-derived waiver engine still emits the matching add and IR-move player. It then requires complete mapped projection coverage for every selected week across both the baseline roster and the full simulated roster, including the IR-retained player. If any required player-week mapping or projection is missing, that week's comparison and the selected-horizon delta are withheld.
+
+The planner never converts an IR-assisted path into an ordinary add/drop, never invents a dropped player, never removes the retained injured player from projection coverage, and never mutates the ESPN source snapshot. This keeps the multiweek convenience inside the same fail-closed, read-only boundary as the current-week recommendation.
 
 ## Limitations
 
