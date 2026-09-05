@@ -57,7 +57,8 @@
       "title": "Authenticated acquisition and position limits",
       "status": "pending",
       "evidence": [
-        "2026-09-05: Live authenticated refresh reached ESPN roster settings but v0.9.72 rejected an unsupported roster position-limit id 6 before normalization. v0.9.73 adds fail-closed handling for unsupported unlimited/disabled limits; live retest required."
+        "2026-09-05: Live authenticated refresh reached ESPN roster settings but v0.9.72 rejected an unsupported roster position-limit id 6 before normalization. v0.9.73 adds fail-closed handling for unsupported unlimited/disabled limits.",
+        "2026-09-05: User retested the deployed v0.9.73 production site against the same authenticated ESPN league and confirmed Refresh ESPN completed successfully. Normalization compatibility is now verified for this live roster-limit shape; acquisition-cap and waiver-legality behavior still require live validation before FV-ESPN-03 can pass."
       ],
       "notes": "Observe real acquisition caps, roster-size rules, and provider-position limits and confirm waiver legality matches ESPN-reported state."
     },
