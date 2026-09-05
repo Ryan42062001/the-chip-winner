@@ -85,6 +85,29 @@
     line-height: 1.12;
   }
 
+  /*
+   * League Setup is information-dense. At the real 200%-zoom field width,
+   * keeping its desktop two-column grid forces long setting labels/values to
+   * create intrinsic overflow. Stack those panels and allow their text to
+   * wrap rather than making the entire page horizontally scroll.
+   */
+  .league-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel,
+  .league-grid > *,
+  .settings-list,
+  .settings-list > div {
+    min-width: 0;
+  }
+
+  .settings-list dt,
+  .settings-list dd {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .notice {
     margin-left: clamp(16px, 3vw, 28px);
     margin-right: clamp(16px, 3vw, 28px);
