@@ -100,6 +100,33 @@ test("mobile updater reports current state and throttles duplicate foreground ch
   assert.equal(statuses.at(-1).kind, "success");
 });
 
+test("manual mobile check still reports current when it joins an automatic check already in flight", async () => {
+  let releaseRead;
+  let readCount = 0;
+  const statuses = [];
+  const updater = createMobileSyncUpdater({
+    read: async () => {
+      readCount += 1;
+      await new Promise((resolve) => { releaseRead = resolve; });
+      return { createdAt: "2026-09-05T23:20:00.000Z", payload: {} };
+    },
+    reload: () => { throw new Error("Current data must not reload."); },
+    onStatus: (message, kind) => statuses.push({ message, kind }),
+  });
+  updater.activate({ channelId: "reader", encryptionKey: "key" }, "2026-09-05T23:20:00.000Z");
+
+  const automatic = updater.check({ force: true });
+  await Promise.resolve();
+  const manual = updater.check({ force: true, notifyWhenCurrent: true });
+  releaseRead();
+  assert.equal((await automatic).status, "current");
+  assert.equal((await manual).status, "current");
+  assert.equal(readCount, 1);
+  assert.equal(statuses.length, 1);
+  assert.match(statuses[0].message, /already current/i);
+  assert.equal(statuses[0].kind, "success");
+});
+
 test("mobile updater fails closed when a previously loaded channel is revoked", async () => {
   let reloadCount = 0;
   const statuses = [];
