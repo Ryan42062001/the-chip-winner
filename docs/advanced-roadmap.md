@@ -62,6 +62,8 @@ Acceptance criteria:
 
 ### Projection-provider implementation
 
+Status: **Implemented for strict local imports, with a zero-cost weekly PPR acquisition path added in v0.9.57.** The app's provider-neutral weekly contract remains independent from ESPN ingestion. The local DynastyProcess stager reads its public FantasyPros-derived weekly file, retains the source-published PPR `r2p_pts` estimate, joins only through the published FantasyPros-to-ESPN ID crosswalk, requires the NFL week explicitly because the upstream file omits it, records publication provenance, and excludes unresolved or ambiguous IDs rather than using names. The third-party weekly dataset is not bundled into the public site, and the PPR estimate is not relabeled as a custom ESPN-scoring projection.
+
 - Implement the existing projection-provider contract for one trustworthy source.
 - Follow the source selection, licensing gate, and shadow-mode bake-off in [`projection-source-research.md`](projection-source-research.md).
 - Keep ESPN and external projections separately queryable.
@@ -75,6 +77,7 @@ Acceptance criteria:
 - A projection cannot be used for an incompatible scoring format without an explicit conversion.
 - Stale projections are labeled and reduce recommendation confidence.
 - Missing floor or ceiling data does not generate inferred values.
+- Zero-cost staging never guesses the omitted NFL week or repairs missing provider mappings by display name.
 
 ### Player detail view
 
@@ -215,7 +218,7 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
-Status: in progress. Season Plan reports positional depth, starter bye conflicts, ESPN-reported fantasy opponents and complete/partial/ambiguous schedule coverage for the selected horizon, repeated opponents matched only by ESPN team ID, explicitly supplied playoff weeks, and explicitly supplied playoff schedule-strength fields. When ESPN omits playoff weeks, the app requires a labeled league/season-scoped browser-local selection and never infers the boundary. Completely mapped future weeks expose optimized starter assignments and the hold-current-roster baseline. Isolated add/drop scenarios show weekly and selected-horizon deltas only when both baseline and simulated rosters have complete coverage for every included week. Missing and duplicate ESPN matchup records are visible, and no opponent strength is inferred. Projection provider, scoring format, source capture time, freshness, ESPN season/scoring compatibility, ID-map size, player-week coverage, persisted user-selectable horizons, per-week usable/blocked readiness and withheld-delta reasons are visible. CSV imports require consistent source metadata on every row; import time is never mislabeled as source capture time. Incompatible sources are blocked; stale sources remain explicitly warned. Missing identity mappings are distinguished from missing week-specific projection values for both the selected roster and top current ESPN waiver candidates, with exact ESPN identities available in the repair report; names are informational and never used for provider joins. Position-specific NFL schedule strength still requires a documented external data source and method.
+Status: in progress through v0.9.57. Season Plan reports positional depth, starter bye conflicts, ESPN-reported fantasy opponents and complete/partial/ambiguous schedule coverage for the selected horizon, repeated opponents matched only by ESPN team ID, explicitly supplied playoff weeks, and explicitly supplied playoff schedule-strength fields. When ESPN omits playoff weeks, the app requires a labeled league/season-scoped browser-local selection and never infers the boundary. Completely mapped future weeks expose optimized starter assignments and the hold-current-roster baseline. Isolated add/drop scenarios show weekly and selected-horizon deltas only when both baseline and simulated rosters have complete coverage for every included week. Missing and duplicate ESPN matchup records are visible, and no opponent strength is inferred. Projection provider, scoring format, source capture time, freshness, ESPN season/scoring compatibility, ID-map size, player-week coverage, persisted user-selectable horizons, per-week usable/blocked readiness and withheld-delta reasons are visible. CSV imports require consistent source metadata on every row; import time is never mislabeled as source capture time. Incompatible sources are blocked; stale sources remain explicitly warned. Missing identity mappings are distinguished from missing week-specific projection values for both the selected roster and top current ESPN waiver candidates, with exact ESPN identities available in the repair report; names are informational and never used for provider joins. v0.9.57 adds a zero-cost local PPR staging route for each actually published DynastyProcess weekly file so coverage can accumulate without a paid API while retaining stable ID and provenance gates. Position-specific NFL schedule strength still requires a documented external data source and method.
 
 Goal: support roster construction beyond the immediate week.
 
@@ -454,7 +457,6 @@ Sprint exit criteria:
 - Users can inspect what changed and why a record was rejected.
 - All required repository gates pass and the deployed production URL is verified.
 
+## Recommended next sprint: accumulate real zero-cost weekly coverage
 
-## Recommended next sprint: complete real projection coverage
-
-Use the candidate-aware projection repair report to import and explicitly map each available weekly FantasyPros export. Keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage. Do not add a new provider or infer identities by display name.
+Use `npm run projections:dynastyprocess-weekly -- --season <year> --week <week>` for each actually published PPR week, review the provenance sidecar and unresolved-ID list, and merge the generated projection/identity files through the existing atomic local import flow. Keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage across the selected horizon. Do not infer an NFL week from the scrape date, mirror the third-party weekly dataset into the public site, or repair unresolved IDs by display name.
