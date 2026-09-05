@@ -6,6 +6,27 @@
  * the off-canvas navigation and a two-row header before the full desktop shell
  * becomes cramped.
  */
+
+/*
+ * A zoomed or otherwise short viewport can be much shorter than the sidebar's
+ * full navigation list. Keep the brand and source status stable while letting
+ * the primary navigation become its own vertical scroll region. This applies
+ * at every width so keyboard focus and pointer scrolling remain usable on
+ * compact desktop and mobile layouts alike.
+ */
+.sidebar > .brand,
+.sidebar > .sidebar-status {
+  flex: 0 0 auto;
+}
+
+.sidebar > nav {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+
 @media (min-width: 721px) and (max-width: 1000px) {
   .app-shell {
     display: block;
