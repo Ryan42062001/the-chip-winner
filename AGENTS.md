@@ -31,7 +31,7 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - Never invent player identities, rankings, projections, injuries, availability, kickoff times, or league rules.
 - Preserve `null` as missing data; do not coerce it to zero.
 - Use provider-owned IDs and explicit identity maps. Do not join projection providers by display name.
-- The zero-cost DynastyProcess weekly path may use only its published FantasyPros-to-ESPN stable ID crosswalk. Exclude missing or conflicting mappings; never repair them by name.
+- The zero-cost DynastyProcess weekly path normally uses its published FantasyPros-to-ESPN stable ID crosswalk. D/ST may derive ESPN's synthetic team-defense identity only from the source-published NFL team code plus the explicit ESPN pro-team table. A narrow reviewed athlete bridge may activate only for documented FantasyPros IDs when the current DynastyProcess player-ID table independently still publishes the reviewed ESPN ID on an otherwise-unassigned FantasyPros row. If that evidence disappears, the mapping stays unresolved; if the ESPN ID becomes claimed by a different FantasyPros ID, staging fails closed. Never repair gaps by display name.
 - Treat DynastyProcess `r2p_pts` as a source-published PPR weekly estimate. Do not relabel it as a custom ESPN scoring projection, and require an explicit NFL week because the upstream file does not publish one.
 - Respect ESPN lineup eligibility, bench/IR status, availability, acquisition rules, and game locks only where ESPN supplies authoritative inputs.
 - Keep browser credentials and ESPN cookies out of snapshots, sync payloads, model context, logs, and tests.
@@ -71,7 +71,7 @@ Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain
 
 Work in the dependency order maintained in `docs/roadmap.md`. At the current stage that means:
 
-1. Complete real multiweek projection coverage using the zero-cost local DynastyProcess weekly PPR staging path where source rows and stable FantasyPros-to-ESPN IDs are available. Keep exact missing player-week and identity gaps visible; do not infer the source's missing week field or unresolved IDs.
+1. Complete real multiweek projection coverage using the zero-cost local DynastyProcess weekly PPR staging path where source rows and stable identity evidence are available. Keep exact missing player-week and identity gaps visible; do not infer the source's missing week field or unresolved IDs. Preserve the explicit D/ST bridge and fail-closed reviewed identity bridges; provider-ID rollover/alias cases such as Roman Wilson remain gated until supersession semantics are designed safely.
 2. Finish the remaining Waiver Engine v2 gaps: model IR transitions only when ESPN exposes authoritative eligibility/rule inputs, and add multiweek impact only after projection coverage gates pass. Refresh-obsolete recommendation revalidation is complete and must remain deterministic and explainable.
 3. Finish season/playoff intelligence with a documented, approved position-specific strength-of-schedule source and methodology before displaying difficulty grades.
 4. Complete production-readiness closeout: manual accessibility, companion threat review, recovery/deletion checks, and materially different live ESPN league states.
