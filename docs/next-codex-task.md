@@ -7,13 +7,13 @@ Copy the block below into a new Codex task.
 ```text
 Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documents\ChatGPT\The Chip Winner.
 
-Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, and docs/ir-eligibility.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
+Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, docs/ir-eligibility.md, and docs/season-playoff-intelligence.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: expected protected master after the v0.9.69 Waiver Engine v2 closeout release. Do not trust a SHA copied into this handoff; fetch origin/master and verify the actual tip before editing. The expected release baseline is 300 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass test, deploy, and production smoke verification.
+Checkpoint: expected protected master after the v0.9.70 Season/Playoff Intelligence release. Do not trust a SHA copied into this handoff; fetch origin/master and verify the actual tip before editing. The expected release baseline is 313 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass test, deploy, and production smoke verification.
 
 Core product boundary:
 - ESPN-only, read-only in-season fantasy football companion.
-- ESPN owns league state, roster rules, availability, locks, acquisition state, current week, injury designation, lineup slot, and IR capacity.
+- ESPN owns league state, roster rules, availability, locks, acquisition state, current week, injury designation, lineup slot, fantasy matchups, and explicit playoff weeks when supplied.
 - External rankings/projections remain overlays.
 - Preserve null as missing; never turn unknown values into zero.
 - Use provider IDs and explicit identity maps only; never join by display name.
@@ -56,16 +56,30 @@ Waiver Engine v2 is complete in v0.9.69. Preserve all of these behaviors:
 - Unknown future transaction kinds fail closed.
 - Source ESPN snapshots are never mutated.
 
-Current priorities after v0.9.69:
+Season/Playoff Intelligence is complete for the reviewed deterministic scope in v0.9.70. Preserve these boundaries:
+- ESPN-reported playoff weeks are authoritative. A browser-local league-and-season playoff selection is a labeled fallback only when ESPN omits the field.
+- ESPN fantasy playoff opponents are schedule facts, not NFL defensive grades or win probabilities.
+- Bye coverage removes players only for explicit known bye weeks and computes maximum legal starter-slot fillability from the current non-IR roster.
+- Missing bye weeks remain unknown.
+- When FLEX/OP eligibility allows multiple equally valid maximum lineups, report the uncovered-slot count and possible affected slot types rather than inventing a unique missing slot.
+- Playoff weekly outlook uses only compatible explicitly mapped future weekly projections.
+- Playoff total, average, high/low week, stable starters, and starter turnover are withheld unless every configured playoff week has complete baseline-roster coverage.
+- FantasyPros `SOS SEASON` / `SOS PLAYOFFS` are optional values from the user's imported ROS CSV only. Do not scrape or silently refresh FantasyPros SOS.
+- FantasyPros publicly describes its 2026 fantasy SOS as position-specific Fantasy Points Allowed adjusted for strength of schedule. The Chip Winner does not recompute that methodology.
+- The imported CSV does not prove the exact week range behind `SOS PLAYOFFS`; label it as source-defined FantasyPros playoff context and never claim it matches this ESPN league's configured playoff window.
+- Keep ESPN schedule facts, DynastyProcess weekly future points, and FantasyPros SOS stars separately inspectable. Never combine them into a hidden playoff score or championship probability.
+
+Current priorities after v0.9.70:
 1. Accumulate real DynastyProcess multiweek coverage through the explicit browser workflow as new weekly publications appear.
-2. Finish season/playoff intelligence only after approving and documenting a position-specific strength-of-schedule source and methodology.
-3. Complete production-readiness closeout: manual keyboard/screen-reader/200% zoom/mobile checks, Chrome companion threat review, recovery/deletion/mobile-sync revocation, and authenticated materially different ESPN league states.
-4. Use those authenticated league states as field validation of the already-complete Waiver Engine v2. Reopen implementation only for a reproduced defect.
-5. Observe real waiver candidate volume/timing as multiweek coverage grows. If exhaustive enumeration becomes materially slow, define a visible documented shortlist policy before changing behavior; never silently truncate candidates.
-6. Keep the browser UI maintainable as feature depth grows without creating a second application state owner.
+2. Complete production-readiness closeout: manual keyboard/screen-reader/200% zoom/mobile checks, Chrome companion threat review, recovery/deletion/mobile-sync revocation, and authenticated materially different ESPN league states.
+3. Use authenticated league states as field validation of the already-complete Waiver Engine v2 and Season/Playoff Intelligence. Reopen deterministic implementation only for a reproduced defect.
+4. Observe real waiver candidate volume/timing as multiweek coverage grows. If exhaustive enumeration becomes materially slow, define a visible documented shortlist policy before changing behavior; never silently truncate candidates.
+5. Keep the browser UI maintainable as feature depth grows without creating a second application state owner.
+6. Keep playoff qualification/championship probability separate until a calibrated model and explicit data policy are reviewed.
 
 Still gated:
 - future-only IR-assisted stash discovery (separate policy review);
+- playoff qualification/championship probability modeling;
 - trade analysis;
 - external notifications;
 - server-side model integration;
