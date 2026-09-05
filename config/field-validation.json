@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseTarget": "1.0",
-  "baselineVersion": "0.9.79",
+  "baselineVersion": "0.9.80",
   "items": [
     {
       "id": "FV-A11Y-01",
@@ -41,9 +41,10 @@
       "title": "Representative physical phone workflow",
       "status": "passed",
       "evidence": [
-        "2026-09-05: User exercised the deployed site on a representative physical phone and confirmed the mobile workflow looked good across primary navigation, player detail, Waivers, Season Plan, and League Setup. No important clipping, overlap, or required horizontal page scrolling was reported, and the controls remained usable by touch."
+        "2026-09-05: User exercised the deployed site on a representative physical phone and confirmed the mobile workflow looked good across primary navigation, player detail, Waivers, Season Plan, and League Setup. No important clipping, overlap, or required horizontal page scrolling was reported, and the controls remained usable by touch.",
+        "2026-09-05: v0.9.80 candidate expands deterministic phone coverage across all seven primary sections, adds small-portrait and landscape synced-viewer audits, dynamic-viewport/safe-area hardening, touch-target checks, player-detail checks, and true-phone League Setup overflow guards. This automated evidence preserves but does not replace the prior physical-phone field pass."
       ],
-      "notes": "Representative physical-phone UI workflow passed. Encrypted cross-device sync lifecycle is tracked separately by FV-SYNC-01."
+      "notes": "Representative physical-phone UI workflow passed. v0.9.80 adds deployment-blocking synced-phone regression coverage; encrypted cross-device sync lifecycle remains tracked separately by FV-SYNC-01."
     },
     {
       "id": "FV-ESPN-01",
@@ -117,9 +118,11 @@
         "2026-09-05: During real encrypted mobile-sync setup, the user reported that Refresh mobile data and Copy mobile link appeared to take a long time. Review found that successful sync actions disabled the initiating button but only restored it on error, so refresh/copy could remain visibly disabled until a later rerender; sync HTTP calls also lacked an explicit timeout.",
         "2026-09-05: v0.9.78 candidate restores mounted sync buttons after both success and failure, provides explicit busy labels, and bounds publish/read/delete requests with an 8-second timeout. Automated unit/browser coverage verifies refresh and copy return to enabled state after success. Real deployed create/read/refresh/revoke/delete retest is still required before this item can pass.",
         "2026-09-05: During the deployed v0.9.78 sync lifecycle retest, the private phone link loaded the correct ESPN league but opened a different league team than the desktop-selected team. Review reproduced the cause without retaining private league data: the encrypted sync payload omitted selectedTeamId, and a synced load therefore fell back to the first team in the snapshot.",
-        "2026-09-05: v0.9.79 candidate carries selectedTeamId inside the AES-256-GCM encrypted payload, validates that it belongs to the synced snapshot, and re-selects it immediately after mobile load. Regression coverage protects selected-team round-trip, invalid-team fail-closed behavior, legacy payload readability, and the mobile renderer's team-selection dispatch. Real deployed retest is still required before this item can pass."
+        "2026-09-05: v0.9.79 candidate carries selectedTeamId inside the AES-256-GCM encrypted payload, validates that it belongs to the synced snapshot, and re-selects it immediately after mobile load. Regression coverage protects selected-team round-trip, invalid-team fail-closed behavior, legacy payload readability, and the mobile renderer's team-selection dispatch. Real deployed retest is still required before this item can pass.",
+        "2026-09-05: Pre-field v0.9.80 audit found that synced navigation could replace the private #mobile-sync fragment with a normal section hash, making later reloads lose read credentials, and that What Changed could never receive the prior ESPN capture. v0.9.80 preserves the encrypted fragment during all synced routes, carries only a validated same-league prior snapshot, fails malformed links closed, and makes synced League Setup explicitly read-only.",
+        "2026-09-05: v0.9.80 adds a deployment-blocking encrypted sync browser audit at 320x568, 390x844, and 844x390 covering exact selected-team restoration, all seven sections, navigation/reload credential preservation, prior-state What Changed rendering, read-only League Setup, player detail, touch/reflow checks, and revoked/malformed links. Real deployed refresh/read/revoke field retest is still required before this item can pass."
       ],
-      "notes": "Pending deployed v0.9.79 mobile-sync lifecycle retest: confirm the phone opens the same desktop-selected team, refresh succeeds, revoke succeeds, and the revoked link no longer loads."
+      "notes": "Pending deployed v0.9.80 mobile-sync lifecycle retest: confirm the phone opens the same desktop-selected team, navigation and reload keep that private view, refresh succeeds, revoke succeeds, and the revoked link no longer loads."
     },
     {
       "id": "FV-WAIVER-01",

@@ -31,6 +31,7 @@ jobs:
       - run: npm run smoke:browser
       - run: npm run audit:a11y
       - run: npm run audit:readiness
+      - run: npm run audit:mobile
       - run: npm run audit:extension
       - run: npm run audit:performance
       - run: npm run security

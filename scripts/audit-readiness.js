@@ -86,7 +86,7 @@ async function assertSidebarNavigationReachable(page, label) {
   });
 
   if (!metrics) throw new Error(`${label} could not find the sidebar navigation or League Setup link.`);
-  if (!['auto', 'scroll'].includes(metrics.overflowY)) {
+  if (!["auto", "scroll"].includes(metrics.overflowY)) {
     throw new Error(`${label} sidebar navigation is not vertically scrollable (overflow-y: ${metrics.overflowY}).`);
   }
   if (metrics.scrollHeight > metrics.clientHeight + 1 && metrics.afterScrollTop <= metrics.beforeScrollTop) {
@@ -108,7 +108,7 @@ async function openSample(page) {
 }
 
 async function auditSections(page, label) {
-  for (const section of ["overview", "lineup", "waivers", "alerts", "season", "league"]) {
+  for (const section of ["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]) {
     const menu = page.locator(".mobile-menu");
     if (await menu.isVisible()) {
       if (await menu.getAttribute("aria-expanded") !== "true") await menu.click();
@@ -143,14 +143,15 @@ try {
   await auditSections(zoomPage, "1440x900-at-200%-equivalent");
   await zoomContext.close();
 
-  const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+  const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const mobilePage = await mobileContext.newPage();
   await openSample(mobilePage);
   await assertNoHorizontalOverflow(mobilePage, "390px phone overview");
+  await assertSidebarNavigationReachable(mobilePage, "390px phone shell");
   await auditSections(mobilePage, "390px phone");
   await mobileContext.close();
 
-  console.log("Production-readiness reflow audit passed at 960x525 and 720x450 200%-equivalent desktop viewports plus 390x844 mobile across all primary sections, including scroll-reachable League Setup navigation.");
+  console.log("Production-readiness reflow audit passed at 960x525 and 720x450 200%-equivalent desktop viewports plus 390x844 mobile across all seven primary sections, including scroll-reachable League Setup navigation.");
 } finally {
   await browser?.close();
   server.kill();
