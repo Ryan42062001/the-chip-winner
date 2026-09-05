@@ -140,6 +140,19 @@ try {
   browser = await chromium.launch({ executablePath, headless: true, args: ["--no-sandbox"] });
 
   const desktop = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await desktop.grantPermissions(["clipboard-read", "clipboard-write"], { origin });
+  await desktop.route("https://the-chip-winner-sync.yc6syr6bkd.workers.dev/v1/channels/**", async (route) => {
+    const method = route.request().method();
+    if (method === "PUT") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true }) });
+      return;
+    }
+    if (method === "DELETE") {
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+    await route.fulfill({ status: 404, contentType: "application/json", body: JSON.stringify({ error: "not found" }) });
+  });
   const page = await desktop.newPage();
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -168,6 +181,20 @@ try {
   await page.locator('a[data-section="league"]').click();
   await page.getByRole("heading", { name: "Standings overview", level: 3 }).waitFor();
   await page.getByRole("heading", { name: "Reported schedule", level: 3 }).waitFor();
+
+  await page.getByRole("button", { name: "Create mobile link" }).click();
+  await page.getByText(/Private mobile link created/).waitFor();
+  const refreshMobileButton = page.getByRole("button", { name: "Refresh mobile data" });
+  await refreshMobileButton.click();
+  await page.getByText(/Mobile data refreshed\./).waitFor();
+  if (await refreshMobileButton.isDisabled()) throw new Error("Refresh mobile data remained disabled after a successful publish.");
+  const copyMobileButton = page.getByRole("button", { name: "Copy mobile link" });
+  await copyMobileButton.click();
+  await page.getByText(/Private mobile link copied\./).waitFor();
+  if (await copyMobileButton.isDisabled()) throw new Error("Copy mobile link remained disabled after a successful clipboard write.");
+  const copiedMobileLink = await page.evaluate(() => navigator.clipboard.readText());
+  if (!copiedMobileLink.includes("#mobile-sync=")) throw new Error("Copied mobile link did not contain encrypted sync credentials.");
+
   await page.locator("#fantasypros-manual-input").setInputFiles([
     { name: "FantasyPros_QB.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,FPTS\nManual QB,PHI,21.4") },
     { name: "FantasyPros_FLX.csv", mimeType: "text/csv", buffer: Buffer.from("Player,Team,POS,FPTS\nManual RB,DAL,RB,12.2") },
@@ -245,7 +272,7 @@ try {
   if (filledIr.pageErrors.length) throw new Error(`IR filled-capacity browser errors: ${filledIr.pageErrors.join(" | ")}`);
   await filledIr.context.close();
 
-  console.log("Desktop, mobile, and IR Season Plan browser smoke checks passed.");
+  console.log("Desktop, mobile, mobile-sync, and IR Season Plan browser smoke checks passed.");
 } finally {
   await browser?.close();
   server.kill();
