@@ -5,6 +5,7 @@ import { parseCsvRows } from "../scripts/lib/fantasypros-manual-csv.js";
 
 const WEEKLY_URL = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/fp_latest_weekly.csv";
 const IDS_URL = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv";
+const MISSING_IDS_URL = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/missing_ids.json";
 const ESPN_URL = "https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2026/segments/0/leaguedefaults/1?view=kona_player_info&scoringPeriodId=1";
 
 const ESPN_POSITION_ID = Object.freeze({ QB: 1, RB: 2, WR: 3, TE: 4, K: 5 });
@@ -64,6 +65,28 @@ function unresolvedDetails(weeklyCsv, playerIdsCsv, bundle) {
   return { weeklyFields, idFields, byPosition, details };
 }
 
+async function liveEspnPlayers() {
+  const espnText = await getText(ESPN_URL, { "x-fantasy-filter": JSON.stringify({ players: { limit: 5000, sortPercOwned: { sortPriority: 1, sortAsc: false } } }) });
+  const payload = JSON.parse(espnText);
+  const entries = Array.isArray(payload?.players) ? payload.players : Array.isArray(payload) ? payload : [];
+  return entries.map(unwrapPlayer).filter(Boolean);
+}
+function candidatePlayers(report, players) {
+  return report.details.map((detail) => {
+    const source = detail.weekly || {};
+    const positionId = ESPN_POSITION_ID[source.pos];
+    const teamId = ESPN_TEAM_ID[source.team] || null;
+    const sourceLast = lastNameToken(source.player_name);
+    const candidates = players.filter((player) => {
+      if (Number(player.defaultPositionId) !== positionId) return false;
+      if (teamId && Number(player.proTeamId) !== teamId) return false;
+      const espnLast = lastNameToken(player.fullName || `${player.firstName || ""} ${player.lastName || ""}`);
+      return sourceLast && espnLast === sourceLast;
+    });
+    return { detail, candidates };
+  });
+}
+
 test("TEMPORARY classify every unresolved DynastyProcess weekly identity", { timeout: 120_000 }, async () => {
   const { weeklyCsv, playerIdsCsv, bundle } = await sourceData();
   const report = unresolvedDetails(weeklyCsv, playerIdsCsv, bundle);
@@ -74,30 +97,35 @@ test("TEMPORARY classify every unresolved DynastyProcess weekly identity", { tim
 });
 
 test("TEMPORARY inspect live ESPN candidates for unresolved identities", { timeout: 120_000 }, async () => {
-  const [{ weeklyCsv, playerIdsCsv, bundle }, espnText] = await Promise.all([
-    sourceData(),
-    getText(ESPN_URL, { "x-fantasy-filter": JSON.stringify({ players: { limit: 5000, sortPercOwned: { sortPriority: 1, sortAsc: false } } }) })
-  ]);
+  const [{ weeklyCsv, playerIdsCsv, bundle }, players] = await Promise.all([sourceData(), liveEspnPlayers()]);
   const report = unresolvedDetails(weeklyCsv, playerIdsCsv, bundle);
-  const payload = JSON.parse(espnText);
-  const entries = Array.isArray(payload?.players) ? payload.players : Array.isArray(payload) ? payload : [];
-  const players = entries.map(unwrapPlayer).filter(Boolean);
   console.log(`ESPN_PLAYER_SHAPE_KEYS ${JSON.stringify(Object.keys(players[0] || {}).sort())}`);
-
-  let uniqueCandidateCount = 0;
-  for (const detail of report.details) {
+  const candidateReport = candidatePlayers(report, players);
+  const uniqueCandidateCount = candidateReport.filter((item) => item.candidates.length === 1).length;
+  for (const { detail, candidates } of candidateReport) {
     const source = detail.weekly || {};
-    const positionId = ESPN_POSITION_ID[source.pos];
-    const teamId = ESPN_TEAM_ID[source.team] || null;
-    const sourceLast = lastNameToken(source.player_name);
-    const candidates = players.filter((player) => {
-      if (Number(player.defaultPositionId) !== positionId) return false;
-      if (teamId && Number(player.proTeamId) !== teamId) return false;
-      const espnLast = lastNameToken(player.fullName || `${player.firstName || ""} ${player.lastName || ""}`);
-      return sourceLast && espnLast === sourceLast;
-    }).map(inspectEspnPlayer);
-    if (candidates.length === 1) uniqueCandidateCount += 1;
-    console.log(`ESPN_UNRESOLVED_CANDIDATE ${JSON.stringify({ fantasypros_id: detail.fantasypros_id, source: { name: source.player_name, pos: source.pos, team: source.team, rank: source.pos_rank, owned: source.player_owned_avg }, candidateCount: candidates.length, candidates })}`);
+    console.log(`ESPN_UNRESOLVED_CANDIDATE ${JSON.stringify({ fantasypros_id: detail.fantasypros_id, source: { name: source.player_name, pos: source.pos, team: source.team, rank: source.pos_rank, owned: source.player_owned_avg }, candidateCount: candidates.length, candidates: candidates.map(inspectEspnPlayer) })}`);
   }
   console.log(`ESPN_UNRESOLVED_CANDIDATE_SUMMARY ${JSON.stringify({ unresolvedCount: report.details.length, uniqueCandidateCount, espnPoolCount: players.length })}`);
+});
+
+test("TEMPORARY inspect DynastyProcess partial missing-id records", { timeout: 120_000 }, async () => {
+  const [{ weeklyCsv, playerIdsCsv, bundle }, players, missingIdsText] = await Promise.all([sourceData(), liveEspnPlayers(), getText(MISSING_IDS_URL)]);
+  const report = unresolvedDetails(weeklyCsv, playerIdsCsv, bundle);
+  const candidateReport = candidatePlayers(report, players);
+  const missingIds = JSON.parse(missingIdsText);
+  assert.ok(Array.isArray(missingIds));
+
+  const directFantasyProsMatches = report.details.map((detail) => ({
+    fantasypros_id: detail.fantasypros_id,
+    rows: missingIds.filter((row) => clean(row?.fantasypros_id) === detail.fantasypros_id)
+  })).filter((item) => item.rows.length);
+  console.log(`PARTIAL_ID_FANTASYPROS_MATCHES ${JSON.stringify(directFantasyProsMatches)}`);
+
+  for (const { detail, candidates } of candidateReport.filter((item) => item.candidates.length === 1)) {
+    const espnId = clean(candidates[0].id);
+    const partialRows = missingIds.filter((row) => clean(row?.espn_id) === espnId);
+    console.log(`PARTIAL_ID_ESPN_MATCH ${JSON.stringify({ fantasypros_id: detail.fantasypros_id, name: detail.weekly?.player_name, espn_id: espnId, partialRows })}`);
+  }
+  console.log(`PARTIAL_ID_SUMMARY ${JSON.stringify({ missingIdsCount: missingIds.length, directFantasyProsMatchCount: directFantasyProsMatches.length })}`);
 });
