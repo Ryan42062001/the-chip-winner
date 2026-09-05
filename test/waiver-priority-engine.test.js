@@ -121,7 +121,7 @@ test("priority board exposes current, future, roster-fit, replacement, and prese
   assert.equal(receiver.priorityBand, 1);
   assert.equal(back.priorityBand, 1);
   assert.match(board.limitations.join(" "), /Pareto dominance/);
-  assert.match(board.limitations.join(" "), /No universal positional-need threshold/);
+  assert.match(board.limitations.join(" "), /no universal positional-need threshold/i);
 });
 
 test("priority board preserves blocked future evidence as blocked instead of falling back to zero", () => {
