@@ -19,7 +19,12 @@ function baseSnapshot({ addCount = 1, benchCount = 2, addProjection = 9 } = {}) 
     meta: { capturedAt: "2026-09-05T12:00:00.000Z" },
     league: {
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 },
-      lineupSlots: [{ slot: "IR", count: 1 }]
+      lineupSlots: [
+        { slot: "QB", count: 1 },
+        { slot: "FLEX", count: 1 },
+        { slot: "BE", count: benchCount },
+        { slot: "IR", count: 1 }
+      ]
     },
     teams: [{ id: "mine", acquisition: { waiverRank: 3, seasonAcquisitions: 0, matchupAcquisitions: 0 } }],
     players: [
