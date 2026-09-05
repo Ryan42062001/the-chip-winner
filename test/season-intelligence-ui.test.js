@@ -66,7 +66,7 @@ test("section renderer wires season intelligence through the wrapper instead of 
   const base = await readFile(new URL("../src/ui/section-renderer-base.js", import.meta.url), "utf8");
   assert.match(wrapper, /buildSeasonPlayoffIntelligence/);
   assert.match(wrapper, /renderSeasonPlayoffIntelligence/);
-  assert.match(wrapper, /state\.section !== "season"/);
+  assert.match(wrapper, /state\?\.section !== "season"/);
   assert.match(wrapper, /espnPlayoffWeeks \|\|/);
   assert.doesNotMatch(base, /buildSeasonPlayoffIntelligence/);
 });
