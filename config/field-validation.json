@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseTarget": "1.0",
-  "baselineVersion": "0.9.72",
+  "baselineVersion": "0.9.73",
   "items": [
     {
       "id": "FV-A11Y-01",
@@ -56,7 +56,9 @@
       "area": "espn-live-state",
       "title": "Authenticated acquisition and position limits",
       "status": "pending",
-      "evidence": [],
+      "evidence": [
+        "2026-09-05: Live authenticated refresh reached ESPN roster settings but v0.9.72 rejected an unsupported roster position-limit id 6 before normalization. v0.9.73 adds fail-closed handling for unsupported unlimited/disabled limits; live retest required."
+      ],
       "notes": "Observe real acquisition caps, roster-size rules, and provider-position limits and confirm waiver legality matches ESPN-reported state."
     },
     {
