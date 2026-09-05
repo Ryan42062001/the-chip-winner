@@ -67,6 +67,12 @@ body[data-app-source="sync"] #reset-button {
     background: #eef1ed;
     color: var(--green);
     cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .nav-link {
+    min-height: 44px;
+    touch-action: manipulation;
   }
 
   .topbar {
