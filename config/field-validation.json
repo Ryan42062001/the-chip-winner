@@ -58,7 +58,8 @@
       "status": "pending",
       "evidence": [
         "2026-09-05: Live authenticated refresh reached ESPN roster settings but v0.9.72 rejected an unsupported roster position-limit id 6 before normalization. v0.9.73 adds fail-closed handling for unsupported unlimited/disabled limits.",
-        "2026-09-05: User retested the deployed v0.9.73 production site against the same authenticated ESPN league and confirmed Refresh ESPN completed successfully. Normalization compatibility is now verified for this live roster-limit shape; acquisition-cap and waiver-legality behavior still require live validation before FV-ESPN-03 can pass."
+        "2026-09-05: User retested the deployed v0.9.73 production site against the same authenticated ESPN league and confirmed Refresh ESPN completed successfully. Normalization compatibility is now verified for this live roster-limit shape; acquisition-cap and waiver-legality behavior still require live validation before FV-ESPN-03 can pass.",
+        "2026-09-05: User recording of League Setup after successful live refresh showed roster size 16; lineup slots QB 1, RB 2, WR 2, TE 1, D/ST 1, K 1, BE 6, IR 1, FLEX 1; finite position limits QB 4, RB 8, WR 8, TE 3, K 3, D/ST 3; season acquisition limit Unlimited; season acquisitions 0; weekly limit Unlimited; Week 1 acquisitions unavailable; waiver priority 10; processing days unavailable; budget remaining 100. Independent comparison against ESPN league settings is still required before this field item can pass."
       ],
       "notes": "Observe real acquisition caps, roster-size rules, and provider-position limits and confirm waiver legality matches ESPN-reported state."
     },
