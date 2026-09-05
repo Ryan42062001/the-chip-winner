@@ -21,17 +21,23 @@ Choose **Import ROS rankings** to load a FantasyPros rest-of-season CSV. The imp
 
 Weekly FantasyPros projection imports use a stricter provider-ID boundary. See [FantasyPros weekly projection acquisition](docs/fantasypros-api.md).
 
-### Zero-cost weekly PPR staging
+### One-click zero-cost weekly PPR updates
 
-For a no-subscription weekly input, the repository can stage DynastyProcess's public FantasyPros-derived weekly data into the same local projection contracts:
+For a connected real ESPN league, The Chip Winner now handles the normal in-season projection workflow in the browser. ESPN supplies the authoritative season and current scoring week. The site checks DynastyProcess's public FantasyPros-derived weekly publication on load, after a successful ESPN refresh, and when the page later regains focus. When a fresh publication is available, the header control changes to **Update Week X projections** or **Refresh Week X projections**.
+
+The update still requires one explicit click because DynastyProcess's `fp_latest_weekly.csv` does not contain an NFL week column. On the first import, that click is the user's explicit approval to label the latest fresh same-season publication as ESPN's current week. Once a prior week is stored, the next ESPN week will not become updateable until the source publication is newer than the stored previous-week publication. A source publication more than eight days old is also blocked. This prevents a stale Week N-1 file from being silently relabeled as Week N.
+
+After approval, the browser downloads the current weekly file and DynastyProcess player-ID database, keeps the source-published PPR `r2p_pts` signal, runs the existing stable-ID, D/ST, reviewed bridge, provider-supersession, and unresolved-row rules, then commits projection and identity caches through the existing atomic import transaction. Previous weeks remain stored, the selected planning horizon expands to the imported weeks, and failures leave the prior valid caches intact. The browser stores only a small local update receipt/provenance summary; the third-party weekly dataset is never committed to or rehosted by this public repository.
+
+The browser requests only public source data from `raw.githubusercontent.com` and `api.github.com`; it sends no ESPN cookies, credentials, or league payload to those hosts. Generic source `PPR` is treated as the same scoring family as ESPN labels such as `Head to Head PPR`, without relabeling the source as a custom ESPN-scoring projection. Known incompatible scoring families remain blocked.
+
+The command-line stager remains available for development, recovery, and source auditing:
 
 ```bash
 npm run projections:dynastyprocess-weekly -- --season 2026 --week 1
 ```
 
-The command downloads the current `fp_latest_weekly.csv` plus DynastyProcess's cross-platform player-ID database, keeps the source-published PPR `r2p_pts` estimate, and joins FantasyPros IDs to ESPN IDs only through the published ID crosswalk. The upstream weekly file does not contain an NFL week column, so `--week` is required explicitly and is never inferred from the date.
-
-Output is written under ignored `local-data/` as a projection CSV, identity-map CSV, and metadata JSON. The metadata records source/publication provenance, excluded rows, unresolved IDs, and limitations. The weekly dataset is not bundled into or rehosted by the public website. Missing or conflicting IDs are excluded rather than repaired by player name. This path is PPR-only; incompatible ESPN scoring remains blocked by the existing projection compatibility gate.
+It writes ignored `local-data/` projection, identity-map, and metadata files. The command also requires the week explicitly and never infers it from a date. Missing or conflicting athlete IDs remain excluded rather than repaired by display name.
 
 ## Connect an ESPN league
 
@@ -68,7 +74,8 @@ Production releases and safe rollback are documented in [`docs/deployment.md`](d
 - Current-week ESPN-pool replacement benchmark kept separate from legal-lineup gain
 - FantasyPros ROS PPR CSV import with visible reconciliation coverage and separate ROS waiver comparisons
 - Strict provider-ID weekly projection imports, explicit FantasyPros-to-ESPN identity approvals, atomic multiweek merges, capture provenance, and coverage repair reports
-- Zero-cost local DynastyProcess weekly PPR staging with stable FantasyPros-to-ESPN ID crosswalks, explicit week assignment, publication provenance, and fail-closed unresolved mappings
+- One-click browser DynastyProcess weekly PPR updates keyed to ESPN's current week, with guarded publication rollover, retained prior weeks, local receipts, and no scheduled blind week inference
+- Zero-cost local DynastyProcess CLI staging with stable FantasyPros-to-ESPN ID crosswalks, explicit week assignment, publication provenance, and fail-closed unresolved mappings for auditing/recovery
 - Season Plan depth, bye-collision, fantasy-opponent schedule coverage, explicit playoff-week configuration, optimized future lineups, and isolated hold/add/drop scenarios
 - Multiweek scenario totals withheld unless every included week has complete mapped coverage for both baseline and simulated rosters
 - Snapshot differencing, a team-specific **What Changed** timeline, recommendation-change explanations, and persistent prioritized alerts
@@ -126,13 +133,14 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 - Derived suggestions are calculated at runtime and never written back into source snapshots.
 - Imported files are rejected when identities, lineup slots, references, source metadata, or numeric values violate their contracts.
 - Projection-driven multiweek claims are withheld when explicit identity or player-week coverage is incomplete.
-- Free weekly staging never falls back to player-name joins and never claims its source-published PPR estimate is a custom ESPN scoring projection.
+- Free weekly updates never fall back to player-name joins and never claim the source-published PPR estimate is a custom ESPN scoring projection.
+- Source availability checks never send ESPN league state or credentials to DynastyProcess/GitHub; only the public source URLs are requested.
 
 ## Current focus
 
 The read-only foundation is substantially implemented. The active work is to finish it rather than start a new product layer:
 
-1. Use the zero-cost weekly PPR staging path to accumulate real player-week coverage where the source and stable ID crosswalk are available; keep exact gaps visible and never infer missing weeks or identities.
+1. Accumulate real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
 2. Finish the remaining Waiver Engine v2 gaps: authoritative IR handling only when ESPN supplies the required rules/eligibility inputs, then projection-gated multiweek waiver impact after coverage is complete.
 3. Add position-specific schedule difficulty only after approving and documenting a trustworthy source and methodology.
 4. Complete manual accessibility, companion security, recovery/deletion, and materially different live-league validation for the v1.0 read-only release gate.
