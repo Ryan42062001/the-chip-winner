@@ -22,6 +22,9 @@ for (const entry of roster.entries) { const position = entry === dropEntry ? add
 const exceeded = (rules.positionLimits || []).find((rule) => rule.limit >= 0 && (counts.get(rule.position) || 0) > rule.limit);
 return exceeded ? `ESPN ${exceeded.position} roster limit is ${exceeded.limit}.` : null;
 }
+function review(status, reason, lineupGain = null, capacity = null) {
+return Object.freeze({ status, reason, lineupGain, capacity });
+}
 export function evaluateAcquisitionCapacity(snapshot, teamId) {
 const team = snapshot?.teams?.find((item) => item.id === teamId);
 if (!team) return Object.freeze({ status: "missing-team", seasonRemaining: null, matchupRemaining: null, reason: "Selected team acquisition data is unavailable." });
@@ -80,4 +83,34 @@ limitations.push(capacity.status === "available" ? "Known ESPN acquisition limit
 limitations.push(team?.acquisition?.waiverRank == null ? "ESPN waiver priority is unavailable; no claim outcome is predicted." : `ESPN waiver priority is ${team.acquisition.waiverRank}; claim outcomes are not predicted.`);
 if (baseline.status === "best-known") limitations.push("Some roster projections are missing, so gains use the strongest complete lineup among known projections.");
 return { status: "ready", baselineTotal: baseline.projectedTotal, items, limitations, capacity };
+}
+export function revalidateWaiverRecommendation(snapshot, teamId, recommendation, now = Date.now()) {
+const addId = recommendation?.add?.id ?? recommendation?.addPlayerId;
+const dropId = recommendation?.drop?.id ?? recommendation?.dropPlayerId;
+if (!addId || !dropId) return review("unverified", "Prior waiver recommendation player identities are incomplete.");
+if (!Array.isArray(snapshot?.availablePlayers)) return review("unverified", "Latest ESPN availability is missing, so the prior waiver recommendation cannot be revalidated.");
+const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
+if (!roster) return review("unverified", "The selected roster is missing from the latest ESPN snapshot.");
+const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
+if (capacity.status === "missing-team") return review("unverified", capacity.reason, null, capacity);
+if (capacity.status === "exhausted") return review("obsolete", capacity.reason, null, capacity);
+const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
+const add = players.get(addId); const drop = players.get(dropId);
+if (!add || !drop) return review("unverified", "A player identity from the prior waiver recommendation is missing from the latest ESPN snapshot.", null, capacity);
+if (!snapshot.availablePlayers.includes(addId)) return review("obsolete", `ESPN no longer reports ${add.name} available.`, null, capacity);
+const dropEntry = (roster.entries || []).find((entry) => entry.playerId === dropId);
+if (!dropEntry) return review("obsolete", `${drop.name} is no longer on the selected ESPN roster.`, null, capacity);
+if (dropEntry.lineupSlot !== "BE") return review("obsolete", `${drop.name} is now assigned to ${dropEntry.lineupSlot}, so the prior unlocked-bench drop is no longer valid.`, null, capacity);
+if (isLocked(dropEntry, drop, now)) return review("obsolete", `${drop.name} is now locked and cannot be used as the prior bench drop.`, null, capacity);
+if (isLocked({}, add, now)) return review("obsolete", `${add.name} is now locked by the reported player state or kickoff time.`, null, capacity);
+if (add.projection == null) return review("unverified", `${add.name} no longer has a current-week projection, so the prior projected gain cannot be revalidated.`, null, capacity);
+const baseline = optimizeLineup(snapshot, teamId, now);
+if (!baseline.assignments?.length) return review("unverified", "The latest ESPN lineup state cannot produce a supported baseline for waiver revalidation.", null, capacity);
+const rosterViolation = rosterRuleViolation(snapshot, roster, dropEntry, add);
+if (rosterViolation) return review("obsolete", rosterViolation, null, capacity);
+const result = optimizeLineup(swappedSnapshot(snapshot, teamId, dropEntry, add.id), teamId, now);
+if (!result.assignments?.length) return review("unverified", "The latest ESPN lineup state cannot produce a supported lineup after the prior move.", null, capacity);
+const lineupGain = +(result.projectedTotal - baseline.projectedTotal).toFixed(1);
+if (lineupGain < MIN_WAIVER_LINEUP_GAIN) return review("obsolete", `The latest projected lineup gain is ${lineupGain.toFixed(1)} points, below the ${MIN_WAIVER_LINEUP_GAIN.toFixed(1)}-point action threshold.`, lineupGain, capacity);
+return review("current", `Revalidated against the latest ESPN availability, roster state, locks, limits, and current-week projections at a ${lineupGain.toFixed(1)}-point lineup gain.`, lineupGain, capacity);
 }
