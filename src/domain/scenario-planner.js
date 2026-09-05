@@ -37,8 +37,9 @@ function isLocked(entry, player, now) {
 function rosterRuleViolation(snapshot, entries) {
   const rules = snapshot.league?.rosterRules;
   if (!rules) return null;
-  if (rules.size != null && entries.length > rules.size) {
-    return `ESPN roster size limit is ${rules.size}, but the simulated roster would contain ${entries.length} players.`;
+  const activeEntries = entries.filter((entry) => entry.lineupSlot !== "IR");
+  if (rules.size != null && activeEntries.length > rules.size) {
+    return `ESPN roster size limit is ${rules.size}, but the simulated active roster would contain ${activeEntries.length} players outside IR.`;
   }
   const players = new Map(snapshot.players.map((player) => [player.id, player]));
   const counts = new Map();
