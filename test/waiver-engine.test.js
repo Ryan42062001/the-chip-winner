@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildRosterAwareWaiverIdeas, evaluateAcquisitionCapacity } from "../src/domain/waiver-engine.js";
+import { buildRosterAwareWaiverIdeas, evaluateAcquisitionCapacity, revalidateWaiverRecommendation } from "../src/domain/waiver-engine.js";
 
 function snapshot() {
   return {
@@ -78,4 +78,44 @@ test("waiver engine enforces only explicit ESPN roster and position limits", () 
   assert.equal(mismatch.items.length, 0); assert.match(mismatch.limitations.join(" "), /roster size limit is 3/);
   delete value.league.rosterRules;
   assert.match(buildRosterAwareWaiverIdeas(value, "mine", 0).limitations.join(" "), /no rule is inferred/);
+});
+
+test("waiver revalidation keeps an unchanged legal recommendation current", () => {
+  const before = snapshot();
+  const recommendation = buildRosterAwareWaiverIdeas(before, "mine", 0).items[0];
+  const review = revalidateWaiverRecommendation(structuredClone(before), "mine", recommendation, 0);
+  assert.equal(review.status, "current");
+  assert.equal(review.lineupGain, 6);
+  assert.match(review.reason, /Revalidated against the latest ESPN availability/);
+});
+
+test("waiver revalidation marks a recommendation obsolete when the add is no longer ESPN-available", () => {
+  const before = snapshot();
+  const recommendation = buildRosterAwareWaiverIdeas(before, "mine", 0).items[0];
+  const current = structuredClone(before); current.availablePlayers = current.availablePlayers.filter((id) => id !== recommendation.add.id);
+  const review = revalidateWaiverRecommendation(current, "mine", recommendation, 0);
+  assert.equal(review.status, "obsolete");
+  assert.match(review.reason, /no longer reports Available Receiver available/);
+});
+
+test("waiver revalidation catches changed drop legality and projected value", () => {
+  const before = snapshot();
+  const recommendation = buildRosterAwareWaiverIdeas(before, "mine", 0).items[0];
+  const moved = structuredClone(before); moved.rosters[0].entries.find((entry) => entry.playerId === recommendation.drop.id).lineupSlot = "IR";
+  const movedReview = revalidateWaiverRecommendation(moved, "mine", recommendation, 0);
+  assert.equal(movedReview.status, "obsolete"); assert.match(movedReview.reason, /assigned to IR/);
+  const reduced = structuredClone(before); reduced.players.find((player) => player.id === recommendation.add.id).projection = 10.2;
+  const reducedReview = revalidateWaiverRecommendation(reduced, "mine", recommendation, 0);
+  assert.equal(reducedReview.status, "obsolete"); assert.equal(reducedReview.lineupGain, 0.2); assert.match(reducedReview.reason, /below the 0.5-point action threshold/);
+});
+
+test("waiver revalidation distinguishes missing refresh data from a proven obsolete move", () => {
+  const before = snapshot();
+  const recommendation = buildRosterAwareWaiverIdeas(before, "mine", 0).items[0];
+  const missing = structuredClone(before); delete missing.availablePlayers;
+  const missingReview = revalidateWaiverRecommendation(missing, "mine", recommendation, 0);
+  assert.equal(missingReview.status, "unverified"); assert.match(missingReview.reason, /availability is missing/);
+  const exhausted = structuredClone(before); exhausted.league.waiver = { acquisitionLimit: 1, matchupAcquisitionLimit: -1 }; exhausted.teams[0].acquisition.seasonAcquisitions = 1;
+  const exhaustedReview = revalidateWaiverRecommendation(exhausted, "mine", recommendation, 0);
+  assert.equal(exhaustedReview.status, "obsolete"); assert.match(exhaustedReview.reason, /season acquisition limit is exhausted/);
 });
