@@ -272,13 +272,28 @@ render(); showNotice(weeks.length ? `Local playoff weeks set to ${weeks.join(", 
 content.addEventListener("click", async (event) => {
 const action = event.target.closest("#create-sync-button, #refresh-sync-button, #copy-sync-button, #revoke-sync-button");
 if (!action) return;
+const originalLabel = action.textContent;
+const busyLabels = {
+"create-sync-button": "Creating…",
+"refresh-sync-button": "Refreshing…",
+"copy-sync-button": "Copying…",
+"revoke-sync-button": "Revoking…",
+};
 action.disabled = true;
+action.textContent = busyLabels[action.id] || originalLabel;
 try {
 if (action.id === "create-sync-button") await createMobileSync();
 if (action.id === "refresh-sync-button") { await publishCurrentSync(readStoredSyncCredentials()); showNotice("Mobile data refreshed."); }
 if (action.id === "copy-sync-button") { await navigator.clipboard.writeText(mobileUrl(readStoredSyncCredentials())); showNotice("Private mobile link copied."); }
 if (action.id === "revoke-sync-button") { const credentials = readStoredSyncCredentials(); await syncProvider.remove(credentials.channelId, credentials.writeToken); localStorage.removeItem(SYNC_CREDENTIALS_KEY); render(); showNotice("Mobile link revoked."); }
-} catch (error) { showNotice(error.message, "error"); action.disabled = false; }
+} catch (error) {
+showNotice(error.message, "error");
+} finally {
+if (action.isConnected) {
+action.disabled = false;
+action.textContent = originalLabel;
+}
+}
 });
 content.addEventListener("click", async (event) => {
 if (!event.target.closest("#clear-local-data-button")) return;
