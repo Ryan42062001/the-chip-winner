@@ -1,6 +1,6 @@
 {
   "name": "the-chip-winner",
-  "version": "0.9.70",
+  "version": "0.9.71",
   "private": true,
   "type": "module",
   "scripts": {
@@ -18,10 +18,11 @@
     "smoke:production": "node scripts/smoke-production.js",
     "audit:a11y": "node scripts/audit-accessibility.js",
     "audit:extension": "node scripts/audit-extension.js",
+    "audit:readiness": "node scripts/audit-readiness.js",
     "audit:dependencies": "npm audit --audit-level=high",
     "audit:performance": "node scripts/audit-performance.js",
     "security": "node scripts/security-scan.js",
-    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js"
+    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js"
   },
   "engines": {
     "node": ">=20"
