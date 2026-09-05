@@ -33,6 +33,8 @@ if (rosterRules?.size != null && (!Number.isInteger(rosterRules.size) || rosterR
 for (const rule of rosterRules?.positionLimits || []) if (!SUPPORTED_POSITIONS.has(rule.position) || !Number.isInteger(rule.limit) || rule.limit < -1) errors.push("League roster position limit is invalid.");
 if (waiver) {
 for (const key of ["acquisitionLimit", "matchupAcquisitionLimit"]) if (waiver[key] != null && (!Number.isInteger(waiver[key]) || waiver[key] < -1)) errors.push(`League waiver ${key} is invalid.`);
+if (waiver.acquisitionType != null && typeof waiver.acquisitionType !== "string") errors.push("League waiver acquisitionType is invalid.");
+for (const key of ["usesAcquisitionBudget", "waiverOrderReset"]) if (waiver[key] != null && typeof waiver[key] !== "boolean") errors.push(`League waiver ${key} is invalid.`);
 if (waiver.waiverProcessDays != null && (!Number.isInteger(waiver.waiverProcessDays) || waiver.waiverProcessDays < 0)) errors.push("League waiver waiverProcessDays is invalid.");
 if (waiver.budget != null && (!Number.isFinite(waiver.budget) || waiver.budget < 0)) errors.push("League waiver budget is invalid.");
 }
