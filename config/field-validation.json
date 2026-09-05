@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseTarget": "1.0",
-  "baselineVersion": "0.9.76",
+  "baselineVersion": "0.9.77",
   "items": [
     {
       "id": "FV-A11Y-01",
@@ -28,9 +28,11 @@
       "status": "pending",
       "evidence": [
         "2026-09-05: User ran the deployed site at actual Chrome 200% zoom on a 1920x1050 desktop and reported the interface felt too large. Video review shows the desktop sidebar remains permanently expanded at the effective narrow CSS viewport while the topbar controls stay desktop-style; multiple page titles wrap into two or three lines and primary content is squeezed into a narrow column. No clear overlap or horizontal page overflow was observed in the recording, but the reflow quality is not acceptable enough to mark this field check passed. Responsive breakpoint/refinement required, followed by real 200% retest.",
-        "2026-09-05: v0.9.75 candidate adds a compact-desktop reflow specifically for 721-1000 CSS-pixel viewports so a 1920px desktop at 200% Chrome zoom uses off-canvas navigation and a two-row header instead of retaining the full desktop sidebar. Automated readiness coverage now includes the observed 960 CSS-pixel field case plus the existing 720 CSS-pixel 200%-equivalent case. Real deployed 200% zoom retest is still required before this item can pass."
+        "2026-09-05: v0.9.75 candidate adds a compact-desktop reflow specifically for 721-1000 CSS-pixel viewports so a 1920px desktop at 200% Chrome zoom uses off-canvas navigation and a two-row header instead of retaining the full desktop sidebar. Automated readiness coverage now includes the observed 960 CSS-pixel field case plus the existing 720 CSS-pixel 200%-equivalent case. Real deployed 200% zoom retest is still required before this item can pass.",
+        "2026-09-05: User retested deployed v0.9.76 at actual Chrome 200% zoom. The compact reflow was materially improved across Overview, Lineup Lab, Waivers, Player Alerts, What Changed, and Season Plan, with no reported horizontal overflow and the prior Waivers/Season Plan navigation lag gone. However, the off-canvas left navigation could not be scrolled far enough to reach League Setup on the short effective viewport, so the field check remains pending.",
+        "2026-09-05: v0.9.77 candidate makes the sidebar navigation its own vertical scroll region while keeping the brand and source status stable. The readiness audit now reproduces the real 1920x1050-at-200% dimensions as a 960x525 CSS-pixel viewport, verifies scrollability when navigation content overflows, brings League Setup into view, and activates it. Real deployed retest is still required before this item can pass."
       ],
-      "notes": "Pending deployed v0.9.76 retest at actual Chrome 200% zoom. Automated 960px and 720px reflow audits remain deterministic gates, not substitutes for field evidence."
+      "notes": "Pending deployed v0.9.77 retest at actual Chrome 200% zoom, specifically League Setup reachability plus one player-detail check. Automated reflow audits remain deterministic gates, not substitutes for field evidence."
     },
     {
       "id": "FV-MOBILE-01",
@@ -118,9 +120,10 @@
       "status": "pending",
       "evidence": [
         "2026-09-05: User recorded opening the real Waivers page after an authenticated v0.9.74 refresh and reported a small perceptible delay. Video review shows the transition from Overview to the rendered Waiver Wire completing within a few tenths of a second at 30 fps, with no visible long freeze or broken intermediate state. Candidate/scenario enumeration counts were not visible in this recording, so this performance item remains pending until those counts and timing are captured as projection coverage grows.",
-        "2026-09-05: v0.9.76 candidate adds runtime performance gates without a hidden candidate cap. GitHub Actions exhaustively evaluated 24 available adds x 4 unlocked bench drops (96 future scenarios) and measured 15.9 ms cold waiver analysis, 52.2 ms full priority-board evaluation after the waiver render, 0.6 ms playoff-only future baseline evaluation, and 37.0 ms repeat priority navigation on the CI runner. These deterministic measurements do not replace the required real deployed browser retest."
+        "2026-09-05: v0.9.76 candidate adds runtime performance gates without a hidden candidate cap. GitHub Actions exhaustively evaluated 24 available adds x 4 unlocked bench drops (96 future scenarios) and measured 15.9 ms cold waiver analysis, 52.2 ms full priority-board evaluation after the waiver render, 0.6 ms playoff-only future baseline evaluation, and 37.0 ms repeat priority navigation on the CI runner. These deterministic measurements do not replace the required real deployed browser retest.",
+        "2026-09-05: After v0.9.76 was merged, deployed, and production-smoke verified, the user hard-refreshed the real app and confirmed the previously visible Waivers and Season Plan navigation lag is gone. This validates the responsiveness fix in the real browser; candidate/scenario enumeration counts are still required before this field item can pass."
       ],
-      "notes": "Retest deployed v0.9.76 on the real authenticated league and record browser responsiveness plus consideredAdds, completeAdds, scenarioCount, and qualifiedAdds as projection coverage grows. Do not introduce a hidden candidate cap."
+      "notes": "Real deployed v0.9.76 navigation responsiveness is confirmed fixed. Keep this item pending until consideredAdds, completeAdds, scenarioCount, and qualifiedAdds are captured as projection coverage grows. Do not introduce a hidden candidate cap."
     }
   ]
 }
