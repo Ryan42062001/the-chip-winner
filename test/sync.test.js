@@ -24,26 +24,33 @@ test("sync encryption rejects tampering and the wrong key", async () => {
   await assert.rejects(() => decryptSyncPayload({ ...envelope, ciphertext: alteredCiphertext }, first), /could not be decrypted/);
 });
 
-test("mobile fragment contains read credentials but not the write token", async () => {
+test("mobile fragment contains read credentials but not the write token and rejects malformed shapes", async () => {
   const credentials = await createSyncCredentials();
   const fragment = createMobileSyncFragment(credentials);
   assert.equal(fragment.includes(credentials.writeToken), false);
   assert.deepEqual(parseMobileSyncFragment(fragment), { channelId: credentials.channelId, encryptionKey: credentials.encryptionKey });
+  assert.equal(parseMobileSyncFragment("#mobile-sync=bad.bad"), null);
+  assert.equal(parseMobileSyncFragment(`${fragment}.extra`), null);
+  assert.throws(() => createMobileSyncFragment({ channelId: "bad", encryptionKey: "bad" }), /malformed or incomplete/);
 });
 
-test("sync session publishes only an encrypted envelope and preserves the selected team", async () => {
+test("sync session publishes encrypted current/prior state and preserves the selected team", async () => {
   const credentials = await createSyncCredentials();
   let stored = null;
+  const previous = structuredClone(sample);
+  previous.meta.capturedAt = "2026-10-08T14:30:00Z";
+  previous.players[0].projection = 19.4;
   const provider = { publish: async (envelope, token) => { stored = envelope; assert.equal(token, credentials.writeToken); }, read: async () => stored };
-  await publishSyncState(provider, credentials, sample, { source: "fantasypros", rankings: [] }, "t2");
+  await publishSyncState(provider, credentials, sample, { source: "fantasypros", rankings: [] }, "t2", previous);
   assert.equal(JSON.stringify(stored).includes(sample.league.name), false);
   assert.equal(JSON.stringify(stored).includes(sample.teams[1].name), false);
   const decoded = await readSyncState(provider, credentials);
   assert.equal(decoded.payload.snapshot.league.id, sample.league.id);
+  assert.equal(decoded.payload.previousSnapshot.players[0].projection, 19.4);
   assert.equal(decoded.payload.selectedTeamId, "t2");
 });
 
-test("sync selected-team context fails closed while legacy payloads remain readable", async () => {
+test("sync selected-team and prior-state context fail closed while legacy payloads remain readable", async () => {
   const credentials = await createSyncCredentials();
   const provider = { publish: async () => {}, read: async () => null };
   await assert.rejects(() => publishSyncState(provider, credentials, sample, null, "missing-team"), /Cannot sync selected team is not present/);
@@ -52,11 +59,22 @@ test("sync selected-team context fails closed while legacy payloads remain reada
   const invalidProvider = { read: async () => invalidEnvelope };
   await assert.rejects(() => readSyncState(invalidProvider, credentials), /Synced selected team is not present/);
 
+  const otherLeague = structuredClone(sample);
+  otherLeague.league.id = "other-league";
+  let crossLeagueEnvelope = null;
+  await publishSyncState({ publish: async (envelope) => { crossLeagueEnvelope = envelope; } }, credentials, sample, null, "t1", otherLeague);
+  const crossLeagueDecoded = await decryptSyncPayload(crossLeagueEnvelope, credentials);
+  assert.equal(crossLeagueDecoded.payload.previousSnapshot, null);
+
+  const mismatchedEnvelope = await encryptSyncPayload({ snapshot: sample, previousSnapshot: otherLeague, rankingSet: null, selectedTeamId: "t1" }, credentials);
+  await assert.rejects(() => readSyncState({ read: async () => mismatchedEnvelope }, credentials), /does not belong to the current league and season/);
+
   const legacyEnvelope = await encryptSyncPayload({ snapshot: sample, rankingSet: null }, credentials);
   const legacyProvider = { read: async () => legacyEnvelope };
   const legacyDecoded = await readSyncState(legacyProvider, credentials);
   assert.equal(legacyDecoded.payload.snapshot.league.id, sample.league.id);
   assert.equal(legacyDecoded.payload.selectedTeamId, undefined);
+  assert.equal(legacyDecoded.payload.previousSnapshot, undefined);
 });
 
 test("provider contracts fail explicitly and HTTP transport uses scoped methods", async () => {
