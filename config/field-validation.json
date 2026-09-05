@@ -9,8 +9,8 @@
       "title": "Keyboard-only critical workflow",
       "status": "passed",
       "evidence": [
-        "2026-09-05: User exercised the deployed v0.9.74 site without a pointing device and confirmed Tab/Space keyboard navigation worked across the tested critical workflow.",
-        "2026-09-05: Final keyboard checks also passed: player detail opened with Enter and closed with Esc without losing focus; League Setup destructive/disconnect confirmation could be reached and cancelled entirely by keyboard; Shift+Tab reverse navigation remained visible and predictable."
+        "2026-09-05: User exercised the deployed v0.9.74 site without a pointing device and confirmed keyboard navigation worked across the tested critical workflow using Tab, Space, and Enter.",
+        "2026-09-05: Final keyboard checks passed: player detail opened with Enter and closed with Esc without losing focus; League Setup destructive/disconnect confirmation could be reached and cancelled entirely by keyboard; Shift+Tab reverse navigation remained visible and predictable."
       ],
       "notes": "Deployed critical workflow was successfully exercised keyboard-only, including forward/reverse focus navigation, player detail, and destructive-action cancellation."
     },
