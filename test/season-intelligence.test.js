@@ -22,7 +22,8 @@ test("bye coverage proves a known starter bye is covered by current roster eligi
   const week7 = coverage.weeks.find((row) => row.week === 7);
   assert.equal(week7.status, "covered");
   assert.deepEqual(week7.affectedStarterPlayerIds, ["a"]);
-  assert.deepEqual(week7.uncoveredSlots, []);
+  assert.equal(week7.uncoveredSlotCount, 0);
+  assert.deepEqual(week7.uncoveredSlotCandidates, []);
 });
 
 test("bye coverage exposes every uncovered starter week and never invents replacement depth", () => {
@@ -33,8 +34,19 @@ test("bye coverage exposes every uncovered starter week and never invents replac
   const week9 = coverage.weeks.find((row) => row.week === 9);
   assert.equal(coverage.status, "gap");
   assert.deepEqual(coverage.gapWeeks, [7, 9]);
-  assert.deepEqual(week7.uncoveredSlots, ["RB"]);
-  assert.deepEqual(week9.uncoveredSlots, ["FLEX"]);
+  assert.equal(week7.uncoveredSlotCount, 1);
+  assert.deepEqual(week7.uncoveredSlotCandidates, ["RB"]);
+  assert.equal(week9.uncoveredSlotCount, 1);
+});
+
+test("bye coverage exposes ambiguous legal slot assignment instead of pretending one slot is uniquely uncovered", () => {
+  const snapshot = baseSnapshot();
+  snapshot.rosters[0].entries = snapshot.rosters[0].entries.filter((entry) => entry.playerId !== "c");
+  const coverage = buildByeWeekCoverage(snapshot, "mine");
+  const week9 = coverage.weeks.find((row) => row.week === 9);
+  assert.equal(week9.uncoveredSlotCount, 1);
+  assert.deepEqual(week9.uncoveredSlotCandidates, ["FLEX", "RB"]);
+  assert.match(coverage.methodology, /multiple equally valid slot assignments/);
 });
 
 test("unknown bye weeks keep otherwise fillable coverage partial", () => {
