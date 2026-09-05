@@ -89,14 +89,18 @@ async function assertNoHorizontalOverflow(page, label) {
 }
 
 async function assertTouchTargets(page, label) {
-  const menuBox = await page.locator(".mobile-menu").boundingBox();
+  const menu = page.locator(".mobile-menu");
+  const menuBox = await menu.boundingBox();
   if (!menuBox || menuBox.width < 44 || menuBox.height < 44) throw new Error(`${label} mobile menu is smaller than 44x44 CSS pixels.`);
-  await page.locator(".mobile-menu").click();
+  await menu.click();
   const navBoxes = await page.locator(".nav-link").evaluateAll((links) => links.map((link) => {
     const rect = link.getBoundingClientRect();
     return { width: rect.width, height: rect.height };
   }));
   if (navBoxes.some((box) => box.height < 44)) throw new Error(`${label} contains a primary navigation target shorter than 44 CSS pixels.`);
+  await page.keyboard.press("Escape");
+  if (await menu.getAttribute("aria-expanded") !== "false") throw new Error(`${label} Escape did not close the mobile navigation.`);
+  if (await menu.getAttribute("aria-label") !== "Open navigation") throw new Error(`${label} Escape did not reset the mobile navigation label.`);
 }
 
 async function openMenuIfNeeded(page) {
@@ -219,7 +223,7 @@ try {
   await auditSyncedPhone(browser, fixture, { width: 844, height: 390 }, "844x390 phone landscape");
   await auditInvalidLinks(browser, fixture);
 
-  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all seven sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only League Setup, player detail, touch targets, revoked links, and malformed links.");
+  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all seven sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only League Setup, player detail, touch targets, Escape/ARIA navigation reset, revoked links, and malformed links.");
 } finally {
   await browser?.close();
   server.kill();
