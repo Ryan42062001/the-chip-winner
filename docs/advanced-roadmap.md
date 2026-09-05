@@ -140,7 +140,7 @@ Release exit: the app can construct and explain a complete legal lineup for the 
 
 Goal: evaluate waiver moves as roster changes rather than isolated weekly projection differences.
 
-Status: **In progress.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. IR eligibility transitions, claim-cost strategy, and replacement-value modeling remain open because the current snapshot does not yet prove those inputs.
+Status: **In progress.** ESPN availability filtering, unlocked-bench-only drops, full legal-lineup simulation, cross-position replacement, compatible move selection, separate current-week/ROS presentation, and ESPN-reported season/current-week acquisition-limit enforcement are implemented. Explicit ESPN roster-size and provider-position limits are normalized, displayed, and enforced; absent limits remain unverified and unknown position IDs fail visibly. Team acquisition usage, remaining budget, and waiver priority are visible when ESPN supplies them; priority is never treated as a claim guarantee. A current-week same-position ESPN-pool replacement benchmark is implemented and remains separate from legal-lineup gain. IR eligibility transitions, refresh-obsolete recommendation state, richer claim-cost strategy, and projection-gated multiweek waiver impact remain open.
 
 ### Candidate filtering
 
@@ -215,7 +215,7 @@ Release exit: each refresh produces a concise, trustworthy summary of meaningful
 
 ## Release 0.9 — Rest-of-season and playoff planning
 
-Status: in progress. Season Plan reports positional depth, starter bye conflicts, ESPN-reported fantasy opponents and complete/partial/ambiguous schedule coverage for the selected horizon, repeated opponents matched only by ESPN team ID, explicitly supplied playoff weeks, and explicitly supplied playoff schedule-strength fields. When ESPN omits playoff weeks, the app requires a labeled league/season-scoped browser-local selection and never infers the boundary. Completely mapped future weeks expose optimized starter assignments and the hold-current-roster baseline. Isolated add/drop scenarios show weekly and selected-horizon deltas only when both baseline and simulated rosters have complete coverage for every included week. Missing and duplicate ESPN matchup records are visible, and no opponent strength is inferred. Projection provider, scoring format, source capture time, freshness, ESPN season/scoring compatibility, ID-map size, player-week coverage, persisted user-selectable horizons, per-week usable/blocked readiness and withheld-delta reasons are visible. CSV imports require consistent source metadata on every row; import time is never mislabeled as source capture time. Incompatible sources are blocked; stale sources remain explicitly warned. Missing identity mappings are distinguished from missing week-specific projection values, with exact ESPN roster identities shown locally and available as a repair report; names are informational and never used for provider joins. Position-specific NFL schedule strength still requires a documented external data source and method.
+Status: in progress. Season Plan reports positional depth, starter bye conflicts, ESPN-reported fantasy opponents and complete/partial/ambiguous schedule coverage for the selected horizon, repeated opponents matched only by ESPN team ID, explicitly supplied playoff weeks, and explicitly supplied playoff schedule-strength fields. When ESPN omits playoff weeks, the app requires a labeled league/season-scoped browser-local selection and never infers the boundary. Completely mapped future weeks expose optimized starter assignments and the hold-current-roster baseline. Isolated add/drop scenarios show weekly and selected-horizon deltas only when both baseline and simulated rosters have complete coverage for every included week. Missing and duplicate ESPN matchup records are visible, and no opponent strength is inferred. Projection provider, scoring format, source capture time, freshness, ESPN season/scoring compatibility, ID-map size, player-week coverage, persisted user-selectable horizons, per-week usable/blocked readiness and withheld-delta reasons are visible. CSV imports require consistent source metadata on every row; import time is never mislabeled as source capture time. Incompatible sources are blocked; stale sources remain explicitly warned. Missing identity mappings are distinguished from missing week-specific projection values for both the selected roster and top current ESPN waiver candidates, with exact ESPN identities available in the repair report; names are informational and never used for provider joins. Position-specific NFL schedule strength still requires a documented external data source and method.
 
 Goal: support roster construction beyond the immediate week.
 
@@ -276,7 +276,7 @@ Goal: graduate the read-only product from a personal connected preview to a reli
 - Keep the automated WCAG 2.2 A/AA audit green and complete a manual assistive-technology review.
 - Full keyboard operation and focus management.
 - Screen-reader labels for recommendations, deltas, injuries, and status.
-- Keep HTML, CSS, app-entry, sample-data, and total source-JavaScript budgets green; add runtime performance thresholds when production telemetry has an approved privacy policy.
+- Keep focused HTML, CSS, app-entry, and sample-data budgets green; report aggregate browser JavaScript graph size as a trend signal rather than a deployment-blocking hard cap. Add runtime performance thresholds when production telemetry has an approved privacy policy.
 - Reduced-motion behavior.
 
 ### Security and privacy
@@ -445,7 +445,7 @@ Planned work:
 3. Preflight projection and identity-map merges together so conflicts cannot partially update caches.
 4. Render added, updated, retained, ignored, and conflicted import counts plus capture range and week-level provenance.
 5. Test repeated imports, idempotency, older/newer records, conflicts, mobile operation, and keyboard focus.
-6. Keep the browser graph at or below 220 KiB while reducing `src/app.js` below 60 KiB.
+6. At the time of this sprint, keep the browser graph at or below 220 KiB while reducing `src/app.js` below 60 KiB. Current policy retains the focused app-entry budget but treats aggregate browser-graph size as informational.
 
 Sprint exit criteria:
 
@@ -457,4 +457,4 @@ Sprint exit criteria:
 
 ## Recommended next sprint: complete real projection coverage
 
-Import and explicitly map each available weekly FantasyPros export, expand the roster/candidate coverage matrix, and keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage. Do not add a new provider or infer identities by display name.
+Use the candidate-aware projection repair report to import and explicitly map each available weekly FantasyPros export. Keep multiweek deltas withheld until baseline and simulated rosters both have complete mapped coverage. Do not add a new provider or infer identities by display name.
