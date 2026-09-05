@@ -1,3 +1,4 @@
+import { parseCsvRows } from "./fantasypros-manual-csv.js";
 import { parseDynastyProcessWeeklyCsv } from "./dynastyprocess-weekly.js";
 
 const ESPN_POSITION_ID = Object.freeze({ QB: 1, RB: 2, WR: 3, TE: 4, K: 5 });
@@ -25,6 +26,23 @@ function increment(counts, key) {
 
 function unwrapEspnPlayer(entry) {
   return entry?.player || entry?.playerPoolEntry?.player || entry || null;
+}
+
+function parseWeeklyDisplayRows(text) {
+  const parsed = parseDynastyProcessWeeklyCsv(text);
+  const csvRows = parseCsvRows(text);
+  const headers = csvRows[0].map((value) => clean(value).toLowerCase());
+  const idIndex = headers.indexOf("fantasypros_id");
+  const nameIndex = headers.indexOf("player_name");
+  const byProvider = new Map();
+  for (let index = 1; index < csvRows.length; index += 1) {
+    const providerPlayerId = clean(csvRows[index][idIndex]);
+    if (providerPlayerId && !byProvider.has(providerPlayerId)) byProvider.set(providerPlayerId, clean(csvRows[index][nameIndex]));
+  }
+  return parsed.records.map((record) => Object.freeze({
+    ...record,
+    playerName: byProvider.get(record.providerPlayerId) || ""
+  }));
 }
 
 export function parseEspnFantasyPlayerPool(payload) {
@@ -71,11 +89,11 @@ export function classifyDynastyProcessWeeklyGaps({ weeklyCsv, unresolvedProvider
   if (espnFantasyPlayers != null && !Array.isArray(espnFantasyPlayers)) throw new TypeError("espnFantasyPlayers must be an array when supplied.");
 
   const unresolved = new Set(unresolvedProviderIds.map((value) => clean(value)).filter(Boolean));
-  const weekly = parseDynastyProcessWeeklyCsv(weeklyCsv);
+  const weeklyRecords = parseWeeklyDisplayRows(weeklyCsv);
   const rows = [];
   const counts = {};
 
-  for (const record of weekly.records) {
+  for (const record of weeklyRecords) {
     if (!unresolved.has(record.providerPlayerId)) continue;
     const staleReason = REVIEWED_STALE_WEEKLY_PROVIDER_IDS[record.providerPlayerId] || null;
     const classification = staleReason
