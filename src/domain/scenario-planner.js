@@ -17,7 +17,8 @@ function projectionCoverage(playerIds, week, espnToProvider, projectionIndex) {
 
 function scenarioKind(scenario) {
   if (scenario?.kind === "ir-assisted-add" || scenario?.irPlayerId) return "ir-assisted-add";
-  return "add-drop";
+  if (!scenario?.kind || scenario.kind === "add-drop") return "add-drop";
+  return null;
 }
 
 function currentIrScenario(waiverResult, scenario) {
@@ -28,8 +29,17 @@ function currentIrScenario(waiverResult, scenario) {
   );
 }
 
+function currentAddDropScenario(waiverResult, scenario) {
+  return (waiverResult.items || []).find((item) =>
+    item.kind === "add-drop"
+    && item.add?.id === scenario.addPlayerId
+    && item.drop?.id === scenario.dropPlayerId
+  );
+}
+
 function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiverResult, now) {
   const kind = scenarioKind(scenario);
+  if (!kind) return { rejection: `Scenario kind ${String(scenario?.kind || "unknown")} is unsupported.` };
   const addPlayer = players.get(scenario.addPlayerId);
   if (!addPlayer) return { rejection: "Scenario references a player outside the current snapshot." };
 
@@ -66,6 +76,9 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
   const locked = dropEntry.locked === true || dropPlayer.locked === true || (Number.isFinite(kickoff) && kickoff <= now);
   if (locked) return { rejection: "The proposed drop player is locked." };
   if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
+  if (!currentAddDropScenario(waiverResult, scenario)) {
+    return { rejection: "The add/drop path is not a currently validated ESPN waiver recommendation." };
+  }
   const simulated = {
     ...snapshot,
     rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : {
@@ -81,7 +94,8 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
   const weeks = Array.isArray(options.weeks) ? options.weeks.filter(Number.isInteger) : [];
   if (!roster) return Object.freeze({ status: "missing-roster", weeks: [], limitations: ["Roster data is unavailable."] });
 
-  const waiverResult = buildRosterAwareWaiverIdeas(snapshot, teamId);
+  const now = options.now ?? Date.now();
+  const waiverResult = buildRosterAwareWaiverIdeas(snapshot, teamId, now);
   const currentWeekScenarios = (waiverResult.items || []).map((item, index) => {
     const recommendation = createRecommendation({
       id: `waiver-${teamId}-${index}`,
@@ -153,7 +167,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     }
 
     for (const scenario of options.scenarios || []) {
-      const built = buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiverResult, options.now ?? Date.now());
+      const built = buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiverResult, now);
       if (built.rejection) {
         rejectedScenarios.push(Object.freeze({ id: scenario.id || "unknown", reason: built.rejection }));
         continue;
@@ -253,7 +267,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
       "Horizon totals are withheld unless every selected week is complete.",
       "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.",
       "IR-assisted scenarios retain the injured player in IR and require complete player-week coverage for that retained player as well as every active roster player.",
-      "Only ESPN-available adds, unlocked bench drops, and currently validated IR-assisted no-drop paths are evaluated.",
+      "Only currently validated ESPN waiver recommendations are evaluated; stale add/drop and IR-assisted paths fail closed after availability, lock, acquisition-limit, roster-rule, or projected-gain changes.",
       "This planner is read-only and does not modify ESPN league state."
     ] : [
       "Future-week projections and an explicit identity map were not both supplied.",
