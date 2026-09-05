@@ -12,7 +12,7 @@ function intelligence(overrides = {}) {
       status: "gap",
       gapWeeks: [7],
       unknownByePlayerIds: [],
-      weeks: [{ week: 7, status: "gap", byePlayerIds: ["p1"], affectedStarterPlayerIds: ["p1"], uncoveredSlots: ["RB"], requiredStarterSlots: 2 }],
+      weeks: [{ week: 7, status: "gap", byePlayerIds: ["p1"], affectedStarterPlayerIds: ["p1"], uncoveredSlotCount: 1, uncoveredSlotCandidates: ["RB"], requiredStarterSlots: 2 }],
       methodology: "ESPN bye facts"
     },
     fantasyPlayoffSchedule: {
@@ -45,6 +45,13 @@ test("season intelligence UI escapes source values and labels source separation"
   assert.match(html, /&lt;Rival&gt;/);
   assert.doesNotMatch(html, /<Alpha>/);
   assert.doesNotMatch(html, /<Rival>/);
+});
+
+test("season intelligence UI explains ambiguous bye slot assignment instead of choosing one", () => {
+  const value = intelligence();
+  value.byeCoverage.weeks = [{ week: 9, status: "gap", byePlayerIds: ["p1"], affectedStarterPlayerIds: ["p1"], uncoveredSlotCount: 1, uncoveredSlotCandidates: ["FLEX", "RB"], requiredStarterSlots: 2 }];
+  const html = renderSeasonPlayoffIntelligence(value, snapshot);
+  assert.match(html, /1 uncovered starter slot · could affect FLEX or RB depending on legal slot assignment/);
 });
 
 test("season intelligence UI withholds a partial playoff aggregate instead of zero filling", () => {
