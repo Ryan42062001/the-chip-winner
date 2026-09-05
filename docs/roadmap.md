@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 246 automated permanent tests plus 21 deployment-blocking model safety fixtures covering league normalization, lineup and waiver legality, acquisition limits, identity reconciliation, projection imports, provider-ID supersession, zero-cost DynastyProcess staging, classified unresolved rows, encrypted sync, snapshot differencing, season planning, accessibility, browser behavior, local-data deletion, and the guarded one-click weekly projection update workflow.
+- 253 automated permanent tests plus 21 deployment-blocking model safety fixtures covering league normalization, lineup and waiver legality, ESPN IR eligibility/roster validity, acquisition limits, identity reconciliation, projection imports, provider-ID supersession, zero-cost DynastyProcess staging, classified unresolved rows, encrypted sync, snapshot differencing, season planning, accessibility, browser behavior, local-data deletion, and the guarded one-click weekly projection update workflow.
 
 Additional connected foundation capabilities now include:
 
@@ -43,6 +43,7 @@ Additional connected foundation capabilities now include:
 - projection thresholds that suppress marginal lineup churn;
 - interactive start/sit comparison with preference, near-tie, and missing-data states;
 - connected league scoring, lineup-slot, and waiver settings;
+- ESPN IR eligibility intelligence using current ESPN injury designation, current IR assignment, and configured IR capacity, including OUT/IR placement, Q/D grandfathering, invalid healthy/ineligible IR blockers, and fail-closed unknown states;
 - a documented local-only privacy boundary;
 - versioned browser modules for reliable production updates;
 - deployed end-to-end encrypted mobile snapshot synchronization through Cloudflare Workers KV;
@@ -369,7 +370,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.62
+## Current execution plan — after v0.9.63
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -414,7 +415,7 @@ Acceptance criteria:
 
 Status: **Partially implemented through v0.9.62.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon and distinguishes missing identity mappings from missing player-week projections. The free DynastyProcess path retains the source-published PPR `r2p_pts` signal, stable FantasyPros-to-ESPN IDs, the explicit D/ST team bridge, fail-closed reviewed athlete bridges, and explicit provider-ID supersession. v0.9.61 added classification-only diagnostics for rows that remain unresolved without weakening identity rules. v0.9.62 makes the same staging logic available directly in the browser: a real cached ESPN snapshot supplies the authoritative season/current week, the site checks the public latest publication on startup/ESPN refresh/focus, and the user explicitly approves **Update Week X projections** or **Refresh Week X projections**. Because the source file omits its NFL week, the click remains the explicit assignment boundary. Once Week N-1 is stored, Week N is blocked until the publication is newer than the prior-week capture; publications older than eight days are also blocked. Successful updates retain prior weeks, expand the planning horizon, save a local provenance receipt, and commit projections plus identity mappings through the existing atomic transaction. The browser sends no ESPN credentials or league payload to the public source hosts and does not mirror the weekly dataset into the site. Generic source `PPR` is compatible with ESPN labels in the same PPR scoring family without relabeling source metadata. Under the verified 2026-09-04 Week 1 source state, stable coverage remains **648/682 mapped (95.01%)**, D/ST 32/32, K 32/34, with 34 unsupported/unresolved source rows excluded rather than forced.
 
-A temporary live Chrome canary validated the actual browser path before release: the current source and publication endpoints returned HTTP 200, the control became **Update Week 1 projections**, the click imported 648 Week 1 projection records through the normal caches, and the receipt recorded 648/682 with 34 unresolved. The temporary canary was removed; the permanent suite remains 246 tests.
+A temporary live Chrome canary validated the actual browser path before release: the current source and publication endpoints returned HTTP 200, the control became **Update Week 1 projections**, the click imported 648 Week 1 projection records through the normal caches, and the receipt recorded 648/682 with 34 unresolved. The temporary canary was removed; the current permanent suite is 253 tests.
 
 1. During the season, refresh/connect ESPN and use the browser update control when a fresh weekly source publication becomes available.
 2. Preserve the explicit first-import approval and prior-week publication guard; do not infer or schedule an upstream week assignment.
@@ -437,12 +438,14 @@ Acceptance criteria: no playoff boundary or schedule grade is inferred; scenario
 
 ### P1 — Complete waiver engine v2
 
-Status: **Partially implemented through v0.9.56.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. Refresh-aware recommendation revalidation is implemented: prior current-week add/drop advice is reconstructed from the previous valid capture and checked against the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain. Moves that are no longer supported appear in **What Changed** as obsolete with the exact reason; missing latest inputs remain explicitly unverified. IR eligibility transitions and projection-gated multiweek waiver impact remain open.
+Status: **Partially implemented through v0.9.63.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. Refresh-aware recommendation revalidation reconstructs prior current-week add/drop advice from the previous valid capture and checks the latest ESPN availability, roster/drop legality, locks, acquisition limits, explicit roster rules, and current projected lineup gain. v0.9.63 adds authoritative ESPN IR eligibility/roster-validity handling from already-normalized ESPN facts: OUT and INJURED_RESERVE support new IR placement; QUESTIONABLE/DOUBTFUL may remain when already in IR but cannot be newly moved there; SUSPENSION and healthy/no-designation states are ineligible; unsupported injury states fail closed. Current invalid IR occupants block new waiver recommendations and obsolete prior advice because ESPN documents that a healthy/ineligible IR roster can prevent acquisitions. Open configured IR capacity plus an eligible bench player is surfaced as a read-only roster-management opportunity. The implementation deliberately ignores generic `eligibleSlots` as health evidence and does not infer PUP eligibility beyond ESPN's documented Fantasy Football rule. See `docs/ir-eligibility.md`.
 
-1. Model IR eligibility transitions only where ESPN supplies authoritative rules and inputs.
-2. Add multiweek impact only after projection coverage gates pass.
+Remaining work:
 
-Acceptance criteria: every move remains legal after full-roster simulation; prior advice that no longer satisfies the latest supported state is marked obsolete while missing latest inputs remain unverified; unsupported acquisition likelihood is never claimed; current-week, replacement-value, ROS ranking, and multiweek conclusions remain separately sourced.
+1. Add projection-gated multiweek waiver impact only after complete baseline and simulated-roster player-week coverage exists for every included week.
+2. Optionally add a dedicated IR-assisted add-without-drop scenario that explicitly models “move eligible bench player to IR, then add” while preserving read-only semantics and all roster/lock checks. Do not fold that sequence into ordinary add/drop cards implicitly.
+
+Acceptance criteria: every move remains legal after full-roster simulation; current invalid IR state blocks acquisition advice while unsupported IR state remains unverified; prior advice that no longer satisfies the latest supported state is marked obsolete; unsupported acquisition likelihood is never claimed; current-week, replacement-value, ROS ranking, and multiweek conclusions remain separately sourced.
 
 ### P2 — Production-readiness closeout
 

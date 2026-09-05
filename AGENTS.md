@@ -39,6 +39,9 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - Weekly browser source checks may request only the approved public source hosts `raw.githubusercontent.com` and `api.github.com`. Never send ESPN credentials, cookies, private league payloads, or member data to those hosts. Do not mirror the third-party weekly dataset into the public repository/site.
 - Weekly projection updates must use the existing atomic projection+identity import transaction. A failed update cannot partially replace either cache; prior valid weeks remain retained.
 - Generic `PPR` and provider labels that clearly resolve to the same PPR scoring family may be considered compatible without relabeling source metadata. Known different scoring families remain blocked.
+- ESPN IR eligibility is evaluated only from the normalized ESPN injury designation, the player's current ESPN lineup slot, and the league's ESPN-reported IR slot count. Do not use generic ESPN `eligibleSlots`, player names, projections, or external injury reports as evidence of current health-based IR eligibility.
+- Under the reviewed ESPN Fantasy Football policy, OUT and INJURED_RESERVE are eligible for new IR placement; QUESTIONABLE/DOUBTFUL may remain only when already in IR; SUSPENSION and healthy/no-designation states are ineligible. Unsupported/new ESPN injury states fail closed as unverified. Do not broaden this set without re-reviewing ESPN's current documented policy and adding tests.
+- A known-ineligible player currently left in ESPN IR invalidates supported acquisition legality; waiver recommendations must be withheld/obsoleted until the roster is corrected. An unverified current IR occupant withholds legality rather than guessing. Open IR capacity may be surfaced as a read-only roster-management opportunity, never as an ESPN transaction.
 - Respect ESPN lineup eligibility, bench/IR status, availability, acquisition rules, and game locks only where ESPN supplies authoritative inputs.
 - Keep browser credentials and ESPN cookies out of snapshots, sync payloads, model context, logs, and tests.
 - Model output is advisory. Pass recommendations through the contract and offline evaluator before an adapter receives them.
@@ -50,7 +53,7 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - `src/providers/espn`: ESPN acquisition, connection state, normalization, and caching.
 - `src/providers/rankings`: FantasyPros ROS ranking import and reconciliation.
 - `src/providers/projections`: provider-neutral weekly projections, multiweek catalogs, manual imports, explicit identity maps, and the browser weekly source/update provider.
-- `src/domain`: deterministic selectors, optimizers, recommendations, waiver logic, scenarios, contracts, and evaluation.
+- `src/domain`: deterministic selectors, optimizers, recommendations, waiver logic, ESPN IR policy, scenarios, contracts, and evaluation.
 - `src/application`: application state transitions and the single state owner.
 - `src/ui`: browser rendering and view-specific interaction helpers. Keep large renderers decomposable rather than moving state ownership into UI modules.
 - `src/models`: provider-neutral model boundary; no provider credentials belong in the browser bundle.
@@ -77,8 +80,8 @@ Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain
 
 Work in the dependency order maintained in `docs/roadmap.md`. At the current stage that means:
 
-1. Accumulate real multiweek projection coverage through the v0.9.62 one-click browser workflow as each source publication becomes available. Preserve the explicit week-approval boundary, guarded publication rollover, stable-ID crosswalk, D/ST bridge, fail-closed reviewed identity bridges, explicit provider-ID supersession semantics, reviewed stale-source exclusions, and classification-only diagnostics. Never chase 100% coverage by weakening identity rules.
-2. Finish the remaining Waiver Engine v2 gaps: model IR transitions only when ESPN exposes authoritative eligibility/rule inputs, and add multiweek impact only after projection coverage gates pass. Refresh-obsolete recommendation revalidation is complete and must remain deterministic and explainable.
+1. Accumulate real multiweek projection coverage through the one-click browser workflow as each source publication becomes available. Preserve the explicit week-approval boundary, guarded publication rollover, stable-ID crosswalk, D/ST bridge, fail-closed reviewed identity bridges, explicit provider-ID supersession semantics, reviewed stale-source exclusions, and classification-only diagnostics. Never chase 100% coverage by weakening identity rules.
+2. Finish the remaining Waiver Engine v2 work with projection-gated multiweek impact only after coverage gates pass. ESPN IR eligibility/roster-validity handling is implemented in v0.9.63; keep it fail-closed and read-only. A dedicated IR-assisted add-without-drop scenario is optional follow-up, not permission to mutate ESPN.
 3. Finish season/playoff intelligence with a documented, approved position-specific strength-of-schedule source and methodology before displaying difficulty grades.
 4. Complete production-readiness closeout: manual accessibility, companion threat review, recovery/deletion checks, and materially different live ESPN league states.
 5. Keep the browser UI maintainable as features grow; split oversized rendering modules along view boundaries without creating a second application store.

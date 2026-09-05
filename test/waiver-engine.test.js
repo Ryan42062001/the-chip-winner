@@ -103,7 +103,7 @@ test("waiver revalidation catches changed drop legality and projected value", ()
   const recommendation = buildRosterAwareWaiverIdeas(before, "mine", 0).items[0];
   const moved = structuredClone(before); moved.rosters[0].entries.find((entry) => entry.playerId === recommendation.drop.id).lineupSlot = "IR";
   const movedReview = revalidateWaiverRecommendation(moved, "mine", recommendation, 0);
-  assert.equal(movedReview.status, "obsolete"); assert.match(movedReview.reason, /assigned to IR/);
+  assert.equal(movedReview.status, "obsolete"); assert.match(movedReview.reason, /in IR without a currently valid ESPN IR designation/);
   const reduced = structuredClone(before); reduced.players.find((player) => player.id === recommendation.add.id).projection = 10.2;
   const reducedReview = revalidateWaiverRecommendation(reduced, "mine", recommendation, 0);
   assert.equal(reducedReview.status, "obsolete"); assert.equal(reducedReview.lineupGain, 0.2); assert.match(reducedReview.reason, /below the 0.5-point action threshold/);

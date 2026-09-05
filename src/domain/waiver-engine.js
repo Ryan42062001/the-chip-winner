@@ -1,4 +1,5 @@
 import { optimizeLineup } from "./lineup-optimizer.js";
+import { evaluateTeamIrState } from "./ir-eligibility.js";
 const MIN_WAIVER_LINEUP_GAIN = 0.5;
 function isLocked(entry, player, now) {
 if (entry.locked === true || player?.locked === true) return true;
@@ -25,6 +26,18 @@ return exceeded ? `ESPN ${exceeded.position} roster limit is ${exceeded.limit}.`
 function review(status, reason, lineupGain = null, capacity = null) {
 return Object.freeze({ status, reason, lineupGain, capacity });
 }
+function describeIrLimitations(irState) {
+const limitations = [];
+if (!irState) return limitations;
+if (irState.status === "settings-unavailable") limitations.push("ESPN IR slot settings are unavailable; open IR capacity is not inferred.");
+if (irState.status === "disabled") limitations.push("ESPN reports no configured IR slots for this league.");
+if (irState.grandfatheredEntries?.length) limitations.push(irState.reason);
+if (irState.openSlots > 0 && irState.benchPlaceableEntries?.length) {
+const candidates = irState.benchPlaceableEntries.slice(0, irState.openSlots).map((item) => item.player.name).join(", ");
+limitations.push(`${irState.openSlots} ESPN IR slot${irState.openSlots === 1 ? " is" : "s are"} open. ${candidates} ${irState.benchPlaceableEntries.length === 1 ? "is" : "are"} currently eligible to move from the bench to IR based on an ESPN OUT/IR designation, which can free active-roster space.`);
+}
+return limitations;
+}
 export function evaluateAcquisitionCapacity(snapshot, teamId) {
 const team = snapshot?.teams?.find((item) => item.id === teamId);
 if (!team) return Object.freeze({ status: "missing-team", seasonRemaining: null, matchupRemaining: null, reason: "Selected team acquisition data is unavailable." });
@@ -42,11 +55,14 @@ export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), 
 if (!Array.isArray(snapshot.availablePlayers)) return { status: "missing-availability", items: [], limitations: [] };
 const roster = snapshot.rosters.find((item) => item.teamId === teamId);
 if (!roster) return { status: "missing-roster", items: [], limitations: [] };
+const irState = evaluateTeamIrState(snapshot, teamId);
+if (irState.status === "invalid") return { status: "incomplete-lineup", items: [], limitations: [irState.reason], irState };
+if (irState.status === "unverified") return { status: "incomplete-lineup", items: [], limitations: [irState.reason], irState };
 const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
-if (capacity.status === "exhausted") return { status: "acquisition-limit-reached", items: [], limitations: [capacity.reason], capacity };
+if (capacity.status === "exhausted") return { status: "acquisition-limit-reached", items: [], limitations: [capacity.reason], capacity, irState };
 const players = new Map(snapshot.players.map((player) => [player.id, player]));
 const baseline = optimizeLineup(snapshot, teamId, now);
-if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: [], limitations: [baseline.reason] };
+if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: [], limitations: [baseline.reason], irState };
 const dropEntries = roster.entries.filter((entry) => entry.lineupSlot === "BE" && !isLocked(entry, players.get(entry.playerId), now));
 const available = snapshot.availablePlayers.map((playerId) => players.get(playerId)).filter((player) => player?.projection != null && !isLocked({}, player, now));
 const candidates = []; const rosterRuleBlocks = new Set();
@@ -79,10 +95,11 @@ const team = snapshot.teams?.find((item) => item.id === teamId); const limitatio
 limitations.push("Replacement value is the add player's current-week projection minus the highest projected other ESPN-available player at the same position; unavailable benchmarks stay missing.");
 limitations.push(snapshot.league?.rosterRules ? "ESPN-reported roster size and position limits were enforced." : "ESPN roster and position limits are unavailable; no rule is inferred.");
 limitations.push(...rosterRuleBlocks);
+limitations.push(...describeIrLimitations(irState));
 limitations.push(capacity.status === "available" ? "Known ESPN acquisition limits and usage were checked before evaluating moves." : "ESPN acquisition usage or limits are incomplete, so remaining moves cannot be verified.");
 limitations.push(team?.acquisition?.waiverRank == null ? "ESPN waiver priority is unavailable; no claim outcome is predicted." : `ESPN waiver priority is ${team.acquisition.waiverRank}; claim outcomes are not predicted.`);
 if (baseline.status === "best-known") limitations.push("Some roster projections are missing, so gains use the strongest complete lineup among known projections.");
-return { status: "ready", baselineTotal: baseline.projectedTotal, items, limitations, capacity };
+return { status: "ready", baselineTotal: baseline.projectedTotal, items, limitations, capacity, irState };
 }
 export function revalidateWaiverRecommendation(snapshot, teamId, recommendation, now = Date.now()) {
 const addId = recommendation?.add?.id ?? recommendation?.addPlayerId;
@@ -91,6 +108,9 @@ if (!addId || !dropId) return review("unverified", "Prior waiver recommendation 
 if (!Array.isArray(snapshot?.availablePlayers)) return review("unverified", "Latest ESPN availability is missing, so the prior waiver recommendation cannot be revalidated.");
 const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
 if (!roster) return review("unverified", "The selected roster is missing from the latest ESPN snapshot.");
+const irState = evaluateTeamIrState(snapshot, teamId);
+if (irState.status === "invalid") return review("obsolete", irState.reason);
+if (irState.status === "unverified") return review("unverified", irState.reason);
 const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
 if (capacity.status === "missing-team") return review("unverified", capacity.reason, null, capacity);
 if (capacity.status === "exhausted") return review("obsolete", capacity.reason, null, capacity);
@@ -112,5 +132,5 @@ const result = optimizeLineup(swappedSnapshot(snapshot, teamId, dropEntry, add.i
 if (!result.assignments?.length) return review("unverified", "The latest ESPN lineup state cannot produce a supported lineup after the prior move.", null, capacity);
 const lineupGain = +(result.projectedTotal - baseline.projectedTotal).toFixed(1);
 if (lineupGain < MIN_WAIVER_LINEUP_GAIN) return review("obsolete", `The latest projected lineup gain is ${lineupGain.toFixed(1)} points, below the ${MIN_WAIVER_LINEUP_GAIN.toFixed(1)}-point action threshold.`, lineupGain, capacity);
-return review("current", `Revalidated against the latest ESPN availability, roster state, locks, limits, and current-week projections at a ${lineupGain.toFixed(1)}-point lineup gain.`, lineupGain, capacity);
+return review("current", `Revalidated against the latest ESPN availability, roster state, IR eligibility, locks, limits, and current-week projections at a ${lineupGain.toFixed(1)}-point lineup gain.`, lineupGain, capacity);
 }
