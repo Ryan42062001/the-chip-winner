@@ -1,6 +1,8 @@
 const ALLOWED_VIEWS = Object.freeze(["mTeam", "mRoster", "mMatchup", "mSettings"]);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Only this extension's own isolated content script may invoke the read bridge.
+  if (sender?.id !== chrome.runtime.id) return false;
   if (message?.type === "CHIP_WINNER_PING") {
     sendResponse({ ok: true, version: chrome.runtime.getManifest().version });
     return false;
