@@ -41,6 +41,22 @@ async function assertNoHorizontalOverflow(page, label) {
   }
 }
 
+async function assertCompactDesktopShell(page, label) {
+  const metrics = await page.evaluate(() => {
+    const sidebar = document.querySelector(".sidebar");
+    const menu = document.querySelector(".mobile-menu");
+    const topbar = document.querySelector(".topbar");
+    return {
+      menuDisplay: getComputedStyle(menu).display,
+      sidebarRight: sidebar.getBoundingClientRect().right,
+      topbarDisplay: getComputedStyle(topbar).display,
+    };
+  });
+  if (metrics.menuDisplay === "none") throw new Error(`${label} did not expose the compact navigation trigger.`);
+  if (metrics.sidebarRight > 2) throw new Error(`${label} left the desktop sidebar consuming content width (${metrics.sidebarRight}px right edge).`);
+  if (metrics.topbarDisplay !== "grid") throw new Error(`${label} did not switch the header to compact two-row reflow.`);
+}
+
 async function openSample(page) {
   await page.goto(origin, { waitUntil: "networkidle" });
   await page.locator("#onboarding-dialog").waitFor();
@@ -65,12 +81,21 @@ try {
   await waitForServer();
   browser = await chromium.launch({ executablePath, headless: true, args: ["--no-sandbox"] });
 
+  // The real field case was a 1920px desktop at 200% Chrome zoom: roughly a 960 CSS-pixel layout viewport.
+  const wideZoomContext = await browser.newContext({ viewport: { width: 960, height: 900 } });
+  const wideZoomPage = await wideZoomContext.newPage();
+  await openSample(wideZoomPage);
+  await assertCompactDesktopShell(wideZoomPage, "1920px-at-200%-equivalent shell");
+  await assertNoHorizontalOverflow(wideZoomPage, "1920px-at-200%-equivalent overview");
+  await auditSections(wideZoomPage, "1920px-at-200%-equivalent");
+  await wideZoomContext.close();
+
   // A 720 CSS-pixel viewport represents a 1440px desktop at 200% browser zoom.
   const zoomContext = await browser.newContext({ viewport: { width: 720, height: 900 } });
   const zoomPage = await zoomContext.newPage();
   await openSample(zoomPage);
-  await assertNoHorizontalOverflow(zoomPage, "200%-equivalent overview");
-  await auditSections(zoomPage, "200%-equivalent");
+  await assertNoHorizontalOverflow(zoomPage, "1440px-at-200%-equivalent overview");
+  await auditSections(zoomPage, "1440px-at-200%-equivalent");
   await zoomContext.close();
 
   const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
@@ -80,7 +105,7 @@ try {
   await auditSections(mobilePage, "390px phone");
   await mobileContext.close();
 
-  console.log("Production-readiness reflow audit passed at 200%-equivalent desktop width and 390px mobile across all primary sections.");
+  console.log("Production-readiness reflow audit passed at 960px and 720px 200%-equivalent desktop widths plus 390px mobile across all primary sections.");
 } finally {
   await browser?.close();
   server.kill();
