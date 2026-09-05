@@ -14,6 +14,18 @@ Before changing the repository, inspect `git status`, recent commits, `package.j
 - `docs/next-codex-task.md` is a point-in-time handoff. Refresh it when its checkpoint or primary task changes; do not treat an older handoff as more authoritative than the repository state or roadmap.
 - Preserve user changes. Do not reimplement work already marked complete without first proving the current implementation is missing or incorrect.
 
+## Protected master workflow
+
+`master` is protected. Do not push feature, documentation, dependency, or maintenance changes directly to `master`.
+
+- Fetch `origin/master` and verify the current tip before starting work.
+- Create a task branch from the current `master` tip and make all changes there.
+- Run the required local verification before pushing the branch.
+- Open a pull request targeting `master`.
+- The required GitHub Actions `test` status check must pass before merge. The protected branch is configured to require the PR branch to be up to date with `master` before merging.
+- Merge only after the required check is green. Do not bypass the ruleset, force-push `master`, or delete `master`.
+- After merge, wait for the `master` push workflow to complete deployment and production verification before reporting the work as fully complete.
+
 ## Required invariants
 
 - Never invent player identities, rankings, projections, injuries, availability, kickoff times, or league rules.
@@ -49,7 +61,7 @@ npm run check
 git diff --check
 ```
 
-Every pushed change must keep the GitHub Pages workflow passing. Add tests for changed domain behavior, missing-data states, browser flow, accessibility, or security boundaries as appropriate. Update documented test counts only after verifying the complete suite.
+Every pushed branch change must keep the GitHub Pages workflow passing. Add tests for changed domain behavior, missing-data states, browser flow, accessibility, or security boundaries as appropriate. Update documented test counts only after verifying the complete suite.
 
 Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain deployment-blocking guardrails. The aggregate browser JavaScript graph size is measured and reported as an informational trend only; do not fail or reshape a useful feature solely to stay below a historical total-source-size number. Optimize when user-experienced performance, maintainability, or a focused budget warrants it.
 
