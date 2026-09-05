@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The Chip Winner — an ESPN-only in-season fantasy football companion." />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://the-chip-winner-sync.yc6syr6bkd.workers.dev; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://the-chip-winner-sync.yc6syr6bkd.workers.dev https://raw.githubusercontent.com https://api.github.com; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'" />
     <title>The Chip Winner</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="src/styles.css?v=0.9.61" />
+    <link rel="stylesheet" href="src/styles.css?v=0.9.62" />
   </head>
   <body>
     <a class="skip-link" href="#app-content">Skip to main content</a>
@@ -44,6 +44,7 @@
           <div class="header-actions">
             <label class="team-picker">Team <select id="team-select" aria-label="Select fantasy team"></select></label>
             <button class="button primary" id="connect-button">Connect ESPN</button>
+            <button class="button secondary" id="weekly-projection-update-button" type="button" hidden>Check projections</button>
             <button class="button secondary" id="import-button">Import ESPN snapshot</button>
             <button class="button secondary" id="rankings-button">Import ROS rankings</button>
             <button class="button ghost" id="reset-button" hidden>Use sample</button>
@@ -106,6 +107,7 @@
       <p class="onboarding-note">The CSV file's local modified time is stored as capture metadata. It does not claim when FantasyPros recalculated the projections.</p>
       <div class="onboarding-actions"><button class="button primary" id="manual-import-confirm" type="button">Import approved players</button><button class="button secondary" id="manual-import-cancel" type="button">Cancel</button></div>
     </dialog>
-    <script type="module" src="src/app.js?v=0.9.61"></script>
+    <script type="module" src="src/app.js?v=0.9.62"></script>
+    <script type="module" src="src/weekly-projection-update-controller.js?v=0.9.62"></script>
   </body>
 </html>

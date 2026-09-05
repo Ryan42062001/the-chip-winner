@@ -44,6 +44,14 @@ if (ids.length !== 1) return result(ids.length ? "identity-conflict" : "missing-
 const record = set.projections.find((item) => item.providerPlayerId === ids[0] && item.week === week);
 return record ? result("ready", record.points) : result("missing-week");
 }
+export function futureProjectionScoringFamily(value) {
+const normalized = String(value || "").trim().toLowerCase().replaceAll("_", " ");
+if (!normalized || normalized === "unknown") return null;
+if ((normalized.includes("half") || normalized.includes("0.5")) && normalized.includes("ppr")) return "half-ppr";
+if (normalized.includes("non-ppr") || normalized.includes("non ppr") || normalized.includes("standard")) return "standard";
+if (normalized.includes("ppr")) return "ppr";
+return null;
+}
 export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Date.now(), staleAfterMs = 7 * 24 * 60 * 60 * 1000 } = {}) {
 const normalized = normalizeFutureProjectionSet(set);
 if (!normalized.valid) return Object.freeze({ usable: false, status: "invalid", ageMs: null, errors: Object.freeze(normalized.errors), warnings: Object.freeze([]) });
@@ -51,7 +59,10 @@ const value = normalized.value; const errors = []; const warnings = [];
 const leagueSeason = Number(snapshot?.league?.season);
 if (Number.isInteger(leagueSeason) && value.season !== leagueSeason) errors.push(`Projection season ${value.season} does not match ESPN league season ${leagueSeason}.`);
 const leagueScoring = String(snapshot?.league?.scoringType || "").trim();
-if (leagueScoring && leagueScoring.toLowerCase() !== "unknown" && value.scoringFormat.trim().toLowerCase() !== leagueScoring.toLowerCase()) errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN league scoring ${leagueScoring}.`);
+if (leagueScoring && leagueScoring.toLowerCase() !== "unknown") {
+const sourceFamily = futureProjectionScoringFamily(value.scoringFormat); const leagueFamily = futureProjectionScoringFamily(leagueScoring);
+if (sourceFamily && leagueFamily ? sourceFamily !== leagueFamily : value.scoringFormat.trim().toLowerCase() !== leagueScoring.toLowerCase()) errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN league scoring ${leagueScoring}.`);
+}
 const captureTimes = value.projections.map((item) => Date.parse(item.capturedAt));
 const capturedTime = Date.parse(value.capturedAt); const ageMs = Number.isFinite(capturedTime) ? now - capturedTime : null;
 if (captureTimes.some((time) => time - now > 5 * 60 * 1000)) errors.push("A projection capture time is in the future.");
