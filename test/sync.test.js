@@ -51,4 +51,14 @@ test("provider contracts fail explicitly and HTTP transport uses scoped methods"
   await provider.remove("channel", "writer");
   assert.deepEqual(calls.map((call) => call.options.method || "GET"), ["PUT", "GET", "DELETE"]);
   assert.equal(calls[0].options.headers.Authorization, "Bearer writer");
+  assert.equal(calls.every((call) => call.options.signal instanceof AbortSignal), true);
+});
+
+test("HTTP sync transport bounds stalled requests", async () => {
+  const fetchImpl = async (_url, options = {}) => new Promise((resolve, reject) => {
+    options.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+  });
+  const provider = new HttpSyncProvider({ baseUrl: "https://sync.example", fetchImpl, timeoutMs: 20 });
+  await assert.rejects(() => provider.read("stalled-channel"), /Sync service timed out after 1 seconds\./);
+  assert.throws(() => new HttpSyncProvider({ baseUrl: "https://sync.example", timeoutMs: 0 }), /positive number/);
 });
