@@ -334,7 +334,9 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 ### Performance
 
 - Keep the initial dashboard usable on a mid-range phone connection.
-- Establish budgets when a build system is introduced: JavaScript, CSS, image weight, and interaction latency.
+- Keep focused HTML, CSS, app-entry, and sample-data budgets as deployment-blocking guardrails.
+- Measure the aggregate browser JavaScript graph as an informational trend rather than a hard release cap.
+- Add runtime interaction thresholds only after production telemetry has an approved privacy policy.
 - Cache static assets while ensuring league data freshness remains visible.
 
 ### Observability
@@ -366,27 +368,27 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.54
+## Current execution plan — after v0.9.55
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
 ### P0 — Split the browser application entry point
 
-Status: **Complete in v0.9.49.** Section rendering, shell event binding, and projection-import transactions now use focused modules with explicit dependencies. The application store remains the single snapshot and UI-state owner. `src/app.js` is 24.9 KiB against a tightened 60 KiB limit, and the complete browser graph remains within 220 KiB.
+Status: **Complete in v0.9.49.** Section rendering, shell event binding, and projection-import transactions now use focused modules with explicit dependencies. The application store remains the single snapshot and UI-state owner. `src/app.js` remains below the focused 60 KiB budget. The aggregate browser graph was kept within the historical 220 KiB sprint constraint at the time; current policy measures that aggregate graph as an informational trend instead of a release blocker.
 
-Why now: the measured browser JavaScript graph is 218.0 KiB of a 220 KiB budget and `src/app.js` is 78.7 KiB of an 80 KiB budget.
+Historical rationale: before the split, the browser JavaScript graph measured 218.0 KiB against the then-220 KiB cap and `src/app.js` was 78.7 KiB against an 80 KiB budget.
 
 Tasks:
 
 1. Extract section renderers, event binding, and projection-import orchestration into focused modules.
 2. Keep one application state owner; extracted modules receive explicit dependencies and cannot retain hidden snapshot copies.
 3. Add focused unit tests and browser coverage for navigation, player detail, and projection import.
-4. Do not raise performance budgets merely to make a check pass.
+4. Preserve focused static-asset budgets; use aggregate browser-graph size as a trend signal rather than a hard cap.
 
 Acceptance criteria:
 
 - `src/app.js` is below 60 KiB and primarily performs composition and top-level coordination.
-- The browser graph remains at or below 220 KiB with no circular dependencies.
+- The aggregate browser graph remains measured and inspectable without serving as a hard release cap.
 - Desktop/mobile smoke and accessibility checks show no regression.
 
 ### P0 — Make multiweek imports atomic and inspectable
@@ -409,11 +411,11 @@ Acceptance criteria:
 
 ### P1 — Complete real projection coverage
 
-Status: **Partially implemented in v0.9.50.** Season Plan now renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon. Each cell distinguishes ready, missing explicit identity mapping, and missing player-week projection states; ready cells retain the provider-owned ID, value, and record capture time. User-supplied weekly exports and explicit identity approvals are still required to complete real coverage.
+Status: **Partially implemented through v0.9.55.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon. Candidate-aware future coverage also checks the top current ESPN waiver adds and distinguishes missing explicit identity mappings from missing player-week projections. Ready cells retain the provider-owned ID, value, and record capture time, and the projection-gap report names exact repair needs without display-name joins. User-supplied weekly exports and explicit identity approvals are still required to complete real coverage.
 
 1. Import each available free FantasyPros weekly CSV.
 2. Approve provider-to-ESPN identities explicitly; never auto-join by display name.
-3. Display exact missing-mapping and missing-player-week repair reports and a roster/candidate coverage matrix.
+3. Keep exact missing-mapping and missing-player-week repair reports and the roster/candidate coverage matrix visible as coverage changes.
 4. Enable multiweek deltas only when baseline and simulated rosters both have complete mapped coverage.
 
 Acceptance criteria: every used value includes provider, scoring, season, week, provider ID, points, and capture time; incompatibility blocks comparisons; partial coverage never produces a summed advantage.
@@ -430,14 +432,13 @@ Acceptance criteria: no playoff boundary or schedule grade is inferred; scenario
 
 ### P1 — Complete waiver engine v2
 
-Status: **Partially implemented through v0.9.54.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates now show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. IR eligibility transitions and refresh-obsolete recommendation state remain open.
+Status: **Partially implemented through v0.9.55.** Live ESPN normalization preserves explicit roster-size and provider-position limits, and waiver simulations enforce them without inferring absent rules. Current-week candidates show a transparent replacement benchmark: the add projection minus the highest projected other ESPN-available player at the same position. Missing comparable players keep the benchmark unavailable and replacement value remains separate from legal-lineup gain. IR eligibility transitions, refresh-obsolete recommendation state, and projection-gated multiweek waiver impact remain open.
 
-1. Model IR and roster limits only where ESPN supplies authoritative rules.
-2. Add multiweek impact after projection coverage gates pass.
-3. Define visible replacement-value methodology from the connected league’s available pool.
-4. Revalidate availability after refresh and mark obsolete recommendations.
+1. Model IR eligibility transitions only where ESPN supplies authoritative rules and inputs.
+2. Revalidate availability and relevant source state after refresh and mark older recommendations visibly obsolete.
+3. Add multiweek impact only after projection coverage gates pass.
 
-Acceptance criteria: every move remains legal after full-roster simulation; unsupported acquisition likelihood is never claimed; current-week, ROS ranking, and multiweek conclusions remain separately sourced.
+Acceptance criteria: every move remains legal after full-roster simulation; unsupported acquisition likelihood is never claimed; current-week, replacement-value, ROS ranking, and multiweek conclusions remain separately sourced.
 
 ### P2 — Production-readiness closeout
 
