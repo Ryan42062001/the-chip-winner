@@ -87,9 +87,9 @@
 
   /*
    * League Setup is information-dense. At the real 200%-zoom field width,
-   * keeping its desktop two-column grid forces long setting labels/values to
-   * create intrinsic overflow. Stack those panels and allow their text to
-   * wrap rather than making the entire page horizontally scroll.
+   * keeping desktop-width forms/tables or long select values can create
+   * intrinsic overflow even after the panels themselves stack. Collapse those
+   * inner layouts too so every control and source value remains readable.
    */
   .league-grid {
     grid-template-columns: 1fr;
@@ -97,15 +97,58 @@
 
   .panel,
   .league-grid > *,
+  .panel-head,
   .settings-list,
-  .settings-list > div {
+  .settings-list > div,
+  .connection-form,
+  .connection-form label,
+  .saved-connection,
+  .sync-actions,
+  .league-matchups,
+  .league-matchup,
+  .league-matchup > span {
     min-width: 0;
   }
 
+  .connection-form {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-connection select,
+  .connection-form input,
+  .schedule-week select {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .panel-head,
+  .settings-list > div,
+  .league-matchup > span {
+    flex-wrap: wrap;
+  }
+
   .settings-list dt,
-  .settings-list dd {
+  .settings-list dd,
+  .league-matchup > span > *,
+  .data-note,
+  .connection-health strong,
+  .connection-health span {
     min-width: 0;
     overflow-wrap: anywhere;
+  }
+
+  .standings-card table {
+    table-layout: fixed;
+  }
+
+  .standings-card th,
+  .standings-card td {
+    overflow-wrap: anywhere;
+  }
+
+  .sync-actions .button {
+    max-width: 100%;
+    white-space: normal;
   }
 
   .notice {
