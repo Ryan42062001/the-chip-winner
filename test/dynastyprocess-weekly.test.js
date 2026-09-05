@@ -64,7 +64,7 @@ test("ESPN D/ST synthetic IDs derive only from explicit pro-team codes", () => {
   assert.equal(deriveEspnDefensePlayerId(""), null);
 });
 
-test("DynastyProcess player ID parser joins stable IDs and rejects ambiguous mappings", () => {
+test("DynastyProcess player ID parser joins stable IDs and retains unassigned ESPN identity evidence", () => {
   const parsed = parseDynastyProcessPlayerIdsCsv([
     "fantasypros_id,espn_id,name",
     "19196,3915511,Joe Burrow",
@@ -74,6 +74,8 @@ test("DynastyProcess player ID parser joins stable IDs and rejects ambiguous map
   ].join("\n"));
   assert.equal(parsed.map.get("19196"), "3915511");
   assert.equal(parsed.map.get("22968"), "4429795");
+  assert.equal(parsed.providerByEspn.get("3915511"), "19196");
+  assert.equal(parsed.espnIdsWithoutFantasyPros.has("12345"), true);
   assert.equal(parsed.skippedCount, 2);
   assert.throws(() => parseDynastyProcessPlayerIdsCsv([
     "fantasypros_id,espn_id",
@@ -102,6 +104,7 @@ test("DynastyProcess bundle emits existing projection and identity contracts wit
   assert.equal(bundle.scoringFormat, "PPR");
   assert.equal(bundle.mappedCount, 1);
   assert.equal(bundle.derivedDefenseMappingCount, 0);
+  assert.equal(bundle.reviewedIdentityMappingCount, 0);
   assert.deepEqual(bundle.unresolvedProviderIds, ["22968"]);
   assert.ok(!bundle.projectionsCsv.includes("Joe Burrow"));
   assert.ok(!bundle.identityMapCsv.includes("Joe Burrow"));
@@ -112,6 +115,78 @@ test("DynastyProcess bundle emits existing projection and identity contracts wit
   assert.equal(projectionSet.season, 2026);
   assert.deepEqual(projectionSet.projections, [{ providerPlayerId: "19196", week: 1, points: 21.4, capturedAt: publishedAt }]);
   assert.deepEqual(parseProjectionIdentityMapCsv(bundle.identityMapCsv), [{ providerPlayerId: "19196", espnPlayerId: "3915511" }]);
+});
+
+test("DynastyProcess bundle activates all reviewed identity bridges only from current unassigned ESPN evidence", () => {
+  const reviewedRows = [
+    ["ppr-rb", "28434", "Max Bredeson", "MIN", "RB", "5.1", "4878695"],
+    ["ppr-te", "28168", "Matt Hibner", "BAL", "TE", "3.2", "4432260"],
+    ["k", "27534", "Tyler Loop", "BAL", "K", "8.2", "4697745"],
+    ["k", "26638", "Harrison Mevis", "LAR", "K", "8.0", "4574716"],
+    ["k", "28507", "Trey Smack", "GB", "K", "7.8", "4869461"],
+    ["k", "27291", "Andy Borregales", "NE", "K", "7.6", "4569923"],
+    ["k", "27261", "Ryan Fitzgerald", "CAR", "K", "7.4", "4568263"],
+    ["k", "26763", "Spencer Shrader", "IND", "K", "7.2", "4571557"],
+    ["k", "28175", "Drew Stevens", "WAS", "K", "7.0", "5081335"],
+    ["k", "28176", "Dominic Zvada", "NYG", "K", "6.8", "5082424"]
+  ];
+  const weeklyCsv = [
+    weeklyHeader,
+    "qb,2026-09-04,19196,Joe Burrow,CIN,QB,21.4",
+    ...reviewedRows.map(([page, id, name, team, position, points]) => `${page},2026-09-04,${id},${name},${team},${position},${points}`)
+  ].join("\n");
+  const playerIdsCsv = [
+    "fantasypros_id,espn_id,name",
+    "19196,3915511,Joe Burrow",
+    ...reviewedRows.map(([, , name, , , , espnId]) => `NA,${espnId},${name}`)
+  ].join("\n");
+  const bundle = buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, season: 2026, week: 1, publishedAt: "2026-09-04T18:30:00Z" });
+  assert.equal(bundle.mappedCount, 11);
+  assert.equal(bundle.reviewedIdentityMappingCount, 10);
+  assert.equal(bundle.derivedDefenseMappingCount, 0);
+  assert.deepEqual(bundle.unresolvedProviderIds, []);
+  const identities = parseProjectionIdentityMapCsv(bundle.identityMapCsv);
+  for (const [, providerPlayerId, , , , , espnPlayerId] of reviewedRows) {
+    assert.deepEqual(identities.find((item) => item.providerPlayerId === providerPlayerId), { providerPlayerId, espnPlayerId });
+  }
+});
+
+test("reviewed identity bridges fail closed when upstream evidence disappears or becomes claimed", () => {
+  const weeklyCsv = [
+    weeklyHeader,
+    "qb,2026-09-04,19196,Joe Burrow,CIN,QB,21.4",
+    "k,2026-09-04,27534,Tyler Loop,BAL,K,8.2"
+  ].join("\n");
+  const missingEvidence = buildDynastyProcessWeeklyBundle({
+    weeklyCsv,
+    playerIdsCsv: ["fantasypros_id,espn_id", "19196,3915511"].join("\n"),
+    season: 2026,
+    week: 1,
+    publishedAt: "2026-09-04T18:30:00Z"
+  });
+  assert.equal(missingEvidence.reviewedIdentityMappingCount, 0);
+  assert.deepEqual(missingEvidence.unresolvedProviderIds, ["27534"]);
+  assert.throws(() => buildDynastyProcessWeeklyBundle({
+    weeklyCsv,
+    playerIdsCsv: ["fantasypros_id,espn_id", "19196,3915511", "99999,4697745"].join("\n"),
+    season: 2026,
+    week: 1,
+    publishedAt: "2026-09-04T18:30:00Z"
+  }), /Reviewed FantasyPros ID 27534 targets ESPN ID 4697745.*FantasyPros ID 99999/);
+});
+
+test("a new direct upstream mapping supersedes the reviewed bridge automatically", () => {
+  const bundle = buildDynastyProcessWeeklyBundle({
+    weeklyCsv: [weeklyHeader, "k,2026-09-04,27534,Tyler Loop,BAL,K,8.2"].join("\n"),
+    playerIdsCsv: ["fantasypros_id,espn_id", "27534,4697745"].join("\n"),
+    season: 2026,
+    week: 1,
+    publishedAt: "2026-09-04T18:30:00Z"
+  });
+  assert.equal(bundle.mappedCount, 1);
+  assert.equal(bundle.reviewedIdentityMappingCount, 0);
+  assert.deepEqual(bundle.unresolvedProviderIds, []);
+  assert.deepEqual(parseProjectionIdentityMapCsv(bundle.identityMapCsv), [{ providerPlayerId: "27534", espnPlayerId: "4697745" }]);
 });
 
 test("DynastyProcess bundle derives D/ST ESPN IDs from explicit team codes", () => {
@@ -131,6 +206,7 @@ test("DynastyProcess bundle derives D/ST ESPN IDs from explicit team codes", () 
   const bundle = buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, season: 2026, week: 1, publishedAt });
   assert.equal(bundle.mappedCount, 5);
   assert.equal(bundle.derivedDefenseMappingCount, 4);
+  assert.equal(bundle.reviewedIdentityMappingCount, 0);
   assert.deepEqual(bundle.unresolvedProviderIds, []);
   assert.deepEqual(parseProjectionIdentityMapCsv(bundle.identityMapCsv), [
     { providerPlayerId: "19196", espnPlayerId: "3915511" },
