@@ -27,9 +27,14 @@ function preservationLabel(item, escapeHtml) {
   return item.drop?.name ? `Drop ${escapeHtml(item.drop.name)}` : "Drop required";
 }
 
+function candidateLabel(item) {
+  if (item.candidateType === "future-only") return "FUTURE STASH · ADD / DROP";
+  return item.kind === "ir-assisted-add" ? "IR-ASSISTED · NO DROP" : "HELPS NOW · ADD / DROP";
+}
+
 function renderPriorityItems(board, escapeHtml) {
   return board.items.map((item) => `<article class="panel waiver-priority-card interactive-row" data-player-id="${escapeHtml(item.add.id)}" role="button" tabindex="0" aria-label="View ${escapeHtml(item.add.name)} priority details">
-    <div class="panel-head"><div><p class="eyebrow">${item.kind === "ir-assisted-add" ? "IR-ASSISTED · NO DROP" : "ADD / DROP"}</p><h3>${escapeHtml(item.add.name)}</h3><p>${escapeHtml(item.add.position)} · ${escapeHtml(item.priorityReason)}</p></div><span class="quality ${item.priorityBand === 1 ? "fresh" : "aging"}">Priority band ${item.priorityBand}</span></div>
+    <div class="panel-head"><div><p class="eyebrow">${candidateLabel(item)}</p><h3>${escapeHtml(item.add.name)}</h3><p>${escapeHtml(item.add.position)} · ${escapeHtml(item.priorityReason)}</p></div><span class="quality ${item.priorityBand === 1 ? "fresh" : "aging"}">Priority band ${item.priorityBand}</span></div>
     <dl class="settings-list waiver-priority-factors">
       <div><dt>This week</dt><dd>${signedPoints(item.currentWeek.lineupGain)}</dd></div>
       <div><dt>Selected future weeks</dt><dd>${futureLabel(item)}</dd></div>
@@ -71,11 +76,14 @@ function priorityPanel(deps, base) {
       ? `<div class="waiver-list">${renderPriorityItems(board, base.escapeHtml)}</div>`
       : base.emptyState("Nothing to prioritize", limitation);
   const futureContext = usableFutureProjectionSet && futureWeeks.length
-    ? `Selected future horizon: Weeks ${futureWeeks.join(", ")}.`
-    : "Future-week evidence is unavailable or no future weeks are selected; missing future inputs are not scored as zero.";
+    ? `Selected future horizon: Weeks ${futureWeeks.join(", ")}. Future-only stashes require complete selected-week coverage for the current roster and simulated add/drop roster.`
+    : "Future-week evidence is unavailable or no future weeks are selected; future-only stashes are withheld and missing future inputs are not scored as zero.";
+  const discoveryContext = board.futureDiscovery?.status === "ready"
+    ? `${board.futureDiscovery.qualifiedAdds} positive future-only stash candidate${board.futureDiscovery.qualifiedAdds === 1 ? "" : "s"} cleared complete coverage and current ESPN legality.`
+    : board.futureDiscovery?.reason || "Future-only stash discovery is unavailable in the current state.";
 
   section.innerHTML = `<div class="section-divider"><span id="waiver-priority-title">PRIORITY BOARD · TRANSPARENT MULTI-FACTOR</span></div>
-    <article class="panel waiver-limitations"><strong>How priority works</strong><span>No weighted score. Priority band 1 means no other fully comparable move is clearly better across every known factor.</span><span>${base.escapeHtml(futureContext)}</span></article>
+    <article class="panel waiver-limitations"><strong>How priority works</strong><span>No weighted score. Priority band 1 means no other fully comparable move is clearly better across every known factor.</span><span>${base.escapeHtml(futureContext)}</span><span>${base.escapeHtml(discoveryContext)}</span></article>
     ${body}`;
   return section;
 }
