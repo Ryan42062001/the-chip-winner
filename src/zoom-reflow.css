@@ -27,6 +27,15 @@
   padding-right: 2px;
 }
 
+/* A synced phone/tablet is a read-only viewer at every orientation/width. */
+body[data-app-source="sync"] #connect-button,
+body[data-app-source="sync"] #weekly-projection-update-button,
+body[data-app-source="sync"] #import-button,
+body[data-app-source="sync"] #rankings-button,
+body[data-app-source="sync"] #reset-button {
+  display: none !important;
+}
+
 @media (min-width: 721px) and (max-width: 1000px) {
   .app-shell {
     display: block;
@@ -49,8 +58,10 @@
   .mobile-menu {
     display: inline-grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
     border-radius: 9px;
     background: #eef1ed;
@@ -282,12 +293,14 @@
   body[data-app-source="sync"] .header-actions {
     grid-column: 1 / -1;
     width: 100%;
+    min-width: 0;
     justify-content: stretch;
   }
 
   body[data-app-source="sync"] .team-picker {
     display: grid;
     width: 100%;
+    min-width: 0;
     padding: 7px 10px;
     border-radius: 9px;
     background: #eef1ed;
@@ -297,13 +310,5 @@
     width: 100%;
     max-width: none;
     min-height: 36px;
-  }
-
-  body[data-app-source="sync"] #connect-button,
-  body[data-app-source="sync"] #weekly-projection-update-button,
-  body[data-app-source="sync"] #import-button,
-  body[data-app-source="sync"] #rankings-button,
-  body[data-app-source="sync"] #reset-button {
-    display: none !important;
   }
 }
