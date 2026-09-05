@@ -18,6 +18,8 @@ The protected release workflow blocks deployment unless all automated checks pas
 - tracked-file security/secret scan;
 - post-deployment production smoke against GitHub Pages.
 
+v0.9.72 adds an evidence-gated Release 1.0 field-validation registry and `npm run field:status`. The registry is intentionally not a substitute for the protected automated release workflow; it tracks the human and real-world observations that automation cannot prove.
+
 ## Data lifecycle and recovery contracts
 
 The automated suite now proves these behaviors:
@@ -84,22 +86,59 @@ Automated browser coverage now checks:
 
 The reflow audit is a deterministic layout gate, not a claim that browser zoom itself or every assistive technology has been fully exercised.
 
+## Release 1.0 field validation
+
+The remaining human and field work is now tracked in [`field-validation.md`](field-validation.md) and the machine-readable [`config/field-validation.json`](../config/field-validation.json) registry. The current registry includes:
+
+- keyboard-only critical workflow;
+- screen-reader critical workflow;
+- real browser 200% zoom;
+- representative physical-phone workflow;
+- authenticated standard ESPN league workflow;
+- authenticated custom FLEX/OP league state;
+- real acquisition and provider-position limits;
+- real ESPN IR edge states;
+- real lock/availability transitions;
+- real season/playoff/bye intelligence states;
+- live ESPN/session/network failure and reconnect;
+- live deployed mobile-sync revoke/delete;
+- real waiver candidate volume and timing observation.
+
+The registry supports `pending`, `passed`, `blocked`, and `failed` states. A check cannot be marked `passed` or `failed` without privacy-safe evidence. A blocked state remains visible and cannot silently satisfy Release 1.0.
+
+Use:
+
+```text
+npm run field:status
+```
+
+for the current state and:
+
+```text
+npm run field:status -- --require-complete
+```
+
+for the Release 1.0 completion gate.
+
 ## Remaining human and field validation
 
-The following work remains observational or requires real human/device interaction and must not be represented as automated proof:
+Until the registry is complete, the following claims remain intentionally withheld:
 
-- a manual NVDA, VoiceOver, or equivalent screen-reader pass through the complete critical workflow;
-- a real-browser 200% zoom spot check and representative physical-phone spot check, even though equivalent reflow is release-gated in CI;
-- continued authenticated ESPN validation against materially different real leagues, especially unusual acquisition caps, custom roster/position limits, IR edge states, and lock transitions;
-- live refresh failure/reconnect behavior under actual ESPN/session/network failures;
-- live mobile-sync revoke/delete observation against the deployed worker;
-- real waiver-candidate volume and timing observation as multiweek projection coverage grows;
-- Chrome Web Store packaging, permission, privacy, and distribution review if the companion moves beyond local unpacked installation.
+- that the full critical workflow has passed a real NVDA, VoiceOver, or equivalent screen-reader review;
+- that actual browser 200% zoom and a representative physical phone have been manually validated;
+- that materially different authenticated ESPN league configurations have all been observed in the field;
+- that live ESPN/session/network refresh failure and reconnect have been observed end-to-end;
+- that live mobile-sync revoke/delete has been observed against the deployed worker;
+- that real waiver-candidate volume and timing have been observed with enough multiweek projection coverage to justify any optimization policy.
+
+Chrome Web Store packaging, permission, privacy, and distribution review remains separate unless the companion moves beyond local unpacked installation before Release 1.0.
 
 A field observation should become a permanent regression fixture whenever it exposes a new provider shape or reproducible defect.
 
-## Completion rule
+## Completion rules
 
-v0.9.71 can close the **automatable production-readiness engineering work** once its exact PR head passes the complete protected gate and the post-merge `master` workflow passes `test`, `deploy`, and `verify-production`.
+v0.9.71 closed the **automatable production-readiness engineering work** after its exact PR head and independent post-merge `master` workflow passed the full protected test, deploy, and production verification gates.
 
-It must not be described as proof that every real ESPN league, browser, assistive technology, or network failure has been exhaustively tested.
+v0.9.72 defines the remaining Release 1.0 field gate. The product may be labeled **1.0 — production-grade read-only companion** only when every registered field-validation item is `passed` with privacy-safe evidence, no unresolved high-severity field defect remains, and the final Release 1.0 PR plus post-merge `master` workflow pass the normal protected release gates.
+
+Neither milestone is proof that every possible ESPN league, browser, assistive technology, or network condition has been exhaustively tested. New reproducible provider shapes or defects should continue to become permanent regression coverage after 1.0.
