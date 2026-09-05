@@ -16,7 +16,11 @@ function memoryStorage() {
 }
 
 function fakeFetch(url) {
-  const body = url.includes("fp_latest_weekly.csv") ? WEEKLY : url.includes("db_playerids.csv") ? IDS : COMMITS;
+  let body;
+  if (url.startsWith("https://raw.githubusercontent.com/") && url.endsWith("/fp_latest_weekly.csv")) body = WEEKLY;
+  else if (url.startsWith("https://raw.githubusercontent.com/") && url.endsWith("/db_playerids.csv")) body = IDS;
+  else if (url.startsWith("https://api.github.com/")) body = COMMITS;
+  else throw new Error(`Unexpected weekly projection URL: ${url}`);
   return Promise.resolve({ ok: true, status: 200, text: async () => body });
 }
 
