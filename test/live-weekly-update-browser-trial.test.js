@@ -35,7 +35,15 @@ test("TEMPORARY live Chrome can fetch and import the current weekly projection s
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();
     const pageErrors = [];
+    const consoleMessages = [];
+    const requestFailures = [];
+    const sourceResponses = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => consoleMessages.push(`${message.type()}: ${message.text()}`));
+    page.on("requestfailed", (request) => requestFailures.push(`${request.method()} ${request.url()} :: ${request.failure()?.errorText || "unknown"}`));
+    page.on("response", (response) => {
+      if (response.url().includes("github")) sourceResponses.push(`${response.status()} ${response.url()}`);
+    });
     await page.goto(origin, { waitUntil: "networkidle" });
 
     await page.evaluate(async () => {
@@ -53,10 +61,20 @@ test("TEMPORARY live Chrome can fetch and import the current weekly projection s
 
     const button = page.locator("#weekly-projection-update-button");
     await button.waitFor({ state: "visible" });
-    await page.waitForFunction(() => {
-      const text = document.querySelector("#weekly-projection-update-button")?.textContent || "";
-      return text.includes("Update Week 1 projections") || text.includes("Refresh Week 1 projections");
-    }, null, { timeout: 30_000 });
+    await page.waitForTimeout(8000);
+    const buttonState = await button.evaluate((element) => ({
+      text: element.textContent,
+      title: element.title,
+      disabled: element.disabled,
+      hidden: element.hidden
+    }));
+    console.log(`LIVE_WEEKLY_BUTTON_STATE ${JSON.stringify(buttonState)}`);
+    console.log(`LIVE_WEEKLY_SOURCE_RESPONSES ${JSON.stringify(sourceResponses)}`);
+    console.log(`LIVE_WEEKLY_REQUEST_FAILURES ${JSON.stringify(requestFailures)}`);
+    console.log(`LIVE_WEEKLY_CONSOLE ${JSON.stringify(consoleMessages)}`);
+    console.log(`LIVE_WEEKLY_PAGE_ERRORS ${JSON.stringify(pageErrors)}`);
+
+    assert.match(buttonState.text || "", /Update Week 1 projections|Refresh Week 1 projections/, `Weekly update did not become available. Button state: ${JSON.stringify(buttonState)} Request failures: ${JSON.stringify(requestFailures)} Console: ${JSON.stringify(consoleMessages)} Page errors: ${JSON.stringify(pageErrors)}`);
 
     await page.evaluate(() => document.querySelector("#weekly-projection-update-button")?.click());
     await page.waitForFunction(() => {
