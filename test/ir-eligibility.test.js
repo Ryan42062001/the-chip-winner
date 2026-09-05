@@ -39,12 +39,15 @@ function snapshot() {
   };
 }
 
-test("ESPN IR policy allows only OUT and IR for new placement", () => {
+test("ESPN IR policy proves OUT and IR for new placement while raw PUP remains unverified", () => {
   assert.equal(evaluatePlayerIrEligibility(player("1", "Out", "RB", 1, "OUT"), "BE").canMoveToIr, true);
   assert.equal(evaluatePlayerIrEligibility(player("2", "IR", "RB", 1, "INJURED_RESERVE"), "BE").canMoveToIr, true);
   assert.equal(evaluatePlayerIrEligibility(player("3", "Questionable", "RB", 1, "QUESTIONABLE"), "BE").canMoveToIr, false);
   assert.equal(evaluatePlayerIrEligibility(player("4", "Suspended", "RB", 1, "SUSPENSION"), "BE").canMoveToIr, false);
-  assert.equal(evaluatePlayerIrEligibility(player("5", "PUP", "RB", 1, "PHYSICALLY_UNABLE_TO_PERFORM"), "BE").canMoveToIr, false);
+  const pup = evaluatePlayerIrEligibility(player("5", "PUP", "RB", 1, "PHYSICALLY_UNABLE_TO_PERFORM"), "BE");
+  assert.equal(pup.status, "unverified");
+  assert.equal(pup.canMoveToIr, null);
+  assert.match(pup.reason, /If ESPN surfaces the player as OUT or IR/);
 });
 
 test("Q and D players already in IR are grandfathered but cannot be newly moved there", () => {
