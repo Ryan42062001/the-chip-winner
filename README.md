@@ -8,7 +8,7 @@ A read-only, in-season fantasy football decision companion built around a normal
 
 ## Run locally
 
-Requirements: Node.js 18 or newer and Chrome or Chromium for the browser checks.
+Requirements: Node.js 20 or newer and Chrome or Chromium for the browser checks.
 
 ```bash
 npm install
