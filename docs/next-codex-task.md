@@ -9,7 +9,7 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, and docs/ir-eligibility.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: protected master after the v0.9.66 Waiver Engine transition-hardening release. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified release baseline has 275 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass deployment and production smoke verification.
+Checkpoint: protected master after the v0.9.67 transparent Waiver Priority Engine release. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified release baseline has 283 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass deployment and production smoke verification.
 
 Current tooling baseline:
 - Node.js >=20.
@@ -57,6 +57,13 @@ ESPN IR policy and waiver/Season Plan behavior to preserve:
 - v0.9.66 hardens ordinary multiweek add/drop legality without conflating legality with current-week desirability. A future add/drop may be evaluated even when it does not clear the current-week action threshold, but the planner first requires the add to remain ESPN-available and unlocked, the drop to remain an unlocked bench player on the selected roster, no proven acquisition exhaustion, a supported current IR roster state, and compliance with every explicit ESPN roster-size and provider-position limit.
 - v0.9.66 also uses one explicit evaluation time for current waiver derivation and scenario lock checks when a caller supplies `now`, so deterministic replay/tests do not disagree with current-waiver construction.
 - Unsupported multiweek scenario kinds fail closed rather than being silently treated as add/drop.
+- v0.9.67 adds `src/domain/waiver-priority-engine.js` and a Waiver Wire priority board over the current ESPN-legal recommendation set. It deliberately does not use a weighted composite score.
+- v0.9.67 assigns Pareto priority bands: one candidate outranks another only when it is no worse on every fully comparable known factor and better on at least one. A current-week-versus-future-week tradeoff remains in the same non-dominated band rather than being forced through arbitrary weights.
+- Priority factors remain separately inspectable: current-week lineup gain, complete-horizon future gain, fraction of completely projected future weeks with positive lineup delta, same-position replacement value, exact current same-position roster depth context, and roster preservation from an IR-assisted no-drop path.
+- Missing future or replacement evidence stays missing. It is never converted to zero, and a candidate cannot dominate another merely because the other has missing evidence.
+- Exact same-position roster depth is context only. Do not infer universal RB/WR/QB/TE need thresholds from depth counts or flex structure.
+- The v0.9.67 priority board only ranks moves already emitted by the current-week ESPN-legal waiver engine. It does not claim to discover every legal future-only waiver target below the current-week 0.5-point action threshold.
+- The Waiver Wire priority UI reuses the existing application state owner and future projection/identity/planning-horizon context. `src/ui/section-renderer.js` delegates to `section-renderer-priority.js`, which wraps the preserved established renderer in `section-renderer-base.js`; do not create a second snapshot/projection store.
 - The simulated future roster never mutates the current ESPN snapshot.
 - Every selected week requires complete mapped player-week projection coverage for both the baseline roster and the full simulated roster. IR-assisted paths include the IR-retained player. Weekly and horizon deltas are withheld if any required cell is missing.
 - Season Plan labels IR paths explicitly as moving the player to IR with no drop; current-week and future-week presentation must never dereference or invent a drop for an IR-assisted item.
@@ -69,14 +76,16 @@ Other completed foundation to preserve:
 - Refresh-aware waiver recommendation revalidation against the latest ESPN state, including current IR roster validity and the two-step IR-assisted path.
 - Fail-closed multiweek IR-retained roster simulation with explicit current-state revalidation and complete player-week coverage gating.
 - Fail-closed ordinary future add/drop legality for availability, both player locks, proven acquisition exhaustion, current IR roster validity, explicit roster size, and explicit provider-position limits without requiring a current-week projected gain.
+- Transparent Pareto-band waiver prioritization over current ESPN-legal recommendations with factor provenance and fail-closed missing future evidence.
 
 Primary execution sequence:
 1. Accumulate real DynastyProcess PPR player-week coverage through the browser update flow as new source publications appear. Never fabricate future weeks, auto-map by display name, or weaken stable-ID protections.
 2. Revisit unresolved rows only when new stable crosswalk evidence, explicit reviewed provider-ID rollover evidence, or authoritative ESPN Fantasy state appears.
-3. Continue projection-gated multiweek waiver impact only where baseline and simulated rosters have complete mapped player-week coverage for every included week. Preserve both current-legality gates: ordinary add/drop can be future-positive without a current-week gain, while IR-assisted paths retain the stricter explicit current no-drop recommendation match.
-4. Validate Waiver Engine v2 against materially different authenticated ESPN league states as they become available, especially custom position limits, acquisition caps, filled/invalid IR states, and game-lock transitions.
-5. Finish season/playoff intelligence only after a documented, approved position-specific strength-of-schedule source and methodology exist.
-6. Continue production-readiness closeout with manual accessibility, companion threat review, recovery/deletion checks, and materially different authenticated read-only league states.
+3. Expand Waiver Engine v2 to discover **future-only legal candidates** that may not clear the current-week 0.5-point action threshold. Candidate discovery must first satisfy current ESPN availability/lock/acquisition/IR-roster/roster-rule legality, then expose future value only with complete baseline and simulated player-week coverage. Feed qualifying future-only moves into the same transparent priority factors; do not create a separate opaque score.
+4. Continue projection-gated multiweek waiver impact only where baseline and simulated rosters have complete mapped player-week coverage for every included week. Preserve both current-legality gates: ordinary add/drop can be future-positive without a current-week gain, while IR-assisted paths retain the stricter explicit current no-drop recommendation match.
+5. Validate Waiver Engine v2 against materially different authenticated ESPN league states as they become available, especially custom position limits, acquisition caps, filled/invalid IR states, and game-lock transitions.
+6. Finish season/playoff intelligence only after a documented, approved position-specific strength-of-schedule source and methodology exist.
+7. Continue production-readiness closeout with manual accessibility, companion threat review, recovery/deletion checks, and materially different authenticated read-only league states.
 
 Requirements:
 - Keep ESPN authoritative for league state, roster rules, injury designation, IR assignment/capacity, availability, locks, acquisition state, and current week.
@@ -89,9 +98,12 @@ Requirements:
 - For multiweek IR-assisted scenarios, retain the injured player in IR, keep `dropPlayerId` null, require the matching current ESPN-derived IR recommendation, and require complete projection coverage for every baseline and simulated roster player-week before exposing deltas.
 - For explicit multiweek add/drop scenarios, do not require a current-week projection gain, but do require current ESPN availability, add/drop lock legality, an unlocked bench drop, no proven acquisition exhaustion, supported current IR roster legality, and compliance with explicit roster/position limits before exposing future impact.
 - Unknown future scenario kinds fail closed.
+- Preserve transparent waiver priority bands. Never replace them with an unexplained weighted score or convert missing factor evidence to zero.
+- Keep current-week gain, future horizon gain/positive-week coverage, replacement value, roster-depth context, and no-drop preservation separately visible and sourced. Treat priority band 1 as non-dominated among the evaluated legal candidate set, not as a guaranteed best claim.
+- Future-only candidate discovery must remain explicit about its larger candidate set and must not silently inherit the current-week action threshold.
 - Revalidate recommendations against the latest valid snapshot without mutating cached ESPN state.
-- Keep current-week projection, replacement value, ROS rank, IR legality, current acquisition legality, and multiweek scenario conclusions separately sourced and labeled.
-- Add deterministic tests for every new legality, IR status transition, stale-state, missing-data, source-shape, identity-conflict, rollback, browser-update, or diagnostic-classification condition.
+- Keep current-week projection, replacement value, ROS rank, IR legality, current acquisition legality, priority comparison, and multiweek scenario conclusions separately sourced and labeled.
+- Add deterministic tests for every new legality, IR status transition, stale-state, missing-data, source-shape, identity-conflict, rollback, browser-update, priority-band, or diagnostic-classification condition.
 - Preserve mobile navigation, keyboard behavior, accessibility, CSP, cache migrations, companion least privilege, focused static-asset budgets, and production performance quality.
 - Do not begin trade analysis, notifications, server-side model integration, or ESPN write actions unless the roadmap gate and user approval explicitly move the product boundary.
 
