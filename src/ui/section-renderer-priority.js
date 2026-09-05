@@ -107,7 +107,8 @@ function seasonIntelligencePanel(deps) {
   const { state, selectedPlayoffWeeks } = context;
   if (state?.section !== "season" || !state.snapshot) return null;
   const futureInputs = compatibleFutureInputs(context);
-  const playoffWeeks = Array.isArray(selectedPlayoffWeeks) ? selectedPlayoffWeeks : state.snapshot.league?.playoffWeeks || [];
+  const espnPlayoffWeeks = Array.isArray(state.snapshot.league?.playoffWeeks) && state.snapshot.league.playoffWeeks.length ? state.snapshot.league.playoffWeeks : null;
+  const playoffWeeks = espnPlayoffWeeks || (Array.isArray(selectedPlayoffWeeks) ? selectedPlayoffWeeks : []);
   const playoffPlan = buildScenarioPlan(state.snapshot, state.selectedTeamId, {
     weeks: playoffWeeks,
     projectionSet: futureInputs.projectionSet,
