@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { chromium } from "playwright-core";
 
-const port = 4190;
+const port = 4173;
 const origin = `http://127.0.0.1:${port}`;
 const executablePath = [
   process.env.CHROME_PATH,
@@ -19,11 +19,12 @@ if (!executablePath) throw new Error("Chrome or Chromium was not found. Set CHRO
 const server = spawn(process.execPath, ["scripts/dev-server.js"], {
   cwd: process.cwd(),
   env: { ...process.env, PORT: String(port) },
-  stdio: ["ignore", "pipe", "inherit"],
+  stdio: ["ignore", "inherit", "inherit"],
 });
 
 async function waitForServer() {
-  for (let attempt = 0; attempt < 40; attempt += 1) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    if (server.exitCode != null) throw new Error(`Production-readiness dev server exited early with code ${server.exitCode}.`);
     try { if ((await fetch(origin)).ok) return; } catch { /* server is still starting */ }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
