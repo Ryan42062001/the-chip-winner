@@ -67,6 +67,7 @@ export function createMobileSyncUpdater({
         const synced = await read(credentials);
         if (!synced) {
           onStatus("This mobile sync link has expired or was revoked.", "error");
+          reload();
           return Object.freeze({ status: "revoked", updated: false });
         }
         const currentTime = Date.parse(publishedAt || "");
