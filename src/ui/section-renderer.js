@@ -1,5 +1,6 @@
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "../sync/crypto.js";
 import { publishSyncState, readSyncState } from "../sync/sync-session.js";
+import { createDesktopAutoPublisher, createMobileSyncUpdater } from "../sync/auto-sync.js";
 import { createSectionRenderer as createPrioritySectionRenderer } from "./section-renderer-priority.js";
 
 const SYNC_SECTIONS = new Set(["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]);
@@ -7,9 +8,19 @@ const SYNC_SECTIONS = new Set(["overview", "lineup", "waivers", "alerts", "chang
 export function createSectionRenderer(deps) {
 const base = createPrioritySectionRenderer(deps);
 let activeMobileFragment = null;
+let mobileListenersInstalled = false;
 
 function mobileUrl(credentials) {
 return `${globalThis.location.origin}${globalThis.location.pathname}${createMobileSyncFragment(credentials)}`;
+}
+
+function readStoredSyncCredentials() {
+try {
+  const raw = globalThis.localStorage?.getItem(deps.syncCredentialsKey);
+  return raw ? JSON.parse(raw) : null;
+} catch {
+  return null;
+}
 }
 
 async function publishCurrentSync(credentials) {
@@ -18,12 +29,38 @@ await publishSyncState(deps.syncProvider, credentials, state.snapshot, state.ran
 return mobileUrl(credentials);
 }
 
+const mobileUpdater = createMobileSyncUpdater({
+  read: (credentials) => readSyncState(deps.syncProvider, credentials),
+  reload: () => globalThis.location?.reload?.(),
+  onStatus: (message, kind) => deps.showNotice(message, kind),
+});
+
+const desktopAutoPublisher = createDesktopAutoPublisher({
+  store: deps.store,
+  readCredentials: readStoredSyncCredentials,
+  publish: publishCurrentSync,
+  onError: (error) => deps.showNotice(`ESPN data refreshed, but the private mobile snapshot could not update automatically. ${error.message}`, "error"),
+});
+
 async function createMobileSync() {
 const credentials = await createSyncCredentials();
 await publishCurrentSync(credentials);
 globalThis.localStorage.setItem(deps.syncCredentialsKey, JSON.stringify(credentials));
 render();
-deps.showNotice("Private mobile link created. Choose Copy mobile link, then open it on your phone.");
+deps.showNotice("Private mobile link created. Future ESPN refreshes will publish to it automatically.");
+}
+
+function installMobileUpdateListeners() {
+if (mobileListenersInstalled) return;
+const doc = globalThis.document;
+const win = globalThis.window;
+if (!doc || !win) return;
+mobileListenersInstalled = true;
+const check = () => { void mobileUpdater.check(); };
+win.addEventListener("focus", check);
+doc.addEventListener("visibilitychange", () => {
+  if (doc.visibilityState === "visible") check();
+});
 }
 
 async function loadMobileSyncFromUrl() {
@@ -42,6 +79,8 @@ deps.store.dispatch({
 });
 if (synced.payload.selectedTeamId != null) deps.store.dispatch({ type: "team/select", teamId: synced.payload.selectedTeamId });
 if (synced.payload.rankingSet) deps.loadRankingSet(synced.payload.rankingSet);
+mobileUpdater.activate(credentials, synced.createdAt);
+installMobileUpdateListeners();
 return true;
 }
 
@@ -75,18 +114,34 @@ for (const link of document.querySelectorAll('.nav-link, .brand, #app-content a[
 }
 }
 
-function replacePanelByHeading(headingText, html) {
-const panel = [...deps.content.querySelectorAll(".league-grid > .panel")]
+function findPanelByHeading(headingText) {
+return [...deps.content.querySelectorAll(".league-grid > .panel")]
   .find((item) => item.querySelector("h3")?.textContent?.trim() === headingText);
+}
+
+function replacePanelByHeading(headingText, html) {
+const panel = findPanelByHeading(headingText);
 if (panel) panel.innerHTML = html;
 return panel;
 }
 
+function decorateDesktopSyncCard() {
+if (!readStoredSyncCredentials()) return;
+const panel = findPanelByHeading("Encrypted device sync");
+if (!panel) return;
+const firstNote = panel.querySelector(".data-note");
+if (firstNote) firstNote.textContent = "Your private mobile link is active. ESPN refreshes, ROS ranking changes, and selected-team changes are published automatically.";
+const publishButton = panel.querySelector("#refresh-sync-button");
+if (publishButton) publishButton.textContent = "Publish mobile data now";
+}
+
 function decorateSyncedLeagueSetup(state) {
-replacePanelByHeading("Local league settings", `<div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Synced mobile viewer</h3></div><span class="quality fresh">Read-only</span></div><div class="connection-health"><strong>ESPN refresh is managed from your desktop browser.</strong><span>This phone reads the encrypted snapshot published by The Chip Winner. It does not use your ESPN session or Chrome companion.</span></div><p class="data-note">To change leagues or refresh ESPN, use the desktop connection and then choose Refresh mobile data.</p>`);
+replacePanelByHeading("Local league settings", `<div class="panel-head"><div><p class="eyebrow">ESPN CONNECTION</p><h3>Synced mobile viewer</h3></div><span class="quality fresh">Read-only</span></div><div class="connection-health"><strong>ESPN refresh is managed from your desktop browser.</strong><span>This phone reads the encrypted snapshot published by The Chip Winner. It does not use your ESPN session or Chrome companion.</span></div><p class="data-note">When the desktop refreshes ESPN, an active private mobile link is updated automatically.</p>`);
 const captured = state.snapshot?.meta?.capturedAt ? new Date(state.snapshot.meta.capturedAt).toLocaleString() : "Capture time unavailable";
-replacePanelByHeading("Encrypted device sync", `<div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Private synced viewer</h3></div><span class="quality fresh">Read-only</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>AES-256-GCM</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Latest ESPN capture</dt><dd>${base.escapeHtml(captured)}</dd></div></dl><p class="data-note">Reload this private link to retrieve the latest desktop publish. Refresh, copy, and revoke controls remain on the desktop that owns the write token.</p><p class="data-note">The mobile sync carries current ESPN state, the matching prior ESPN capture when available, ROS rankings, and the desktop-selected team. Desktop-only projection catalogs and import tools are not silently copied.</p>`);
-for (const button of deps.content.querySelectorAll(".league-grid button")) button.hidden = true;
+replacePanelByHeading("Encrypted device sync", `<div class="panel-head"><div><p class="eyebrow">MOBILE ACCESS</p><h3>Private synced viewer</h3></div><span class="quality fresh">Read-only</span></div><dl class="settings-list"><div><dt>Client-side encryption</dt><dd>AES-256-GCM</dd></div><div><dt>ESPN cookies uploaded</dt><dd>Never</dd></div><div><dt>Latest ESPN capture</dt><dd>${base.escapeHtml(captured)}</dd></div></dl><p class="data-note">This phone checks the encrypted channel when you reopen or return to the app. Use the button below any time you want to check immediately.</p><div class="sync-actions"><button class="button secondary" id="check-mobile-sync-button">Check for updates</button></div><p class="data-note">The mobile sync carries current ESPN state, the matching prior ESPN capture when available, ROS rankings, and the desktop-selected team. Desktop-only projection catalogs and import tools are not silently copied.</p>`);
+for (const button of deps.content.querySelectorAll(".league-grid button")) {
+  if (button.id !== "check-mobile-sync-button") button.hidden = true;
+}
 }
 
 function decorateRenderedSource() {
@@ -95,6 +150,7 @@ if (!globalThis.document?.body) return;
 if (state?.source !== "sync") {
   delete document.body.dataset.appSource;
   restoreNormalNavigation();
+  if (state?.section === "league") decorateDesktopSyncCard();
   return;
 }
 document.body.dataset.appSource = "sync";
@@ -108,12 +164,33 @@ decorateRenderedSource();
 return result;
 }
 
+if (deps.content?.addEventListener) {
+  deps.content.addEventListener("click", async (event) => {
+    const button = event.target.closest?.("#check-mobile-sync-button");
+    if (!button) return;
+    const originalLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = "Checking…";
+    try {
+      await mobileUpdater.check({ force: true, notifyWhenCurrent: true });
+    } finally {
+      if (button.isConnected) {
+        button.disabled = false;
+        button.textContent = originalLabel;
+      }
+    }
+  });
+}
+
 return Object.freeze({
 ...base,
 render,
+readStoredSyncCredentials,
 mobileUrl,
 createMobileSync,
 publishCurrentSync,
 loadMobileSyncFromUrl,
+checkMobileSyncForUpdates: mobileUpdater.check,
+desktopAutoPublisher,
 });
 }
