@@ -30,3 +30,10 @@ test("waiver priority UI preserves missing future evidence instead of presenting
   assert.match(priority, /Blocked by coverage/);
   assert.match(priority, /Unavailable/);
 });
+
+test("waiver priority UI clearly distinguishes future-only stashes from current-week waiver help", () => {
+  assert.match(priority, /FUTURE STASH · ADD \/ DROP/);
+  assert.match(priority, /HELPS NOW · ADD \/ DROP/);
+  assert.match(priority, /Future-only stashes require complete selected-week coverage/);
+  assert.match(priority, /future-only stash candidate/);
+});
