@@ -60,7 +60,11 @@ export function createMobileSyncUpdater({
     if (!credentials) return Object.freeze({ status: "inactive", updated: false });
     const checkedAt = now();
     if (!force && checkedAt - lastCheckedAt < minIntervalMs) return Object.freeze({ status: "throttled", updated: false });
-    if (inFlight) return inFlight;
+    if (inFlight) {
+      const result = await inFlight;
+      if (notifyWhenCurrent && result.status === "current") onStatus("Mobile data is already current.", "success");
+      return result;
+    }
     lastCheckedAt = checkedAt;
     inFlight = (async () => {
       try {
