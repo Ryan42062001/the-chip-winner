@@ -105,9 +105,17 @@ test("ESPN playoff weeks reject malformed explicit settings and remain absent wh
   assert.equal(normalizeEspnLeagueResponse(leagueResponse).league.playoffWeeks, undefined);
 });
 
-test("ESPN roster rules reject unknown explicit position-limit IDs", () => {
+test("ESPN roster rules ignore only unsupported position limits that are explicitly unlimited", () => {
+  const response = structuredClone(leagueResponse);
+  response.settings.rosterSettings.positionLimits[6] = -1;
+  const snapshot = normalizeEspnLeagueResponse(response);
+  assert.equal(snapshot.league.rosterRules.positionLimits.some((item) => item.espnPositionId === 6), false);
+  assert.deepEqual(snapshot.league.rosterRules.positionLimits.find((item) => item.position === "QB"), { position: "QB", limit: 3, espnPositionId: 1 });
+});
+
+test("ESPN roster rules reject unknown explicit finite position-limit IDs", () => {
   const malformed = structuredClone(leagueResponse); malformed.settings.rosterSettings.positionLimits[99] = 2;
-  assert.throws(() => normalizeEspnLeagueResponse(malformed), /position limit id 99/);
+  assert.throws(() => normalizeEspnLeagueResponse(malformed), /position limit id 99 with finite limit 2/);
 });
 
 test("partial live fixture retains unknown injury state and missing NFL context", () => {
