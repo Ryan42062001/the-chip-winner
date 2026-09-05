@@ -12,9 +12,22 @@ The desktop creates three random values:
 - `encryptionKey`: a 256-bit AES-GCM key shared with the phone through the URL fragment;
 - `writeToken`: a separate capability retained by the desktop for publishing and deletion.
 
-The browser encrypts `{ snapshot, rankingSet, selectedTeamId }` before transport. `selectedTeamId` is UI context only: it tells the phone which ESPN team was selected on the desktop and must match a team already present in the validated snapshot. The service stores only the channel ID, encrypted envelope, expiry, and a one-way hash of the write token. The encryption key is placed after `#mobile-sync=` in the mobile link, so browsers do not send it in HTTP requests. The phone decrypts locally and restores the encrypted selected-team context after validating it against the synced snapshot.
+The browser encrypts `{ snapshot, previousSnapshot, rankingSet, selectedTeamId }` before transport. `selectedTeamId` is UI context only: it tells the phone which ESPN team was selected on the desktop and must match a team already present in the validated snapshot. `previousSnapshot` is optional and is included only when it is a valid capture from the same ESPN league and season; it lets the phone render the same source-derived **What Changed** comparison without inventing history. The service stores only the channel ID, encrypted envelope, expiry, and a one-way hash of the write token.
 
-This design protects content from an honest-but-curious storage service. Anyone possessing the mobile link can read the synced league data, so the interface must treat that link like a password. Revocation deletes the channel and creates new credentials.
+The encryption key is placed after `#mobile-sync=` in the mobile link, so browsers do not send it in HTTP requests. The phone decrypts locally and restores the encrypted selected-team context after validating it against the synced snapshot. Internal navigation on the synced viewer keeps this private fragment intact; changing sections must never replace it with a normal `#overview`, `#waivers`, or similar route because a later reload would otherwise lose the read credentials.
+
+This design protects content from an honest-but-curious storage service. Anyone possessing the mobile link can read the synced league data, so the interface must treat that link like a password. Revocation deletes the channel. Only the desktop that owns the separate write token can refresh or revoke the channel.
+
+## Mobile viewer scope
+
+The synced phone is intentionally a read-only viewer. It receives:
+
+- the current normalized ESPN snapshot;
+- the matching previous ESPN capture when one is available;
+- the compatible ROS ranking set, when imported on desktop;
+- the desktop-selected fantasy team.
+
+Desktop-only connection controls and source-import tools remain on the desktop. Future-projection catalogs, projection identity-map files, and their import controls are not silently copied to the phone; surfaces that require those optional local inputs must continue to report missing coverage honestly rather than fabricate values. League Setup on a synced phone therefore shows status/provenance instead of offering another ESPN connection or nested mobile-sync channel.
 
 ## HTTP contract
 
@@ -48,10 +61,11 @@ Base path: `/v1/channels`
 
 ## Client implementation
 
-- `src/sync/crypto.js`: credentials, AES-GCM envelopes, and mobile fragment parsing.
-- `src/sync/sync-provider.js`: provider interface and HTTP implementation.
-- `src/sync/sync-session.js`: validates ESPN state and selected-team context before publishing and after decrypting.
-- `src/ui/section-renderer.js`: restores the encrypted desktop-selected team after a mobile snapshot load.
+- `src/sync/crypto.js`: credentials, AES-GCM envelopes, strict mobile-fragment parsing, and malformed-link rejection.
+- `src/sync/sync-provider.js`: provider interface and bounded HTTP implementation.
+- `src/sync/sync-session.js`: validates current/prior ESPN state and selected-team context before publishing and after decrypting.
+- `src/ui/section-renderer.js`: restores the encrypted desktop-selected team and prior capture, preserves the private fragment during navigation, and presents a read-only sync-specific League Setup surface.
+- `scripts/audit-mobile.js`: deployment-blocking browser audit for synced-phone routing, reload safety, responsive layouts, all seven primary sections, player detail, selected-team restoration, prior-state change detection, and revoked/malformed links.
 
 ## Production deployment
 
@@ -68,5 +82,6 @@ Deployment checklist:
 3. CORS is limited to The Chip Winner and the local development origin.
 4. Channel bodies are capped at 2 MB and expire after 30 days.
 5. Publish/read/decrypt/revoke has been verified against the deployed endpoint.
+6. The deployment-blocking mobile browser audit passes at small portrait, representative portrait, and phone-landscape dimensions.
 
 Cloudflare account-level rate limiting remains an optional hardening step before a wider public launch. The unguessable 144-bit channel identifier, write-token authentication, body limit, and expiry are enforced in the Worker.
