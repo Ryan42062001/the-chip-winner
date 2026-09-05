@@ -193,7 +193,7 @@ try {
   await page.locator('a[data-section="season"]').click();
   const playoffWeek = page.locator('[data-playoff-week="15"]');
   await playoffWeek.focus(); await playoffWeek.press("Space");
-  await page.getByText("Weeks 15", { exact: false }).waitFor();
+  await page.getByText(/^Local browser setting: Weeks 15\.?$/).waitFor();
   if (await playoffWeek.isChecked() === false) throw new Error("Keyboard playoff-week selection did not persist.");
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
@@ -213,7 +213,7 @@ try {
   await mobilePage.getByRole("heading", { name: "Waiver Wire", level: 2 }).waitFor();
   await menu.click(); await mobilePage.locator('a[data-section="season"]').click();
   await mobilePage.locator('[data-playoff-week="16"]').check();
-  await mobilePage.getByText("Weeks 16", { exact: false }).waitFor();
+  await mobilePage.getByText(/^Local browser setting: Weeks 16\.?$/).waitFor();
   if (await menu.getAttribute("aria-expanded") !== "false") throw new Error("Mobile navigation did not close after selection.");
   await mobile.close();
 
