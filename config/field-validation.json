@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseTarget": "1.0",
-  "baselineVersion": "0.9.77",
+  "baselineVersion": "0.9.78",
   "items": [
     {
       "id": "FV-A11Y-01",
@@ -39,9 +39,11 @@
       "id": "FV-MOBILE-01",
       "area": "mobile",
       "title": "Representative physical phone workflow",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Exercise navigation, player detail, waiver review, Season Plan, and League Setup on a representative physical phone/browser."
+      "status": "passed",
+      "evidence": [
+        "2026-09-05: User exercised the deployed site on a representative physical phone and confirmed the mobile workflow looked good across primary navigation, player detail, Waivers, Season Plan, and League Setup. No important clipping, overlap, or required horizontal page scrolling was reported, and the controls remained usable by touch."
+      ],
+      "notes": "Representative physical-phone UI workflow passed. Encrypted cross-device sync lifecycle is tracked separately by FV-SYNC-01."
     },
     {
       "id": "FV-ESPN-01",
@@ -111,8 +113,11 @@
       "area": "mobile-sync",
       "title": "Live deployed sync revoke and delete",
       "status": "pending",
-      "evidence": [],
-      "notes": "Exercise encrypted mobile-sync creation plus remote revoke/delete against the deployed worker and confirm local state reflects the real outcome."
+      "evidence": [
+        "2026-09-05: During real encrypted mobile-sync setup, the user reported that Refresh mobile data and Copy mobile link appeared to take a long time. Review found that successful sync actions disabled the initiating button but only restored it on error, so refresh/copy could remain visibly disabled until a later rerender; sync HTTP calls also lacked an explicit timeout.",
+        "2026-09-05: v0.9.78 candidate restores mounted sync buttons after both success and failure, provides explicit busy labels, and bounds publish/read/delete requests with an 8-second timeout. Automated unit/browser coverage verifies refresh and copy return to enabled state after success. Real deployed create/read/refresh/revoke/delete retest is still required before this item can pass."
+      ],
+      "notes": "Pending deployed v0.9.78 mobile-sync lifecycle retest, including refresh, copied-link read on the phone, revoke, and confirmation that the revoked link no longer loads."
     },
     {
       "id": "FV-WAIVER-01",
