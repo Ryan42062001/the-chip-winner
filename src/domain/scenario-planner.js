@@ -5,6 +5,12 @@ import { createRecommendation } from "./recommendation-factory.js";
 import { optimizeLineup } from "./lineup-optimizer.js";
 import { indexFutureProjections } from "../providers/projections/future-projection-provider.js";
 
+// Future projection sets do not provide authoritative future-week kickoff times.
+// Current ESPN transaction legality is checked with the caller's `now` before
+// scenario simulation. Future utility therefore ignores kickoff-derived locks
+// from the current snapshot while still honoring explicit ESPN `locked` flags.
+const FUTURE_LINEUP_EVALUATION_TIME = 0;
+
 function projectionCoverage(playerIds, week, espnToProvider, projectionIndex) {
   const unmappedPlayerIds = playerIds.filter((id) => !espnToProvider.has(id));
   const missingProjectionPlayerIds = playerIds.filter((id) => espnToProvider.has(id) && !projectionIndex.has(`${espnToProvider.get(id)}:${week}`));
@@ -149,7 +155,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
           projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null
         }))
       };
-      const result = optimizeLineup(weeklySnapshot, teamId);
+      const result = optimizeLineup(weeklySnapshot, teamId, FUTURE_LINEUP_EVALUATION_TIME);
       const rosterPlayerIds = roster.entries.map((entry) => entry.playerId);
       const weekCoverage = projectionCoverage(rosterPlayerIds, week, espnToProvider, projectionIndex);
       const starters = weekCoverage.completeCoverage
@@ -198,7 +204,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
           projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null
         }));
         const scenarioSnapshot = { ...built.simulated, currentWeek: week, players: weeklyPlayers };
-        const result = optimizeLineup(scenarioSnapshot, teamId);
+        const result = optimizeLineup(scenarioSnapshot, teamId, FUTURE_LINEUP_EVALUATION_TIME);
         const baselineEntry = weeklyBaseline.find((item) => item.week === week);
         const baseline = baselineEntry?.projectedTotal;
         const scenarioRosterIds = scenarioSnapshot.rosters.find((item) => item.teamId === teamId).entries.map((entry) => entry.playerId);
@@ -285,6 +291,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
       "Weekly totals and starter coverage use only explicitly mapped provider projections.",
       "Horizon totals are withheld unless every selected week is complete.",
       "Scenario deltas rerun the legal lineup optimizer against an isolated roster copy.",
+      "Future-week lineup utility does not reuse current-week kickoff timestamps as future locks; current ESPN transaction legality is checked separately at the supplied evaluation time and explicit ESPN locked flags remain enforced.",
       "IR-assisted scenarios retain the injured player in IR and require complete player-week coverage for that retained player as well as every active roster player.",
       "Add/drop scenarios require current ESPN availability, unlocked add/drop players, no proven acquisition exhaustion, a supported IR roster state, and compliance with explicit roster/position limits; future value does not require a current-week gain.",
       "IR-assisted scenarios still require a currently validated ESPN no-drop waiver recommendation.",
