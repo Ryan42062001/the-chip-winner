@@ -70,7 +70,7 @@ Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain
 Work in the dependency order maintained in `docs/roadmap.md`. At the current stage that means:
 
 1. Complete real multiweek projection coverage using only user-supplied or explicitly approved provider data and provider-to-ESPN identity mappings.
-2. Finish Waiver Engine v2 gaps: refresh-obsolete recommendation state and IR transitions only when ESPN exposes authoritative inputs; add multiweek impact only after projection coverage gates pass.
+2. Finish the remaining Waiver Engine v2 gaps: model IR transitions only when ESPN exposes authoritative eligibility/rule inputs, and add multiweek impact only after projection coverage gates pass. Refresh-obsolete recommendation revalidation is complete and must remain deterministic and explainable.
 3. Finish season/playoff intelligence with a documented, approved position-specific strength-of-schedule source and methodology before displaying difficulty grades.
 4. Complete production-readiness closeout: manual accessibility, companion threat review, recovery/deletion checks, and materially different live ESPN league states.
 5. Keep the browser UI maintainable as features grow; split oversized rendering modules along view boundaries without creating a second application store.
