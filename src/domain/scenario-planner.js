@@ -32,7 +32,6 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
   const kind = scenarioKind(scenario);
   const addPlayer = players.get(scenario.addPlayerId);
   if (!addPlayer) return { rejection: "Scenario references a player outside the current snapshot." };
-  if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
 
   if (kind === "ir-assisted-add") {
     const irEntry = roster.entries.find((entry) => entry.playerId === scenario.irPlayerId);
@@ -42,6 +41,7 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
     const kickoff = Date.parse(irPlayer.gameTime);
     const locked = irEntry.locked === true || irPlayer.locked === true || (Number.isFinite(kickoff) && kickoff <= now);
     if (locked) return { rejection: "The proposed IR-move player is locked." };
+    if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
     if (!currentIrScenario(waiverResult, scenario)) {
       return { rejection: "The IR-assisted path is not a currently validated ESPN waiver recommendation." };
     }
@@ -65,6 +65,7 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
   const kickoff = Date.parse(dropPlayer.gameTime);
   const locked = dropEntry.locked === true || dropPlayer.locked === true || (Number.isFinite(kickoff) && kickoff <= now);
   if (locked) return { rejection: "The proposed drop player is locked." };
+  if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
   const simulated = {
     ...snapshot,
     rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : {
