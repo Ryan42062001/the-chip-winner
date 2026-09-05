@@ -4,11 +4,19 @@ function points(value) {
   return value == null || !Number.isFinite(Number(value)) ? "Unavailable" : `${Number(value).toFixed(1)} pts`;
 }
 
+function byeGapLabel(row) {
+  if (!row.uncoveredSlotCount) return "Current roster can fill every configured starter slot";
+  const count = `${row.uncoveredSlotCount} uncovered starter slot${row.uncoveredSlotCount === 1 ? "" : "s"}`;
+  if (!row.uncoveredSlotCandidates?.length) return count;
+  const candidates = row.uncoveredSlotCandidates.join(" or ");
+  return row.uncoveredSlotCandidates.length === 1 ? `${count}: ${candidates}` : `${count} · could affect ${candidates} depending on legal slot assignment`;
+}
+
 function byeCoverageCard(intelligence, playerIndex) {
   const coverage = intelligence.byeCoverage;
   const rows = coverage.weeks?.length ? coverage.weeks.map((row) => {
     const names = row.byePlayerIds.map((id) => playerIndex.get(id)?.name || id).join(", ");
-    const gap = row.uncoveredSlots.length ? `${row.uncoveredSlots.length} uncovered starter slot${row.uncoveredSlots.length === 1 ? "" : "s"}: ${row.uncoveredSlots.join(", ")}` : "Current roster can fill every configured starter slot";
+    const gap = byeGapLabel(row);
     const label = row.status === "gap" ? "Gap" : row.status === "partial" ? "Partial" : "Covered";
     return `<div class="plan-row"><strong>Week ${row.week} · ${label}</strong><span>${escapeHtml(names || "No active roster player on a known bye")} · ${escapeHtml(gap)}</span></div>`;
   }).join("") : `<p class="plan-note">No future known bye weeks were found on the current active roster.</p>`;
