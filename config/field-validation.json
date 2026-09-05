@@ -9,10 +9,9 @@
       "title": "Keyboard-only critical workflow",
       "status": "passed",
       "evidence": [
-        "2026-09-05: User exercised the deployed v0.9.74 site without a pointing device and confirmed keyboard navigation worked across the tested critical workflow using Tab, Space, and Enter.",
-        "2026-09-05: Final keyboard checks passed: player detail opened with Enter and closed with Esc without losing focus; League Setup destructive/disconnect confirmation could be reached and cancelled entirely by keyboard; Shift+Tab reverse navigation remained visible and predictable."
+        "2026-09-05: User completed the real production critical workflow without a pointing device. Forward Tab/Space/Enter navigation worked across primary sections; player detail opened with Enter and closed with Esc without losing usable focus; League Setup destructive/disconnect confirmation was reachable and cancellable entirely by keyboard; Shift+Tab reverse navigation remained visible and predictable."
       ],
-      "notes": "Deployed critical workflow was successfully exercised keyboard-only, including forward/reverse focus navigation, player detail, and destructive-action cancellation."
+      "notes": "Keyboard-only production workflow passed for the tested Chrome/Windows session."
     },
     {
       "id": "FV-A11Y-02",
@@ -27,8 +26,10 @@
       "area": "accessibility",
       "title": "Real browser 200 percent zoom",
       "status": "pending",
-      "evidence": [],
-      "notes": "Spot-check all primary sections at actual 200% browser zoom. The automated 720 CSS-pixel reflow audit remains a separate deterministic gate."
+      "evidence": [
+        "2026-09-05: User ran the deployed site at actual Chrome 200% zoom on a 1920x1050 desktop and reported the interface felt too large. Video review shows the desktop sidebar remains permanently expanded at the effective narrow CSS viewport while the topbar controls stay desktop-style; multiple page titles wrap into two or three lines and primary content is squeezed into a narrow column. No clear overlap or horizontal page overflow was observed in the recording, but the reflow quality is not acceptable enough to mark this field check passed. Responsive breakpoint/refinement required, followed by real 200% retest."
+      ],
+      "notes": "Pending responsive refinement. Actual 200% zoom must be retested after the desktop-to-compact breakpoint is improved; automated 720 CSS-pixel reflow remains a separate deterministic gate."
     },
     {
       "id": "FV-MOBILE-01",
