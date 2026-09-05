@@ -13,6 +13,46 @@ const EXPECTED_PAGE_BY_POSITION = Object.freeze({
   "D/ST": "dst"
 });
 
+// ESPN fantasy represents NFL team defenses with synthetic player IDs in the
+// form -(16000 + ESPN proTeamId). The mapping below is explicit so the bridge
+// depends only on provider-owned team codes, never display-name matching.
+const ESPN_PRO_TEAM_ID_BY_CODE = Object.freeze({
+  ATL: 1,
+  BUF: 2,
+  CHI: 3,
+  CIN: 4,
+  CLE: 5,
+  DAL: 6,
+  DEN: 7,
+  DET: 8,
+  GB: 9,
+  TEN: 10,
+  IND: 11,
+  KC: 12,
+  LV: 13,
+  LAR: 14,
+  MIA: 15,
+  MIN: 16,
+  NE: 17,
+  NO: 18,
+  NYG: 19,
+  NYJ: 20,
+  PHI: 21,
+  ARI: 22,
+  PIT: 23,
+  LAC: 24,
+  SF: 25,
+  SEA: 26,
+  TB: 27,
+  WSH: 28,
+  WAS: 28,
+  CAR: 29,
+  JAX: 30,
+  JAC: 30,
+  BAL: 33,
+  HOU: 34
+});
+
 function clean(value) { return String(value ?? "").replaceAll("\u00a0", " ").trim(); }
 function cleanId(value) {
   const normalized = clean(value);
@@ -28,6 +68,12 @@ function headerIndex(headers, name) {
   if (index < 0) throw new Error(`DynastyProcess CSV is missing ${name}.`);
   return index;
 }
+function isDefensePosition(position) { return position === "DST" || position === "D/ST"; }
+
+export function deriveEspnDefensePlayerId(teamCode) {
+  const proTeamId = ESPN_PRO_TEAM_ID_BY_CODE[clean(teamCode).toUpperCase()];
+  return Number.isInteger(proTeamId) ? String(-(16000 + proTeamId)) : null;
+}
 
 export function parseDynastyProcessWeeklyCsv(text) {
   const rows = parseCsvRows(text);
@@ -38,6 +84,7 @@ export function parseDynastyProcessWeeklyCsv(text) {
   const idIndex = headerIndex(headers, "fantasypros_id");
   const posIndex = headerIndex(headers, "pos");
   const pointsIndex = headerIndex(headers, "r2p_pts");
+  const teamIndex = headers.indexOf("team");
   const records = []; const exclusions = [];
   for (let index = 1; index < rows.length; index += 1) {
     const row = rows[index]; if (!row.some((value) => clean(value))) continue;
@@ -47,6 +94,7 @@ export function parseDynastyProcessWeeklyCsv(text) {
     const providerPlayerId = cleanId(row[idIndex]);
     const pointsText = clean(row[pointsIndex]); const points = Number(pointsText);
     const sourceDate = clean(row[dateIndex]);
+    const teamCode = teamIndex >= 0 ? clean(row[teamIndex]).toUpperCase() : "";
     if (!providerPlayerId) { exclusions.push(Object.freeze({ sourceRow: index + 1, reason: "missing-fantasypros-id" })); continue; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(sourceDate) || !Number.isFinite(Date.parse(`${sourceDate}T00:00:00Z`))) {
       exclusions.push(Object.freeze({ sourceRow: index + 1, providerPlayerId, reason: "invalid-scrape-date" })); continue;
@@ -54,7 +102,10 @@ export function parseDynastyProcessWeeklyCsv(text) {
     if (!pointsText || !Number.isFinite(points) || points < 0) {
       exclusions.push(Object.freeze({ sourceRow: index + 1, providerPlayerId, reason: "invalid-r2p-points" })); continue;
     }
-    records.push(Object.freeze({ providerPlayerId, position, points, sourceDate }));
+    if (isDefensePosition(position) && !teamCode) {
+      exclusions.push(Object.freeze({ sourceRow: index + 1, providerPlayerId, reason: "missing-defense-team-code" })); continue;
+    }
+    records.push(Object.freeze({ providerPlayerId, position, teamCode, points, sourceDate }));
   }
   if (!records.length) throw new Error("DynastyProcess weekly CSV contains no usable PPR weekly estimates.");
   const sourceDates = new Set(records.map((item) => item.sourceDate));
@@ -92,10 +143,16 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
   const weekly = parseDynastyProcessWeeklyCsv(weeklyCsv);
   if (Number(weekly.sourceDate.slice(0, 4)) !== season) throw new Error(`DynastyProcess scrape date ${weekly.sourceDate} does not match requested season ${season}.`);
   const playerIds = parseDynastyProcessPlayerIdsCsv(playerIdsCsv);
-  const mapped = []; const unresolvedProviderIds = [];
+  const mapped = []; const unresolvedProviderIds = []; let derivedDefenseMappingCount = 0;
   for (const item of weekly.records) {
-    const espnPlayerId = playerIds.map.get(item.providerPlayerId);
+    const directEspnPlayerId = playerIds.map.get(item.providerPlayerId) || null;
+    const derivedDefensePlayerId = isDefensePosition(item.position) ? deriveEspnDefensePlayerId(item.teamCode) : null;
+    if (directEspnPlayerId && derivedDefensePlayerId && directEspnPlayerId !== derivedDefensePlayerId) {
+      throw new Error(`DynastyProcess D/ST ${item.providerPlayerId} has conflicting ESPN IDs: ${directEspnPlayerId} from the player-ID table and ${derivedDefensePlayerId} from team ${item.teamCode}.`);
+    }
+    const espnPlayerId = directEspnPlayerId || derivedDefensePlayerId;
     if (!espnPlayerId) { unresolvedProviderIds.push(item.providerPlayerId); continue; }
+    if (!directEspnPlayerId && derivedDefensePlayerId) derivedDefenseMappingCount += 1;
     mapped.push(Object.freeze({ ...item, espnPlayerId }));
   }
   if (!mapped.length) throw new Error("No DynastyProcess weekly estimates could be mapped to ESPN by stable IDs.");
@@ -114,6 +171,7 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
     publishedAt: new Date(publishedAt).toISOString(),
     sourceRecordCount: weekly.records.length,
     mappedCount: mapped.length,
+    derivedDefenseMappingCount,
     unresolvedProviderIds: Object.freeze(unresolvedProviderIds),
     excludedSourceRows: weekly.exclusions,
     skippedPlayerIdRows: playerIds.skippedCount,
