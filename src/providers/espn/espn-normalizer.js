@@ -153,8 +153,20 @@ return Object.entries(counts)
 .map(([slotId, count]) => ({ slot: ESPN_LINEUP_SLOTS[slotId] || `ESPN_SLOT_${slotId}`, count: Number(count), espnSlotId: Number(slotId) }));
 }
 function normalizeRosterRules(settings = {}) {
-const counts = settings.lineupSlotCounts || {}; const size = Object.values(counts).reduce((total, count) => total + (Number(count) > 0 ? Number(count) : 0), 0);
-const positionLimits = Object.entries(settings.positionLimits || {}).filter(([, limit]) => Number(limit) !== 0).map(([positionId, limit]) => { const position = ESPN_PRO_POSITIONS[positionId]; if (!position) throw new Error(`Unsupported ESPN roster position limit id ${positionId}.`); if (!Number.isInteger(Number(limit)) || Number(limit) < -1) throw new Error(`Invalid ESPN roster position limit for ${position}.`); return { position, limit: Number(limit), espnPositionId: Number(positionId) }; });
+const counts = settings.lineupSlotCounts || {};
+const size = Object.values(counts).reduce((total, count) => total + (Number(count) > 0 ? Number(count) : 0), 0);
+const positionLimits = Object.entries(settings.positionLimits || {})
+.map(([positionId, rawLimit]) => ({ positionId, limit: Number(rawLimit) }))
+.filter(({ limit }) => limit !== 0)
+.flatMap(({ positionId, limit }) => {
+  if (!Number.isInteger(limit) || limit < -1) throw new Error(`Invalid ESPN roster position limit for id ${positionId}: ${limit}.`);
+  const position = ESPN_PRO_POSITIONS[positionId];
+  if (!position) {
+    if (limit === -1) return [];
+    throw new Error(`Unsupported ESPN roster position limit id ${positionId} with finite limit ${limit}.`);
+  }
+  return [{ position, limit, espnPositionId: Number(positionId) }];
+});
 return { size: size || null, positionLimits };
 }
 function normalizeWaiverSettings(settings = {}) {
