@@ -7,9 +7,11 @@
       "id": "FV-A11Y-01",
       "area": "accessibility",
       "title": "Keyboard-only critical workflow",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Complete onboarding/sample or ESPN connection, navigation, player detail, lineup comparison, waivers, Season Plan, League Setup, disconnect, and destructive-action confirmation without a pointing device."
+      "status": "passed",
+      "evidence": [
+        "2026-09-05: User completed the real production critical workflow without a pointing device. Forward Tab/Space/Enter navigation worked across primary sections; player detail opened with Enter and closed with Esc without losing usable focus; League Setup destructive/disconnect confirmation was reachable and cancellable entirely by keyboard; Shift+Tab reverse navigation remained visible and predictable."
+      ],
+      "notes": "Keyboard-only production workflow passed for the tested Chrome/Windows session."
     },
     {
       "id": "FV-A11Y-02",
@@ -24,8 +26,10 @@
       "area": "accessibility",
       "title": "Real browser 200 percent zoom",
       "status": "pending",
-      "evidence": [],
-      "notes": "Spot-check all primary sections at actual 200% browser zoom. The automated 720 CSS-pixel reflow audit remains a separate deterministic gate."
+      "evidence": [
+        "2026-09-05: User ran the deployed site at actual Chrome 200% zoom on a 1920x1050 desktop and reported the interface felt too large. Video review shows the desktop sidebar remains permanently expanded at the effective narrow CSS viewport while the topbar controls stay desktop-style; multiple page titles wrap into two or three lines and primary content is squeezed into a narrow column. No clear overlap or horizontal page overflow was observed in the recording, but the reflow quality is not acceptable enough to mark this field check passed. Responsive breakpoint/refinement required, followed by real 200% retest."
+      ],
+      "notes": "Pending responsive refinement. Actual 200% zoom must be retested after the desktop-to-compact breakpoint is improved; automated 720 CSS-pixel reflow remains a separate deterministic gate."
     },
     {
       "id": "FV-MOBILE-01",
@@ -55,14 +59,16 @@
       "id": "FV-ESPN-03",
       "area": "espn-live-state",
       "title": "Authenticated acquisition and position limits",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "2026-09-05: Live authenticated refresh reached ESPN roster settings but v0.9.72 rejected an unsupported roster position-limit id 6 before normalization. v0.9.73 adds fail-closed handling for unsupported unlimited/disabled limits.",
-        "2026-09-05: User retested the deployed v0.9.73 production site against the same authenticated ESPN league and confirmed Refresh ESPN completed successfully. Normalization compatibility is now verified for this live roster-limit shape; acquisition-cap and waiver-legality behavior still require live validation before FV-ESPN-03 can pass.",
+        "2026-09-05: User retested the deployed v0.9.73 production site against the same authenticated ESPN league and confirmed Refresh ESPN completed successfully. Normalization compatibility is verified for this live roster-limit shape.",
         "2026-09-05: User recording of League Setup after successful live refresh showed roster size 16; lineup slots QB 1, RB 2, WR 2, TE 1, D/ST 1, K 1, BE 6, IR 1, FLEX 1; finite position limits QB 4, RB 8, WR 8, TE 3, K 3, D/ST 3; season acquisition limit Unlimited; season acquisitions 0; weekly limit Unlimited; Week 1 acquisitions unavailable; waiver priority 10; processing days unavailable; budget remaining 100.",
-        "2026-09-05: Direct ESPN League Settings recording confirmed Roster Size 15, Total Starters 9, Total on Bench 6 (1 IR), and position maximums QB 4, RB 8, WR 8, TE 3, K 3, D/ST 3. ESPN acquisition settings showed Player Acquisition System Waivers, Season Acquisition Limit No Limit, Waiver Period 1 Day, and Waiver Order reset each week to inverse order of standings; the league does not use FAAB. Compared with v0.9.73 this exposed three parity defects: roster size displayed as 16, waiver period unavailable, and a phantom budget remaining 100. v0.9.74 corrects those source semantics; deployed live retest is still required before FV-ESPN-03 can pass."
+        "2026-09-05: Direct ESPN League Settings recording confirmed Roster Size 15, Total Starters 9, Total on Bench 6 (1 IR), and position maximums QB 4, RB 8, WR 8, TE 3, K 3, D/ST 3. ESPN acquisition settings showed Player Acquisition System Waivers, Season Acquisition Limit No Limit, Waiver Period 1 Day, and Waiver Order reset each week to inverse order of standings; the league does not use FAAB. Compared with v0.9.73 this exposed three parity defects: roster size displayed as 16, waiver period unavailable, and a phantom budget remaining 100.",
+        "2026-09-05: Deployed v0.9.74 League Setup retest matched the ESPN settings: roster size 15; finite position limits QB 4, RB 8, WR 8, TE 3, K 3, D/ST 3; player acquisition system Waivers; season and weekly limits Unlimited; waiver priority 10; waiver period 1 day; acquisition budget Not used. Week 1 acquisition usage remained unavailable rather than being inferred.",
+        "2026-09-05: Real Waivers-page recording after the v0.9.74 refresh reported no clear lineup upgrades and explicitly stated that ESPN-reported roster size and position limits were enforced and known ESPN acquisition limits and usage were checked before evaluating moves. The page retained waiver priority 10 while explicitly not predicting claim outcomes."
       ],
-      "notes": "Observe real acquisition caps, roster-size rules, and provider-position limits and confirm waiver legality matches ESPN-reported state."
+      "notes": "Observed real ESPN acquisition settings, roster-size rules, provider-position limits, and waiver legality now match the ESPN-reported state for the tested authenticated league."
     },
     {
       "id": "FV-ESPN-04",
@@ -109,7 +115,9 @@
       "area": "waiver-performance",
       "title": "Real waiver candidate volume and timing",
       "status": "pending",
-      "evidence": [],
+      "evidence": [
+        "2026-09-05: User recorded opening the real Waivers page after an authenticated v0.9.74 refresh and reported a small perceptible delay. Video review shows the transition from Overview to the rendered Waiver Wire completing within a few tenths of a second at 30 fps, with no visible long freeze or broken intermediate state. Candidate/scenario enumeration counts were not visible in this recording, so this performance item remains pending until those counts and timing are captured as projection coverage grows."
+      ],
       "notes": "Record consideredAdds, completeAdds, scenarioCount, qualifiedAdds, and observed browser responsiveness as projection coverage grows. Do not introduce a hidden candidate cap."
     }
   ]
