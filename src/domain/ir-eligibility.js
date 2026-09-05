@@ -1,6 +1,7 @@
 const NEW_IR_ELIGIBLE_STATUSES = Object.freeze(new Set(["OUT", "INJURED_RESERVE"]));
 const GRANDFATHERED_IR_STATUSES = Object.freeze(new Set(["QUESTIONABLE", "DOUBTFUL"]));
-const KNOWN_IR_INELIGIBLE_STATUSES = Object.freeze(new Set(["ACTIVE", "SUSPENSION", "PHYSICALLY_UNABLE_TO_PERFORM"]));
+const KNOWN_IR_INELIGIBLE_STATUSES = Object.freeze(new Set(["ACTIVE", "SUSPENSION"]));
+const ESPN_PUP_STATUS = "PHYSICALLY_UNABLE_TO_PERFORM";
 
 export const ESPN_IR_POLICY = Object.freeze({
   provider: "ESPN Fantasy Football",
@@ -8,7 +9,7 @@ export const ESPN_IR_POLICY = Object.freeze({
   supportUpdatedAt: "2026-08-18",
   newlyEligibleStatuses: Object.freeze(["OUT", "INJURED_RESERVE"]),
   grandfatheredWhileAlreadyInIr: Object.freeze(["QUESTIONABLE", "DOUBTFUL"]),
-  sourceNote: "ESPN support says only OUT or IR players may be newly placed in IR; Q/D players already in IR may remain; suspended players are not IR-eligible."
+  sourceNote: "ESPN support says only OUT or IR fantasy tags prove a new IR placement; Q/D players already in IR may remain; suspended players are not IR-eligible. NFL PUP is not separately inferred because ESPN may surface that real-world status through an OUT/IR fantasy tag."
 });
 
 function freezeResult(result) {
@@ -44,6 +45,16 @@ export function evaluatePlayerIrEligibility(player, lineupSlot = null) {
       canMoveToIr: true,
       canRemainInIr: true,
       reason: `ESPN reports ${statusLabel(status)}; current ESPN Fantasy Football policy allows this designation in IR.`
+    });
+  }
+
+  if (status === ESPN_PUP_STATUS) {
+    return freezeResult({
+      status: "unverified",
+      injuryStatus: status,
+      canMoveToIr: null,
+      canRemainInIr: inIr ? null : false,
+      reason: "ESPN reports physically unable to perform. ESPN Fantasy support proves new IR placement from the fantasy OUT/IR tag rather than the NFL PUP label itself, so a raw PUP status is not inferred eligible or ineligible. If ESPN surfaces the player as OUT or IR, that fantasy designation qualifies."
     });
   }
 

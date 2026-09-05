@@ -9,7 +9,7 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, and docs/ir-eligibility.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: protected master; application release v0.9.63 adds authoritative ESPN IR eligibility/roster-validity intelligence to the read-only waiver workflow. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified release baseline has 253 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass deployment and production smoke verification.
+Checkpoint: protected master; application release v0.9.64 adds explicit current-week ESPN IR-assisted waiver paths on top of the v0.9.63 IR eligibility/roster-validity policy. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified release baseline has 260 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass deployment and production smoke verification.
 
 Current tooling baseline:
 - Node.js >=20.
@@ -41,29 +41,33 @@ Weekly browser workflow to preserve:
 - The third-party weekly dataset is fetched on demand and is never mirrored into the public repository/site.
 - The CLI command `npm run projections:dynastyprocess-weekly -- --season <year> --week <1-18>` remains available for recovery, auditing, and development.
 
-v0.9.63 ESPN IR policy to preserve:
+ESPN IR policy and current-week waiver behavior to preserve:
 - `src/domain/ir-eligibility.js` is the policy owner. It uses only the normalized ESPN injury designation, current ESPN lineup slot, and ESPN-reported IR slot count.
 - Do NOT use ESPN's generic `eligibleSlots` array as current health-based IR evidence. Community ESPN API examples can include IR among generic eligible slots even when a player is not currently injury-eligible.
 - Current reviewed ESPN Fantasy Football policy: OUT and INJURED_RESERVE may be newly placed in IR; QUESTIONABLE and DOUBTFUL cannot be newly placed there but may remain if already in IR after an OUT/IR designation changes; SUSPENSION and healthy/no-designation states are ineligible.
-- PUP is not inferred eligible because current ESPN Fantasy support explicitly names OUT/IR as qualifying new-placement designations. New/unknown ESPN statuses fail closed as unverified until the policy is re-reviewed.
+- NFL PUP is not itself the fantasy eligibility signal. If ESPN surfaces a PUP player with an OUT/IR fantasy designation, that player qualifies. A bare normalized `PHYSICALLY_UNABLE_TO_PERFORM` value is unverified rather than automatically eligible or ineligible.
 - A known-ineligible current IR occupant invalidates supported acquisition legality. New waiver recommendations are withheld and prior recommendations become obsolete because ESPN documents that a healthy player left in IR can block acquisitions.
 - An unsupported current IR designation withholds acquisition legality as unverified rather than guessing.
-- Open configured IR capacity plus an OUT/IR bench player is surfaced through the weekly checklist/waiver limitations as a read-only opportunity to free active-roster space. The app does not execute the move.
-- `docs/ir-eligibility.md` records the ESPN Fan Support sources and policy review date.
+- v0.9.64 adds explicit `ir-assisted-add` recommendations. They require an open ESPN IR slot plus an eligible unlocked bench player, then simulate moving that player BE -> IR and adding an ESPN-available unlocked player with no drop.
+- IR-assisted simulations enforce ESPN acquisition limits, roster size, provider-position limits, locks, current availability, and the normal current-week projection threshold.
+- When an equivalent add can be achieved either by a normal add/drop or an IR-assisted no-drop path at the same lineup gain, prefer the IR-assisted path.
+- IR-assisted recommendations retain `drop: null` and explicit `irMove` provenance; What Changed and revalidation must never invent a drop.
+- Revalidation checks both steps. Lost IR capacity, changed designation, locks, availability, roster/position limits, exhausted acquisitions, or insufficient projected gain can obsolete the plan; unsupported status evidence remains unverified.
+- Season Plan currently models multiweek add/drop scenarios only. Keep IR-assisted recommendations out of that planner until it can retain the IR player across future weeks and prove complete player-week coverage for both active and IR-retained roster states.
+- `docs/ir-eligibility.md` records the ESPN Fan Support sources, PUP nuance, policy review date, and explicit IR-assisted flow.
 
 Other completed foundation to preserve:
 - Atomic/inspectable multiweek imports and a single application state owner.
 - Candidate-aware future coverage for the selected roster plus top current ESPN waiver candidates.
 - Constraint-based lineup optimizer, roster-aware waiver simulation, ESPN acquisition/roster/position-limit enforcement, snapshot differencing, alerts, multiple local ESPN connections, encrypted mobile sync, accessibility automation, security scanning, and production smoke checks.
-- Refresh-aware waiver recommendation revalidation against the latest ESPN state, now including current IR roster validity.
+- Refresh-aware waiver recommendation revalidation against the latest ESPN state, including current IR roster validity and the two-step IR-assisted path.
 
 Primary execution sequence:
 1. Accumulate real DynastyProcess PPR player-week coverage through the browser update flow as new source publications appear. Never fabricate future weeks, auto-map by display name, or weaken stable-ID protections.
 2. Revisit unresolved rows only when new stable crosswalk evidence, explicit reviewed provider-ID rollover evidence, or authoritative ESPN Fantasy state appears.
-3. Add multiweek waiver impact only after both baseline and simulated rosters have complete mapped player-week coverage for every included week.
-4. Optionally add an explicit IR-assisted add-without-drop scenario that models `eligible bench player -> IR` followed by an add, without silently folding that multi-step sequence into ordinary add/drop cards and without adding ESPN writes.
-5. Finish season/playoff intelligence only after a documented, approved position-specific strength-of-schedule source and methodology exist.
-6. Continue production-readiness closeout with manual accessibility, companion threat review, recovery/deletion checks, and materially different authenticated read-only league states.
+3. Add multiweek waiver impact only after both baseline and simulated rosters have complete mapped player-week coverage for every included week. Extend the planner deliberately if IR-retained rosters become part of multiweek scenarios.
+4. Finish season/playoff intelligence only after a documented, approved position-specific strength-of-schedule source and methodology exist.
+5. Continue production-readiness closeout with manual accessibility, companion threat review, recovery/deletion checks, and materially different authenticated read-only league states.
 
 Requirements:
 - Keep ESPN authoritative for league state, roster rules, injury designation, IR assignment/capacity, availability, locks, acquisition state, and current week.
@@ -72,6 +76,7 @@ Requirements:
 - Keep diagnostic matching classification-only.
 - Preserve the D/ST bridge, fail-closed reviewed athlete bridges, provider-ID supersession, ordinary duplicate-ID conflict protection, and atomic cache commits.
 - Preserve the ESPN IR fail-closed boundary; do not expand qualifying injury statuses from assumptions or generic eligible-slot arrays.
+- Preserve explicit `ir-assisted-add` semantics: two steps, no invented drop, full current-state legality checks, and read-only output.
 - Revalidate recommendations against the latest valid snapshot without mutating cached ESPN state.
 - Keep current-week projection, replacement value, ROS rank, IR legality, and multiweek scenario conclusions separately sourced and labeled.
 - Add deterministic tests for every new legality, IR status transition, stale-state, missing-data, source-shape, identity-conflict, rollback, browser-update, or diagnostic-classification condition.
