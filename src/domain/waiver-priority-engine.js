@@ -214,7 +214,7 @@ export function buildWaiverPriorityBoard(snapshot, teamId, options = {}) {
     });
   });
 
-  const banded = assignWaiverPriorityBands(rawItems)
+  const banded = [...assignWaiverPriorityBands(rawItems)]
     .sort((left, right) =>
       left.priorityBand - right.priorityBand
       || (right.factors.futureHorizonGain ?? -Infinity) - (left.factors.futureHorizonGain ?? -Infinity)
