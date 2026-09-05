@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { readFile, rm } from "node:fs/promises";
 import { parseFutureProjectionCsv } from "../src/providers/projections/future-projection-provider.js";
 import { parseProjectionIdentityMapCsv } from "../src/providers/projections/projection-identity-map.js";
+import { parseCsvRows } from "../scripts/lib/fantasypros-manual-csv.js";
 import { parseDynastyProcessWeeklyCsv, parseDynastyProcessPlayerIdsCsv } from "../scripts/lib/dynastyprocess-weekly.js";
 
 const execFileAsync = promisify(execFile);
@@ -18,6 +19,7 @@ async function fetchText(url) {
 }
 
 function increment(map, key) { map[key] = (map[key] || 0) + 1; }
+function pct(numerator, denominator) { return Number(((numerator / denominator) * 100).toFixed(2)); }
 
 test("TEMPORARY live DynastyProcess Week 1 staging and mapping coverage", { timeout: 120_000 }, async () => {
   const prefix = "/tmp/tcw-dynastyprocess-2026-week-1-live-trial";
@@ -58,19 +60,47 @@ test("TEMPORARY live DynastyProcess Week 1 staging and mapping coverage", { time
       increment(byPosition, record.position);
       if (playerIds.map.has(record.providerPlayerId)) increment(mappedByPosition, record.position);
     }
+    const positionMappingRatePct = Object.fromEntries(Object.entries(byPosition).map(([position, count]) => [position, pct(mappedByPosition[position] || 0, count)]));
 
+    const corePositions = new Set(["QB", "RB", "WR", "TE"]);
+    const coreRecords = weekly.records.filter((record) => corePositions.has(record.position));
+    const coreMapped = coreRecords.filter((record) => playerIds.map.has(record.providerPlayerId));
+
+    const rawRows = parseCsvRows(weeklyCsv);
+    const headers = rawRows[0].map((value) => String(value || "").trim().toLowerCase());
+    const indexOf = (name) => headers.indexOf(name);
+    const unresolvedSet = new Set(metadata.unresolvedProviderIds);
+    const unresolvedDetails = rawRows.slice(1).map((row) => ({
+      providerPlayerId: String(row[indexOf("fantasypros_id")] || "").trim(),
+      playerName: String(row[indexOf("player_name")] || "").trim(),
+      team: String(row[indexOf("team")] || "").trim(),
+      position: String(row[indexOf("pos")] || "").trim().toUpperCase(),
+      rank: Number(row[indexOf("rank")]),
+      points: Number(row[indexOf("r2p_pts")])
+    })).filter((item) => unresolvedSet.has(item.providerPlayerId) && Number.isFinite(item.points)).sort((a, b) => b.points - a.points || a.rank - b.rank);
+
+    const nonDstUnresolved = unresolvedDetails.filter((item) => item.position !== "DST" && item.position !== "D/ST");
     const summary = {
       sourceDate: metadata.sourceDate,
       publishedAt: metadata.publishedAt,
       sourceRecordCount: metadata.sourceRecordCount,
       mappedCount: metadata.mappedCount,
-      mappingRatePct: Number(((metadata.mappedCount / metadata.sourceRecordCount) * 100).toFixed(2)),
+      mappingRatePct: pct(metadata.mappedCount, metadata.sourceRecordCount),
+      coreSkillSourceCount: coreRecords.length,
+      coreSkillMappedCount: coreMapped.length,
+      coreSkillMappingRatePct: pct(coreMapped.length, coreRecords.length),
       unresolvedCount: metadata.unresolvedProviderIds.length,
+      unresolvedNonDstCount: nonDstUnresolved.length,
+      unresolvedNonDstAtLeast10Pts: nonDstUnresolved.filter((item) => item.points >= 10).length,
+      unresolvedNonDstAtLeast5Pts: nonDstUnresolved.filter((item) => item.points >= 5).length,
+      unresolvedNonDstPositivePts: nonDstUnresolved.filter((item) => item.points > 0).length,
       excludedSourceRowCount: metadata.excludedSourceRows.length,
       skippedPlayerIdRowCount: metadata.skippedPlayerIdRows,
       byPosition,
       mappedByPosition,
-      unresolvedProviderIdsSample: metadata.unresolvedProviderIds.slice(0, 25),
+      positionMappingRatePct,
+      topUnresolvedNonDst: nonDstUnresolved.slice(0, 30),
+      topUnresolvedAll: unresolvedDetails.slice(0, 30),
       commandStdout: stdout.trim().split(/\r?\n/)
     };
 
