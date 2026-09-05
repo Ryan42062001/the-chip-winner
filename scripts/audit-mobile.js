@@ -199,16 +199,19 @@ async function auditInvalidLinks(browser, fixture) {
   const revokedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await routeSync(revokedContext, fixture.envelope, { revoked: true });
   const revokedPage = await revokedContext.newPage();
-  await revokedPage.goto(`${origin}/${fixture.fragment}`, { waitUntil: "networkidle" });
-  await revokedPage.getByText("This mobile sync link has expired or was revoked.", { exact: true }).waitFor();
+  // Invalid-link gates care about the app's terminal error state, not unrelated global network idleness.
+  await revokedPage.goto(`${origin}/${fixture.fragment}`, { waitUntil: "domcontentloaded" });
+  await revokedPage.getByText("This mobile sync link has expired or was revoked.", { exact: true }).waitFor({ timeout: 10000 });
   if (await revokedPage.locator(".player-row").count()) throw new Error("Revoked mobile link silently fell back to local/sample league data.");
+  await assertNoHorizontalOverflow(revokedPage, "Revoked mobile link error state");
   await revokedContext.close();
 
   const malformedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const malformedPage = await malformedContext.newPage();
-  await malformedPage.goto(`${origin}/#mobile-sync=bad.bad`, { waitUntil: "networkidle" });
-  await malformedPage.getByText(/private mobile sync link is malformed/i).waitFor();
+  await malformedPage.goto(`${origin}/#mobile-sync=bad.bad`, { waitUntil: "domcontentloaded" });
+  await malformedPage.getByText(/private mobile sync link is malformed/i).waitFor({ timeout: 10000 });
   if (await malformedPage.locator(".player-row").count()) throw new Error("Malformed mobile link silently fell back to local/sample league data.");
+  await assertNoHorizontalOverflow(malformedPage, "Malformed mobile link error state");
   await malformedContext.close();
 }
 
