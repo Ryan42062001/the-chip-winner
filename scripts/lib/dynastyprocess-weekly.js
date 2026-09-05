@@ -73,6 +73,19 @@ const REVIEWED_WEEKLY_ESPN_ID_BY_FANTASYPROS_ID = Object.freeze({
   "28176": "5082424" // Dominic Zvada
 });
 
+// Provider IDs can occasionally roll over while the underlying ESPN identity
+// stays the same. A supersession is narrower than a normal reviewed bridge: it
+// activates only while DynastyProcess still maps the reviewed predecessor ID
+// to the exact reviewed ESPN player. This preserves historical projections
+// under the old provider ID while allowing current projections to use the new
+// provider ID without weakening the default one-provider-ID-per-ESPN rule.
+const REVIEWED_WEEKLY_PROVIDER_ID_SUPERSESSIONS = Object.freeze({
+  "28896": Object.freeze({
+    espnPlayerId: "4431492",
+    supersedesProviderPlayerId: "26160"
+  }) // Roman Wilson
+});
+
 function clean(value) { return String(value ?? "").replaceAll("\u00a0", " ").trim(); }
 function cleanId(value) {
   const normalized = clean(value);
@@ -170,6 +183,23 @@ function reviewedWeeklyEspnPlayerId(providerPlayerId, playerIds) {
   return playerIds.espnIdsWithoutFantasyPros.has(reviewedEspnPlayerId) ? reviewedEspnPlayerId : null;
 }
 
+function reviewedProviderIdSupersession(providerPlayerId, playerIds) {
+  const reviewed = REVIEWED_WEEKLY_PROVIDER_ID_SUPERSESSIONS[providerPlayerId] || null;
+  if (!reviewed) return null;
+  const directCurrentEspnPlayerId = playerIds.map.get(providerPlayerId) || null;
+  if (directCurrentEspnPlayerId) return null;
+  const predecessorEspnPlayerId = playerIds.map.get(reviewed.supersedesProviderPlayerId) || null;
+  if (!predecessorEspnPlayerId) return null;
+  if (predecessorEspnPlayerId !== reviewed.espnPlayerId) {
+    throw new Error(`Reviewed FantasyPros ID supersession ${reviewed.supersedesProviderPlayerId} -> ${providerPlayerId} expected ESPN ID ${reviewed.espnPlayerId}, but DynastyProcess now maps the predecessor to ${predecessorEspnPlayerId}.`);
+  }
+  const claimedByProviderId = playerIds.providerByEspn.get(reviewed.espnPlayerId) || null;
+  if (claimedByProviderId !== reviewed.supersedesProviderPlayerId) {
+    throw new Error(`Reviewed FantasyPros ID ${providerPlayerId} targets ESPN ID ${reviewed.espnPlayerId}, which DynastyProcess now assigns to FantasyPros ID ${claimedByProviderId || "none"} instead of reviewed predecessor ${reviewed.supersedesProviderPlayerId}.`);
+  }
+  return reviewed;
+}
+
 export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, season, week, publishedAt }) {
   if (!Number.isInteger(season) || season < 2000 || season > 2100) throw new Error("A valid four-digit season is required.");
   if (!Number.isInteger(week) || week < 1 || week > 18) throw new Error("An explicit NFL week from 1 through 18 is required because the source file does not publish a week column.");
@@ -177,26 +207,36 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
   const weekly = parseDynastyProcessWeeklyCsv(weeklyCsv);
   if (Number(weekly.sourceDate.slice(0, 4)) !== season) throw new Error(`DynastyProcess scrape date ${weekly.sourceDate} does not match requested season ${season}.`);
   const playerIds = parseDynastyProcessPlayerIdsCsv(playerIdsCsv);
-  const mapped = []; const unresolvedProviderIds = []; let derivedDefenseMappingCount = 0; let reviewedIdentityMappingCount = 0;
+  const mapped = []; const unresolvedProviderIds = [];
+  let derivedDefenseMappingCount = 0;
+  let reviewedIdentityMappingCount = 0;
+  let providerSupersessionMappingCount = 0;
   for (const item of weekly.records) {
     const directEspnPlayerId = playerIds.map.get(item.providerPlayerId) || null;
-    const reviewedEspnPlayerId = directEspnPlayerId ? null : reviewedWeeklyEspnPlayerId(item.providerPlayerId, playerIds);
+    const reviewedSupersession = directEspnPlayerId ? null : reviewedProviderIdSupersession(item.providerPlayerId, playerIds);
+    const reviewedEspnPlayerId = directEspnPlayerId || reviewedSupersession ? null : reviewedWeeklyEspnPlayerId(item.providerPlayerId, playerIds);
     const derivedDefensePlayerId = isDefensePosition(item.position) ? deriveEspnDefensePlayerId(item.teamCode) : null;
     if (directEspnPlayerId && derivedDefensePlayerId && directEspnPlayerId !== derivedDefensePlayerId) {
       throw new Error(`DynastyProcess D/ST ${item.providerPlayerId} has conflicting ESPN IDs: ${directEspnPlayerId} from the player-ID table and ${derivedDefensePlayerId} from team ${item.teamCode}.`);
     }
-    const espnPlayerId = directEspnPlayerId || reviewedEspnPlayerId || derivedDefensePlayerId;
+    const supersededEspnPlayerId = reviewedSupersession?.espnPlayerId || null;
+    const espnPlayerId = directEspnPlayerId || supersededEspnPlayerId || reviewedEspnPlayerId || derivedDefensePlayerId;
     if (!espnPlayerId) { unresolvedProviderIds.push(item.providerPlayerId); continue; }
-    if (!directEspnPlayerId && reviewedEspnPlayerId) reviewedIdentityMappingCount += 1;
-    if (!directEspnPlayerId && !reviewedEspnPlayerId && derivedDefensePlayerId) derivedDefenseMappingCount += 1;
-    mapped.push(Object.freeze({ ...item, espnPlayerId }));
+    if (!directEspnPlayerId && reviewedSupersession) providerSupersessionMappingCount += 1;
+    if (!directEspnPlayerId && !reviewedSupersession && reviewedEspnPlayerId) reviewedIdentityMappingCount += 1;
+    if (!directEspnPlayerId && !reviewedSupersession && !reviewedEspnPlayerId && derivedDefensePlayerId) derivedDefenseMappingCount += 1;
+    mapped.push(Object.freeze({
+      ...item,
+      espnPlayerId,
+      supersedesProviderPlayerId: reviewedSupersession?.supersedesProviderPlayerId || null
+    }));
   }
   if (!mapped.length) throw new Error("No DynastyProcess weekly estimates could be mapped to ESPN by stable IDs.");
   const projectionRows = [["provider", "scoring_format", "season", "captured_at", "provider_player_id", "week", "points"]];
-  const identityRows = [["provider_player_id", "espn_player_id"]];
+  const identityRows = [["provider_player_id", "espn_player_id", "supersedes_provider_player_id"]];
   for (const item of mapped) {
     projectionRows.push([DYNASTYPROCESS_WEEKLY_PROVIDER, DYNASTYPROCESS_WEEKLY_SCORING, season, publishedAt, item.providerPlayerId, week, item.points]);
-    identityRows.push([item.providerPlayerId, item.espnPlayerId]);
+    identityRows.push([item.providerPlayerId, item.espnPlayerId, item.supersedesProviderPlayerId || ""]);
   }
   return Object.freeze({
     provider: DYNASTYPROCESS_WEEKLY_PROVIDER,
@@ -209,6 +249,7 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
     mappedCount: mapped.length,
     derivedDefenseMappingCount,
     reviewedIdentityMappingCount,
+    providerSupersessionMappingCount,
     unresolvedProviderIds: Object.freeze(unresolvedProviderIds),
     excludedSourceRows: weekly.exclusions,
     skippedPlayerIdRows: playerIds.skippedCount,
