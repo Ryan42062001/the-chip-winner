@@ -35,8 +35,9 @@ function irAssistedSnapshot(snapshot, teamId, irEntry, addPlayerId) {
 function rosterRuleViolation(snapshot, entries) {
   const rules = snapshot.league?.rosterRules;
   if (!rules) return null;
-  if (rules.size != null && entries.length > rules.size) {
-    return `ESPN roster size limit is ${rules.size}, but the simulated roster would contain ${entries.length} players.`;
+  const activeEntries = entries.filter((entry) => entry.lineupSlot !== "IR");
+  if (rules.size != null && activeEntries.length > rules.size) {
+    return `ESPN roster size limit is ${rules.size}, but the simulated active roster would contain ${activeEntries.length} players outside IR.`;
   }
   const players = new Map(snapshot.players.map((player) => [player.id, player]));
   const counts = new Map();
@@ -117,7 +118,6 @@ export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), 
   const rosterPlayerIds = new Set(roster.entries.map((entry) => entry.playerId));
   const baseline = optimizeLineup(snapshot, teamId, now);
   if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: [], limitations: [baseline.reason], irState };
-
   const dropEntries = roster.entries.filter((entry) => entry.lineupSlot === "BE" && !isLocked(entry, players.get(entry.playerId), now));
   const available = snapshot.availablePlayers
     .map((playerId) => players.get(playerId))
