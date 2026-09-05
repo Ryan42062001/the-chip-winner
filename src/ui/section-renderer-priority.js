@@ -1,6 +1,6 @@
 import { buildWaiverPriorityBoard } from "../domain/waiver-priority-engine.js";
 import { evaluateFutureProjectionCompatibility } from "../providers/projections/future-projection-provider.js";
-import { createSectionRenderer as createBaseSectionRenderer } from "./section-renderer.js";
+import { createSectionRenderer as createBaseSectionRenderer } from "./section-renderer-base.js";
 
 function signedPoints(value) {
   if (value == null) return "Unavailable";
