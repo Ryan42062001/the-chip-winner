@@ -53,6 +53,26 @@ const ESPN_PRO_TEAM_ID_BY_CODE = Object.freeze({
   HOU: 34
 });
 
+// Reviewed 2026-09-04 against the current DynastyProcess weekly feed, its
+// player-ID table, and the live ESPN 2026 fantasy player pool. These entries
+// fill only a narrow upstream gap where DynastyProcess already publishes the
+// ESPN ID on an otherwise-unassigned player-ID row while the weekly feed
+// publishes the FantasyPros ID. Runtime activation still requires that exact
+// ESPN ID to remain present and unclaimed in the current player-ID table.
+// Names are comments for auditability only and are never used for matching.
+const REVIEWED_WEEKLY_ESPN_ID_BY_FANTASYPROS_ID = Object.freeze({
+  "28434": "4878695", // Max Bredeson
+  "28168": "4432260", // Matt/Matthew Hibner
+  "27534": "4697745", // Tyler Loop
+  "26638": "4574716", // Harrison Mevis
+  "28507": "4869461", // Trey Smack
+  "27291": "4569923", // Andy/Andres Borregales
+  "27261": "4568263", // Ryan Fitzgerald
+  "26763": "4571557", // Spencer Shrader
+  "28175": "5081335", // Drew Stevens
+  "28176": "5082424" // Dominic Zvada
+});
+
 function clean(value) { return String(value ?? "").replaceAll("\u00a0", " ").trim(); }
 function cleanId(value) {
   const normalized = clean(value);
@@ -121,11 +141,15 @@ export function parseDynastyProcessPlayerIdsCsv(text) {
   const headers = rows[0].map((value) => clean(value).toLowerCase());
   const fantasyProsIndex = headerIndex(headers, "fantasypros_id");
   const espnIndex = headerIndex(headers, "espn_id");
-  const byProvider = new Map(); const byEspn = new Map(); let skippedCount = 0;
+  const byProvider = new Map(); const byEspn = new Map(); const espnIdsWithoutFantasyPros = new Set(); let skippedCount = 0;
   for (let index = 1; index < rows.length; index += 1) {
     const providerPlayerId = cleanId(rows[index][fantasyProsIndex]);
     const espnPlayerId = cleanId(rows[index][espnIndex]);
-    if (!providerPlayerId || !espnPlayerId) { skippedCount += 1; continue; }
+    if (!providerPlayerId || !espnPlayerId) {
+      if (!providerPlayerId && espnPlayerId) espnIdsWithoutFantasyPros.add(espnPlayerId);
+      skippedCount += 1;
+      continue;
+    }
     const existingEspn = byProvider.get(providerPlayerId);
     if (existingEspn && existingEspn !== espnPlayerId) throw new Error(`FantasyPros ID ${providerPlayerId} maps to more than one ESPN player in DynastyProcess.`);
     const existingProvider = byEspn.get(espnPlayerId);
@@ -133,7 +157,17 @@ export function parseDynastyProcessPlayerIdsCsv(text) {
     byProvider.set(providerPlayerId, espnPlayerId); byEspn.set(espnPlayerId, providerPlayerId);
   }
   if (!byProvider.size) throw new Error("DynastyProcess player-ID CSV contains no usable FantasyPros-to-ESPN mappings.");
-  return Object.freeze({ map: byProvider, skippedCount });
+  return Object.freeze({ map: byProvider, providerByEspn: byEspn, espnIdsWithoutFantasyPros, skippedCount });
+}
+
+function reviewedWeeklyEspnPlayerId(providerPlayerId, playerIds) {
+  const reviewedEspnPlayerId = REVIEWED_WEEKLY_ESPN_ID_BY_FANTASYPROS_ID[providerPlayerId] || null;
+  if (!reviewedEspnPlayerId) return null;
+  const claimedByProviderId = playerIds.providerByEspn.get(reviewedEspnPlayerId) || null;
+  if (claimedByProviderId && claimedByProviderId !== providerPlayerId) {
+    throw new Error(`Reviewed FantasyPros ID ${providerPlayerId} targets ESPN ID ${reviewedEspnPlayerId}, which DynastyProcess now assigns to FantasyPros ID ${claimedByProviderId}.`);
+  }
+  return playerIds.espnIdsWithoutFantasyPros.has(reviewedEspnPlayerId) ? reviewedEspnPlayerId : null;
 }
 
 export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, season, week, publishedAt }) {
@@ -143,16 +177,18 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
   const weekly = parseDynastyProcessWeeklyCsv(weeklyCsv);
   if (Number(weekly.sourceDate.slice(0, 4)) !== season) throw new Error(`DynastyProcess scrape date ${weekly.sourceDate} does not match requested season ${season}.`);
   const playerIds = parseDynastyProcessPlayerIdsCsv(playerIdsCsv);
-  const mapped = []; const unresolvedProviderIds = []; let derivedDefenseMappingCount = 0;
+  const mapped = []; const unresolvedProviderIds = []; let derivedDefenseMappingCount = 0; let reviewedIdentityMappingCount = 0;
   for (const item of weekly.records) {
     const directEspnPlayerId = playerIds.map.get(item.providerPlayerId) || null;
+    const reviewedEspnPlayerId = directEspnPlayerId ? null : reviewedWeeklyEspnPlayerId(item.providerPlayerId, playerIds);
     const derivedDefensePlayerId = isDefensePosition(item.position) ? deriveEspnDefensePlayerId(item.teamCode) : null;
     if (directEspnPlayerId && derivedDefensePlayerId && directEspnPlayerId !== derivedDefensePlayerId) {
       throw new Error(`DynastyProcess D/ST ${item.providerPlayerId} has conflicting ESPN IDs: ${directEspnPlayerId} from the player-ID table and ${derivedDefensePlayerId} from team ${item.teamCode}.`);
     }
-    const espnPlayerId = directEspnPlayerId || derivedDefensePlayerId;
+    const espnPlayerId = directEspnPlayerId || reviewedEspnPlayerId || derivedDefensePlayerId;
     if (!espnPlayerId) { unresolvedProviderIds.push(item.providerPlayerId); continue; }
-    if (!directEspnPlayerId && derivedDefensePlayerId) derivedDefenseMappingCount += 1;
+    if (!directEspnPlayerId && reviewedEspnPlayerId) reviewedIdentityMappingCount += 1;
+    if (!directEspnPlayerId && !reviewedEspnPlayerId && derivedDefensePlayerId) derivedDefenseMappingCount += 1;
     mapped.push(Object.freeze({ ...item, espnPlayerId }));
   }
   if (!mapped.length) throw new Error("No DynastyProcess weekly estimates could be mapped to ESPN by stable IDs.");
@@ -172,6 +208,7 @@ export function buildDynastyProcessWeeklyBundle({ weeklyCsv, playerIdsCsv, seaso
     sourceRecordCount: weekly.records.length,
     mappedCount: mapped.length,
     derivedDefenseMappingCount,
+    reviewedIdentityMappingCount,
     unresolvedProviderIds: Object.freeze(unresolvedProviderIds),
     excludedSourceRows: weekly.exclusions,
     skippedPlayerIdRows: playerIds.skippedCount,
