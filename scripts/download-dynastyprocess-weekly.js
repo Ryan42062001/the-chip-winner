@@ -49,6 +49,7 @@ await Promise.all([
     sourceRecordCount: bundle.sourceRecordCount,
     mappedCount: bundle.mappedCount,
     derivedDefenseMappingCount: bundle.derivedDefenseMappingCount,
+    reviewedIdentityMappingCount: bundle.reviewedIdentityMappingCount,
     unresolvedProviderIds: bundle.unresolvedProviderIds,
     excludedSourceRows: bundle.excludedSourceRows,
     skippedPlayerIdRows: bundle.skippedPlayerIdRows,
@@ -57,7 +58,8 @@ await Promise.all([
       "The upstream weekly file does not publish an NFL week column; the requested week is supplied explicitly by the user or connected ESPN state.",
       "r2p_pts is retained as the source-published PPR weekly estimate. The Chip Winner does not recalculate or relabel it as a custom ESPN scoring projection.",
       "publishedAt is the DynastyProcess GitHub publication timestamp used for freshness; it is not claimed to be the time FantasyPros recalculated its underlying rankings.",
-      "Non-D/ST identities use stable FantasyPros-ID to ESPN-ID mappings from DynastyProcess. Missing or conflicting athlete IDs are never repaired by display name.",
+      "Non-D/ST identities normally use stable FantasyPros-ID to ESPN-ID mappings from DynastyProcess. Missing or conflicting athlete IDs are never repaired by display name.",
+      "A narrow reviewed bridge may activate for documented FantasyPros IDs only while the current DynastyProcess player-ID table independently publishes the reviewed ESPN ID on an otherwise-unassigned FantasyPros row. The bridge fails closed if that evidence disappears or the ESPN ID becomes claimed by another FantasyPros ID.",
       "D/ST rows may use the source-published NFL team code plus an explicit ESPN pro-team-ID table to derive ESPN's synthetic team-defense player ID. Unknown team codes and conflicting direct IDs are rejected rather than name-matched."
     ]
   }, null, 2)}\n`, "utf8")
@@ -68,5 +70,6 @@ console.log(`Projection CSV: ${projectionsPath}`);
 console.log(`Identity map CSV: ${identityPath}`);
 console.log(`Metadata: ${metadataPath}`);
 if (bundle.derivedDefenseMappingCount) console.log(`${bundle.derivedDefenseMappingCount} D/ST rows used the explicit ESPN team-defense identity bridge.`);
+if (bundle.reviewedIdentityMappingCount) console.log(`${bundle.reviewedIdentityMappingCount} rows used reviewed FantasyPros-to-ESPN identity bridges backed by current unassigned ESPN-ID evidence.`);
 if (bundle.unresolvedProviderIds.length) console.log(`${bundle.unresolvedProviderIds.length} weekly FantasyPros IDs had no stable ESPN mapping and were excluded.`);
 if (bundle.excludedSourceRows.length) console.log(`${bundle.excludedSourceRows.length} source rows were excluded because required IDs, dates, team codes, or r2p points were missing or invalid.`);
