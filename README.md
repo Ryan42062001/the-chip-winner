@@ -70,6 +70,7 @@ Production releases and safe rollback are documented in [`docs/deployment.md`](d
 - Complete supported-slot lineup optimization with duplicate prevention, ESPN/reported-kickoff locks, and explicit missing-data limitations
 - Interactive start/sit comparisons with source-separated external weekly projection detail when explicitly mapped
 - Roster-aware waiver add/drop simulations based on ESPN availability and full legal-lineup impact
+- ESPN IR eligibility intelligence using ESPN injury designation, current IR assignment, and configured IR-slot count: OUT/IR placement, Q/D grandfathering, healthy/ineligible IR blockers, open-capacity opportunities, and fail-closed unknown states
 - ESPN-reported acquisition limits, roster size, and provider-position limits enforced without inferring absent rules
 - Current-week ESPN-pool replacement benchmark kept separate from legal-lineup gain
 - FantasyPros ROS PPR CSV import with visible reconciliation coverage and separate ROS waiver comparisons
@@ -117,6 +118,8 @@ See the [`product roadmap`](docs/roadmap.md) for the authoritative current execu
 
 See the [`advanced features roadmap`](docs/advanced-roadmap.md) for the longer release sequence from player intelligence through optional confirmed ESPN actions.
 
+See [`ESPN IR eligibility`](docs/ir-eligibility.md) for the reviewed injury-designation policy, waiver interaction, and fail-closed boundaries.
+
 See [`AI readiness`](docs/ai-readiness.md) for model context boundaries, recommendation guardrails, and deterministic evaluation.
 
 See [`Security model`](docs/security.md) for browser trust boundaries, Content Security Policy, mobile-sync behavior, and local-data deletion.
@@ -133,6 +136,7 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 - Derived suggestions are calculated at runtime and never written back into source snapshots.
 - Imported files are rejected when identities, lineup slots, references, source metadata, or numeric values violate their contracts.
 - Projection-driven multiweek claims are withheld when explicit identity or player-week coverage is incomplete.
+- IR legality uses only normalized ESPN injury designations, current ESPN IR assignment, and ESPN-reported IR capacity; unsupported states are withheld rather than inferred from generic eligible-slot arrays.
 - Free weekly updates never fall back to player-name joins and never claim the source-published PPR estimate is a custom ESPN scoring projection.
 - Source availability checks never send ESPN league state or credentials to DynastyProcess/GitHub; only the public source URLs are requested.
 
@@ -141,7 +145,7 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 The read-only foundation is substantially implemented. The active work is to finish it rather than start a new product layer:
 
 1. Accumulate real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
-2. Finish the remaining Waiver Engine v2 gaps: authoritative IR handling only when ESPN supplies the required rules/eligibility inputs, then projection-gated multiweek waiver impact after coverage is complete.
+2. Finish Waiver Engine v2 with projection-gated multiweek waiver impact after coverage is complete. ESPN IR eligibility/roster-validity handling is implemented; a dedicated IR-assisted add-without-drop scenario can be added later without weakening the read-only boundary.
 3. Add position-specific schedule difficulty only after approving and documenting a trustworthy source and methodology.
 4. Complete manual accessibility, companion security, recovery/deletion, and materially different live-league validation for the v1.0 read-only release gate.
 
