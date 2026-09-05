@@ -9,8 +9,8 @@ test("companion versions compare numerically", () => {
 });
 
 test("companion health rejects missing and outdated versions", () => {
-  assert.equal(evaluateCompanionPing({ version: "0.2.0" }).status, "incompatible");
-  assert.equal(evaluateCompanionPing({ version: "0.2.1" }).status, "ready");
+  assert.equal(evaluateCompanionPing({ version: "0.2.1" }).status, "incompatible");
+  assert.equal(evaluateCompanionPing({ version: "0.2.2" }).status, "ready");
   assert.equal(evaluateCompanionPing({}).status, "incompatible");
 });
 
