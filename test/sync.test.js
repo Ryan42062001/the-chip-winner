@@ -31,14 +31,32 @@ test("mobile fragment contains read credentials but not the write token", async 
   assert.deepEqual(parseMobileSyncFragment(fragment), { channelId: credentials.channelId, encryptionKey: credentials.encryptionKey });
 });
 
-test("sync session publishes only an encrypted envelope", async () => {
+test("sync session publishes only an encrypted envelope and preserves the selected team", async () => {
   const credentials = await createSyncCredentials();
   let stored = null;
   const provider = { publish: async (envelope, token) => { stored = envelope; assert.equal(token, credentials.writeToken); }, read: async () => stored };
-  await publishSyncState(provider, credentials, sample, { source: "fantasypros", rankings: [] });
+  await publishSyncState(provider, credentials, sample, { source: "fantasypros", rankings: [] }, "t2");
   assert.equal(JSON.stringify(stored).includes(sample.league.name), false);
+  assert.equal(JSON.stringify(stored).includes(sample.teams[1].name), false);
   const decoded = await readSyncState(provider, credentials);
   assert.equal(decoded.payload.snapshot.league.id, sample.league.id);
+  assert.equal(decoded.payload.selectedTeamId, "t2");
+});
+
+test("sync selected-team context fails closed while legacy payloads remain readable", async () => {
+  const credentials = await createSyncCredentials();
+  const provider = { publish: async () => {}, read: async () => null };
+  await assert.rejects(() => publishSyncState(provider, credentials, sample, null, "missing-team"), /Cannot sync selected team is not present/);
+
+  const invalidEnvelope = await encryptSyncPayload({ snapshot: sample, rankingSet: null, selectedTeamId: "missing-team" }, credentials);
+  const invalidProvider = { read: async () => invalidEnvelope };
+  await assert.rejects(() => readSyncState(invalidProvider, credentials), /Synced selected team is not present/);
+
+  const legacyEnvelope = await encryptSyncPayload({ snapshot: sample, rankingSet: null }, credentials);
+  const legacyProvider = { read: async () => legacyEnvelope };
+  const legacyDecoded = await readSyncState(legacyProvider, credentials);
+  assert.equal(legacyDecoded.payload.snapshot.league.id, sample.league.id);
+  assert.equal(legacyDecoded.payload.selectedTeamId, undefined);
 });
 
 test("provider contracts fail explicitly and HTTP transport uses scoped methods", async () => {

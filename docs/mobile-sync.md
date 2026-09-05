@@ -12,7 +12,7 @@ The desktop creates three random values:
 - `encryptionKey`: a 256-bit AES-GCM key shared with the phone through the URL fragment;
 - `writeToken`: a separate capability retained by the desktop for publishing and deletion.
 
-The browser encrypts `{ snapshot, rankingSet }` before transport. The service stores only the channel ID, encrypted envelope, expiry, and a one-way hash of the write token. The encryption key is placed after `#mobile-sync=` in the mobile link, so browsers do not send it in HTTP requests. The phone decrypts locally.
+The browser encrypts `{ snapshot, rankingSet, selectedTeamId }` before transport. `selectedTeamId` is UI context only: it tells the phone which ESPN team was selected on the desktop and must match a team already present in the validated snapshot. The service stores only the channel ID, encrypted envelope, expiry, and a one-way hash of the write token. The encryption key is placed after `#mobile-sync=` in the mobile link, so browsers do not send it in HTTP requests. The phone decrypts locally and restores the encrypted selected-team context after validating it against the synced snapshot.
 
 This design protects content from an honest-but-curious storage service. Anyone possessing the mobile link can read the synced league data, so the interface must treat that link like a password. Revocation deletes the channel and creates new credentials.
 
@@ -50,11 +50,12 @@ Base path: `/v1/channels`
 
 - `src/sync/crypto.js`: credentials, AES-GCM envelopes, and mobile fragment parsing.
 - `src/sync/sync-provider.js`: provider interface and HTTP implementation.
-- `src/sync/sync-session.js`: validates ESPN state before publishing and after decrypting.
+- `src/sync/sync-session.js`: validates ESPN state and selected-team context before publishing and after decrypting.
+- `src/ui/section-renderer.js`: restores the encrypted desktop-selected team after a mobile snapshot load.
 
 ## Production deployment
 
-The sync service is deployed at `https://the-chip-winner-sync.yc6syr6bkd.workers.dev`. The GitHub Pages app encrypts league data before upload; Cloudflare receives only an opaque encrypted envelope. The decryption key remains in the private mobile URL fragment and is not transmitted in HTTP requests.
+The sync service is deployed at `https://the-chip-winner-sync.yc6syr6bkd.workers.dev`. The GitHub Pages app encrypts league data and selected-team context before upload; Cloudflare receives only an opaque encrypted envelope. The decryption key remains in the private mobile URL fragment and is not transmitted in HTTP requests.
 
 ## Cloudflare implementation
 
