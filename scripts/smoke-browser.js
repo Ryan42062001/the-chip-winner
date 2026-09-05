@@ -184,10 +184,11 @@ try {
 
   await page.getByRole("button", { name: "Create mobile link" }).click();
   await page.getByText(/Private mobile link created/).waitFor();
-  const refreshMobileButton = page.getByRole("button", { name: "Refresh mobile data" });
-  await refreshMobileButton.click();
+  await page.getByText(/published automatically/i).waitFor();
+  const publishMobileButton = page.getByRole("button", { name: "Publish mobile data now" });
+  await publishMobileButton.click();
   await page.getByText(/Mobile data refreshed\./).waitFor();
-  if (await refreshMobileButton.isDisabled()) throw new Error("Refresh mobile data remained disabled after a successful publish.");
+  if (await publishMobileButton.isDisabled()) throw new Error("Publish mobile data now remained disabled after a successful fallback publish.");
   const copyMobileButton = page.getByRole("button", { name: "Copy mobile link" });
   await copyMobileButton.click();
   await page.getByText(/Private mobile link copied\./).waitFor();

@@ -162,13 +162,18 @@ async function auditSyncedPhone(browser, fixture, viewport, label) {
   if (await page.getByText("One more refresh needed", { exact: true }).count()) throw new Error(`${label} lost the encrypted prior ESPN capture needed by What Changed.`);
   await page.locator(".timeline-summary").waitFor();
 
-  // League Setup in sync mode is a read-only status surface, not another desktop connection console.
+  // League Setup in sync mode is read-only. The only interactive control is a GET-only freshness check.
   await goToSyncSection(page, "league", fixture.fragment, label);
   await page.getByRole("heading", { level: 3, name: "Synced mobile viewer" }).waitFor();
   await page.getByRole("heading", { level: 3, name: "Private synced viewer" }).waitFor();
   if (await page.getByRole("button", { name: "Create mobile link" }).count()) throw new Error(`${label} incorrectly offers a nested mobile link from the synced phone.`);
-  const visibleLeagueButtons = await page.locator(".league-grid button:visible").count();
-  if (visibleLeagueButtons) throw new Error(`${label} exposes ${visibleLeagueButtons} desktop mutation/download button(s) in synced League Setup.`);
+  const visibleLeagueButtons = page.locator(".league-grid button:visible");
+  if (await visibleLeagueButtons.count() !== 1) throw new Error(`${label} exposes unexpected synced League Setup controls.`);
+  const checkButton = page.getByRole("button", { name: "Check for updates" });
+  if (!await checkButton.isVisible()) throw new Error(`${label} is missing the read-only mobile freshness check.`);
+  await checkButton.click();
+  await page.getByText("Mobile data is already current.", { exact: true }).waitFor();
+  if (new URL(page.url()).hash !== fixture.fragment) throw new Error(`${label} freshness check changed the private sync fragment.`);
 
   // Return to overview and exercise player detail at the real mobile dimensions.
   await goToSyncSection(page, "overview", fixture.fragment, label);
@@ -226,7 +231,7 @@ try {
   await auditSyncedPhone(browser, fixture, { width: 844, height: 390 }, "844x390 phone landscape");
   await auditInvalidLinks(browser, fixture);
 
-  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all seven sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only League Setup, player detail, touch targets, Escape/ARIA navigation reset, revoked links, and malformed links.");
+  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all seven sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only update checks, player detail, touch targets, Escape/ARIA navigation reset, revoked links, and malformed links.");
 } finally {
   await browser?.close();
   server.kill();
