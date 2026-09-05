@@ -14,7 +14,7 @@ function configuredStarterSlots(snapshot, roster) {
   return (roster?.entries || []).filter((entry) => isStarter(entry.lineupSlot)).map((entry, index) => Object.freeze({ id: `${entry.lineupSlot}:${index}`, slot: entry.lineupSlot }));
 }
 
-function unmatchedStarterSlots(players, slots) {
+function maximumFilledSlotCount(players, slots) {
   const sortedPlayers = [...players].sort((a, b) => String(a.id).localeCompare(String(b.id)));
   const sortedSlots = [...slots].sort((left, right) => {
     const leftCount = sortedPlayers.filter((player) => canFillSlot(player, left.slot)).length;
@@ -37,8 +37,15 @@ function unmatchedStarterSlots(players, slots) {
   }
 
   for (const slot of sortedSlots) assign(slot, new Set());
-  const filledSlotIds = new Set([...playerAssignments.values()].map((slot) => slot.id));
-  return slots.filter((slot) => !filledSlotIds.has(slot.id)).map((slot) => slot.slot);
+  return playerAssignments.size;
+}
+
+function possibleUncoveredSlotLabels(players, slots, maximumFilled) {
+  if (maximumFilled >= slots.length) return [];
+  const labels = slots
+    .filter((slot) => maximumFilledSlotCount(players, slots.filter((candidate) => candidate.id !== slot.id)) === maximumFilled)
+    .map((slot) => slot.slot);
+  return [...new Set(labels)].sort();
 }
 
 export function buildByeWeekCoverage(snapshot, teamId) {
@@ -54,26 +61,29 @@ export function buildByeWeekCoverage(snapshot, teamId) {
   const rows = weeks.map((week) => {
     const byePlayerIds = new Set(activePlayers.filter((player) => player.byeWeek === week).map((player) => player.id));
     const availablePlayers = activePlayers.filter((player) => !byePlayerIds.has(player.id));
-    const uncoveredSlots = unmatchedStarterSlots(availablePlayers, requiredSlots);
+    const filledStarterSlots = maximumFilledSlotCount(availablePlayers, requiredSlots);
+    const uncoveredSlotCount = Math.max(0, requiredSlots.length - filledStarterSlots);
+    const uncoveredSlotCandidates = possibleUncoveredSlotLabels(availablePlayers, requiredSlots, filledStarterSlots);
     const affectedStarterPlayerIds = activeEntries.filter((entry) => isStarter(entry.lineupSlot) && byePlayerIds.has(entry.playerId)).map((entry) => entry.playerId);
-    const status = uncoveredSlots.length ? "gap" : unknownByePlayerIds.length ? "partial" : "covered";
+    const status = uncoveredSlotCount ? "gap" : unknownByePlayerIds.length ? "partial" : "covered";
     return Object.freeze({
       week,
       status,
       byePlayerIds: Object.freeze([...byePlayerIds].sort()),
       affectedStarterPlayerIds: Object.freeze(affectedStarterPlayerIds.sort()),
-      uncoveredSlots: Object.freeze(uncoveredSlots),
+      uncoveredSlotCount,
+      uncoveredSlotCandidates: Object.freeze(uncoveredSlotCandidates),
       requiredStarterSlots: requiredSlots.length
     });
   });
-  const gapWeeks = rows.filter((row) => row.uncoveredSlots.length).map((row) => row.week);
+  const gapWeeks = rows.filter((row) => row.uncoveredSlotCount > 0).map((row) => row.week);
   const status = gapWeeks.length ? "gap" : unknownByePlayerIds.length ? "partial" : "ready";
   return Object.freeze({
     status,
     weeks: Object.freeze(rows),
     unknownByePlayerIds: Object.freeze(unknownByePlayerIds.sort()),
     gapWeeks: Object.freeze(gapWeeks),
-    methodology: "Bye coverage uses ESPN-reported roster slots, listed NFL positions, and explicit bye weeks. It checks whether the current non-IR roster can fill every configured starter slot after known bye players are removed; unknown bye weeks remain uncertainty rather than being treated as available facts."
+    methodology: "Bye coverage uses ESPN-reported roster slots, listed NFL positions, and explicit bye weeks. It checks the maximum number of configured starter slots the current non-IR roster can legally fill after known bye players are removed. When multiple equally valid slot assignments exist, it reports the gap count plus every slot type that could be affected instead of pretending one arbitrary assignment is uniquely correct. Unknown bye weeks remain uncertainty rather than being treated as available facts."
   });
 }
 
