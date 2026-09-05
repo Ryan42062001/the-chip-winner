@@ -31,47 +31,57 @@ async function waitForServer() {
   throw new Error("Local server did not become ready for accessibility audits.");
 }
 
+const violations = [];
+async function audit(page, section) {
+  const result = await page.evaluate(async () => globalThis.axe.run(document, {
+    runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"] },
+  }));
+  violations.push(...result.violations.map((violation) => ({
+    section,
+    id: violation.id,
+    impact: violation.impact,
+    nodes: violation.nodes.length,
+    help: violation.help,
+    targets: violation.nodes.map((node) => node.target.join(" ")).join(", "),
+  })));
+}
+
+async function auditSampleContext(browser, contextOptions, label) {
+  const context = await browser.newContext({ ...contextOptions, bypassCSP: true });
+  const page = await context.newPage();
+  await page.goto(origin, { waitUntil: "networkidle" });
+  await page.locator(".player-row").first().waitFor();
+  await page.addScriptTag({ content: axe.source });
+
+  await page.locator("#onboarding-dialog").waitFor();
+  await audit(page, `${label} onboarding`);
+  await page.getByRole("button", { name: "Explore sample" }).click();
+  await page.locator(".player-row").first().click();
+  await page.locator("#player-dialog[open]").waitFor();
+  await audit(page, `${label} player detail`);
+  await page.getByRole("button", { name: "Close player details" }).click();
+
+  for (const section of ["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]) {
+    const menu = page.locator(".mobile-menu");
+    if (await menu.isVisible() && await menu.getAttribute("aria-expanded") !== "true") await menu.click();
+    await page.locator(`a[data-section="${section}"]`).click();
+    await page.locator("#app-content").waitFor();
+    await audit(page, `${label} ${section}`);
+  }
+  await context.close();
+}
+
 let browser;
 try {
   await waitForServer();
   browser = await chromium.launch({ executablePath, headless: true, args: ["--no-sandbox"] });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true });
-  const page = await context.newPage();
-  await page.goto(origin, { waitUntil: "networkidle" });
-  await page.locator(".player-row").first().waitFor();
-
-  const violations = [];
-  await page.addScriptTag({ content: axe.source });
-  const audit = async (section) => {
-    const result = await page.evaluate(async () => globalThis.axe.run(document, {
-      runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"] },
-    }));
-    violations.push(...result.violations.map((violation) => ({
-      section,
-      id: violation.id,
-      impact: violation.impact,
-      nodes: violation.nodes.length,
-      help: violation.help,
-      targets: violation.nodes.map((node) => node.target.join(" ")).join(", "),
-    })));
-  };
-  await page.locator("#onboarding-dialog").waitFor();
-  await audit("onboarding");
-  await page.getByRole("button", { name: "Explore sample" }).click();
-  await page.locator(".player-row").first().click();
-  await page.locator("#player-dialog[open]").waitFor();
-  await audit("player detail");
-  await page.getByRole("button", { name: "Close player details" }).click();
-  for (const section of ["overview", "lineup", "waivers", "alerts", "season", "league"]) {
-    await page.locator(`a[data-section="${section}"]`).click();
-    await page.locator("#app-content").waitFor();
-    await audit(section);
-  }
+  await auditSampleContext(browser, { viewport: { width: 1440, height: 900 } }, "desktop");
+  await auditSampleContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true }, "phone");
 
   if (violations.length) {
     throw new Error(`WCAG audit violations:\n${violations.map((item) => `${item.section}: ${item.id} (${item.impact}, ${item.nodes} nodes) — ${item.help} [${item.targets}]`).join("\n")}`);
   }
-  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding, player detail, and six primary sections.");
+  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding, player detail, and all seven primary sections on desktop and 390x844 phone layouts.");
 } finally {
   await browser?.close();
   server.kill();
