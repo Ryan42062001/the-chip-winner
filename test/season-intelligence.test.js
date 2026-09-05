@@ -25,14 +25,16 @@ test("bye coverage proves a known starter bye is covered by current roster eligi
   assert.deepEqual(week7.uncoveredSlots, []);
 });
 
-test("bye coverage exposes an uncovered starter slot and never invents replacement depth", () => {
+test("bye coverage exposes every uncovered starter week and never invents replacement depth", () => {
   const snapshot = baseSnapshot();
   snapshot.rosters[0].entries = snapshot.rosters[0].entries.filter((entry) => entry.playerId !== "c");
   const coverage = buildByeWeekCoverage(snapshot, "mine");
   const week7 = coverage.weeks.find((row) => row.week === 7);
+  const week9 = coverage.weeks.find((row) => row.week === 9);
   assert.equal(coverage.status, "gap");
-  assert.deepEqual(coverage.gapWeeks, [7]);
+  assert.deepEqual(coverage.gapWeeks, [7, 9]);
   assert.deepEqual(week7.uncoveredSlots, ["RB"]);
+  assert.deepEqual(week9.uncoveredSlots, ["FLEX"]);
 });
 
 test("unknown bye weeks keep otherwise fillable coverage partial", () => {
