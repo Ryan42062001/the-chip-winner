@@ -2,6 +2,7 @@ import { createLineupOptimizer } from "./lineup-optimizer.js";
 import { evaluatePlayerIrEligibility, evaluateTeamIrState } from "./ir-eligibility.js";
 
 const MIN_WAIVER_LINEUP_GAIN = 0.5;
+const WAIVER_ANALYSIS_CACHE = new WeakMap();
 
 function isLocked(entry, player, now) {
   if (entry?.locked === true || player?.locked === true) return true;
@@ -80,6 +81,45 @@ function describeIrLimitations(irState) {
   return limitations;
 }
 
+function waiverAnalysisFingerprint(snapshot, teamId, now) {
+  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
+  const team = snapshot?.teams?.find((item) => item.id === teamId);
+  const playerFacts = (snapshot?.players || []).map((player) => [
+    player.id,
+    player.position,
+    player.projection ?? null,
+    player.locked === true,
+    player.injury?.status ?? null,
+    player.injury?.sourceStatus ?? null,
+    isLocked({}, player, now)
+  ]);
+  return JSON.stringify([
+    snapshot?.currentWeek ?? null,
+    snapshot?.availablePlayers ?? null,
+    roster?.entries?.map((entry) => [entry.playerId, entry.lineupSlot, entry.locked === true]) ?? null,
+    playerFacts,
+    snapshot?.league?.lineupSlots ?? null,
+    snapshot?.league?.rosterRules ?? null,
+    snapshot?.league?.waiver ?? null,
+    team?.acquisition ?? null
+  ]);
+}
+
+function readCachedAnalysis(snapshot, teamId, fingerprint) {
+  const byTeam = WAIVER_ANALYSIS_CACHE.get(snapshot);
+  const cached = byTeam?.get(teamId);
+  return cached?.fingerprint === fingerprint ? cached.result : null;
+}
+
+function writeCachedAnalysis(snapshot, teamId, fingerprint, result) {
+  let byTeam = WAIVER_ANALYSIS_CACHE.get(snapshot);
+  if (!byTeam) {
+    byTeam = new Map();
+    WAIVER_ANALYSIS_CACHE.set(snapshot, byTeam);
+  }
+  byTeam.set(teamId, { fingerprint, result });
+}
+
 export function evaluateAcquisitionCapacity(snapshot, teamId) {
   const team = snapshot?.teams?.find((item) => item.id === teamId);
   if (!team) return Object.freeze({ status: "missing-team", seasonRemaining: null, matchupRemaining: null, reason: "Selected team acquisition data is unavailable." });
@@ -99,23 +139,23 @@ export function evaluateAcquisitionCapacity(snapshot, teamId) {
   return Object.freeze({ status: exhausted ? "exhausted" : seasonVerified && matchupVerified ? "available" : "unverified", seasonRemaining, matchupRemaining, reason });
 }
 
-export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), limit = 8) {
-  if (!Array.isArray(snapshot.availablePlayers)) return { status: "missing-availability", items: [], limitations: [] };
+function computeRosterAwareWaiverAnalysis(snapshot, teamId, now) {
+  if (!Array.isArray(snapshot.availablePlayers)) return { status: "missing-availability", items: Object.freeze([]), limitations: [] };
   const roster = snapshot.rosters.find((item) => item.teamId === teamId);
-  if (!roster) return { status: "missing-roster", items: [], limitations: [] };
+  if (!roster) return { status: "missing-roster", items: Object.freeze([]), limitations: [] };
 
   const players = new Map(snapshot.players.map((player) => [player.id, player]));
   const irState = evaluateTeamIrState(snapshot, teamId, players);
-  if (irState.status === "invalid") return { status: "incomplete-lineup", items: [], limitations: [irState.reason], irState };
-  if (irState.status === "unverified") return { status: "incomplete-lineup", items: [], limitations: [irState.reason], irState };
+  if (irState.status === "invalid") return { status: "incomplete-lineup", items: Object.freeze([]), limitations: [irState.reason], irState };
+  if (irState.status === "unverified") return { status: "incomplete-lineup", items: Object.freeze([]), limitations: [irState.reason], irState };
 
   const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
-  if (capacity.status === "exhausted") return { status: "acquisition-limit-reached", items: [], limitations: [capacity.reason], capacity, irState };
+  if (capacity.status === "exhausted") return { status: "acquisition-limit-reached", items: Object.freeze([]), limitations: [capacity.reason], capacity, irState };
 
   const rosterPlayerIds = new Set(roster.entries.map((entry) => entry.playerId));
   const optimizer = createLineupOptimizer(players, now);
   const baseline = optimizer.optimize(roster.entries);
-  if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: [], limitations: [baseline.reason], irState };
+  if (!baseline.assignments?.length) return { status: "incomplete-lineup", items: Object.freeze([]), limitations: [baseline.reason], irState };
 
   const dropEntries = roster.entries.filter((entry) => entry.lineupSlot === "BE" && !isLocked(entry, players.get(entry.playerId), now));
   const available = snapshot.availablePlayers
@@ -210,7 +250,7 @@ export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), 
     }
     usedAdds.add(item.add.id);
     return true;
-  }).slice(0, limit);
+  });
 
   const team = snapshot.teams?.find((item) => item.id === teamId);
   const limitations = ["ESPN availability is authoritative at the latest refresh."];
@@ -221,7 +261,19 @@ export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), 
   limitations.push(capacity.status === "available" ? "Known ESPN acquisition limits and usage were checked before evaluating moves." : "ESPN acquisition usage or limits are incomplete, so remaining moves cannot be verified.");
   limitations.push(team?.acquisition?.waiverRank == null ? "ESPN waiver priority is unavailable; no claim outcome is predicted." : `ESPN waiver priority is ${team.acquisition.waiverRank}; claim outcomes are not predicted.`);
   if (baseline.status === "best-known") limitations.push("Some roster projections are missing, so gains use the strongest complete lineup among known projections.");
-  return { status: "ready", baselineTotal: baseline.projectedTotal, items, limitations, capacity, irState };
+  return { status: "ready", baselineTotal: baseline.projectedTotal, items: Object.freeze(items), limitations, capacity, irState };
+}
+
+export function buildRosterAwareWaiverIdeas(snapshot, teamId, now = Date.now(), limit = 8) {
+  if (!snapshot || typeof snapshot !== "object") return { status: "missing-roster", items: [], limitations: [] };
+  const fingerprint = waiverAnalysisFingerprint(snapshot, teamId, now);
+  let analysis = readCachedAnalysis(snapshot, teamId, fingerprint);
+  if (!analysis) {
+    analysis = computeRosterAwareWaiverAnalysis(snapshot, teamId, now);
+    writeCachedAnalysis(snapshot, teamId, fingerprint, analysis);
+  }
+  const items = analysis.items?.slice(0, limit) || [];
+  return { ...analysis, items };
 }
 
 export function revalidateWaiverRecommendation(snapshot, teamId, recommendation, now = Date.now()) {
