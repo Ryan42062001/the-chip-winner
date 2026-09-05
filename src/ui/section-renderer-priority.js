@@ -1,6 +1,9 @@
+import { buildSeasonPlayoffIntelligence } from "../domain/season-intelligence.js";
+import { buildScenarioPlan } from "../domain/scenario-planner.js";
 import { buildWaiverPriorityBoard } from "../domain/waiver-priority-engine.js";
 import { evaluateFutureProjectionCompatibility } from "../providers/projections/future-projection-provider.js";
 import { createSectionRenderer as createBaseSectionRenderer } from "./section-renderer-base.js";
+import { renderSeasonPlayoffIntelligence } from "./season-intelligence.js";
 
 function signedPoints(value) {
   if (value == null) return "Unavailable";
@@ -45,25 +48,36 @@ function renderPriorityItems(board, escapeHtml) {
   </article>`).join("");
 }
 
-function priorityPanel(deps, base) {
-  const { state, futureProjectionSet, projectionIdentityMap, selectedFutureWeeks } = deps.getContext();
-  if (state?.section !== "waivers" || !state.snapshot) return null;
-
+function compatibleFutureInputs(context) {
+  const { state, futureProjectionSet, projectionIdentityMap } = context;
   const importedFutureWeeks = futureProjectionSet
     ? [...new Set(futureProjectionSet.projections.map((item) => item.week))].sort((a, b) => a - b)
     : [];
   const compatibility = futureProjectionSet
     ? evaluateFutureProjectionCompatibility(futureProjectionSet, state.snapshot)
     : null;
-  const usableFutureProjectionSet = compatibility?.usable ? futureProjectionSet : null;
+  return Object.freeze({
+    importedFutureWeeks: Object.freeze(importedFutureWeeks),
+    projectionSet: compatibility?.usable ? futureProjectionSet : null,
+    identityMap: projectionIdentityMap,
+    compatibility
+  });
+}
+
+function priorityPanel(deps, base) {
+  const context = deps.getContext();
+  const { state, selectedFutureWeeks } = context;
+  if (state?.section !== "waivers" || !state.snapshot) return null;
+
+  const futureInputs = compatibleFutureInputs(context);
   const futureWeeks = selectedFutureWeeks === null
-    ? importedFutureWeeks
-    : importedFutureWeeks.filter((week) => selectedFutureWeeks.includes(week));
+    ? futureInputs.importedFutureWeeks
+    : futureInputs.importedFutureWeeks.filter((week) => selectedFutureWeeks.includes(week));
 
   const board = buildWaiverPriorityBoard(state.snapshot, state.selectedTeamId, {
     weeks: futureWeeks,
-    projectionSet: usableFutureProjectionSet,
-    identityMap: projectionIdentityMap
+    projectionSet: futureInputs.projectionSet,
+    identityMap: futureInputs.identityMap
   });
 
   const section = document.createElement("section");
@@ -75,7 +89,7 @@ function priorityPanel(deps, base) {
     : board.items.length
       ? `<div class="waiver-list">${renderPriorityItems(board, base.escapeHtml)}</div>`
       : base.emptyState("Nothing to prioritize", limitation);
-  const futureContext = usableFutureProjectionSet && futureWeeks.length
+  const futureContext = futureInputs.projectionSet && futureWeeks.length
     ? `Selected future horizon: Weeks ${futureWeeks.join(", ")}. Future-only stashes require complete selected-week coverage for the current roster and simulated add/drop roster.`
     : "Future-week evidence is unavailable or no future weeks are selected; future-only stashes are withheld and missing future inputs are not scored as zero.";
   const discoveryContext = board.futureDiscovery?.status === "ready"
@@ -88,11 +102,33 @@ function priorityPanel(deps, base) {
   return section;
 }
 
+function seasonIntelligencePanel(deps) {
+  const context = deps.getContext();
+  const { state, selectedPlayoffWeeks } = context;
+  if (state?.section !== "season" || !state.snapshot) return null;
+  const futureInputs = compatibleFutureInputs(context);
+  const playoffWeeks = Array.isArray(selectedPlayoffWeeks) ? selectedPlayoffWeeks : state.snapshot.league?.playoffWeeks || [];
+  const playoffPlan = buildScenarioPlan(state.snapshot, state.selectedTeamId, {
+    weeks: playoffWeeks,
+    projectionSet: futureInputs.projectionSet,
+    identityMap: futureInputs.identityMap,
+    scenarios: []
+  });
+  const intelligence = buildSeasonPlayoffIntelligence(state.snapshot, state.selectedTeamId, {
+    playoffWeeks,
+    scenarioPlan: playoffPlan,
+    rankingReconciliation: state.rankingReconciliation
+  });
+  const section = document.createElement("div");
+  section.innerHTML = renderSeasonPlayoffIntelligence(intelligence, state.snapshot);
+  return section.firstElementChild;
+}
+
 export function createSectionRenderer(deps) {
   const base = createBaseSectionRenderer(deps);
   const render = (...args) => {
     const result = base.render(...args);
-    const panel = priorityPanel(deps, base);
+    const panel = priorityPanel(deps, base) || seasonIntelligencePanel(deps);
     if (panel) {
       const firstDivider = deps.content.querySelector(".section-divider");
       if (firstDivider) firstDivider.before(panel);
