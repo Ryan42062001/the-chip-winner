@@ -172,7 +172,8 @@ if (deps.content?.addEventListener) {
     button.disabled = true;
     button.textContent = "Checking…";
     try {
-      await mobileUpdater.check({ force: true, notifyWhenCurrent: true });
+      const result = await mobileUpdater.check({ force: true });
+      if (result.status === "current") deps.showNotice("Mobile data is already current.", "success");
     } finally {
       if (button.isConnected) {
         button.disabled = false;
