@@ -23,8 +23,15 @@ test("validation requires an explicit schema version", () => {
 
 test("validation rejects malformed optional ESPN acquisition facts without coercion", () => {
   const invalid = structuredClone(sample);
-  invalid.league.waiver = { acquisitionLimit: "5", matchupAcquisitionLimit: -2, waiverProcessDays: null, budget: null };
+  invalid.league.waiver = { acquisitionLimit: "5", matchupAcquisitionLimit: -2, acquisitionType: 7, usesAcquisitionBudget: "false", waiverOrderReset: 1, waiverProcessDays: null, budget: null };
   invalid.teams[0].acquisition = { waiverRank: 0, seasonAcquisitions: "3", matchupAcquisitions: null, budgetSpent: -1 };
   const errors = validateLeagueSnapshot(invalid).join(" ");
-  assert.match(errors, /acquisitionLimit/); assert.match(errors, /matchupAcquisitionLimit/); assert.match(errors, /waiverRank/); assert.match(errors, /seasonAcquisitions/); assert.match(errors, /budgetSpent/);
+  assert.match(errors, /acquisitionLimit/);
+  assert.match(errors, /matchupAcquisitionLimit/);
+  assert.match(errors, /acquisitionType/);
+  assert.match(errors, /usesAcquisitionBudget/);
+  assert.match(errors, /waiverOrderReset/);
+  assert.match(errors, /waiverRank/);
+  assert.match(errors, /seasonAcquisitions/);
+  assert.match(errors, /budgetSpent/);
 });

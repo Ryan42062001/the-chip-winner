@@ -114,6 +114,7 @@ const player = entry.player || entry;
 const id = String(player.id);
 if (!playerMap.has(id)) playerMap.set(id, { ...normalizeRosterPlayer(player, currentWeek, supplemental.nflScoreboard), availabilityStatus: entry.status || "AVAILABLE" });
 }
+const waiver = normalizeWaiverSettings(response.settings.acquisitionSettings);
 const snapshot = {
 schemaVersion: 1,
 provider: "espn",
@@ -132,10 +133,10 @@ teamCount: response.teams.length,
 scoringType: response.settings.scoringSettings?.scoringType || null,
 lineupSlots: normalizeLineupSlotCounts(response.settings.rosterSettings?.lineupSlotCounts),
 rosterRules: normalizeRosterRules(response.settings.rosterSettings),
-waiver: normalizeWaiverSettings(response.settings.acquisitionSettings)
+waiver
 },
 currentWeek,
-teams: response.teams.map((team) => normalizeTeam(team, currentWeek)),
+teams: response.teams.map((team) => normalizeTeam(team, currentWeek, waiver.usesAcquisitionBudget)),
 players: [...playerMap.values()],
 rosters,
 matchups
@@ -154,7 +155,10 @@ return Object.entries(counts)
 }
 function normalizeRosterRules(settings = {}) {
 const counts = settings.lineupSlotCounts || {};
-const size = Object.values(counts).reduce((total, count) => total + (Number(count) > 0 ? Number(count) : 0), 0);
+const size = Object.entries(counts).reduce((total, [slotId, count]) => {
+  const numericCount = Number(count);
+  return total + (Number(slotId) !== 21 && numericCount > 0 ? numericCount : 0);
+}, 0);
 const positionLimits = Object.entries(settings.positionLimits || {})
 .map(([positionId, rawLimit]) => ({ positionId, limit: Number(rawLimit) }))
 .filter(({ limit }) => limit !== 0)
@@ -169,15 +173,25 @@ const positionLimits = Object.entries(settings.positionLimits || {})
 });
 return { size: size || null, positionLimits };
 }
+function normalizeWaiverPeriodDays(settings = {}) {
+const hours = Number(settings.waiverHours);
+if (Number.isInteger(hours) && hours >= 0 && hours % 24 === 0) return hours / 24;
+if (Number.isInteger(settings.waiverProcessDays) && settings.waiverProcessDays >= 0) return settings.waiverProcessDays;
+return null;
+}
 function normalizeWaiverSettings(settings = {}) {
+const usesAcquisitionBudget = typeof settings.isUsingAcquisitionBudget === "boolean" ? settings.isUsingAcquisitionBudget : null;
 return {
 acquisitionLimit: Number.isFinite(settings.acquisitionLimit) ? settings.acquisitionLimit : null,
 matchupAcquisitionLimit: Number.isFinite(settings.matchupAcquisitionLimit) ? settings.matchupAcquisitionLimit : null,
-waiverProcessDays: Number.isFinite(settings.waiverProcessDays) ? settings.waiverProcessDays : null,
-budget: Number.isFinite(settings.acquisitionBudget) ? settings.acquisitionBudget : null
+acquisitionType: typeof settings.acquisitionType === "string" ? settings.acquisitionType : null,
+usesAcquisitionBudget,
+waiverOrderReset: typeof settings.waiverOrderReset === "boolean" ? settings.waiverOrderReset : null,
+waiverProcessDays: normalizeWaiverPeriodDays(settings),
+budget: usesAcquisitionBudget === true && Number.isFinite(settings.acquisitionBudget) ? settings.acquisitionBudget : null
 };
 }
-function normalizeTeam(team, currentWeek) {
+function normalizeTeam(team, currentWeek, usesAcquisitionBudget = null) {
 const overall = team.record?.overall || {};
 const explicitName = [team.location, team.nickname].filter(Boolean).join(" ").trim();
 const counter = team.transactionCounter || {};
@@ -191,7 +205,7 @@ acquisition: {
 waiverRank: Number.isInteger(team.waiverRank) ? team.waiverRank : null,
 seasonAcquisitions: Number.isInteger(counter.acquisitions) ? counter.acquisitions : null,
 matchupAcquisitions: Number.isInteger(counter.matchupAcquisitionTotals?.[currentWeek]) ? counter.matchupAcquisitionTotals[currentWeek] : null,
-budgetSpent: Number.isFinite(counter.acquisitionBudgetSpent) ? counter.acquisitionBudgetSpent : null
+budgetSpent: usesAcquisitionBudget === true && Number.isFinite(counter.acquisitionBudgetSpent) ? counter.acquisitionBudgetSpent : null
 }
 };
 }

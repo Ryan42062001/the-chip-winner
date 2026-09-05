@@ -19,7 +19,7 @@ function snapshot() {
         { slot: "BE", count: 2 },
         { slot: "IR", count: 1 }
       ],
-      rosterRules: { size: 6, positionLimits: [] },
+      rosterRules: { size: 5, positionLimits: [] },
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },
     teams: [{ id: "mine", acquisition: { waiverRank: 3, seasonAcquisitions: 0, matchupAcquisitions: 0 } }],

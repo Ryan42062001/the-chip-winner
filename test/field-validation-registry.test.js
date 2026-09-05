@@ -23,7 +23,7 @@ const requiredIds = [
 test("Release 1.0 field-validation registry is complete and evidence-gated", () => {
   assert.equal(registry.schemaVersion, 1);
   assert.equal(registry.releaseTarget, "1.0");
-  assert.equal(registry.baselineVersion, "0.9.73");
+  assert.equal(registry.baselineVersion, "0.9.74");
   assert.deepEqual(registry.items.map((item) => item.id), requiredIds);
 
   const ids = new Set();

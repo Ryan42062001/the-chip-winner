@@ -67,6 +67,8 @@ test("real response shape normalizes teams, rosters, matchup, and explicit proje
   assert.equal(snapshot.league.rosterRules.size, 10);
   assert.deepEqual(snapshot.league.rosterRules.positionLimits.find((item) => item.position === "QB"), { position: "QB", limit: 3, espnPositionId: 1 });
   assert.equal(snapshot.league.waiver.budget, 100);
+  assert.equal(snapshot.league.waiver.usesAcquisitionBudget, true);
+  assert.equal(snapshot.league.waiver.acquisitionType, "WAIVERS_FAAB");
   assert.equal(snapshot.league.waiver.matchupAcquisitionLimit, 3);
   assert.deepEqual(snapshot.teams[0].acquisition, { waiverRank: 2, seasonAcquisitions: 3, matchupAcquisitions: 1, budgetSpent: 17 });
 });
@@ -111,6 +113,31 @@ test("ESPN roster rules ignore only unsupported position limits that are explici
   const snapshot = normalizeEspnLeagueResponse(response);
   assert.equal(snapshot.league.rosterRules.positionLimits.some((item) => item.espnPositionId === 6), false);
   assert.deepEqual(snapshot.league.rosterRules.positionLimits.find((item) => item.position === "QB"), { position: "QB", limit: 3, espnPositionId: 1 });
+});
+
+test("ESPN live traditional-waiver shape preserves reported active roster size and does not invent FAAB", () => {
+  const response = structuredClone(leagueResponse);
+  response.settings.rosterSettings.lineupSlotCounts = { "0": 1, "2": 2, "4": 2, "6": 1, "16": 1, "17": 1, "20": 6, "21": 1, "23": 1 };
+  response.settings.rosterSettings.positionLimits[6] = -1;
+  response.settings.acquisitionSettings = {
+    acquisitionLimit: -1,
+    matchupAcquisitionLimit: -1,
+    acquisitionType: "WAIVERS_TRADITIONAL",
+    acquisitionBudget: 100,
+    isUsingAcquisitionBudget: false,
+    waiverHours: 24,
+    waiverProcessDays: [1, 2, 3, 4, 5],
+    waiverOrderReset: true
+  };
+  const snapshot = normalizeEspnLeagueResponse(response);
+  assert.equal(snapshot.league.rosterRules.size, 15);
+  assert.deepEqual(snapshot.league.lineupSlots.find((item) => item.slot === "IR"), { slot: "IR", count: 1, espnSlotId: 21 });
+  assert.equal(snapshot.league.waiver.acquisitionType, "WAIVERS_TRADITIONAL");
+  assert.equal(snapshot.league.waiver.usesAcquisitionBudget, false);
+  assert.equal(snapshot.league.waiver.budget, null);
+  assert.equal(snapshot.league.waiver.waiverProcessDays, 1);
+  assert.equal(snapshot.league.waiver.waiverOrderReset, true);
+  assert.equal(snapshot.teams[0].acquisition.budgetSpent, null);
 });
 
 test("ESPN roster rules reject unknown explicit finite position-limit IDs", () => {

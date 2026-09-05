@@ -17,7 +17,7 @@ function snapshot() {
         { slot: "QB", count: 1 }, { slot: "RB", count: 1 }, { slot: "FLEX", count: 1 },
         { slot: "BE", count: 2 }, { slot: "IR", count: 1 }
       ],
-      rosterRules: { size: 6, positionLimits: [] },
+      rosterRules: { size: 5, positionLimits: [] },
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },
     teams: [{ id: "mine", acquisition: { waiverRank: 3, seasonAcquisitions: 0, matchupAcquisitions: 0 } }],
@@ -62,12 +62,12 @@ test("IR-assisted add is withheld when the required injured player is locked", (
   assert.equal(result.items[0].irMove, null);
 });
 
-test("IR-assisted add fails closed when the simulated roster would exceed ESPN's roster size", () => {
+test("waiver engine fails closed when the reported active roster already exceeds ESPN's roster size", () => {
   const value = snapshot();
-  value.league.rosterRules.size = 5;
+  value.league.rosterRules.size = 4;
   const result = buildRosterAwareWaiverIdeas(value, "mine", 0);
-  assert.equal(result.items[0].kind, "add-drop");
-  assert.match(result.limitations.join(" "), /simulated roster would contain 6 players/);
+  assert.equal(result.items.length, 0);
+  assert.match(result.limitations.join(" "), /simulated active roster would contain 5 players outside IR/);
 });
 
 test("IR-assisted recommendation revalidation tracks designation and IR-capacity changes", () => {
