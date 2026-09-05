@@ -9,13 +9,14 @@ Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documen
 
 Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, and docs/architecture.md. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: master; application release v0.9.55 after the dependency and performance-policy cleanup. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified baseline has 212 automated tests and 21 model-safety fixtures, and the GitHub Pages workflow passes deployment and production smoke verification.
+Checkpoint: protected master; application release v0.9.55 after the dependency and performance-policy cleanup. Do not rely on a SHA copied into this handoff: fetch origin/master and verify the actual tip before editing. The verified baseline has 212 automated tests and 21 model-safety fixtures, and the GitHub Pages workflow passes deployment and production smoke verification.
 
 Current tooling baseline:
 - Node.js >=20.
 - GitHub Actions uses actions/checkout v7.
 - axe-core 4.13.0 powers the automated accessibility audit.
 - playwright-core 1.62.1 powers browser smoke and accessibility journeys.
+- master is protected by an active repository ruleset. Work on a task branch, open a pull request to master, and require the GitHub Actions `test` status check to pass before merge.
 - Total browser JavaScript graph size is measured and reported as an informational trend; it is not a deployment-blocking hard cap. Focused HTML, CSS, app-entry, and sample-data budgets remain release guardrails.
 
 Completed foundation to preserve:
@@ -45,5 +46,5 @@ Requirements:
 - If UI work expands src/ui/section-renderer.js, prefer cohesive view-level extraction rather than adding more application state there.
 - Do not begin trade analysis, notifications, server-side model integration, or ESPN write actions unless the roadmap gate and user approval explicitly move the product boundary.
 
-Before completion run npm test, npm run eval:model, npm run check, and git diff --check. Update roadmap/status and any documented test count only after full verification. When a feature task is complete, bump the patch version and cache markers when appropriate, commit, push master, wait for the GitHub Pages workflow and production verification, confirm a clean worktree, and report the commit, test totals, live URL, and next roadmap item.
+Before completion run npm test, npm run eval:model, npm run check, and git diff --check. Update roadmap/status and any documented test count only after full verification. When a feature task is complete, bump the patch version and cache markers when appropriate, commit and push the task branch, open a pull request targeting master, wait for the required `test` check to pass, update the branch if master advanced, and merge only after the protected-branch requirements are satisfied. Then wait for the master push workflow to complete deployment and production verification, confirm a clean worktree, and report the branch/PR, merge commit, test totals, live URL, and next roadmap item. Never bypass the ruleset or push feature work directly to master.
 ```
