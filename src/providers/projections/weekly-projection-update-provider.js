@@ -57,8 +57,8 @@ function availabilityFromSource({ source, season, week, projectionSet, now }) {
 }
 
 export class WeeklyProjectionUpdateProvider {
-  constructor({ fetchImpl = globalThis.fetch, storage = globalThis.localStorage, now = () => Date.now(), urls = WEEKLY_PROJECTION_SOURCE_URLS } = {}) {
-    this.fetchImpl = fetchImpl;
+  constructor({ fetchImpl = null, storage = globalThis.localStorage, now = () => Date.now(), urls = WEEKLY_PROJECTION_SOURCE_URLS } = {}) {
+    this.fetchImpl = fetchImpl || ((...args) => globalThis.fetch(...args));
     this.storage = storage;
     this.now = now;
     this.urls = urls;
