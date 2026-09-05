@@ -32,7 +32,7 @@ The deployed preview includes:
 - independent projection-provider contract;
 - data freshness and coverage indicators;
 - automated GitHub Pages deployment;
-- 300 automated permanent tests plus 21 deployment-blocking model safety fixtures covering league normalization, lineup and waiver legality, ESPN IR eligibility/roster validity, IR-assisted no-drop waiver paths, multiweek IR-retained scenario safety, future add/drop legality transitions, transparent waiver priority, future-only stash discovery, waiver transition/scale closeout, acquisition limits, identity reconciliation, projection imports, provider-ID supersession, zero-cost DynastyProcess staging, classified unresolved rows, encrypted sync, snapshot differencing, season planning, accessibility, browser behavior, local-data deletion, and the guarded one-click weekly projection update workflow.
+- 313 automated permanent tests plus 21 deployment-blocking model safety fixtures covering league normalization, lineup and waiver legality, ESPN IR eligibility/roster validity, IR-assisted no-drop waiver paths, multiweek IR-retained scenario safety, future add/drop legality transitions, transparent waiver priority, future-only stash discovery, waiver transition/scale closeout, season/playoff intelligence, bye-slot ambiguity, projection-gated playoff aggregates, acquisition limits, identity reconciliation, projection imports, provider-ID supersession, zero-cost DynastyProcess staging, classified unresolved rows, encrypted sync, snapshot differencing, season planning, accessibility, browser behavior, local-data deletion, and the guarded one-click weekly projection update workflow.
 
 Additional connected foundation capabilities now include:
 
@@ -51,6 +51,10 @@ Additional connected foundation capabilities now include:
 - projection-gated future-only ordinary add/drop stash discovery for ESPN-available players that remain below the current-week action threshold but produce a positive fully covered selected-horizon lineup delta after current ESPN legality is revalidated;
 - deterministic current-versus-future lock separation: current transaction legality honors ESPN locks and current kickoff time, while future-week utility does not reuse a current-week kickoff timestamp as an invented future lock;
 - exhaustive future-only add/drop enumeration with visible `consideredAdds`, `completeAdds`, `scenarioCount`, and `qualifiedAdds` diagnostics rather than a hidden candidate cap;
+- season/playoff intelligence that keeps known-bye roster fillability, ESPN fantasy playoff opponents, complete-coverage future projection outlook, and imported FantasyPros position-specific SOS stars as separate inspectable lenses rather than one opaque playoff score;
+- bye-week capacity analysis that reports the maximum starter-slot fill count and, when FLEX eligibility creates multiple equally valid assignments, exposes every slot type that could be affected instead of inventing a unique gap;
+- projection-gated playoff totals, high/low weeks, stable starters, and starter turnover that are withheld unless every configured playoff week has complete mapped baseline-roster coverage;
+- optional FantasyPros `SOS SEASON` and `SOS PLAYOFFS` display from the user-imported ROS CSV without scraping or claiming the source-defined playoff field matches this ESPN league's exact configured playoff window;
 - PUP handling keyed to ESPN's fantasy designation rather than blindly mirroring the NFL reserve list: an NFL PUP player qualifies when ESPN surfaces OUT/IR, while a bare raw PUP status remains unverified;
 - a documented local-only privacy boundary;
 - versioned browser modules for reliable production updates;
@@ -279,6 +283,8 @@ Goal: expand beyond immediate lineup decisions.
 
 ### 5.1 Rest-of-season roster planning
 
+Status: **Season/playoff intelligence implemented in v0.9.70; broader bench utility continues through existing waiver/replacement views.** The Season view now separates current-roster bye fillability, ESPN fantasy playoff opponents, complete-coverage optimized playoff projections, and optional user-imported FantasyPros position-specific SOS stars. No composite playoff score is produced.
+
 - Strength-of-schedule views by position.
 - Upcoming bye conflicts and roster coverage.
 - Playoff-week schedule planning.
@@ -378,7 +384,7 @@ Phase 6 should not begin until the read-only integration has operated reliably a
 | 1.0 | Trustworthy read-only in-season companion | Full-season validation |
 | 2.0 | Optional confirmed ESPN actions | Proven read path + action safeguards |
 
-## Current execution plan — after v0.9.69
+## Current execution plan — after v0.9.70
 
 The original Phase 1 sprint is complete. Work should now proceed in dependency order.
 
@@ -421,28 +427,37 @@ Acceptance criteria:
 
 ### P1 — Complete real projection coverage
 
-Status: **Partially implemented through v0.9.69.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon and distinguishes missing identity mappings from missing player-week projections. The free DynastyProcess path retains the source-published PPR `r2p_pts` signal, stable FantasyPros-to-ESPN IDs, the explicit D/ST team bridge, fail-closed reviewed athlete bridges, and explicit provider-ID supersession. v0.9.61 added classification-only diagnostics for rows that remain unresolved without weakening identity rules. v0.9.62 makes the same staging logic available directly in the browser: a real cached ESPN snapshot supplies the authoritative season/current week, the site checks the public latest publication on startup/ESPN refresh/focus, and the user explicitly approves **Update Week X projections** or **Refresh Week X projections**. Because the source file omits its NFL week, the click remains the explicit assignment boundary. Once Week N-1 is stored, Week N is blocked until the publication is newer than the prior-week capture; publications older than eight days are also blocked. Successful updates retain prior weeks, expand the planning horizon, save a local provenance receipt, and commit projections plus identity mappings through the existing atomic transaction. The browser sends no ESPN credentials or league payload to the public source hosts and does not mirror the weekly dataset into the site. Generic source `PPR` is compatible with ESPN labels in the same PPR scoring family without relabeling source metadata. Under the verified 2026-09-04 Week 1 source state, stable coverage remains **648/682 mapped (95.01%)**, D/ST 32/32, K 32/34, with 34 unsupported/unresolved source rows excluded rather than forced.
+Status: **Partially implemented through v0.9.70.** Season Plan renders an exact roster-and-ESPN-candidate coverage matrix across the selected horizon and distinguishes missing identity mappings from missing player-week projections. The free DynastyProcess path retains the source-published PPR `r2p_pts` signal, stable FantasyPros-to-ESPN IDs, the explicit D/ST team bridge, fail-closed reviewed athlete bridges, and explicit provider-ID supersession. v0.9.61 added classification-only diagnostics for rows that remain unresolved without weakening identity rules. v0.9.62 makes the same staging logic available directly in the browser: a real cached ESPN snapshot supplies the authoritative season/current week, the site checks the public latest publication on startup/ESPN refresh/focus, and the user explicitly approves **Update Week X projections** or **Refresh Week X projections**. Because the source file omits its NFL week, the click remains the explicit assignment boundary. Once Week N-1 is stored, Week N is blocked until the publication is newer than the prior-week capture; publications older than eight days are also blocked. Successful updates retain prior weeks, expand the planning horizon, save a local provenance receipt, and commit projections plus identity mappings through the existing atomic transaction. The browser sends no ESPN credentials or league payload to the public source hosts and does not mirror the weekly dataset into the site. Generic source `PPR` is compatible with ESPN labels in the same PPR scoring family without relabeling source metadata. Under the verified 2026-09-04 Week 1 source state, stable coverage remains **648/682 mapped (95.01%)**, D/ST 32/32, K 32/34, with 34 unsupported/unresolved source rows excluded rather than forced.
 
-A temporary live Chrome canary validated the actual browser path before release: the current source and publication endpoints returned HTTP 200, the control became **Update Week 1 projections**, the click imported 648 Week 1 projection records through the normal caches, and the receipt recorded 648/682 with 34 unresolved. The temporary canary was removed; the current permanent suite is 300 tests.
+A temporary live Chrome canary validated the actual browser path before release: the current source and publication endpoints returned HTTP 200, the control became **Update Week 1 projections**, the click imported 648 Week 1 projection records through the normal caches, and the receipt recorded 648/682 with 34 unresolved. The temporary canary was removed; the current permanent suite is 313 tests.
 
 1. During the season, refresh/connect ESPN and use the browser update control when a fresh weekly source publication becomes available.
 2. Preserve the explicit first-import approval and prior-week publication guard; do not infer or schedule an upstream week assignment.
 3. Review unresolved classifications/coverage only when a decision-relevant ESPN player is actually missing; never repair gaps by display name.
 4. Keep the CLI stager as a recovery/audit path rather than the normal user workflow.
 5. For future provider-ID rollovers, require explicit reviewed predecessor-to-replacement evidence and exact stable ESPN identity evidence.
-6. Enable multiweek deltas only when baseline and simulated rosters both have complete mapped coverage for every selected week, including every retained IR player in an IR-assisted scenario.
+6. Enable multiweek deltas and playoff-window aggregates only when the relevant baseline and simulated rosters have complete mapped coverage for every selected week, including every retained IR player in an IR-assisted scenario.
 
 Acceptance criteria: every used value includes provider, scoring, season, explicitly approved week, provider ID, points, and capture/publication provenance; incompatible scoring blocks comparisons; missing or ambiguous IDs remain excluded; weekly browser updates never send ESPN private data to the source hosts; stale prior-week publications cannot be silently relabeled as the next ESPN week; projection and identity caches commit atomically; prior weeks remain available; partial coverage never produces a summed advantage; third-party weekly source data is not bundled into the public site.
 
 ### P1 — Finish season and playoff intelligence
 
-Status: **Partially implemented through v0.9.69.** The normalized ESPN contract preserves only explicitly supplied playoff-week arrays and rejects malformed values. When ESPN omits the field, Season Plan requires a clearly labeled browser-local selection scoped to league and season; it never derives a boundary from schedule length or matchup numbering. Season Plan shows the optimized starter assignment for every completely mapped future week, an explicit hold-current-roster baseline, and weekly plus selected-horizon waiver comparisons. Add/drop scenarios replace only a currently legal unlocked bench drop and must pass current ESPN acquisition/roster legality before future impact is evaluated; they do not need to clear the current-week action threshold because a move may be useful only in future weeks. Supported IR-assisted scenarios instead retain the injured player in IR and add the waiver target with no drop. A horizon total or delta is withheld if any selected week lacks complete baseline or simulated-roster coverage, including the retained IR player. Waiver Wire also surfaces fully covered future-only ordinary stash candidates through the same selected horizon. Current ESPN transaction locks are checked before a scenario is admitted, while future-week lineup utility does not reuse the current snapshot's kickoff timestamp as a fabricated future-week lock when no authoritative future kickoff is supplied. Sourced schedule difficulty remains open.
+Status: **Complete in v0.9.70 for the reviewed deterministic scope.** The normalized ESPN contract preserves only explicitly supplied playoff-week arrays and rejects malformed values. ESPN-reported playoff weeks override browser-local fallback; when ESPN omits them, Season Plan requires a clearly labeled league-and-season-scoped local selection and never derives a boundary from schedule length or matchup numbering. The Season view now presents four independent lenses: current-roster bye fillability, the ESPN fantasy playoff opponent slate, a complete-coverage optimized playoff projection window, and optional imported FantasyPros position-specific season/playoff SOS stars. No composite playoff score is produced.
 
-1. Read playoff weeks from ESPN when supplied; otherwise require and label local user configuration.
-2. Expand bye-collision, future starter coverage, and projection-gated hold/waiver horizon comparisons as real weekly coverage accumulates.
-3. Approve and document a position-specific strength-of-schedule source and method before displaying difficulty grades.
+v0.9.70 closes the previously open schedule-difficulty methodology by using only explicit `SOS SEASON` and `SOS PLAYOFFS` star values already present in the user-imported FantasyPros ROS CSV. FantasyPros' 2026 public methodology describes fantasy SOS as position-specific Fantasy Points Allowed adjusted for strength of schedule and uses matchup star ratings for favorable/difficult context. The Chip Winner does not scrape those pages or recompute the provider methodology. Because the imported CSV does not prove the exact week range behind `SOS PLAYOFFS`, that field is labeled as **FantasyPros playoffs** and is not claimed to match the ESPN league's configured playoff weeks. Missing stars remain unavailable.
 
-Acceptance criteria: no playoff boundary or schedule grade is inferred; scenarios never mutate ESPN snapshots; every blocked week identifies its exact missing input; ordinary future add/drop paths must remain currently ESPN-legal without requiring current-week projected utility; IR-assisted future scenarios preserve a no-drop retained-IR roster rather than reusing add/drop assumptions.
+Bye coverage uses ESPN roster slots, player positions, and explicit bye weeks to calculate the maximum number of configured starter slots the current non-IR roster can fill after known bye players are removed. When flexible slot eligibility permits multiple equally valid maximum lineups, the engine reports the uncovered-slot count plus every slot type that could be affected instead of inventing one unique uncovered position. Missing bye weeks remain uncertainty.
+
+The playoff projection window reruns the legal lineup optimizer for every configured playoff week using only compatible explicitly mapped weekly projections. Weekly totals are blocked when baseline roster coverage is incomplete. Window total, average, high/low week, stable-starter count, and adjacent-week starter turnover are withheld unless **every** configured playoff week is complete; partial weeks are never summed or zero-filled.
+
+Implementation is closed. Remaining work is seasonal evidence accumulation and field validation:
+
+1. Accumulate real weekly projection publications so more configured playoff weeks become fully evaluable without weakening identity or completeness rules.
+2. Validate bye coverage, playoff opponent rendering, local playoff fallback, and imported SOS availability against materially different authenticated ESPN league states.
+3. Re-review the external SOS methodology before broadening beyond the existing imported FantasyPros star fields or before claiming an exact league-specific playoff window.
+4. Treat playoff qualification probability, championship odds, and opponent win probability as separate future modeling work requiring calibrated inputs; v0.9.70 does not infer them.
+
+Acceptance criteria: ESPN remains authoritative for fantasy schedule and playoff weeks when supplied; local fallback is labeled and never overrides an explicit ESPN boundary; known-bye roster gaps respect legal slot eligibility and do not invent an exact FLEX assignment where multiple maximum lineups are equivalent; unknown bye weeks remain unknown; every playoff projection aggregate requires complete mapped coverage for every configured week; FantasyPros SOS remains independently attributed and cannot alter ESPN facts or weekly projection totals; source-defined `SOS PLAYOFFS` is not relabeled as this league's exact playoff schedule; no single hidden playoff score or win probability is produced. See `docs/season-playoff-intelligence.md`.
 
 ### P1 — Complete waiver engine v2
 
@@ -479,9 +494,10 @@ Acceptance criteria: every current-week move remains legal after full-roster sim
 2. Perform a manual Chrome companion threat review covering cookies, page bridge, logs, and permissions.
 3. Exercise refresh failure, cache recovery, disconnect, deletion, and mobile-sync revocation.
 4. Run authenticated read-only checks across materially different live league states and document limitations and rollback. Include Waiver Engine v2 field validation for custom acquisition caps, position limits, filled/invalid/unverified IR states, availability changes, and game-lock transitions.
-5. Observe real Waiver Engine v2 candidate volumes/timing as weekly projection coverage grows; if exhaustive enumeration becomes materially slow, define and document a visible shortlist policy before changing discovery behavior.
+5. Validate Season/Playoff Intelligence with materially different ESPN playoff formats, FLEX/OP slot combinations, bye patterns, missing bye facts, local playoff-week fallback, and partially covered future projection windows.
+6. Observe real Waiver Engine v2 candidate volumes/timing as weekly projection coverage grows; if exhaustive enumeration becomes materially slow, define and document a visible shortlist policy before changing discovery behavior.
 
-Acceptance criteria: no unresolved high-severity accessibility, privacy, or security findings; the weekly workflow succeeds on desktop/mobile; authenticated field validation does not reveal an unhandled waiver legality transition; any future enumeration optimization preserves visible limitations and deterministic behavior; every release passes all repository gates.
+Acceptance criteria: no unresolved high-severity accessibility, privacy, or security findings; the weekly workflow succeeds on desktop/mobile; authenticated field validation does not reveal an unhandled waiver legality or season-planning transition; any future enumeration optimization preserves visible limitations and deterministic behavior; every release passes all repository gates.
 
 ### Later gated work
 
@@ -490,4 +506,5 @@ Acceptance criteria: no unresolved high-severity accessibility, privacy, or secu
 - Notifications require opt-in, real scheduling semantics, quiet hours, deduplication, and data-sharing review.
 - Server-side models require explicit provider, privacy, cost, secret-storage, contract, and evaluator approval.
 - Future-only IR-assisted stash discovery requires a separate ESPN IR policy review and deterministic safety matrix before it can expand beyond the current validated no-drop path.
+- Playoff qualification/championship probability requires a separately reviewed calibrated model and must not be inferred from SOS stars or incomplete weekly projections.
 - ESPN write actions remain outside the current boundary until the read-only product proves reliable over a meaningful season period.
