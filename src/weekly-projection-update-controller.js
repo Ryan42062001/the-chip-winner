@@ -131,6 +131,14 @@ button?.addEventListener("click", () => {
   else checkForUpdate({ announce: true, force: true });
 });
 
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#clear-future-projections-button")) {
+    weeklyProvider.clearCache();
+    availability = null;
+    lastCheckAt = 0;
+  }
+});
+
 if (sourceTime) {
   const observer = new MutationObserver(() => {
     clearTimeout(observerTimer);
