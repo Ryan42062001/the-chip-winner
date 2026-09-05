@@ -1,6 +1,6 @@
 import { buildRosterAwareWaiverIdeas } from "./waiver-engine.js";
 import { buildScenarioPlan } from "./scenario-planner.js";
-import { optimizeLineup } from "./lineup-optimizer.js";
+import { createLineupOptimizer } from "./lineup-optimizer.js";
 import { indexFutureProjections } from "../providers/projections/future-projection-provider.js";
 
 const MIN_CURRENT_WEEK_ACTION_GAIN = 0.5;
@@ -14,20 +14,10 @@ const PRIORITY_METRICS = Object.freeze([
 
 function scenarioInput(item, id) {
   if (item.kind === "ir-assisted-add" && item.irMove?.player?.id) {
-    return Object.freeze({
-      id,
-      kind: "ir-assisted-add",
-      addPlayerId: item.add.id,
-      irPlayerId: item.irMove.player.id
-    });
+    return Object.freeze({ id, kind: "ir-assisted-add", addPlayerId: item.add.id, irPlayerId: item.irMove.player.id });
   }
   if (item.kind === "add-drop" && item.drop?.id) {
-    return Object.freeze({
-      id,
-      kind: "add-drop",
-      addPlayerId: item.add.id,
-      dropPlayerId: item.drop.id
-    });
+    return Object.freeze({ id, kind: "add-drop", addPlayerId: item.add.id, dropPlayerId: item.drop.id });
   }
   return null;
 }
@@ -43,9 +33,6 @@ function dominates(left, right) {
     const rightValue = metricValue(right, metric);
     const leftMissing = leftValue == null;
     const rightMissing = rightValue == null;
-
-    // Missing evidence is never converted to zero or used as an advantage.
-    // If only one candidate has evidence for a factor, neither can dominate the other.
     if (leftMissing !== rightMissing) return false;
     if (leftMissing && rightMissing) continue;
     if (leftValue < rightValue) return false;
@@ -63,27 +50,16 @@ export function assignWaiverPriorityBands(items = []) {
     const front = remaining.filter((candidate) => !remaining.some((other) =>
       other !== candidate && dominates(other.item, candidate.item)
     ));
-
     const selected = front.length ? front : [remaining[0]];
     for (const candidate of selected) bands.set(candidate.index, band);
-    for (const candidate of selected) {
-      const position = remaining.indexOf(candidate);
-      if (position >= 0) remaining.splice(position, 1);
+    const selectedSet = new Set(selected);
+    for (let index = remaining.length - 1; index >= 0; index -= 1) {
+      if (selectedSet.has(remaining[index])) remaining.splice(index, 1);
     }
     band += 1;
   }
 
-  return Object.freeze(items.map((item, index) => Object.freeze({
-    ...item,
-    priorityBand: bands.get(index) || 1
-  })));
-}
-
-function positionDepth(snapshot, teamId, position) {
-  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
-  if (!roster) return null;
-  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
-  return roster.entries.reduce((count, entry) => count + Number(players.get(entry.playerId)?.position === position), 0);
+  return Object.freeze(items.map((item, index) => Object.freeze({ ...item, priorityBand: bands.get(index) || 1 })));
 }
 
 function futureEvidence(plan, scenario) {
@@ -94,12 +70,9 @@ function futureEvidence(plan, scenario) {
       positiveWeeks: null,
       totalWeeks: null,
       positiveWeekRate: null,
-      reason: plan?.status === "ready"
-        ? "No matching future scenario was evaluated."
-        : "Compatible future projections and explicit identity mappings are required."
+      reason: plan?.status === "ready" ? "No matching future scenario was evaluated." : "Compatible future projections and explicit identity mappings are required."
     });
   }
-
   if (scenario.horizonDelta == null) {
     return Object.freeze({
       status: "blocked",
@@ -110,9 +83,8 @@ function futureEvidence(plan, scenario) {
       reason: scenario.horizonUnavailableReason || "Future impact is blocked by incomplete baseline or scenario coverage."
     });
   }
-
   const weekly = scenario.weekly || [];
-  const positiveWeeks = weekly.filter((item) => item.delta > 0).length;
+  const positiveWeeks = weekly.reduce((count, item) => count + Number(item.delta > 0), 0);
   const totalWeeks = weekly.length;
   return Object.freeze({
     status: "ready",
@@ -130,28 +102,60 @@ function isLocked(entry, player, now) {
   return Number.isFinite(kickoff) && kickoff <= now;
 }
 
-function swappedSnapshot(snapshot, teamId, dropPlayerId, addPlayerId) {
-  return {
-    ...snapshot,
-    rosters: snapshot.rosters.map((roster) => roster.teamId !== teamId ? roster : {
-      ...roster,
-      entries: roster.entries.map((entry) => entry.playerId === dropPlayerId
-        ? { ...entry, playerId: addPlayerId }
-        : entry)
-    })
+function buildReplacementBenchmarks(snapshot, players) {
+  const byPosition = new Map();
+  for (const playerId of snapshot.availablePlayers || []) {
+    const player = players.get(playerId);
+    if (!player || player.projection == null) continue;
+    if (!byPosition.has(player.position)) byPosition.set(player.position, []);
+    byPosition.get(player.position).push(player);
+  }
+  for (const list of byPosition.values()) list.sort((left, right) => right.projection - left.projection);
+  const cache = new Map();
+  return (add) => {
+    if (!add?.id || add.projection == null) return Object.freeze({ status: "unavailable", playerId: null, projection: null, pointsAbove: null });
+    if (cache.has(add.id)) return cache.get(add.id);
+    const benchmark = (byPosition.get(add.position) || []).find((player) => player.id !== add.id) || null;
+    const result = Object.freeze(benchmark ? {
+      status: "ready",
+      playerId: benchmark.id,
+      projection: benchmark.projection,
+      pointsAbove: +(add.projection - benchmark.projection).toFixed(1)
+    } : { status: "unavailable", playerId: null, projection: null, pointsAbove: null });
+    cache.set(add.id, result);
+    return result;
   };
 }
 
-function currentWeekImpact(snapshot, teamId, add, drop, now) {
-  if (add?.projection == null) {
-    return Object.freeze({ status: "missing-projection", lineupGain: null, projectedTotal: null });
+function createBoardContext(snapshot, teamId, now) {
+  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
+  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId) || null;
+  const depthByPosition = new Map();
+  for (const entry of roster?.entries || []) {
+    const position = players.get(entry.playerId)?.position;
+    if (position) depthByPosition.set(position, (depthByPosition.get(position) || 0) + 1);
   }
-  const baseline = optimizeLineup(snapshot, teamId, now);
-  if (!baseline.assignments?.length || baseline.projectedTotal == null) {
+  const optimizer = createLineupOptimizer(players, now);
+  const baseline = roster ? optimizer.optimize(roster.entries) : null;
+  return Object.freeze({
+    players,
+    roster,
+    rosterIds: new Set((roster?.entries || []).map((entry) => entry.playerId)),
+    depthByPosition,
+    optimizer,
+    baseline,
+    replacementBenchmark: buildReplacementBenchmarks(snapshot, players)
+  });
+}
+
+function currentWeekImpact(context, add, drop) {
+  if (add?.projection == null) return Object.freeze({ status: "missing-projection", lineupGain: null, projectedTotal: null });
+  const baseline = context.baseline;
+  if (!baseline?.assignments?.length || baseline.projectedTotal == null || !context.roster) {
     return Object.freeze({ status: "unavailable", lineupGain: null, projectedTotal: null });
   }
-  const simulated = swappedSnapshot(snapshot, teamId, drop.id, add.id);
-  const result = optimizeLineup(simulated, teamId, now);
+  const entries = context.roster.entries.map((entry) => entry.playerId === drop.id ? { ...entry, playerId: add.id } : entry);
+  const result = context.optimizer.optimize(entries);
   if (!result.assignments?.length || result.projectedTotal == null) {
     return Object.freeze({ status: "unavailable", lineupGain: null, projectedTotal: null });
   }
@@ -162,34 +166,12 @@ function currentWeekImpact(snapshot, teamId, add, drop, now) {
   });
 }
 
-function replacementBenchmark(snapshot, add) {
-  if (add?.projection == null || !Array.isArray(snapshot?.availablePlayers)) {
-    return Object.freeze({ status: "unavailable", playerId: null, projection: null, pointsAbove: null });
-  }
-  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
-  const benchmark = snapshot.availablePlayers
-    .map((playerId) => players.get(playerId))
-    .filter((player) => player?.id !== add.id && player?.position === add.position && player.projection != null)
-    .sort((left, right) => right.projection - left.projection)[0];
-  return Object.freeze(benchmark ? {
-    status: "ready",
-    playerId: benchmark.id,
-    projection: benchmark.projection,
-    pointsAbove: +(add.projection - benchmark.projection).toFixed(1)
-  } : {
-    status: "unavailable",
-    playerId: null,
-    projection: null,
-    pointsAbove: null
-  });
-}
-
 function completeProjectionForPlayer(playerId, weeks, espnToProvider, projectionIndex) {
   const providerId = espnToProvider.get(playerId);
   return Boolean(providerId) && weeks.every((week) => projectionIndex.has(`${providerId}:${week}`));
 }
 
-function futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now) {
+function futureDiscoveryInputs(snapshot, options, currentAddIds, now, context) {
   const weeks = Array.isArray(options.weeks) ? options.weeks.filter(Number.isInteger) : [];
   if (!weeks.length || !options.projectionSet || !(options.identityMap instanceof Map)) {
     return Object.freeze({
@@ -201,16 +183,13 @@ function futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now) {
       reason: "Future-only waiver discovery requires selected future weeks, a compatible future projection set, and an explicit identity map."
     });
   }
-
-  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
-  if (!roster || !Array.isArray(snapshot?.availablePlayers)) {
+  if (!context.roster || !Array.isArray(snapshot?.availablePlayers)) {
     return Object.freeze({ status: "unavailable", inputs: Object.freeze([]), consideredAdds: 0, completeAdds: 0, scenarioCount: 0, reason: "Roster or ESPN availability data is unavailable." });
   }
 
-  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
   const projectionIndex = indexFutureProjections(options.projectionSet);
   const espnToProvider = new Map([...options.identityMap].map(([providerId, espnId]) => [espnId, providerId]));
-  const rosterPlayerIds = roster.entries.map((entry) => entry.playerId);
+  const rosterPlayerIds = context.roster.entries.map((entry) => entry.playerId);
   if (!rosterPlayerIds.every((playerId) => completeProjectionForPlayer(playerId, weeks, espnToProvider, projectionIndex))) {
     return Object.freeze({
       status: "blocked-baseline",
@@ -222,9 +201,8 @@ function futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now) {
     });
   }
 
-  const rosterIds = new Set(rosterPlayerIds);
-  const dropEntries = roster.entries.filter((entry) => {
-    const player = players.get(entry.playerId);
+  const dropEntries = context.roster.entries.filter((entry) => {
+    const player = context.players.get(entry.playerId);
     return entry.lineupSlot === "BE" && player && !isLocked(entry, player, now);
   });
   if (!dropEntries.length) {
@@ -232,19 +210,14 @@ function futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now) {
   }
 
   const considered = snapshot.availablePlayers
-    .map((playerId) => players.get(playerId))
-    .filter((player) => player && !rosterIds.has(player.id) && !currentAddIds.has(player.id) && !isLocked({}, player, now) && player.projection != null);
+    .map((playerId) => context.players.get(playerId))
+    .filter((player) => player && !context.rosterIds.has(player.id) && !currentAddIds.has(player.id) && !isLocked({}, player, now) && player.projection != null);
   const completeAdds = considered.filter((player) => completeProjectionForPlayer(player.id, weeks, espnToProvider, projectionIndex));
   const inputs = [];
   let index = 0;
   for (const add of completeAdds) {
     for (const dropEntry of dropEntries) {
-      inputs.push(Object.freeze({
-        id: `future-only-${++index}`,
-        kind: "add-drop",
-        addPlayerId: add.id,
-        dropPlayerId: dropEntry.playerId
-      }));
+      inputs.push(Object.freeze({ id: `future-only-${++index}`, kind: "add-drop", addPlayerId: add.id, dropPlayerId: dropEntry.playerId }));
     }
   }
 
@@ -258,11 +231,11 @@ function futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now) {
   });
 }
 
-function currentPriorityItem(snapshot, teamId, item, input, scenario, futurePlan) {
+function currentPriorityItem(context, item, input, scenario, futurePlan) {
   const future = futureEvidence(futurePlan, scenario);
   const replacementPointsAbove = item.replacement?.status === "ready" ? item.replacement.pointsAbove : null;
   const preservesRosteredPlayer = item.kind === "ir-assisted-add" ? 1 : 0;
-  const depth = positionDepth(snapshot, teamId, item.add.position);
+  const depth = context.depthByPosition.get(item.add.position) ?? 0;
   return Object.freeze({
     id: input?.id || `current-${item.add.id}`,
     candidateType: "current-week",
@@ -297,24 +270,23 @@ function currentPriorityItem(snapshot, teamId, item, input, scenario, futurePlan
   });
 }
 
-function futureOnlyPriorityItems(snapshot, teamId, discovery, futurePlan, now) {
+function futureOnlyPriorityItems(discovery, futurePlan, context) {
   if (discovery.status !== "ready") return [];
-  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
   const scenarios = new Map((futurePlan.scenarios || []).map((scenario) => [scenario.id, scenario]));
   const byAdd = new Map();
 
   for (const input of discovery.inputs) {
     const scenario = scenarios.get(input.id);
     if (!scenario || scenario.horizonDelta == null || scenario.horizonDelta <= 0) continue;
-    const add = players.get(input.addPlayerId);
-    const drop = players.get(input.dropPlayerId);
+    const add = context.players.get(input.addPlayerId);
+    const drop = context.players.get(input.dropPlayerId);
     if (!add || !drop) continue;
-    const impact = currentWeekImpact(snapshot, teamId, add, drop, now);
+    const impact = currentWeekImpact(context, add, drop);
     if (impact.lineupGain == null || impact.lineupGain >= MIN_CURRENT_WEEK_ACTION_GAIN) continue;
     const future = futureEvidence(futurePlan, scenario);
-    const replacement = replacementBenchmark(snapshot, add);
+    const replacement = context.replacementBenchmark(add);
     const replacementPointsAbove = replacement.status === "ready" ? replacement.pointsAbove : null;
-    const depth = positionDepth(snapshot, teamId, add.position);
+    const depth = context.depthByPosition.get(add.position) ?? 0;
     const candidate = Object.freeze({
       id: input.id,
       candidateType: "future-only",
@@ -332,12 +304,7 @@ function futureOnlyPriorityItems(snapshot, teamId, discovery, futurePlan, now) {
         evaluatedFutureWeeks: future.totalWeeks,
         note: "Exact same-position roster depth is context only. No universal positional-need threshold is inferred."
       }),
-      preservation: Object.freeze({
-        status: "drop-required",
-        preservesRosteredPlayer: false,
-        droppedPlayerId: drop.id,
-        irPlayerId: null
-      }),
+      preservation: Object.freeze({ status: "drop-required", preservesRosteredPlayer: false, droppedPlayerId: drop.id, irPlayerId: null }),
       factors: Object.freeze({
         currentWeekGain: impact.lineupGain,
         futureHorizonGain: future.horizonGain,
@@ -356,7 +323,6 @@ function futureOnlyPriorityItems(snapshot, teamId, discovery, futurePlan, now) {
       || (candidate.future.horizonGain === currentBest.future.horizonGain && candidate.future.positiveWeekRate === currentBest.future.positiveWeekRate && candidate.currentWeek.lineupGain === currentBest.currentWeek.lineupGain && candidate.drop.id < currentBest.drop.id);
     if (shouldReplace) byAdd.set(add.id, candidate);
   }
-
   return [...byAdd.values()];
 }
 
@@ -388,26 +354,27 @@ export function buildWaiverPriorityBoard(snapshot, teamId, options = {}) {
     });
   }
 
+  const context = createBoardContext(snapshot, teamId, now);
   const currentAddIds = new Set(current.items.map((item) => item.add?.id).filter(Boolean));
-  const currentInputs = current.items
-    .map((item, index) => scenarioInput(item, `current-${index + 1}`))
-    .filter(Boolean);
-  const discovery = futureDiscoveryInputs(snapshot, teamId, options, currentAddIds, now);
+  const currentInputs = current.items.map((item, index) => scenarioInput(item, `current-${index + 1}`)).filter(Boolean);
+  const discovery = futureDiscoveryInputs(snapshot, options, currentAddIds, now, context);
   const allInputs = [...currentInputs, ...discovery.inputs];
   const futurePlan = buildScenarioPlan(snapshot, teamId, {
     weeks: Array.isArray(options.weeks) ? options.weeks : [],
     projectionSet: options.projectionSet || null,
     identityMap: options.identityMap || null,
     scenarios: allInputs,
+    waiverResult: current,
+    includeCurrentWeekScenarios: false,
     now
   });
   const scenarioById = new Map((futurePlan.scenarios || []).map((scenario) => [scenario.id, scenario]));
 
   const rawCurrent = current.items.map((item, index) => {
     const input = currentInputs[index];
-    return currentPriorityItem(snapshot, teamId, item, input, input ? scenarioById.get(input.id) : null, futurePlan);
+    return currentPriorityItem(context, item, input, input ? scenarioById.get(input.id) : null, futurePlan);
   });
-  const rawFutureOnly = futureOnlyPriorityItems(snapshot, teamId, discovery, futurePlan, now);
+  const rawFutureOnly = futureOnlyPriorityItems(discovery, futurePlan, context);
   const rawItems = [...rawCurrent, ...rawFutureOnly];
 
   const banded = [...assignWaiverPriorityBands(rawItems)]

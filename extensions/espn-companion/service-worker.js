@@ -20,6 +20,12 @@ async function fetchLeague(payload) {
   const params = new URLSearchParams();
   ALLOWED_VIEWS.forEach((view) => params.append("view", view));
   const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}/segments/0/leagues/${leagueId}?${params}`;
+
+  // Availability is independent of the league response. Start it at the same
+  // time so a refresh does not pay for the two authenticated ESPN requests in
+  // series. The league response still owns the scoring period used by the NFL
+  // scoreboard request below.
+  const availablePromise = fetchAvailablePlayers({ leagueId, seasonId }).catch(() => null);
   const response = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
   let body = null;
   try { body = await response.json(); } catch { /* handled below */ }
@@ -28,7 +34,7 @@ async function fetchLeague(payload) {
     throw new Error(message);
   }
   const [availablePlayers, nflScoreboard] = await Promise.all([
-    fetchAvailablePlayers({ leagueId, seasonId }).catch(() => null),
+    availablePromise,
     fetchNflScoreboard({ seasonId, week: body.scoringPeriodId }).catch(() => ({ events: [] }))
   ]);
   return {

@@ -113,7 +113,8 @@ function seasonIntelligencePanel(deps) {
     weeks: playoffWeeks,
     projectionSet: futureInputs.projectionSet,
     identityMap: futureInputs.identityMap,
-    scenarios: []
+    scenarios: [],
+    includeCurrentWeekScenarios: false
   });
   const intelligence = buildSeasonPlayoffIntelligence(state.snapshot, state.selectedTeamId, {
     playoffWeeks,

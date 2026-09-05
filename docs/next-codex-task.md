@@ -7,16 +7,16 @@ Copy the block below into a new Codex task.
 ```text
 Continue development of “The Chip Winner” in C:\Users\ryank\OneDrive\Documents\ChatGPT\The Chip Winner.
 
-Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, docs/ir-eligibility.md, docs/season-playoff-intelligence.md, docs/production-readiness.md, docs/field-validation.md, and config/field-validation.json. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
+Read AGENTS.md completely, then inspect git status, recent commits, package.json, docs/roadmap.md, docs/advanced-roadmap.md, docs/architecture.md, docs/ir-eligibility.md, docs/season-playoff-intelligence.md, docs/production-readiness.md, docs/field-validation.md, docs/release-notes-v0.9.76.md, and config/field-validation.json. Preserve user changes and never expose ESPN cookies, credentials, private snapshots, API keys, private mobile links, imported private files, or member data.
 
-Checkpoint: expected protected master after the v0.9.72 Roadmap + Field Validation release. Do not trust a SHA copied into this handoff; fetch origin/master and verify the actual tip before editing. The expected release baseline is 322 automated permanent tests plus 21 deployment-blocking model safety fixtures, and the GitHub Pages workflow must pass test, deploy, and production smoke verification.
+Checkpoint: expected protected master after the v0.9.76 Performance Pass. Do not trust a copied SHA; fetch origin/master and verify the actual tip before editing. The expected release baseline is 328 automated permanent tests plus 21 deployment-blocking model safety fixtures. The protected GitHub Pages workflow must pass test, deploy, and verify-production including npm run smoke:production.
 
 Core product boundary:
 - ESPN-only, read-only in-season fantasy football companion.
 - ESPN owns league state, roster rules, availability, locks, acquisition state, current week, injury designation, lineup slot, fantasy matchups, and explicit playoff weeks when supplied.
 - External rankings/projections remain overlays.
 - Preserve null as missing; never turn unknown values into zero.
-- Use provider IDs and explicit identity maps only; never join by display name.
+- Use provider-owned IDs and explicit identity maps only; never join projections by display name.
 - Keep all ESPN write actions outside the product boundary.
 
 Projection/identity foundation to preserve:
@@ -26,10 +26,10 @@ Projection/identity foundation to preserve:
 - Reviewed athlete bridges activate only while exact independent source evidence remains valid and unassigned.
 - Provider-ID rollover requires explicit supersession evidence; historical IDs remain mapped.
 - Display-name diagnostics are classification-only and can never create identity evidence.
-- The browser weekly updater uses ESPN's current week only after an explicit user approval click because the upstream file contains no NFL week field.
-- Later-week imports require a publication newer than the stored previous-week capture; publications older than eight days are blocked.
-- Weekly source requests are limited to approved public GitHub hosts and never include ESPN private data.
-- Projection and identity updates commit atomically and preserve prior weeks.
+- The browser weekly updater assigns the public source to ESPN's current week only after explicit user approval because the source contains no NFL week field.
+- Later-week imports require a publication newer than the stored prior-week capture; publications older than eight days are blocked.
+- Public source requests stay limited to approved GitHub hosts and never include ESPN private data.
+- Projection and identity updates commit atomically and retain prior weeks.
 - Verified 2026 Week 1 source coverage remains 648/682 mapped (95.01%), with 34 unresolved; never chase 100% by weakening identity rules.
 
 ESPN IR policy to preserve:
@@ -38,59 +38,73 @@ ESPN IR policy to preserve:
 - SUSPENSION and healthy/no-designation states are ineligible.
 - Bare PHYSICALLY_UNABLE_TO_PERFORM is unverified unless ESPN also supplies a qualifying OUT/IR fantasy designation.
 - Known-ineligible current IR occupants block supported acquisitions; unverified IR occupants withhold legality.
-- IR-assisted current recommendations model only eligible unlocked bench BE -> IR followed by an ESPN-available unlocked add with drop: null.
+- IR-assisted current recommendations model only eligible unlocked BE -> IR followed by an ESPN-available unlocked add with drop: null.
 - Revalidate both IR steps after refresh.
-- Multiweek IR-assisted scenarios retain the injured player in IR, require the matching current ESPN no-drop recommendation, and require complete future coverage for the entire simulated roster.
-- Future-only IR-assisted stash discovery is NOT part of completed Waiver Engine v2. It requires a separate policy review before expansion.
+- Multiweek IR-assisted scenarios retain the injured player in IR, require the matching current ESPN no-drop recommendation, and require complete future coverage for the full simulated roster.
+- Future-only IR-assisted stash discovery is separately gated and is not part of Waiver Engine v2.
 
-Waiver Engine v2 is complete in v0.9.69. Preserve all of these behaviors:
-- Current-week waiver actions retain the existing 0.5-point lineup-gain threshold.
-- Ordinary future add/drop scenarios may be useful below that threshold but must first pass current ESPN legality.
-- Future-only ordinary stash discovery requires complete selected-week coverage for the current roster and simulated roster, a known current add projection, current lineup gain below 0.5, and a positive complete horizon delta.
-- Every future-only add/drop pair is revalidated through the scenario planner for ESPN availability, locks, acquisition exhaustion, IR roster validity, roster size, and position limits.
-- Transparent Pareto bands compare current-week gain, future-horizon gain, positive-week rate, replacement value, and roster preservation without a hidden weighted score.
-- Missing evidence remains missing and cannot become zero or an advantage.
-- Candidate enumeration is exhaustive over eligible ESPN-available adds x unlocked bench drops and exposes consideredAdds, completeAdds, scenarioCount, and qualifiedAdds. Do not add a hidden candidate cap.
-- v0.9.69 directly tests a 24-add x 4-drop synthetic pool (96 scenarios), available-player permutation invariance, source immutability, availability removal, kickoff transitions, all-bench locks, invalid IR state, raw-PUP unverified IR state, and current-week behavior without future inputs.
-- Current ESPN transaction legality and future utility have separate lock semantics. Current legality honors current kickoff and explicit ESPN locks at the supplied evaluation time. Future-week lineup optimization must not reuse the current snapshot's kickoff as an invented future-week lock because authoritative future kickoff data is absent. Explicit ESPN locked:true flags remain enforced.
-- Unknown future transaction kinds fail closed.
-- Source ESPN snapshots are never mutated.
+Waiver Engine v2 is complete. Preserve:
+- current-week waiver action threshold of 0.5 projected lineup points;
+- future-only ordinary add/drop candidates only after current ESPN legality is proven;
+- complete selected-week projection coverage for baseline and simulated roster before future deltas are exposed;
+- transparent Pareto priority bands with no hidden weighted score;
+- missing evidence remains missing and cannot become zero or an advantage;
+- exhaustive eligible-add x unlocked-bench-drop enumeration with visible consideredAdds, completeAdds, scenarioCount, and qualifiedAdds;
+- no hidden candidate cap;
+- current transaction legality and future lineup utility use separate lock semantics;
+- unknown future transaction kinds fail closed;
+- source ESPN snapshots are never mutated.
 
-Season/Playoff Intelligence is complete for the reviewed deterministic scope in v0.9.70. Preserve these boundaries:
-- ESPN-reported playoff weeks are authoritative. A browser-local league-and-season playoff selection is a labeled fallback only when ESPN omits the field.
-- ESPN fantasy playoff opponents are schedule facts, not NFL defensive grades or win probabilities.
-- Bye coverage removes players only for explicit known bye weeks and computes maximum legal starter-slot fillability from the current non-IR roster.
-- Missing bye weeks remain unknown.
-- When FLEX/OP eligibility allows multiple equally valid maximum lineups, report the uncovered-slot count and possible affected slot types rather than inventing a unique missing slot.
-- Playoff weekly outlook uses only compatible explicitly mapped future weekly projections.
-- Playoff total, average, high/low week, stable starters, and starter turnover are withheld unless every configured playoff week has complete baseline-roster coverage.
-- FantasyPros `SOS SEASON` / `SOS PLAYOFFS` are optional values from the user's imported ROS CSV only. Do not scrape or silently refresh FantasyPros SOS.
-- The imported CSV does not prove the exact week range behind `SOS PLAYOFFS`; label it as source-defined FantasyPros playoff context and never claim it matches this ESPN league's configured playoff window.
-- Keep ESPN schedule facts, DynastyProcess weekly future points, and FantasyPros SOS stars separately inspectable. Never combine them into a hidden playoff score or championship probability.
+Season/Playoff Intelligence is complete for the reviewed deterministic scope. Preserve:
+- ESPN playoff weeks authoritative; browser-local league/season fallback only when ESPN omits them and always labeled as fallback;
+- ESPN fantasy playoff opponents are schedule facts, not NFL defensive grades or probabilities;
+- bye coverage uses explicit known byes and maximum legal starter-slot fillability from the current non-IR roster;
+- missing byes remain unknown and FLEX/OP ambiguity is exposed rather than guessed;
+- playoff aggregates require complete mapped projection coverage across every configured week;
+- FantasyPros SOS fields remain optional source-defined overlays and are not relabeled as the exact ESPN playoff window;
+- no hidden playoff score or qualification/championship probability.
 
-Production-readiness state:
-- v0.9.71 completed the automatable engineering closeout: lifecycle/recovery contracts, browser/mobile smoke, WCAG 2.2 A/AA audit, 200%-equivalent/390px reflow audit, Chrome companion v0.2.2 threat audit, performance/security gates, and production smoke.
-- v0.9.72 defines the finite Release 1.0 field gate in config/field-validation.json and docs/field-validation.md.
-- Field statuses are pending, passed, blocked, or failed. Passed/failed require privacy-safe evidence. Blocked does not count as complete.
-- `npm run field:status` reports current field state. `npm run field:status -- --require-complete` is the strict Release 1.0 gate.
+v0.9.76 performance invariants:
+- lineup optimization uses memoized dynamic programming while preserving deterministic tie behavior, locks, slot eligibility, and missing-data semantics;
+- waiver simulations reuse one player index and lineup optimizer context;
+- waiver analysis caching must remain sensitive to roster entries, availability, projections, position, injuries, acquisition facts, roster/waiver rules, explicit locks, and kickoff-derived lock transitions;
+- cache display limits are applied only after the exhaustive analysis so a small UI limit never truncates the legal candidate pool;
+- same-object source changes must invalidate cached waiver results;
+- priority/scenario evaluation reuses the current waiver result instead of recalculating it;
+- future-week player/index/optimizer contexts are reused across scenarios;
+- playoff-only future baseline evaluation can skip current-waiver derivation when current scenarios are not requested;
+- immutable future projection sets may reuse normalized/indexed structures;
+- ESPN normalization indexes NFL scoreboard context once per capture;
+- Chrome companion v0.2.3 may issue independent ESPN read requests concurrently, but MINIMUM_COMPANION_VERSION remains 0.2.2 so the upgrade is optional;
+- `npm run audit:performance` includes runtime budgets and an exhaustive 24-add x 4-drop (96-scenario) workload. Never make the budget pass by silently truncating candidates.
+
+Production-readiness / field state:
+- v0.9.71 completed automatable production-readiness engineering.
+- v0.9.72 created the finite Release 1.0 field registry.
+- v0.9.73-v0.9.75 repaired live ESPN roster/acquisition parity and real 200% reflow issues discovered during field work.
+- v0.9.76 performs the comprehensive runtime-efficiency pass triggered by real Waivers/Season Plan responsiveness observations.
+- Field statuses are pending, passed, blocked, or failed. Passed/failed require privacy-safe evidence; blocked remains incomplete.
+- FV-A11Y-01 and FV-ESPN-03 are passed from real field evidence. Other items remain pending unless config/field-validation.json says otherwise.
+- FV-WAIVER-01 remains pending until the deployed v0.9.76 build is retested in the real authenticated browser. CI timings are supporting deterministic evidence only.
+- FV-A11Y-03 remains pending until the deployed build is retested at actual Chrome 200% zoom.
 - Never put ESPN cookies, credentials, raw private snapshots, member identifiers, or private sync tokens/URLs into field evidence.
-- A newly observed deterministic ESPN shape or reproduced field defect should become a sanitized permanent regression fixture where practical.
+- New deterministic provider shapes or reproduced defects should become sanitized permanent regression fixtures where practical.
 
-Current priorities after v0.9.72:
-1. Complete the Release 1.0 field-validation registry honestly as real devices, assistive technology, ESPN league states, failure conditions, and projection coverage become available.
-2. Accumulate real DynastyProcess multiweek coverage through the explicit browser workflow as new weekly publications appear.
-3. Use field observations to validate the already-complete Waiver Engine v2 and Season/Playoff Intelligence. Reopen deterministic implementation only for a reproduced defect.
-4. Observe real waiver candidate volume/timing; if exhaustive enumeration becomes materially slow, define a visible documented shortlist policy before changing behavior and never silently truncate candidates.
-5. Keep the browser UI maintainable without creating a second application state owner.
+Current priorities after v0.9.76:
+1. Complete Release 1.0 field validation honestly.
+2. Retest real Waivers and Season Plan responsiveness on deployed v0.9.76 and record visible enumeration counts/timing where available.
+3. Retest actual Chrome 200% zoom on the deployed compact-desktop reflow.
+4. Accumulate real DynastyProcess multiweek coverage as new weekly publications appear.
+5. Validate completed waiver and season intelligence against real ESPN transitions without reopening policy boundaries unnecessarily.
 6. Label the product 1.0 only after every field item passes with evidence and the exact final 1.0 PR/master production gates are green.
 
-Still gated:
+Still separately gated:
 - trade analysis;
 - external notifications;
-- future-only IR-assisted stash discovery (separate policy review);
+- future-only IR-assisted stash discovery;
 - playoff qualification/championship probability modeling;
 - server-side model integration;
 - ESPN write actions.
 
-Before completion run npm test, npm run eval:model, npm run check, npm run field:status, and git diff --check. Update documented test counts only after the complete suite is verified. For feature releases, work on a task branch, open a PR to protected master, require the exact final PR head to pass the full protected test job, merge only while up to date, then verify master test, GitHub Pages deploy, and npm run smoke:production. Never bypass the ruleset or push feature work directly to master.
+Before completion run npm test, npm run eval:model, npm run check, npm run field:status, and git diff --check. Update documented test counts only after the complete suite is verified. For feature releases, work on a task branch, open a PR to protected master, require the exact final PR head to pass the full protected test job, merge only while up to date, then verify master test, deploy, and npm run smoke:production. Never bypass the ruleset or push feature work directly to master.
 ```

@@ -108,7 +108,7 @@ export function configuredIrSlotCount(snapshot) {
     .reduce((total, entry) => total + entry.count, 0);
 }
 
-export function evaluateTeamIrState(snapshot, teamId) {
+export function evaluateTeamIrState(snapshot, teamId, playerIndex = null) {
   const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
   if (!roster) {
     return freezeResult({
@@ -126,7 +126,9 @@ export function evaluateTeamIrState(snapshot, teamId) {
     });
   }
 
-  const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
+  const players = playerIndex instanceof Map
+    ? playerIndex
+    : new Map((snapshot.players || []).map((player) => [player.id, player]));
   const configuredSlots = configuredIrSlotCount(snapshot);
   const currentIrEntries = (roster.entries || []).filter((entry) => entry.lineupSlot === "IR");
   const evaluatedCurrent = currentIrEntries.map((entry) => {

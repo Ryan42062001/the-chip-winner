@@ -2,7 +2,7 @@ import { buildRosterAwareWaiverIdeas, evaluateAcquisitionCapacity } from "./waiv
 import { evaluateTeamIrState } from "./ir-eligibility.js";
 import { validateRecommendation } from "./recommendation-contract.js";
 import { createRecommendation } from "./recommendation-factory.js";
-import { optimizeLineup } from "./lineup-optimizer.js";
+import { createLineupOptimizer } from "./lineup-optimizer.js";
 import { indexFutureProjections } from "../providers/projections/future-projection-provider.js";
 
 // Future projection sets do not provide authoritative future-week kickoff times.
@@ -12,8 +12,13 @@ import { indexFutureProjections } from "../providers/projections/future-projecti
 const FUTURE_LINEUP_EVALUATION_TIME = 0;
 
 function projectionCoverage(playerIds, week, espnToProvider, projectionIndex) {
-  const unmappedPlayerIds = playerIds.filter((id) => !espnToProvider.has(id));
-  const missingProjectionPlayerIds = playerIds.filter((id) => espnToProvider.has(id) && !projectionIndex.has(`${espnToProvider.get(id)}:${week}`));
+  const unmappedPlayerIds = [];
+  const missingProjectionPlayerIds = [];
+  for (const id of playerIds) {
+    const providerId = espnToProvider.get(id);
+    if (!providerId) unmappedPlayerIds.push(id);
+    else if (!projectionIndex.has(`${providerId}:${week}`)) missingProjectionPlayerIds.push(id);
+  }
   return Object.freeze({
     mappedProjectionCount: playerIds.length - unmappedPlayerIds.length - missingProjectionPlayerIds.length,
     completeCoverage: !unmappedPlayerIds.length && !missingProjectionPlayerIds.length,
@@ -34,32 +39,32 @@ function isLocked(entry, player, now) {
   return Number.isFinite(kickoff) && kickoff <= now;
 }
 
-function rosterRuleViolation(snapshot, entries) {
-  const rules = snapshot.league?.rosterRules;
+function rosterRuleViolation(rules, entries, players) {
   if (!rules) return null;
-  const activeEntries = entries.filter((entry) => entry.lineupSlot !== "IR");
-  if (rules.size != null && activeEntries.length > rules.size) {
-    return `ESPN roster size limit is ${rules.size}, but the simulated active roster would contain ${activeEntries.length} players outside IR.`;
-  }
-  const players = new Map(snapshot.players.map((player) => [player.id, player]));
+  let activeCount = 0;
   const counts = new Map();
   for (const entry of entries) {
+    if (entry.lineupSlot !== "IR") activeCount += 1;
     const position = players.get(entry.playerId)?.position;
     if (position) counts.set(position, (counts.get(position) || 0) + 1);
+  }
+  if (rules.size != null && activeCount > rules.size) {
+    return `ESPN roster size limit is ${rules.size}, but the simulated active roster would contain ${activeCount} players outside IR.`;
   }
   const exceeded = (rules.positionLimits || []).find((rule) => rule.limit >= 0 && (counts.get(rule.position) || 0) > rule.limit);
   return exceeded ? `ESPN ${exceeded.position} roster limit is ${exceeded.limit}.` : null;
 }
 
 function currentIrScenario(waiverResult, scenario) {
-  return (waiverResult.items || []).find((item) =>
+  return (waiverResult?.items || []).find((item) =>
     item.kind === "ir-assisted-add"
     && item.add?.id === scenario.addPlayerId
     && item.irMove?.player?.id === scenario.irPlayerId
   );
 }
 
-function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiverResult, now) {
+function buildScenarioEntries(snapshot, scenario, roster, context, now) {
+  const { players, availablePlayerIds, waiverResult, irState, capacity } = context;
   const kind = scenarioKind(scenario);
   if (!kind) return { rejection: `Scenario kind ${String(scenario?.kind || "unknown")} is unsupported.` };
   const addPlayer = players.get(scenario.addPlayerId);
@@ -71,21 +76,13 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
     if (!irEntry || !irPlayer) return { rejection: "IR-assisted scenario references a player outside the current roster." };
     if (irEntry.lineupSlot !== "BE") return { rejection: "Only a bench player can be moved into IR by the multiweek scenario planner." };
     if (isLocked(irEntry, irPlayer, now)) return { rejection: "The proposed IR-move player is locked." };
-    if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
-    if (!currentIrScenario(waiverResult, scenario)) {
-      return { rejection: "The IR-assisted path is not a currently validated ESPN waiver recommendation." };
-    }
-    const simulated = {
-      ...snapshot,
-      rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : {
-        ...item,
-        entries: [
-          ...item.entries.map((entry) => entry.playerId === scenario.irPlayerId ? { ...entry, lineupSlot: "IR" } : entry),
-          { playerId: scenario.addPlayerId, lineupSlot: "BE" }
-        ]
-      })
-    };
-    return { kind, simulated, addPlayer, dropPlayer: null, irPlayer };
+    if (!availablePlayerIds?.has(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
+    if (!currentIrScenario(waiverResult, scenario)) return { rejection: "The IR-assisted path is not a currently validated ESPN waiver recommendation." };
+    const entries = [
+      ...roster.entries.map((entry) => entry.playerId === scenario.irPlayerId ? { ...entry, lineupSlot: "IR" } : entry),
+      { playerId: scenario.addPlayerId, lineupSlot: "BE" }
+    ];
+    return { kind, entries, addPlayer, dropPlayer: null, irPlayer };
   }
 
   const dropEntry = roster.entries.find((entry) => entry.playerId === scenario.dropPlayerId);
@@ -94,35 +91,21 @@ function buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiv
   if (dropEntry.lineupSlot !== "BE") return { rejection: "Only bench players can be dropped by the scenario planner." };
   if (isLocked(dropEntry, dropPlayer, now)) return { rejection: "The proposed drop player is locked." };
   if (isLocked({}, addPlayer, now)) return { rejection: "The proposed add player is locked." };
-  if (!snapshot.availablePlayers?.includes(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
-  if (roster.entries.some((entry) => entry.playerId === addPlayer.id)) return { rejection: "The proposed add is already on the selected ESPN roster." };
-
-  const irState = evaluateTeamIrState(snapshot, teamId);
+  if (!availablePlayerIds?.has(addPlayer.id)) return { rejection: "The proposed add is not explicitly available in ESPN data." };
+  if (context.rosterPlayerIds.has(addPlayer.id)) return { rejection: "The proposed add is already on the selected ESPN roster." };
   if (irState.status === "invalid" || irState.status === "unverified") return { rejection: irState.reason };
-  const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
   if (capacity.status === "exhausted") return { rejection: capacity.reason };
 
-  const simulated = {
-    ...snapshot,
-    rosters: snapshot.rosters.map((item) => item.teamId !== teamId ? item : {
-      ...item,
-      entries: item.entries.map((entry) => entry.playerId === scenario.dropPlayerId ? { ...entry, playerId: scenario.addPlayerId } : entry)
-    })
-  };
-  const simulatedRoster = simulated.rosters.find((item) => item.teamId === teamId);
-  const rosterViolation = rosterRuleViolation(simulated, simulatedRoster.entries);
+  const entries = roster.entries.map((entry) => entry.playerId === scenario.dropPlayerId
+    ? { ...entry, playerId: scenario.addPlayerId }
+    : entry);
+  const rosterViolation = rosterRuleViolation(snapshot.league?.rosterRules, entries, players);
   if (rosterViolation) return { rejection: rosterViolation };
-  return { kind, simulated, addPlayer, dropPlayer, irPlayer: null };
+  return { kind, entries, addPlayer, dropPlayer, irPlayer: null };
 }
 
-export function buildScenarioPlan(snapshot, teamId, options = {}) {
-  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
-  const weeks = Array.isArray(options.weeks) ? options.weeks.filter(Number.isInteger) : [];
-  if (!roster) return Object.freeze({ status: "missing-roster", weeks: [], limitations: ["Roster data is unavailable."] });
-
-  const now = options.now ?? Date.now();
-  const waiverResult = buildRosterAwareWaiverIdeas(snapshot, teamId, now);
-  const currentWeekScenarios = (waiverResult.items || []).map((item, index) => {
+function recommendationScenarios(snapshot, teamId, waiverResult) {
+  return (waiverResult?.items || []).map((item, index) => {
     const recommendation = createRecommendation({
       id: `waiver-${teamId}-${index}`,
       kind: "scenario",
@@ -136,6 +119,52 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     const validation = validateRecommendation(recommendation);
     return validation.valid ? Object.freeze(recommendation) : null;
   }).filter(Boolean);
+}
+
+function buildWeeklyContext(snapshot, roster, week, espnToProvider, projectionIndex) {
+  const weeklyPlayers = new Map();
+  for (const player of snapshot.players) {
+    weeklyPlayers.set(player.id, {
+      ...player,
+      projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null
+    });
+  }
+  const optimizer = createLineupOptimizer(weeklyPlayers, FUTURE_LINEUP_EVALUATION_TIME);
+  const baselineResult = optimizer.optimize(roster.entries);
+  const rosterPlayerIds = roster.entries.map((entry) => entry.playerId);
+  const coverage = projectionCoverage(rosterPlayerIds, week, espnToProvider, projectionIndex);
+  const starters = coverage.completeCoverage
+    ? (baselineResult.assignments || []).map((item) => Object.freeze({ playerId: item.player.id, slot: item.slot, points: item.player.projection ?? null }))
+    : [];
+  const baseline = Object.freeze({
+    week,
+    status: baselineResult.status,
+    projectedTotal: baselineResult.projectedTotal ?? null,
+    starters: Object.freeze(starters),
+    mappedProjectionCount: coverage.mappedProjectionCount,
+    rosterPlayerCount: rosterPlayerIds.length,
+    completeCoverage: coverage.completeCoverage,
+    unmappedPlayerIds: coverage.unmappedPlayerIds,
+    missingProjectionPlayerIds: coverage.missingProjectionPlayerIds,
+    reason: baselineResult.reason
+  });
+  return Object.freeze({ week, optimizer, baseline });
+}
+
+export function buildScenarioPlan(snapshot, teamId, options = {}) {
+  const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
+  const weeks = Array.isArray(options.weeks) ? options.weeks.filter(Number.isInteger) : [];
+  if (!roster) return Object.freeze({ status: "missing-roster", weeks: [], limitations: ["Roster data is unavailable."] });
+
+  const now = options.now ?? Date.now();
+  const requestedScenarios = Array.isArray(options.scenarios) ? options.scenarios : [];
+  const includeCurrentWeekScenarios = options.includeCurrentWeekScenarios !== false;
+  const needsIrValidation = requestedScenarios.some((scenario) => scenarioKind(scenario) === "ir-assisted-add");
+  const waiverResult = options.waiverResult
+    || (includeCurrentWeekScenarios || needsIrValidation ? buildRosterAwareWaiverIdeas(snapshot, teamId, now) : null);
+  const currentWeekScenarios = includeCurrentWeekScenarios
+    ? recommendationScenarios(snapshot, teamId, waiverResult)
+    : [];
 
   const weeklyBaseline = [];
   const scenarioResults = [];
@@ -146,44 +175,32 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     const projectionIndex = indexFutureProjections(options.projectionSet);
     const espnToProvider = new Map([...options.identityMap].map(([providerId, espnId]) => [espnId, providerId]));
     const players = new Map(snapshot.players.map((player) => [player.id, player]));
+    const availablePlayerIds = Array.isArray(snapshot.availablePlayers) ? new Set(snapshot.availablePlayers) : null;
+    const context = Object.freeze({
+      players,
+      availablePlayerIds,
+      rosterPlayerIds: new Set(roster.entries.map((entry) => entry.playerId)),
+      waiverResult,
+      irState: evaluateTeamIrState(snapshot, teamId, players),
+      capacity: evaluateAcquisitionCapacity(snapshot, teamId)
+    });
 
+    const weekContexts = new Map();
     for (const week of weeks) {
-      const weeklySnapshot = {
-        ...snapshot,
-        currentWeek: week,
-        players: snapshot.players.map((player) => ({
-          ...player,
-          projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null
-        }))
-      };
-      const result = optimizeLineup(weeklySnapshot, teamId, FUTURE_LINEUP_EVALUATION_TIME);
-      const rosterPlayerIds = roster.entries.map((entry) => entry.playerId);
-      const weekCoverage = projectionCoverage(rosterPlayerIds, week, espnToProvider, projectionIndex);
-      const starters = weekCoverage.completeCoverage
-        ? (result.assignments || []).map((item) => Object.freeze({ playerId: item.player.id, slot: item.slot, points: item.player.projection ?? null }))
-        : [];
-      weeklyBaseline.push(Object.freeze({
-        week,
-        status: result.status,
-        projectedTotal: result.projectedTotal ?? null,
-        starters: Object.freeze(starters),
-        mappedProjectionCount: weekCoverage.mappedProjectionCount,
-        rosterPlayerCount: rosterPlayerIds.length,
-        completeCoverage: weekCoverage.completeCoverage,
-        unmappedPlayerIds: weekCoverage.unmappedPlayerIds,
-        missingProjectionPlayerIds: weekCoverage.missingProjectionPlayerIds,
-        reason: result.reason
-      }));
+      const weekContext = buildWeeklyContext(snapshot, roster, week, espnToProvider, projectionIndex);
+      weekContexts.set(week, weekContext);
+      weeklyBaseline.push(weekContext.baseline);
     }
+    const baselineByWeek = new Map(weeklyBaseline.map((item) => [item.week, item]));
 
     const candidatePlayerIds = [...new Set(currentWeekScenarios.slice(0, 3).map((item) => item.payload?.add?.id).filter(Boolean))];
     for (const playerId of candidatePlayerIds) {
       const unmapped = [];
       const missingWeeks = [];
+      const providerId = espnToProvider.get(playerId);
       for (const week of weeks) {
-        const coverage = projectionCoverage([playerId], week, espnToProvider, projectionIndex);
-        if (coverage.unmappedPlayerIds.length) unmapped.push(week);
-        else if (coverage.missingProjectionPlayerIds.length) missingWeeks.push(week);
+        if (!providerId) unmapped.push(week);
+        else if (!projectionIndex.has(`${providerId}:${week}`)) missingWeeks.push(week);
       }
       candidateCoverage.push(Object.freeze({
         playerId,
@@ -192,23 +209,19 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
       }));
     }
 
-    for (const scenario of options.scenarios || []) {
-      const built = buildScenarioSnapshot(snapshot, teamId, scenario, roster, players, waiverResult, now);
+    for (const scenario of requestedScenarios) {
+      const built = buildScenarioEntries(snapshot, scenario, roster, context, now);
       if (built.rejection) {
         rejectedScenarios.push(Object.freeze({ id: scenario.id || "unknown", reason: built.rejection }));
         continue;
       }
 
+      const scenarioRosterIds = built.entries.map((entry) => entry.playerId);
       const weekly = weeks.map((week) => {
-        const weeklyPlayers = snapshot.players.map((player) => ({
-          ...player,
-          projection: projectionIndex.get(`${espnToProvider.get(player.id)}:${week}`) ?? null
-        }));
-        const scenarioSnapshot = { ...built.simulated, currentWeek: week, players: weeklyPlayers };
-        const result = optimizeLineup(scenarioSnapshot, teamId, FUTURE_LINEUP_EVALUATION_TIME);
-        const baselineEntry = weeklyBaseline.find((item) => item.week === week);
+        const weekContext = weekContexts.get(week);
+        const result = weekContext.optimizer.optimize(built.entries);
+        const baselineEntry = baselineByWeek.get(week);
         const baseline = baselineEntry?.projectedTotal;
-        const scenarioRosterIds = scenarioSnapshot.rosters.find((item) => item.teamId === teamId).entries.map((entry) => entry.playerId);
         const weekCoverage = projectionCoverage(scenarioRosterIds, week, espnToProvider, projectionIndex);
         const deltaReady = result.projectedTotal != null && baseline != null && baselineEntry.completeCoverage && weekCoverage.completeCoverage;
         const deltaUnavailableReason = deltaReady
@@ -344,7 +357,8 @@ export function buildProjectionCoverageMatrix(snapshot, teamId, { weeks = [], pr
   if (!roster) return Object.freeze({ status: "missing-roster", rows: Object.freeze([]), weeks: Object.freeze([]) });
   const rosterIds = roster.entries.map((item) => item.playerId);
   const rosterSet = new Set(rosterIds);
-  const candidateSet = new Set(candidatePlayerIds.filter((id) => snapshot.availablePlayers?.includes(id)));
+  const availableIds = new Set(snapshot.availablePlayers || []);
+  const candidateSet = new Set(candidatePlayerIds.filter((id) => availableIds.has(id)));
   const ids = [...new Set([...rosterIds, ...candidateSet])];
   const players = new Map(snapshot.players.map((item) => [item.id, item]));
   const espnToProvider = identityMap instanceof Map ? new Map([...identityMap].map(([providerId, espnId]) => [espnId, providerId])) : new Map();
