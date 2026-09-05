@@ -177,3 +177,133 @@
     margin-right: clamp(16px, 3vw, 28px);
   }
 }
+
+/* True-phone hardening, including dynamic browser chrome and safe areas. */
+@media (max-width: 720px) {
+  .sidebar {
+    height: 100vh;
+    height: 100dvh;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-menu {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 9px;
+    background: #eef1ed;
+    color: var(--green);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .nav-link,
+  .button,
+  .alert-dismiss,
+  .dialog-close {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .nav-link {
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  #app-content {
+    padding-bottom: max(48px, calc(32px + env(safe-area-inset-bottom)));
+  }
+
+  .panel,
+  .league-grid > *,
+  .panel-head,
+  .settings-list,
+  .settings-list > div,
+  .saved-connection,
+  .sync-actions,
+  .league-matchups,
+  .league-matchup,
+  .league-matchup > span {
+    min-width: 0;
+  }
+
+  .panel-head,
+  .settings-list > div,
+  .league-matchup > span {
+    flex-wrap: wrap;
+  }
+
+  .settings-list dt,
+  .settings-list dd,
+  .league-matchup > span > *,
+  .data-note,
+  .connection-health strong,
+  .connection-health span,
+  .coverage-details span {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .standings-card table {
+    table-layout: fixed;
+  }
+
+  .standings-card th,
+  .standings-card td {
+    overflow-wrap: anywhere;
+  }
+
+  .sync-actions .button {
+    flex: 1 1 140px;
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .player-dialog,
+  .onboarding-dialog,
+  .manual-projection-dialog {
+    max-height: calc(100dvh - 24px);
+    overflow: auto;
+  }
+
+  body[data-app-source="sync"] .topbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 12px;
+  }
+
+  body[data-app-source="sync"] .header-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  body[data-app-source="sync"] .team-picker {
+    display: grid;
+    width: 100%;
+    padding: 7px 10px;
+    border-radius: 9px;
+    background: #eef1ed;
+  }
+
+  body[data-app-source="sync"] .team-picker select {
+    width: 100%;
+    max-width: none;
+    min-height: 36px;
+  }
+
+  body[data-app-source="sync"] #connect-button,
+  body[data-app-source="sync"] #weekly-projection-update-button,
+  body[data-app-source="sync"] #import-button,
+  body[data-app-source="sync"] #rankings-button,
+  body[data-app-source="sync"] #reset-button {
+    display: none !important;
+  }
+}
