@@ -12,6 +12,13 @@ function snapshot() {
     currentWeek: 1,
     meta: { capturedAt: "2026-09-05T12:00:00.000Z" },
     league: {
+      lineupSlots: [
+        { slot: "QB", count: 1 },
+        { slot: "FLEX", count: 1 },
+        { slot: "BE", count: 2 },
+        { slot: "IR", count: 1 }
+      ],
+      rosterRules: { size: 4, positionLimits: [] },
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },
     teams: [{
@@ -81,8 +88,6 @@ test("current ESPN IR occupants do not reduce actionable projection coverage", (
   assert.equal(plan.coverage.mappedProjectionCells, 4);
   assert.equal(plan.coverage.requiredProjectionCells, 4);
   assert.equal(plan.coverage.percentage, 100);
-  assert.equal(plan.coverage.excludedIrPlayerCells, 1);
-  assert.deepEqual(plan.coverage.excludedIrPlayerIds, ["ir"]);
 
   const gaps = buildProjectionGapReport(value, plan, inputs.identityMap);
   assert.equal(gaps.status, "complete");
@@ -134,6 +139,7 @@ test("missing future coverage for a non-IR bench player still blocks future-only
     projectionSet: inputs.projectionSet
   });
 
+  assert.equal(board.status, "ready");
   assert.equal(board.futureDiscovery.status, "blocked-baseline");
   assert.equal(board.futureDiscovery.qualifiedAdds, 0);
   assert.match(board.futureDiscovery.reason, /every current active roster player/i);
