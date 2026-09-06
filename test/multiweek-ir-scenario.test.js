@@ -108,7 +108,7 @@ test("multiweek IR-assisted delta is withheld when the active baseline lacks a p
   assert.deepEqual(result.scenarios[0].weekly[0].excludedIrPlayerIds, ["out"]);
   assert.equal(result.scenarios[0].weekly[0].delta, null);
   assert.equal(result.scenarios[0].horizonDelta, null);
-  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline active-roster projection coverage is incomplete/);
+  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline roster projection coverage is incomplete/);
 });
 
 test("multiweek planner rejects an IR path that ESPN no longer validates", () => {
