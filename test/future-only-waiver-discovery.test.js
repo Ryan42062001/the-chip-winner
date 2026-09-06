@@ -104,7 +104,7 @@ test("withholds future-only discovery when the add lacks a selected-week project
   assert.equal(board.items.length, 0);
 });
 
-test("blocks future-only discovery when baseline roster projection coverage is incomplete", () => {
+test("blocks future-only discovery when active baseline roster projection coverage is incomplete", () => {
   const value = snapshot();
   const board = boardFor(value, futureInputs(value, { omit: "bench-rb" }));
 
@@ -112,7 +112,7 @@ test("blocks future-only discovery when baseline roster projection coverage is i
   assert.equal(board.futureDiscovery.status, "blocked-baseline");
   assert.equal(board.futureDiscovery.qualifiedAdds, 0);
   assert.equal(board.items.length, 0);
-  assert.match(board.futureDiscovery.reason, /every current roster player/i);
+  assert.match(board.futureDiscovery.reason, /every current active roster player/i);
 });
 
 test("excludes a locked future-only add before scenario generation", () => {
