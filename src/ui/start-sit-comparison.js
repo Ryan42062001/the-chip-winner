@@ -1,6 +1,13 @@
 import { escapeHtml as escape } from "./manual-projection-dialog.js";
 import { evaluateFutureProjectionCompatibility, selectMappedFutureProjection } from "../providers/projections/future-projection-provider.js";
-const confidence = (result) => result.confidence ? `<p class="comparison-confidence"><strong>${result.confidence.label} data confidence · ${result.confidence.score}% complete</strong>${result.confidence.limitations.length ? `<span>${escape(result.confidence.limitations.join(" "))}</span>` : ""}<small>This measures source completeness and freshness, not the chance a player succeeds.</small></p>` : "";
+const confidence = (result) => {
+if (!result.confidence) return "";
+const completeness = result.confidence.completenessScore ?? result.confidence.score;
+const freshness = result.confidence.freshness ? `Snapshot freshness: ${result.confidence.freshness}.` : "";
+const nonFreshnessLimitations = result.confidence.limitations.filter((item) => !/^Snapshot (?:is |freshness )/i.test(item));
+const detail = [freshness, ...nonFreshnessLimitations].filter(Boolean).join(" ");
+return `<p class="comparison-confidence"><strong>${result.confidence.label} data confidence · ${completeness}% complete</strong>${detail ? `<span>${escape(detail)}</span>` : ""}<small>This measures source completeness and freshness, not the chance a player succeeds.</small></p>`;
+};
 function external(result, set, identityMap, snapshot) {
 if (!set) return '<p class="external-comparison"><strong>External source</strong><span>Not imported</span></p>';
 const compatibility = evaluateFutureProjectionCompatibility(set, snapshot); if (!compatibility.usable) return `<p class="external-comparison"><strong>${escape(set.provider)}</strong><span>Blocked: ${escape(compatibility.errors.join(" "))}</span></p>`;
