@@ -30,7 +30,7 @@ function snapshot() {
       { id: "rb", name: "Starter Back", position: "RB", projection: 10, injury: { status: "ACTIVE" } },
       { id: "bench-qb", name: "Bench Quarterback", position: "QB", projection: 8, injury: { status: "ACTIVE" } },
       { id: "bench-rb", name: "Bench Back", position: "RB", projection: 6, injury: { status: "ACTIVE" } },
-      { id: "ir", name: "IR Running Back", position: "RB", projection: 0, injury: { status: "IR" } },
+      { id: "ir", name: "IR Running Back", position: "RB", projection: 0, injury: { status: "INJURED_RESERVE" } },
       { id: "stash-wr", name: "Future Stash Receiver", position: "WR", projection: 9, injury: { status: "ACTIVE" } }
     ],
     rosters: [{ teamId: "mine", entries: [
