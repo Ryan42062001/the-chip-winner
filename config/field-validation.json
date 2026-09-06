@@ -50,9 +50,16 @@
       "id": "FV-ESPN-01",
       "area": "espn-live-state",
       "title": "Authenticated standard ESPN league",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Validate connect, refresh, roster, matchup, lineup, waiver, change timeline, and Season Plan against a real standard-format league."
+      "status": "passed",
+      "evidence": [
+        "2026-09-05: User connected and repeatedly refreshed the deployed production app against a real authenticated standard-format ESPN league through the read-only Chrome companion. The selected team identity remained stable, and the Overview matched the ESPN roster after v0.9.82 added the previously omitted IR section: 9 starters, 6 bench players, and 1 ESPN IR occupant were represented without inventing a projection for the IR player.",
+        "2026-09-05: Real ESPN matchup validation matched the deployed app for the current Week 1 opponent, records, actual scores, and projected team totals. The app did not depend on unsupported win-probability data.",
+        "2026-09-06: Lineup Lab was revalidated on deployed v0.9.87 against the authenticated league. ESPN and the explicitly mapped FantasyPros weekly source remained visibly separate when they disagreed, the optimizer withheld a sub-threshold lineup change, and a fully populated two-player comparison displayed 100% field completeness while snapshot freshness was labeled separately instead of being misreported as incomplete data.",
+        "2026-09-06: Waivers was revalidated after v0.9.86 made projection coverage IR-aware. The authenticated roster reached 15/15 actionable-player projection coverage with the current IR occupant excluded from the active denominator rather than assigned a fabricated zero. Future-only stash discovery ran instead of remaining coverage-blocked and reported 0 positive qualifying scenarios; current-week analysis likewise reported no legal move clearing the configured action threshold. ESPN availability, roster and position limits, acquisition constraints, waiver priority, and claim-outcome limitations remained explicit.",
+        "2026-09-05: What Changed was exercised across repeated authenticated refreshes. When the latest valid ESPN snapshot was materially identical to the prior snapshot, the timeline reported no meaningful change and did not manufacture duplicate events.",
+        "2026-09-06: Season Plan was exercised against the same authenticated league with real partial inputs. ESPN fantasy schedule data remained authoritative where present; the browser-local playoff-week fallback was clearly labeled; missing future playoff opponents, bye metadata, and incomplete future projection windows were withheld rather than inferred. After the IR-aware coverage fix the current actionable roster showed complete 15/15 coverage while the IR occupant remained preserved as roster state."
+      ],
+      "notes": "Passed on the deployed authenticated standard ESPN workflow. Connect/refresh, selected-team identity, full roster including IR, matchup, Lineup Lab, Waivers, What Changed, and Season Plan were all exercised against real league state. Remaining custom-slot, IR-edge, lock-transition, playoff-depth, recovery, and waiver-scale checks stay tracked by their dedicated field-validation items."
     },
     {
       "id": "FV-ESPN-02",
