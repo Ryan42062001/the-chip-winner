@@ -32,6 +32,8 @@ if (/document\.cookie|chrome\.cookies/.test(combined)) findings.push("Cookie acc
 if (/\b(?:localStorage|sessionStorage|indexedDB)\b/.test(combined)) findings.push("The companion must not persist ESPN responses or credentials.");
 if (/\b(?:console\.(?:log|info|debug|warn|error)|eval\s*\(|new\s+Function\b)/.test(combined)) findings.push("Logging or dynamic code execution is not allowed in companion runtime code.");
 if (!worker.includes('const ALLOWED_VIEWS = Object.freeze(["mTeam", "mRoster", "mMatchup", "mSettings"])')) findings.push("ESPN league views are no longer the reviewed fixed allowlist.");
+if (!worker.includes("fetchLeagueScoringSettings({ leagueId, seasonId })")) findings.push("Dedicated ESPN mSettings scoring read is missing.");
+if (!worker.includes("Array.isArray(scoringSettings.scoringItems)")) findings.push("Dedicated ESPN scoring read must require explicit scoring items.");
 if (!worker.includes("sender?.id !== chrome.runtime.id")) findings.push("Service worker must reject runtime messages not sent by this extension.");
 if (!bridge.includes('new Set(["CHIP_WINNER_PING", "CHIP_WINNER_FETCH_LEAGUE"])')) findings.push("Page-to-extension operations are no longer the reviewed fixed allowlist.");
 if (!bridge.includes("event.source !== window || event.origin !== window.location.origin")) findings.push("Page bridge must verify both message source and same-origin sender.");
@@ -45,5 +47,5 @@ if (findings.length) {
   console.error(findings.join("\n"));
   process.exitCode = 1;
 } else {
-  console.log("Chrome companion threat audit passed: fixed origins/hosts, read-only methods, same-extension messaging, no cookie API, no persistence/logging, and no dynamic code.");
+  console.log("Chrome companion threat audit passed: fixed origins/hosts, read-only methods, dedicated explicit scoring settings read, same-extension messaging, no cookie API, no persistence/logging, and no dynamic code.");
 }

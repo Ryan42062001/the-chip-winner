@@ -1,4 +1,4 @@
-export const MINIMUM_COMPANION_VERSION = "0.2.2";
+export const MINIMUM_COMPANION_VERSION = "0.2.4";
 export const REFRESH_COOLDOWN_MS = 15_000;
 export const REFRESH_HISTORY_KEY = "chip-winner:espn-refresh-history:v1";
 function versionParts(value) {
