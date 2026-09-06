@@ -1,7 +1,9 @@
 import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragment } from "../sync/crypto.js";
 import { publishSyncState, readSyncState } from "../sync/sync-session.js";
 import { createDesktopAutoPublisher, createMobileSyncUpdater } from "../sync/auto-sync.js";
+import { selectTeamContext } from "../domain/selectors.js";
 import { createSectionRenderer as createPrioritySectionRenderer } from "./section-renderer-priority.js";
+import { decorateOverviewReserve } from "./overview-reserve.js";
 
 const SYNC_SECTIONS = new Set(["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]);
 
@@ -171,6 +173,7 @@ bindMobileCheckButton(syncPanel);
 function decorateRenderedSource() {
 const { state } = deps.getContext();
 if (!globalThis.document?.body) return;
+decorateOverviewReserve({ content: deps.content, state, selectTeamContext, escapeHtml: base.escapeHtml });
 if (state?.source !== "sync") {
   delete document.body.dataset.appSource;
   restoreNormalNavigation();
