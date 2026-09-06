@@ -28,5 +28,5 @@ test("generic PPR projections remain compatible with ESPN Head to Head PPR witho
 test("PPR projections remain blocked for a different known scoring family", () => {
   const result = evaluateFutureProjectionCompatibility(SET, { league: { season: 2026, scoringType: "Half PPR" } }, { now: Date.parse("2026-09-08T15:00:00Z") });
   assert.equal(result.usable, false);
-  assert.match(result.errors.join(" "), /does not match ESPN league scoring/i);
+  assert.match(result.errors.join(" "), /does not match ESPN reception scoring/i);
 });
