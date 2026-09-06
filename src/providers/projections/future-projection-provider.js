@@ -69,16 +69,32 @@ export function futureProjectionScoringFamily(value) {
   return null;
 }
 
+function espnReceptionScoringFamily(snapshot) {
+  const reported = snapshot?.league?.receptionScoring;
+  if (reported && typeof reported === "object") {
+    if (["ppr", "half-ppr", "standard", "custom"].includes(reported.family)) return reported.family;
+    return null;
+  }
+  return futureProjectionScoringFamily(snapshot?.league?.scoringType);
+}
+
 export function evaluateFutureProjectionCompatibility(set, snapshot, { now = Date.now(), staleAfterMs = 7 * 24 * 60 * 60 * 1000 } = {}) {
   const normalized = normalizeFutureProjectionSet(set);
   if (!normalized.valid) return Object.freeze({ usable: false, status: "invalid", ageMs: null, errors: Object.freeze(normalized.errors), warnings: Object.freeze([]) });
   const value = normalized.value; const errors = []; const warnings = [];
   const leagueSeason = Number(snapshot?.league?.season);
   if (Number.isInteger(leagueSeason) && value.season !== leagueSeason) errors.push(`Projection season ${value.season} does not match ESPN league season ${leagueSeason}.`);
-  const leagueScoring = String(snapshot?.league?.scoringType || "").trim();
-  if (leagueScoring && leagueScoring.toLowerCase() !== "unknown") {
-    const sourceFamily = futureProjectionScoringFamily(value.scoringFormat); const leagueFamily = futureProjectionScoringFamily(leagueScoring);
-    if (sourceFamily && leagueFamily ? sourceFamily !== leagueFamily : value.scoringFormat.trim().toLowerCase() !== leagueScoring.toLowerCase()) errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN league scoring ${leagueScoring}.`);
+  const sourceFamily = futureProjectionScoringFamily(value.scoringFormat);
+  const leagueFamily = espnReceptionScoringFamily(snapshot);
+  if (!sourceFamily) {
+    errors.push(`Projection scoring format ${value.scoringFormat} is not a supported PPR, half-PPR, or standard family.`);
+  } else if (leagueFamily === "custom") {
+    const points = snapshot?.league?.receptionScoring?.pointsPerReception;
+    errors.push(`ESPN reports custom reception scoring${Number.isFinite(points) ? ` (${points} points per reception)` : ""}; ${value.scoringFormat} projections are not a safe scoring match.`);
+  } else if (!leagueFamily) {
+    errors.push("ESPN reception scoring format is unavailable. Refresh ESPN before using external weekly projections so scoring compatibility can be verified.");
+  } else if (sourceFamily !== leagueFamily) {
+    errors.push(`Projection scoring format ${value.scoringFormat} does not match ESPN reception scoring ${leagueFamily}.`);
   }
   const captureTimes = value.projections.map((item) => Date.parse(item.capturedAt));
   const capturedTime = Date.parse(value.capturedAt); const ageMs = Number.isFinite(capturedTime) ? now - capturedTime : null;
