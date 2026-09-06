@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseTarget": "1.0",
-  "baselineVersion": "0.9.80",
+  "baselineVersion": "0.9.81",
   "items": [
     {
       "id": "FV-A11Y-01",
@@ -121,9 +121,10 @@
         "2026-09-05: v0.9.79 candidate carries selectedTeamId inside the AES-256-GCM encrypted payload, validates that it belongs to the synced snapshot, and re-selects it immediately after mobile load. Regression coverage protects selected-team round-trip, invalid-team fail-closed behavior, legacy payload readability, and the mobile renderer's team-selection dispatch. Real deployed retest is still required before this item can pass.",
         "2026-09-05: Pre-field v0.9.80 audit found that synced navigation could replace the private #mobile-sync fragment with a normal section hash, making later reloads lose read credentials, and that What Changed could never receive the prior ESPN capture. v0.9.80 preserves the encrypted fragment during all synced routes, carries only a validated same-league prior snapshot, fails malformed links closed, and makes synced League Setup explicitly read-only.",
         "2026-09-05: v0.9.80 adds a deployment-blocking encrypted sync browser audit at 320x568, 390x844, and 844x390 covering exact selected-team restoration, all seven sections, navigation/reload credential preservation, prior-state What Changed rendering, read-only League Setup, player detail, touch/reflow checks, and revoked/malformed links. Real deployed refresh/read/revoke field retest is still required before this item can pass.",
-        "2026-09-05: User completed the full deployed v0.9.80 encrypted mobile-sync lifecycle on a physical phone after production commit 25bd9baced2c4701478b3bb35a5d06741a063d7f passed test, deploy, and verify-production. The private link opened the same desktop-selected team, all seven sections worked, player detail remained usable, navigation plus reload preserved the private synced view, What Changed retained prior-state history, desktop refresh propagated to the phone, revoke succeeded, and reloading the revoked link showed the expected expired/revoked state without falling back to sample or local league data."
+        "2026-09-05: User completed the full deployed v0.9.80 encrypted mobile-sync lifecycle on a physical phone after production commit 25bd9baced2c4701478b3bb35a5d06741a063d7f passed test, deploy, and verify-production. The private link opened the same desktop-selected team, all seven sections worked, player detail remained usable, navigation plus reload preserved the private synced view, What Changed retained prior-state history, desktop refresh propagated to the phone, revoke succeeded, and reloading the revoked link showed the expected expired/revoked state without falling back to sample or local league data.",
+        "2026-09-05: User validated deployed v0.9.81 automatic mobile refresh on real desktop and phone after production commit 0bfbe81145c96e512c12695a90b6090eb92cb439 passed all CI, deployment, and production-smoke gates. A desktop Refresh ESPN automatically republished the existing encrypted mobile channel without using the manual publish fallback, and the phone-side update workflow worked as intended, including the read-only Check for updates confirmation."
       ],
-      "notes": "Passed on the deployed v0.9.80 production build with a real physical-phone create/read/navigation/reload/refresh/revoke/revoked-link lifecycle. Automated encrypted mobile audits remain deployment-blocking regression coverage."
+      "notes": "Passed on the deployed v0.9.80 lifecycle and reconfirmed on deployed v0.9.81 automatic publish/read behavior using a real desktop and physical phone. Automated encrypted mobile audits remain deployment-blocking regression coverage."
     },
     {
       "id": "FV-WAIVER-01",
