@@ -57,6 +57,7 @@ function renderButton(snapshot = realEspnSnapshot()) {
   else if (availability?.status === "updating") button.textContent = `Updating Week ${week}…`;
   else if (availability?.status === "available") button.textContent = `Update Week ${week} projections`;
   else if (availability?.status === "refresh-available") button.textContent = `Refresh Week ${week} projections`;
+  else if (availability?.status === "identity-refresh-available") button.textContent = `Refresh Week ${week} player IDs`;
   else if (availability?.status === "current") button.textContent = `Week ${week} projections current`;
   else if (availability?.status === "waiting-source-refresh") button.textContent = `Week ${week} source pending`;
   else if (availability?.status === "stale-source") button.textContent = "Projection source stale";
@@ -100,6 +101,7 @@ async function updateCurrentWeek() {
     return;
   }
 
+  const identityRefreshOnly = checked.status === "identity-refresh-available";
   availability = { ...checked, status: "updating" };
   renderButton(snapshot);
   try {
@@ -114,10 +116,13 @@ async function updateCurrentWeek() {
     });
     const importedWeeks = [...new Set(imported.projectionSet.projections.map((record) => record.week))].sort((a, b) => a - b);
     planningPreferences.save(importedWeeks);
-    weeklyProvider.saveReceipt({ season, week, bundle: staged.bundle, diagnostics: staged.diagnostics });
-    availability = { status: "current", canUpdate: false, publishedAt: staged.bundle.publishedAt, reason: `Week ${week} projections were updated successfully.` };
+    weeklyProvider.saveReceipt({ season, week, bundle: staged.bundle, diagnostics: staged.diagnostics, playerIdsPublishedAt: staged.playerIdsPublishedAt });
+    availability = { status: "current", canUpdate: false, publishedAt: staged.bundle.publishedAt, playerIdsPublishedAt: staged.playerIdsPublishedAt, reason: `Week ${week} projections and player identities are current.` };
     renderButton(snapshot);
-    showNotice(`Week ${week} projections updated: ${staged.bundle.mappedCount}/${staged.bundle.sourceRecordCount} source rows mapped. ${staged.bundle.unresolvedProviderIds.length} unsupported identity rows stayed excluded. Reloading the dashboard…`);
+    const summary = identityRefreshOnly
+      ? `Week ${week} player identities refreshed: ${staged.bundle.mappedCount}/${staged.bundle.sourceRecordCount} source rows now have stable ESPN mappings.`
+      : `Week ${week} projections updated: ${staged.bundle.mappedCount}/${staged.bundle.sourceRecordCount} source rows mapped.`;
+    showNotice(`${summary} ${staged.bundle.unresolvedProviderIds.length} unsupported identity rows stayed excluded. Reloading the dashboard…`);
     setTimeout(() => location.reload(), 700);
   } catch (error) {
     availability = { status: "error", canUpdate: false, reason: error.message };
