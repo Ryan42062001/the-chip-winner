@@ -75,7 +75,7 @@ test("Season Plan withholds an IR-assisted delta when only the added player's fu
   assert.deepEqual(result.scenarios[0].weekly[0].missingProjectionPlayerIds, ["add"]);
   assert.equal(result.scenarios[0].weekly[0].delta, null);
   assert.equal(result.scenarios[0].horizonDelta, null);
-  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Scenario active-roster projection coverage is incomplete/);
+  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Scenario roster projection coverage is incomplete/);
 });
 
 test("Season Plan rejects an IR-assisted scenario after the eligible bench player becomes locked", () => {
