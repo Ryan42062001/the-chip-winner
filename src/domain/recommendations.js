@@ -96,8 +96,11 @@ if (!Number.isFinite(Date.parse(player?.gameTime))) limitations.push(`${player?.
 const captured = Date.parse(snapshot?.meta?.capturedAt); const ageMs = Number.isFinite(captured) ? Math.max(0, now - captured) : null;
 const freshness = ageMs == null ? "unknown" : ageMs <= 15 * 60_000 ? "fresh" : ageMs <= 6 * 60 * 60_000 ? "aging" : "stale";
 if (freshness !== "fresh") limitations.push(freshness === "unknown" ? "Snapshot freshness unavailable." : `Snapshot is ${freshness}.`);
-const score = Math.round((checks.filter(Boolean).length + (freshness === "fresh" ? 1 : freshness === "aging" ? 0.5 : 0)) / 9 * 100);
-return Object.freeze({ label: score >= 80 ? "High" : score >= 55 ? "Medium" : "Low", score, freshness, limitations: Object.freeze(limitations) });
+const completeChecks = checks.filter(Boolean).length;
+const completenessScore = checks.length ? Math.round(completeChecks / checks.length * 100) : 0;
+const freshnessCredit = freshness === "fresh" ? 1 : freshness === "aging" ? 0.5 : 0;
+const score = Math.round((completeChecks + freshnessCredit) / (checks.length + 1) * 100);
+return Object.freeze({ label: score >= 80 ? "High" : score >= 55 ? "Medium" : "Low", score, completenessScore, freshness, limitations: Object.freeze(limitations) });
 }
 export function compareRosterPlayers(snapshot, teamId, firstPlayerId, secondPlayerId, now = Date.now()) {
 const roster = snapshot.rosters.find((item) => item.teamId === teamId)?.entries || [];
