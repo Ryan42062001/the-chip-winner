@@ -13,6 +13,7 @@ export const ESPN_PRO_TEAMS = Object.freeze({
   33: "BAL", 34: "HOU"
 });
 const SUPPORTED_INJURY_STATUSES = Object.freeze(new Set(["ACTIVE", "QUESTIONABLE", "DOUBTFUL", "OUT", "INJURED_RESERVE", "PHYSICALLY_UNABLE_TO_PERFORM", "SUSPENSION"]));
+const ESPN_RECEPTIONS_STAT_ID = 53;
 const NO_SCHEDULE = Object.freeze({ opponent: null, gameTime: null, isBye: false });
 const BYE_SCHEDULE = Object.freeze({ opponent: null, gameTime: null, isBye: true });
 
@@ -36,6 +37,19 @@ export function normalizeEspnInjury(injuryStatus, detail = null) {
   return SUPPORTED_INJURY_STATUSES.has(status)
     ? { status, detail: detail || null }
     : { status: "UNKNOWN", detail: detail || null, sourceStatus: String(injuryStatus) };
+}
+
+export function normalizeEspnReceptionScoring(scoringSettings = {}) {
+  if (!Array.isArray(scoringSettings?.scoringItems)) return null;
+  const receptionItems = scoringSettings.scoringItems.filter((item) => Number(item?.statId) === ESPN_RECEPTIONS_STAT_ID);
+  if (!receptionItems.length) return Object.freeze({ family: "standard", pointsPerReception: 0 });
+  const values = receptionItems.map((item) => Number(item?.points));
+  if (values.some((value) => !Number.isFinite(value))) return null;
+  const uniqueValues = [...new Set(values)];
+  if (uniqueValues.length !== 1) return Object.freeze({ family: "custom", pointsPerReception: null });
+  const pointsPerReception = uniqueValues[0];
+  const family = pointsPerReception === 1 ? "ppr" : pointsPerReception === 0.5 ? "half-ppr" : pointsPerReception === 0 ? "standard" : "custom";
+  return Object.freeze({ family, pointsPerReception });
 }
 
 function normalizePlayoffWeeks(value) {
@@ -87,6 +101,7 @@ export function normalizeEspnCapture(capture) {
   };
   const playoffWeeks = normalizePlayoffWeeks(capture.league.playoffWeeks);
   if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
+  if (capture.league.receptionScoring && typeof capture.league.receptionScoring === "object") snapshot.league.receptionScoring = { ...capture.league.receptionScoring };
   if (Array.isArray(capture.availablePlayerIds)) snapshot.availablePlayers = capture.availablePlayerIds.map(String);
   const errors = validateLeagueSnapshot(snapshot);
   if (errors.length) throw new Error(`Normalized ESPN capture is invalid: ${errors.join(" ")}`);
@@ -153,6 +168,8 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
     rosters,
     matchups
   };
+  const receptionScoring = normalizeEspnReceptionScoring(response.settings.scoringSettings);
+  if (receptionScoring) snapshot.league.receptionScoring = receptionScoring;
   const playoffWeeks = normalizePlayoffWeeks(response.settings.scheduleSettings?.playoffWeeks);
   if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
   if (Array.isArray(supplemental.availablePlayers)) snapshot.availablePlayers = availablePlayers.map((player) => String(player.id));
