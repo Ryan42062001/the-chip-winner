@@ -2,8 +2,11 @@ import { createMobileSyncFragment, createSyncCredentials, parseMobileSyncFragmen
 import { publishSyncState, readSyncState } from "../sync/sync-session.js";
 import { createDesktopAutoPublisher, createMobileSyncUpdater } from "../sync/auto-sync.js";
 import { selectTeamContext } from "../domain/selectors.js";
+import { buildRosterAwareWaiverIdeas } from "../domain/waiver-engine.js";
+import { buildWaiverPositionBoard } from "../domain/waiver-position-board.js";
 import { createSectionRenderer as createPrioritySectionRenderer } from "./section-renderer-priority.js";
 import { decorateOverviewReserve } from "./overview-reserve.js";
+import { renderWaiverPositionBoard } from "./waiver-position-board.js";
 
 const SYNC_SECTIONS = new Set(["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]);
 
@@ -137,6 +140,19 @@ const publishButton = panel.querySelector("#refresh-sync-button");
 if (publishButton) publishButton.textContent = "Publish mobile data now";
 }
 
+function decorateWaiverPositionBoard(state) {
+if (state?.section !== "waivers") return;
+const firstDivider = deps.content.querySelector(".section-divider");
+if (!firstDivider) return;
+const board = buildWaiverPositionBoard(state.snapshot, state.selectedTeamId);
+const strictResult = buildRosterAwareWaiverIdeas(state.snapshot, state.selectedTeamId);
+const strictAddIds = new Set((strictResult.items || []).map((item) => item.add?.id).filter(Boolean));
+const shell = document.createElement("div");
+shell.className = "waiver-position-board-shell";
+shell.innerHTML = renderWaiverPositionBoard(board, strictAddIds);
+firstDivider.before(shell);
+}
+
 function bindMobileCheckButton(panel) {
 const button = panel?.querySelector("#check-mobile-sync-button");
 const status = panel?.querySelector("#mobile-sync-check-status");
@@ -174,6 +190,7 @@ function decorateRenderedSource() {
 const { state } = deps.getContext();
 if (!globalThis.document?.body) return;
 decorateOverviewReserve({ content: deps.content, state, selectTeamContext, escapeHtml: base.escapeHtml });
+decorateWaiverPositionBoard(state);
 if (state?.source !== "sync") {
   delete document.body.dataset.appSource;
   restoreNormalNavigation();
