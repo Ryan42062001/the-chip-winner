@@ -84,13 +84,17 @@ test("start sit comparison distinguishes preferences, near ties, and missing pro
   assert.equal(compareRosterPlayers(sample, "t1", "p1", "not-rostered").status, "invalid");
 });
 
-test("start sit data confidence measures completeness and freshness rather than outcome certainty", () => {
+test("start sit data confidence keeps completeness separate from freshness", () => {
   const players = [{ name: "One", projection: 18, injury: { status: "ACTIVE" }, opponent: "DAL", gameTime: "2026-09-01T17:00:00Z" }, { name: "Two", projection: 17, injury: { status: "ACTIVE" }, opponent: "PHI", gameTime: "2026-09-01T20:00:00Z" }];
   const fresh = assessStartSitDataConfidence({ meta: { capturedAt: "2026-09-01T12:00:00Z" } }, players, Date.parse("2026-09-01T12:10:00Z"));
-  assert.equal(fresh.label, "High"); assert.equal(fresh.score, 100); assert.deepEqual(fresh.limitations, []);
+  assert.equal(fresh.label, "High"); assert.equal(fresh.score, 100); assert.equal(fresh.completenessScore, 100); assert.equal(fresh.freshness, "fresh"); assert.deepEqual(fresh.limitations, []);
+
+  const aging = assessStartSitDataConfidence({ meta: { capturedAt: "2026-09-01T12:00:00Z" } }, players, Date.parse("2026-09-01T13:00:00Z"));
+  assert.equal(aging.label, "High"); assert.equal(aging.score, 94); assert.equal(aging.completenessScore, 100); assert.equal(aging.freshness, "aging"); assert.match(aging.limitations.join(" "), /Snapshot is aging/);
+
   players[1].opponent = null; players[1].gameTime = null;
   const partial = assessStartSitDataConfidence({ meta: { capturedAt: "2026-08-31T12:00:00Z" } }, players, Date.parse("2026-09-01T12:00:00Z"));
-  assert.equal(partial.label, "Medium"); assert.equal(partial.score, 67); assert.match(partial.limitations.join(" "), /opponent unavailable.*kickoff unavailable.*stale/);
+  assert.equal(partial.label, "Medium"); assert.equal(partial.score, 67); assert.equal(partial.completenessScore, 75); assert.equal(partial.freshness, "stale"); assert.match(partial.limitations.join(" "), /opponent unavailable.*kickoff unavailable.*stale/);
 });
 
 test("alerts prioritize an injured starter near an explicit kickoff", () => {
