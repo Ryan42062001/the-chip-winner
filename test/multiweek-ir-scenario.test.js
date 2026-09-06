@@ -81,15 +81,16 @@ test("multiweek planner retains the injured player in IR while adding the no-dro
   assert.equal(result.scenarios[0].addPlayerId, "add");
   assert.equal(result.scenarios[0].dropPlayerId, null);
   assert.equal(result.scenarios[0].irPlayerId, "out");
-  assert.equal(result.scenarios[0].weekly[0].rosterPlayerCount, 6);
-  assert.equal(result.scenarios[0].weekly[0].mappedProjectionCount, 6);
+  assert.equal(result.scenarios[0].weekly[0].rosterPlayerCount, 5);
+  assert.equal(result.scenarios[0].weekly[0].mappedProjectionCount, 5);
   assert.equal(result.scenarios[0].weekly[0].completeCoverage, true);
+  assert.deepEqual(result.scenarios[0].weekly[0].excludedIrPlayerIds, ["out"]);
   assert.equal(result.scenarios[0].weekly[0].delta, 5);
   assert.equal(result.scenarios[0].horizonDelta, 5);
   assert.deepEqual(value, before);
 });
 
-test("multiweek IR-assisted delta is withheld when the retained roster lacks a player-week projection", () => {
+test("multiweek IR-assisted delta is withheld when the active baseline lacks a player-week projection", () => {
   const value = snapshot();
   const { identityMap, projectionSet } = futureInputs(value, { omit: ["out"] });
   const result = buildScenarioPlan(value, "mine", {
@@ -102,11 +103,12 @@ test("multiweek IR-assisted delta is withheld when the retained roster lacks a p
 
   assert.equal(result.weeklyBaseline[0].completeCoverage, false);
   assert.deepEqual(result.weeklyBaseline[0].missingProjectionPlayerIds, ["out"]);
-  assert.equal(result.scenarios[0].weekly[0].completeCoverage, false);
-  assert.deepEqual(result.scenarios[0].weekly[0].missingProjectionPlayerIds, ["out"]);
+  assert.equal(result.scenarios[0].weekly[0].completeCoverage, true);
+  assert.deepEqual(result.scenarios[0].weekly[0].missingProjectionPlayerIds, []);
+  assert.deepEqual(result.scenarios[0].weekly[0].excludedIrPlayerIds, ["out"]);
   assert.equal(result.scenarios[0].weekly[0].delta, null);
   assert.equal(result.scenarios[0].horizonDelta, null);
-  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline roster projection coverage is incomplete/);
+  assert.match(result.scenarios[0].weekly[0].deltaUnavailableReason, /Baseline active-roster projection coverage is incomplete/);
 });
 
 test("multiweek planner rejects an IR path that ESPN no longer validates", () => {
