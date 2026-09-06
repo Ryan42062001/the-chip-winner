@@ -237,9 +237,9 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
         const deltaUnavailableReason = deltaReady
           ? null
           : !baselineEntry?.completeCoverage
-            ? "Baseline active-roster projection coverage is incomplete."
+            ? "Baseline roster projection coverage is incomplete."
             : !weekCoverage.completeCoverage
-              ? "Scenario active-roster projection coverage is incomplete."
+              ? "Scenario roster projection coverage is incomplete."
               : "A complete legal lineup total is unavailable.";
         return Object.freeze({
           week,
@@ -264,7 +264,7 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
         dropPlayerId: built.kind === "add-drop" ? scenario.dropPlayerId : null,
         irPlayerId: built.kind === "ir-assisted-add" ? scenario.irPlayerId : null,
         horizonDelta: completeHorizon ? +weekly.reduce((sum, item) => sum + item.delta, 0).toFixed(1) : null,
-        horizonUnavailableReason: completeHorizon ? null : "At least one selected week lacks complete baseline or scenario active-roster coverage.",
+        horizonUnavailableReason: completeHorizon ? null : "At least one selected week lacks complete baseline or scenario coverage.",
         weekly: Object.freeze(weekly)
       }));
     }
@@ -275,8 +275,6 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
   const mappedProjectionCells = weeklyBaseline.reduce((total, item) => total + item.mappedProjectionCount, 0);
   const unmappedPlayerCells = weeklyBaseline.reduce((total, item) => total + item.unmappedPlayerIds.length, 0);
   const missingProjectionCells = weeklyBaseline.reduce((total, item) => total + item.missingProjectionPlayerIds.length, 0);
-  const excludedIrPlayerCells = weeklyBaseline.reduce((total, item) => total + (item.excludedIrPlayerIds?.length || 0), 0);
-  const excludedIrPlayerIds = [...new Set(weeklyBaseline.flatMap((item) => item.excludedIrPlayerIds || []))].sort();
   const readyWeeks = weeklyBaseline.filter((item) => item.completeCoverage).map((item) => item.week);
   const blockedWeeks = weeklyBaseline.filter((item) => !item.completeCoverage).map((item) => item.week);
   const readiness = !weeklyBaseline.length ? "unavailable" : blockedWeeks.length === 0 ? "complete" : readyWeeks.length ? "mixed" : "blocked";
@@ -293,8 +291,6 @@ export function buildScenarioPlan(snapshot, teamId, options = {}) {
     requiredProjectionCells,
     unmappedPlayerCells,
     missingProjectionCells,
-    excludedIrPlayerCells,
-    excludedIrPlayerIds: Object.freeze(excludedIrPlayerIds),
     percentage: requiredProjectionCells ? Math.round((mappedProjectionCells / requiredProjectionCells) * 100) : 0
   });
   const source = options.projectionSet ? Object.freeze({
