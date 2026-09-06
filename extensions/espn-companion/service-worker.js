@@ -21,11 +21,11 @@ async function fetchLeague(payload) {
   ALLOWED_VIEWS.forEach((view) => params.append("view", view));
   const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}/segments/0/leagues/${leagueId}?${params}`;
 
-  // Availability is independent of the league response. Start it at the same
-  // time so a refresh does not pay for the two authenticated ESPN requests in
-  // series. The league response still owns the scoring period used by the NFL
-  // scoreboard request below.
+  // Availability and the dedicated settings read are independent of the main
+  // league response. Start both immediately so the authenticated refresh stays
+  // fast while still requiring the full mSettings scoring contract.
   const availablePromise = fetchAvailablePlayers({ leagueId, seasonId }).catch(() => null);
+  const scoringSettingsPromise = fetchLeagueScoringSettings({ leagueId, seasonId });
   const response = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
   let body = null;
   try { body = await response.json(); } catch { /* handled below */ }
@@ -33,10 +33,15 @@ async function fetchLeague(payload) {
     const message = body?.messages?.[0] || `ESPN request failed (${response.status}).`;
     throw new Error(message);
   }
-  const [availablePlayers, nflScoreboard] = await Promise.all([
+  const [availablePlayers, nflScoreboard, scoringSettings] = await Promise.all([
     availablePromise,
-    fetchNflScoreboard({ seasonId, week: body.scoringPeriodId }).catch(() => ({ events: [] }))
+    fetchNflScoreboard({ seasonId, week: body.scoringPeriodId }).catch(() => ({ events: [] })),
+    scoringSettingsPromise
   ]);
+  body.settings = {
+    ...(body.settings || {}),
+    scoringSettings
+  };
   return {
     league: body,
     availablePlayers,
@@ -47,6 +52,22 @@ async function fetchLeague(payload) {
       views: [...ALLOWED_VIEWS]
     }
   };
+}
+
+async function fetchLeagueScoringSettings({ leagueId, seasonId }) {
+  const url = `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}/segments/0/leagues/${leagueId}?view=mSettings`;
+  const response = await fetch(url, { credentials: "include", headers: { Accept: "application/json" } });
+  let body = null;
+  try { body = await response.json(); } catch { /* handled below */ }
+  if (!response.ok) {
+    const message = body?.messages?.[0] || `ESPN settings request failed (${response.status}).`;
+    throw new Error(message);
+  }
+  const scoringSettings = body?.settings?.scoringSettings;
+  if (!scoringSettings || !Array.isArray(scoringSettings.scoringItems)) {
+    throw new Error("ESPN settings response is missing scoring items.");
+  }
+  return scoringSettings;
 }
 
 async function fetchAvailablePlayers({ leagueId, seasonId }) {
