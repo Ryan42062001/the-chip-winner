@@ -189,15 +189,15 @@ function futureDiscoveryInputs(snapshot, options, currentAddIds, now, context) {
 
   const projectionIndex = indexFutureProjections(options.projectionSet);
   const espnToProvider = new Map([...options.identityMap].map(([providerId, espnId]) => [espnId, providerId]));
-  const rosterPlayerIds = context.roster.entries.map((entry) => entry.playerId);
-  if (!rosterPlayerIds.every((playerId) => completeProjectionForPlayer(playerId, weeks, espnToProvider, projectionIndex))) {
+  const activeRosterPlayerIds = context.roster.entries.filter((entry) => entry.lineupSlot !== "IR").map((entry) => entry.playerId);
+  if (!activeRosterPlayerIds.every((playerId) => completeProjectionForPlayer(playerId, weeks, espnToProvider, projectionIndex))) {
     return Object.freeze({
       status: "blocked-baseline",
       inputs: Object.freeze([]),
       consideredAdds: 0,
       completeAdds: 0,
       scenarioCount: 0,
-      reason: "Future-only waiver discovery is blocked until every current roster player has complete projection coverage for every selected week."
+      reason: "Future-only waiver discovery is blocked until every current active roster player has complete projection coverage for every selected week. Current ESPN IR occupants are excluded until ESPN returns them to an active slot."
     });
   }
 
@@ -402,7 +402,7 @@ export function buildWaiverPriorityBoard(snapshot, teamId, options = {}) {
     futureDiscovery: Object.freeze({ ...discovery, qualifiedAdds: futureOnlyCount }),
     limitations: Object.freeze([
       "Priority bands use Pareto dominance, not a hidden weighted score: a move only outranks another when it is no worse on every fully comparable known factor and better on at least one.",
-      "Future-only add/drop discovery requires complete selected-week projection coverage for the entire current roster and the add/drop scenario before any future gain is admitted; missing weeks never become zero.",
+      "Future-only add/drop discovery requires complete selected-week projection coverage for the current non-IR roster and the add/drop scenario before any future gain is admitted; missing active-player weeks never become zero. Players already occupying ESPN IR are excluded until ESPN returns them to an active slot.",
       "A future-only candidate must remain below the 0.5-point current-week action threshold and produce a positive complete selected-week horizon delta. Current ESPN availability, locks, acquisition capacity, IR roster validity, roster size, and position limits are revalidated by the scenario planner.",
       "Future-only discovery in v0.9.68 is limited to ordinary add/drop stashes. IR-assisted no-drop candidates continue to require the existing current-week ESPN-validated IR path and are not broadened by this release.",
       "Replacement value remains the current-week add projection versus the highest projected other ESPN-available player at the same position; unavailable benchmarks stay missing.",
