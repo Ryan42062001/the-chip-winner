@@ -2,7 +2,7 @@
 
 This unpacked Chrome extension lets the public The Chip Winner site read a private ESPN league through the ESPN session already active in Chrome.
 
-Current reviewed companion version: **0.2.2**.
+Current reviewed companion version: **0.2.4**.
 
 ## Security boundary
 
@@ -14,6 +14,7 @@ Current reviewed companion version: **0.2.2**.
 - The service worker accepts only the fixed ping/fetch operations and constructs the ESPN URL itself.
 - League and season IDs must contain only digits.
 - The reviewed ESPN league views are fixed in the service worker.
+- Companion 0.2.4 performs a dedicated authenticated `mSettings` read during refresh so the website receives ESPN's explicit scoring items instead of inferring a reception-scoring family from the matchup type.
 - The companion does not persist ESPN responses, log them, execute dynamic code, or perform ESPN write operations.
 
 `scripts/audit-extension.js` makes these assumptions release-blocking. If the permissions, origins, hosts, message surface, or runtime capabilities change, that audit should fail until the new boundary is deliberately reviewed.
@@ -24,7 +25,7 @@ Current reviewed companion version: **0.2.2**.
 2. Enable **Developer mode**.
 3. Choose **Load unpacked**.
 4. Select the `extensions/espn-companion` folder.
-5. Confirm Chrome shows version **0.2.2** or newer.
+5. Confirm Chrome shows version **0.2.4** or newer.
 6. Sign in to ESPN in the same Chrome profile.
 7. Reload The Chip Winner website and choose **Connect ESPN**.
 
