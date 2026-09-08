@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Roadmap
 
 Last reconciled: 2026-09-08
-Manager task: TCW-001
+Manager task: TCW-001 — COMPLETE
 
 ## Current milestone
 
@@ -29,6 +29,31 @@ Pending field checks from `config/field-validation.json`:
 - Preserve explicit provider IDs, source provenance, scoring compatibility, and complete-coverage gates.
 - Use real authenticated ESPN states to validate already-complete waiver and season behavior.
 - Convert reproducible defects into sanitized regression coverage where practical.
+
+## Active wave — TCW-PW-001
+
+Status: ACTIVE when this closeout state is merged.
+
+Two independent evidence assignments are authorized in parallel:
+
+- `TCW-002` — Independent Release 1.0 baseline audit — Auditor / QA.
+- `TCW-003` — ESPN field-validation feasibility research — R&D.
+
+Dependency classification: INDEPENDENT. Neither assignment changes production behavior or requires the other's result to begin.
+
+Builder remains IDLE unless field/audit evidence reproduces a deterministic defect or Manager approves a new implementation requirement.
+
+Strategy remains IDLE unless the active milestone exposes uncertainty about what the recommendation engine should do; current blockers are evidence/validation gaps, not unresolved strategic policy.
+
+## Immediate dependency order
+
+1. TCW-001 — bootstrap canonical `.ai` workflow — COMPLETE.
+2. TCW-PW-001 — run TCW-002 Auditor baseline audit and TCW-003 R&D field-feasibility research in parallel.
+3. Manager evaluates both handoffs and reconciles any discrepancies.
+4. Route concrete field-validation opportunities and any reproduced defects without reopening closed scope by default.
+5. Close all remaining evidence-backed field checks.
+6. Run final Release 1.0 PR/master production gate.
+7. Perform Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 
@@ -62,11 +87,3 @@ These are not active requirements:
 - ESPN write actions.
 
 Each requires its own reviewed requirements, evidence, safety boundaries, and acceptance criteria before authorization.
-
-## Immediate dependency order
-
-1. TCW-001 — bootstrap canonical `.ai` workflow and reconcile verified repository state.
-2. Complete/coordinate the remaining Release 1.0 field gate.
-3. Reproduce and route any field-discovered defects; do not preemptively reopen complete engines.
-4. Run final Release 1.0 merge/production gate when all field checks pass.
-5. Perform Roadmap Discovery before authorizing a new milestone.
