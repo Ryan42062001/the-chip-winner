@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Roadmap
 
 Last reconciled: 2026-09-08
-Manager task: TCW-001 — COMPLETE
+Manager task: TCW-004 — evidence-wave integration
 
 ## Current milestone
 
@@ -9,11 +9,11 @@ Manager task: TCW-001 — COMPLETE
 
 Status: ACTIVE — FIELD VALIDATION
 
-The deterministic implementation baseline for the reviewed Release 1.0 scope is substantially complete. The primary remaining milestone work is evidence-backed field validation and final release gating, not broad feature expansion.
+The deterministic implementation baseline for the reviewed Release 1.0 scope remains substantially complete. The primary remaining milestone work is evidence-backed field validation and final release gating, not broad feature expansion.
 
 ### Remaining Release 1.0 blockers
 
-Pending field checks from `config/field-validation.json`:
+Pending field checks from `config/field-validation.json` remain:
 
 1. FV-A11Y-02 — screen-reader critical workflow.
 2. FV-ESPN-02 — authenticated custom FLEX/OP league.
@@ -23,37 +23,69 @@ Pending field checks from `config/field-validation.json`:
 6. FV-RECOVERY-01 — live ESPN/session/network failure and reconnect.
 7. FV-WAIVER-01 — real waiver candidate volume and timing.
 
-### Ongoing seasonal evidence work
+Field gate remains **6 passed / 7 pending**. TCW-002 and TCW-003 produced audit/research evidence but did not pass or fail any pending field item.
+
+## Completed evidence wave — TCW-PW-001
+
+Status: COMPLETE when TCW-004 reconciliation merges.
+
+- `TCW-002` — Independent Release 1.0 baseline audit — Auditor / QA — COMPLETE, `PASS WITH NON-BLOCKING FINDINGS`, merged through PR #54.
+- `TCW-003` — ESPN field-validation feasibility research — R&D — COMPLETE, authoritative handoff merged through PR #56.
+- Duplicate TCW-003 PR #55 was closed unmerged as superseded.
+
+Accepted evidence-wave conclusions:
+
+- The v0.9.88 Release 1.0 baseline is defensible at the audited validation level.
+- The seven remaining field checks are genuine real-world evidence blockers, not proof that closed deterministic scope is missing.
+- `AGENTS.md` source-of-truth wording required reconciliation with the canonical `.ai/shared/*` workflow; TCW-004 owns that documentation fix.
+- Recovery/reconnect is the strongest immediately executable field check.
+- Lock/availability validation is time-windowed around a naturally relevant transition.
+- Custom OP/FLEX requires materially different authenticated league state.
+- IR and deeper season evidence are opportunity/season dependent.
+- Waiver scale evidence may require aggregate-only observation support; no waiver-policy change is justified merely to gather metrics.
+
+## Active next task
+
+### TCW-005 — FV-RECOVERY-01 Live Failure/Reconnect Validation
+
+Role: Independent Auditor / QA
+Status: ACTIVE after TCW-004 merges
+Dependency: TCW-004 canonical integration only
+
+Objective: exercise one real deployed authenticated ESPN refresh failure caused by a temporary client network disconnect, verify that the last valid snapshot survives with honest source/freshness labeling, restore connectivity, and verify a successful reconnect/refresh.
+
+This task is evidence gathering, not production implementation. If it reproduces a deterministic defect, Manager will route a separate Builder remediation task and require field retest before FV-RECOVERY-01 can pass.
+
+## Next evidence opportunities after TCW-005
+
+These are legitimate queued opportunities but are **not simultaneously activated specialist assignments**:
+
+- FV-ESPN-05: use the next naturally relevant pre/post-kickoff or availability transition. Current 2026 Week 1 schedule provides near-term observation windows, but no recommendation/player state should be manufactured solely for the check.
+- FV-ESPN-02: locate an existing authenticated ESPN LM league with a materially custom OP/superflex-style configuration.
+- FV-ESPN-04: collect naturally occurring IR edge evidence as real status/capacity states arise.
+- FV-SEASON-01: accumulate playoff/fallback, real bye, opponent, and future-projection evidence as season/source state permits.
+- FV-WAIVER-01: capture aggregate enumeration counts and responsiveness when real projection coverage allows; use a separately approved observation aid only if needed.
+- FV-A11Y-02: run the critical workflow with a real screen reader when a suitable assistive-technology environment is available.
+
+No parallel specialist wave is created at this point because only TCW-005 has an immediately executable, fully defined specialist assignment with known prerequisites. IDLE remains preferable to manufacturing work.
+
+## Ongoing seasonal evidence work
 
 - Accumulate real weekly projection publications through the guarded one-click workflow.
 - Preserve explicit provider IDs, source provenance, scoring compatibility, and complete-coverage gates.
 - Use real authenticated ESPN states to validate already-complete waiver and season behavior.
 - Convert reproducible defects into sanitized regression coverage where practical.
 
-## Active wave — TCW-PW-001
-
-Status: ACTIVE when this closeout state is merged.
-
-Two independent evidence assignments are authorized in parallel:
-
-- `TCW-002` — Independent Release 1.0 baseline audit — Auditor / QA.
-- `TCW-003` — ESPN field-validation feasibility research — R&D.
-
-Dependency classification: INDEPENDENT. Neither assignment changes production behavior or requires the other's result to begin.
-
-Builder remains IDLE unless field/audit evidence reproduces a deterministic defect or Manager approves a new implementation requirement.
-
-Strategy remains IDLE unless the active milestone exposes uncertainty about what the recommendation engine should do; current blockers are evidence/validation gaps, not unresolved strategic policy.
-
 ## Immediate dependency order
 
 1. TCW-001 — bootstrap canonical `.ai` workflow — COMPLETE.
-2. TCW-PW-001 — run TCW-002 Auditor baseline audit and TCW-003 R&D field-feasibility research in parallel.
-3. Manager evaluates both handoffs and reconciles any discrepancies.
-4. Route concrete field-validation opportunities and any reproduced defects without reopening closed scope by default.
-5. Close all remaining evidence-backed field checks.
-6. Run final Release 1.0 PR/master production gate.
-7. Perform Roadmap Discovery before authorizing a successor milestone.
+2. TCW-PW-001 — Auditor/R&D evidence wave — COMPLETE after TCW-004 reconciliation.
+3. TCW-004 — integrate evidence wave, reconcile canonical authority, and route next field task — COMPLETE when its protected PR and post-merge production gate pass.
+4. TCW-005 — perform live recovery/reconnect field validation.
+5. If TCW-005 fails because of a reproduced deterministic defect, route Builder remediation and require Auditor field retest; otherwise integrate passing field evidence through the protected workflow.
+6. Continue remaining real-world field checks as their actual prerequisites become available.
+7. Run final Release 1.0 PR/master production gate only after all field checks pass.
+8. Perform Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 

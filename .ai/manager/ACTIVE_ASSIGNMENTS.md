@@ -1,73 +1,110 @@
 # Active Assignments
 
 Last updated: 2026-09-08
+Canonical after TCW-004 protected merge.
 
-## TCW-001 — Bootstrap canonical `.ai` workflow
+## Completed coordination work
+
+### TCW-001 — Bootstrap canonical `.ai` workflow
 
 Role: Manager / Architect
 Status: COMPLETE
-Verified bootstrap merge checkpoint: `40b2ae7fbf024976753250b969c18f03373aa83b`
-PR: #52
 
-Completion evidence:
+### TCW-PW-001 — Release 1.0 Evidence Wave
 
-- Canonical `.ai/shared` coordination files exist on `master`.
-- Manager handoff and active-assignment files exist.
-- Builder, R&D, Strategy, and Auditor role directories exist.
-- Recorded stale repository status/handoff discrepancies were not silently reconciled.
-- PR #52 changed only `.ai` coordination files and did not alter production behavior.
-- PR exact-head CI passed before merge.
-- Post-merge master workflow run #411 passed test, deploy, and verify-production including production smoke.
-
-## TCW-PW-001 — Release 1.0 Evidence Wave
-
-Manager: ACTIVE — orchestration and integration
-Status: ACTIVE when this closeout state is merged
+Status: COMPLETE after TCW-004 reconciliation
 Dependency classification: INDEPENDENT specialist assignments
 
-### TCW-002 — Independent Release 1.0 Baseline Audit
+#### TCW-002 — Independent Release 1.0 Baseline Audit
 
 Role: Auditor / QA
-Status: ACTIVE
-Task specification: `.ai/manager/tasks/TCW-002.md`
-Dependency: none beyond merged TCW-001 closeout state
+Status: COMPLETE — PASS WITH NON-BLOCKING FINDINGS
+PR: #54
+Merged checkpoint: `b63f162f1ae0c3267c543819622d21d2c780ce70`
+
+Accepted findings:
+- MEDIUM non-blocking source-of-truth wording ambiguity in `AGENTS.md`; reconciled by TCW-004.
+- LOW non-blocking legacy documentation/metadata drift; retained explicitly rather than silently rewritten.
+
+#### TCW-003 — ESPN Field-Validation Feasibility Research
+
+Role: Research & Development
+Status: COMPLETE
+Authoritative PR: #56
+Merged checkpoint: `f714cab4b8a50c876510c332faea42102428d638`
+Duplicate PR #55: CLOSED UNMERGED AS SUPERSEDED
+
+Accepted findings:
+- FV-RECOVERY-01 can be exercised immediately with a real temporary network failure/reconnect.
+- FV-ESPN-05 is time-windowed around a naturally relevant lock/availability transition.
+- FV-ESPN-02 requires a materially different authenticated custom OP/FLEX league.
+- FV-ESPN-04 and deeper FV-SEASON-01 evidence are naturally occurring/seasonal.
+- FV-WAIVER-01 remains coverage/observability-dependent; domain counters exist, but the normal UI does not clearly surface the complete required tuple.
+- Current recovery code retains the prior valid live snapshot after a failed refresh while its normal source label remains `Live ESPN snapshot`; field confirmation is required before declaring a defect.
+- The companion currently requests ESPN availability with `limit: 100`; live completeness impact is not yet proven.
+
+## TCW-004 — Integrate Release 1.0 Evidence Wave and Reconcile Canonical Authority
+
+Role: Manager / Architect
+Status: COMPLETE when this reconciliation PR passes exact-head CI, merges, and post-merge master production verification succeeds.
 
 Objective:
-Independently verify the current Release 1.0 baseline, canonical state, field-registry counts, bootstrap changed-file scope, and protected CI/release evidence. Produce PASS / PASS WITH NON-BLOCKING FINDINGS / FAIL.
+Integrate TCW-002/TCW-003, resolve the duplicate R&D submission, reconcile `AGENTS.md` with the canonical `.ai/shared/*` authority hierarchy, update canonical project state, and route the strongest legitimate next field-validation task without changing production behavior or field status.
+
+## Active work after TCW-004
+
+### Manager / Architect
+
+Status: ACTIVE — Release 1.0 field-gate orchestration
+
+Responsibilities:
+- integrate TCW-005 evidence;
+- route implementation only for reproduced/accepted deterministic defects;
+- schedule other real field checks only when their actual prerequisites exist;
+- keep canonical shared state reconciled.
+
+### TCW-005 — FV-RECOVERY-01 Live Failure/Reconnect Validation
+
+Role: Auditor / QA
+Status: ACTIVE after TCW-004 merges
+Task specification: `.ai/manager/tasks/TCW-005.md`
+Dependency: merged and production-verified TCW-004 canonical reconciliation
+
+Objective:
+Run one real deployed authenticated ESPN network-failure/reconnect cycle, verify last-valid-snapshot retention and honest source/freshness labeling, then verify successful recovery with privacy-safe field evidence.
 
 Authorized writes:
 - `.ai/auditor/`
 
-### TCW-003 — ESPN Field-Validation Feasibility Research
+Field-registry mutation is not authorized by TCW-005 itself. Manager will integrate the Auditor verdict through a separate protected change if evidence supports a status update.
 
-Role: R&D
-Status: ACTIVE
-Task specification: `.ai/manager/tasks/TCW-003.md`
-Dependency: none beyond merged TCW-001 closeout state
-
-Objective:
-Research current authoritative ESPN behavior and privacy-safe practical paths for exercising the remaining ESPN-heavy Release 1.0 field checks without manufacturing states or changing production behavior.
-
-Authorized writes:
-- `.ai/rnd/`
-
-## IDLE roles
+## IDLE roles after TCW-004
 
 Builder: IDLE
 
-Reason: no reproduced deterministic defect or approved implementation-ready requirement currently exists. Do not create work merely to keep Builder busy.
+Reason: no live field run has yet reproduced a deterministic implementation defect. The recovery-label code finding is a strong risk, not a completed field failure. Route Builder only if TCW-005 or another accepted observation establishes an implementation-ready defect/requirement.
+
+R&D: IDLE
+
+Reason: TCW-003 is complete. Its research questions have been routed into concrete field actions; no new research assignment is currently necessary.
 
 Strategy: IDLE
 
-Reason: the active milestone blockers are field evidence and ESPN-validation feasibility, not unresolved recommendation-policy or draft-strategy requirements.
+Reason: the active milestone blockers remain field evidence and operational validation, not recommendation-policy or draft-strategy uncertainty.
 
-## Manager integration gate for TCW-PW-001
+## Manager routing after TCW-005
 
-Manager should not authorize production work from specialist findings automatically. After both handoffs:
+1. Refresh the Auditor handoff and repository checkpoint.
+2. If FV-RECOVERY-01 passes, authorize the protected field-registry evidence update and continue to the next legitimate real field check.
+3. If it fails due to a reproduced deterministic defect, specify a narrow Builder remediation task with regression requirements; after merge, require independent field retest.
+4. If it is blocked/inconclusive, preserve the incomplete status and state exactly what evidence is missing.
+5. Do not automatically activate R&D, Builder, or Strategy merely because they are idle.
 
-1. verify each specialist's evidence and repository checkpoint;
-2. identify exact agreements/disagreements;
-3. decide which findings are field actions, blockers, defects, or future opportunities;
-4. route Builder only for an approved implementation-ready defect/requirement;
-5. route Strategy only for genuine recommendation-policy uncertainty;
-6. reconcile canonical shared state only after evidence supports the change.
+## Queued evidence opportunities — not active assignments
+
+- FV-ESPN-05 — next naturally relevant lock/availability transition.
+- FV-ESPN-02 — existing authenticated custom OP/superflex league access.
+- FV-ESPN-04 — naturally occurring IR edge state.
+- FV-SEASON-01 — season/playoff/bye/projection evidence as real state permits.
+- FV-WAIVER-01 — aggregate scale/timing evidence when projection coverage/observation access permits.
+- FV-A11Y-02 — real screen-reader critical workflow when a suitable AT environment is available.
