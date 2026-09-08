@@ -1,94 +1,99 @@
-# Auditor Handoff — TCW-002
+# Auditor Handoff — TCW-005
 
-Independent verdict: **PASS WITH NON-BLOCKING FINDINGS**
+Independent verdict: **INCONCLUSIVE / BLOCKED — REQUIRED AUTHENTICATED FIELD ENVIRONMENT NOT AVAILABLE TO THIS SESSION**
 
 ## Audit scope
 
-TCW-002 independently audited the current Release 1.0 baseline and canonical `.ai` state against repository, branch/PR, CI, workflow, field-registry, and historical closeout evidence. No production implementation or field-status mutation was authorized or performed.
+TCW-005 requires one real deployed authenticated ESPN failure/reconnect cycle using the user's actual Chrome companion session and a temporary OS/device-level network disconnect. This Auditor refreshed canonical state, verified the authorization/deployment gate, verified FV-RECOVERY-01 remains pending, and attempted to establish the required field preconditions. The execution environment available to this Auditor does not expose the user's local authenticated Chrome/ESPN session, Chrome companion runtime, or device network controls. Therefore the mandatory field observation could not be truthfully performed or inferred.
 
-## Validation dimensions
+No production code, field registry, ESPN state, credentials, or private league data were changed.
 
-- **CODE CORRECTNESS:** PASS for the TCW-001 coordination work under review. PR #52 changed exactly ten `.ai/*` coordination files and no production code/config/test files. PR #53 changed exactly seven `.ai/*` coordination/task files and no production behavior.
-- **TEST CORRECTNESS:** PASS for the required repository/CI audit. Protected PR and post-merge workflows were independently verified. Passing automated tests are not treated as proof of real-world field checks.
-- **STATE CORRECTNESS:** PASS. Current `master`, package version, Release 1.0 field counts, branch state, PR state, and active milestone were independently verified.
-- **STRATEGIC BEHAVIOR:** NOT APPLICABLE to TCW-002. This task changes no draft/recommendation policy and specifies no strategic acceptance scenarios. No strategic disagreement was manufactured.
-- **REAL-DRAFT BEHAVIOR:** NOT APPLICABLE to TCW-002. Required real-world field checks remain separately evidence-gated and pending where the registry says pending.
+## Verified starting state
 
-## Verified evidence
+- Repository: `Ryan42062001/the-chip-winner`.
+- Protected `master` at task start: `2ef036eb02efd6600049d91f2f076c0f3a633a1b`.
+- `master` commit message: `TCW-004 integrate evidence wave and reconcile canonical authority`.
+- TCW-004 post-merge workflow: run `34265838315` / run #421 — `success`.
+- Run #421 jobs independently verified: `test` success, `deploy` success, `verify-production` success including `npm run smoke:production`.
+- Package version: `0.9.88`.
+- Canonical assignment: TCW-005 ACTIVE after TCW-004 merge/production verification.
+- `config/field-validation.json`: `FV-RECOVERY-01` remains `pending` with no evidence entry.
+- TCW-003 repository research remains relevant context only: failed refresh is expected to preserve the prior valid snapshot, while normal hydration still risks retaining the `Live ESPN snapshot` label. That is a code-level risk, not field evidence.
 
-- Current protected `master`: `110f198145ad117902e79768239151f8ddb769eb`.
-- Current package version: `0.9.88`.
-- Open PRs at audit refresh: none.
-- Visible branches at audit refresh: protected `master`, `manager/tcw-001-ai-workflow-bootstrap`, and `manager/tcw-001-closeout` before this Auditor branch was created.
-- Release 1.0 field registry: 6 passed / 7 pending.
-  - Passed: `FV-A11Y-01`, `FV-A11Y-03`, `FV-MOBILE-01`, `FV-ESPN-01`, `FV-ESPN-03`, `FV-SYNC-01`.
-  - Pending: `FV-A11Y-02`, `FV-ESPN-02`, `FV-ESPN-04`, `FV-ESPN-05`, `FV-SEASON-01`, `FV-RECOVERY-01`, `FV-WAIVER-01`.
-- `config/field-validation.json` still declares `baselineVersion: 0.9.81`; package version is `0.9.88`.
-- PR #52 exact head: `af104789464b6ae8cc4b1f38b0c1879ba6937eb3`; merge commit: `40b2ae7fbf024976753250b969c18f03373aa83b`.
-- PR #52 changed exactly ten files, all under `.ai/`; no production file changed.
-- PR #52 exact-head workflow run #410 (`34261090851`) completed successfully. Its PR `test` job passed; PR deploy/production jobs were correctly skipped.
-- Post-merge bootstrap workflow run #411 (`34261299595`) completed successfully with `test`, `deploy`, and `verify-production`, including `npm run smoke:production`.
-- PR #53 exact head: `4783f8da795f2851bb2e7ced528a5b6fe139dd8f`; current merge commit: `110f198145ad117902e79768239151f8ddb769eb`.
-- PR #53 changed exactly seven files, all under `.ai/`.
-- PR #53 exact-head workflow run #412 (`34261748552`) completed successfully.
-- Current `master` workflow run #413 (`34261923767`) completed successfully with `test`, `deploy`, and `verify-production`.
-- Run #413 checked out exact `110f198145ad117902e79768239151f8ddb769eb` and reported:
-  - `npm ci` successful;
-  - `npm audit --audit-level=high`: 0 vulnerabilities;
-  - `npm test`: 361/361 passed, 0 failed;
-  - model evaluation: 14/14 recommendation fixtures plus 7/7 explanation fixtures passed;
-  - static/browser smoke, automated accessibility, readiness reflow, mobile, extension threat, performance, security, deployment, and production smoke passed.
-- `.github/workflows/deploy-pages.yml` independently matches the canonical protected-workflow description: PR/master `test`; deploy only off PR events after test; production verification after deploy.
-- Waiver Engine v2 completion is corroborated by merged PR #27 and current `AGENTS.md` invariants; current regression coverage remains present.
-- Season/Playoff Intelligence reviewed deterministic-scope completion is corroborated by merged PR #28 and current `AGENTS.md` invariants; current regression coverage remains present.
-- `docs/field-validation.md` explicitly preserves the distinction between automated evidence and real-world field validation and requires every registry item to be passed before Release 1.0.
+## Privacy-safe environment record
 
-## Findings
+- Observation date/time: 2026-09-08 approximately 14:58 ET at task initiation.
+- Deployed checkpoint intended for field validation: `2ef036eb02efd6600049d91f2f076c0f3a633a1b`, package v0.9.88; protected production workflow #421 passed.
+- User OS: **not observable in this Auditor execution environment**.
+- User browser/version: **not observable in this Auditor execution environment**.
+- Chrome companion runtime/version: **not observable in this Auditor execution environment**.
+- Authenticated ESPN session: **not accessible to this Auditor execution environment**.
+- Device/OS network control: **not accessible to this Auditor execution environment**.
+- No cookies, credentials, league/team/member identifiers, raw snapshots, private payloads, or sync links were accessed or recorded.
 
-### TCW-002-F01
+## Required field sequence and observed status
 
-**ID:** TCW-002-F01  
-**SEVERITY:** MEDIUM  
-**REQUIREMENT:** TCW-001 establishes the canonical `.ai/shared/*` coordination layer; TCW-002 requires canonical claims to be checked against stronger repository evidence without silent reconciliation.  
-**EVIDENCE:** `.ai/shared/WORKFLOW.md` names `.ai/shared/PROJECT_STATE.md`, `ROADMAP.md`, `DECISIONS.md`, and `WORKFLOW.md` as canonical coordination files. Current `AGENTS.md`, however, still states that the “Current execution plan” in `docs/roadmap.md` owns the active implementation backlog and completion status. `docs/roadmap.md` itself retains older Release 1.0 wording and an automated-test count of 322, while exact current-master CI reports 361 tests.  
-**FAILURE:** Repository guidance exposes two competing coordination-authority statements. The canonical `.ai` layer is correct under the approved workflow, but a future worker following `AGENTS.md` literally could elevate stale roadmap status over the newer canonical state.  
-**IMPACT:** Potential future task misrouting, stale completion assumptions, or unnecessary reopening of already-closed scope. No current production behavior, field status, or TCW-002 audit conclusion is invalidated.  
-**REQUIRED REMEDIATION:** Manager should reconcile `AGENTS.md` through an approved documentation task/PR so it explicitly recognizes `.ai/shared/*` as the canonical coordination layer and clearly defines the continuing role of `docs/roadmap.md` / `docs/advanced-roadmap.md`. Auditor should not edit Manager/global source-of-truth policy under TCW-002.  
-**VALIDATION NEEDED:** Review the resulting documentation diff for one unambiguous authority hierarchy; verify protected PR CI; confirm the change does not rewrite historical evidence or product requirements.  
-**CONFIDENCE:** HIGH  
-**BLOCKING:** No.
+1. **Successful deployed authenticated Refresh ESPN baseline** — NOT OBSERVED. The Auditor cannot operate or inspect the user's local authenticated browser/companion session.
+2. **Record live source/capture/freshness labels** — NOT OBSERVED for the same reason.
+3. **Temporarily disable client network at OS/device level while keeping the loaded page open** — NOT EXECUTABLE from this environment.
+4. **Invoke Refresh ESPN while offline after normal cooldown** — NOT EXECUTABLE.
+5. **Observe sanitized failure message/class and last-valid-snapshot retention** — NOT OBSERVED.
+6. **Observe exact source/freshness/error labeling after failed refresh** — NOT OBSERVED. This is the key acceptance criterion and cannot be replaced by repository inference.
+7. **Verify navigation remains safe and no sample/invented ESPN fallback occurs** — NOT OBSERVED in the required authenticated failure state.
+8. **Restore network connectivity** — NOT EXECUTABLE.
+9. **Invoke Refresh ESPN and verify authenticated reconnect/recovery** — NOT OBSERVED.
 
-### TCW-002-F02
+## Independent assessment
 
-**ID:** TCW-002-F02  
-**SEVERITY:** LOW  
-**REQUIREMENT:** Recorded stale-state discrepancies must remain explicit and must not be silently treated as current truth.  
-**EVIDENCE:** `docs/next-codex-task.md` remains a v0.9.76 point-in-time handoff; `docs/roadmap.md` retains historical v0.9.72-era status wording and an older automated-test count; `config/field-validation.json` declares `baselineVersion: 0.9.81` while current `package.json` is v0.9.88. The canonical files explicitly record these discrepancies, and the actual item statuses/evidence in the field registry are newer.  
-**FAILURE:** Legacy documentation/metadata has drifted behind the current repository checkpoint.  
-**IMPACT:** Operator confusion is possible if those files are read without the required repository/canonical refresh. The discrepancy does not presently falsify the 6-passed/7-pending registry state, current package version, active milestone, or protected CI evidence.  
-**REQUIRED REMEDIATION:** Manager should decide whether to refresh the stale point-in-time documents/metadata or retain them with stronger explicit historical labeling. Any `baselineVersion` change must preserve registry evidence and follow the field-validation policy rather than being changed merely for cosmetic consistency.  
-**VALIDATION NEEDED:** Re-read the affected files after Manager reconciliation; verify field item statuses/evidence remain unchanged unless independently justified; run protected documentation/configuration CI as applicable.  
-**CONFIDENCE:** HIGH  
-**BLOCKING:** No.
+### PASS CANDIDATE
 
-## Audit conclusion
+Not supportable. The mandatory authenticated failure/reconnect observation did not occur in this session.
 
-The Release 1.0 baseline represented by current canonical state is defensible at the validation level TCW-002 requires. The protected workflows, current exact-master automated checks, field-registry counts, read-only boundary, and closed deterministic Waiver/Season scopes are supported by repository evidence. The seven pending real-world field checks remain genuine Release 1.0 blockers, but their pending status is expected and is not a failure of TCW-002.
+### FAIL — REPRODUCED DEFECT
 
-The two findings above are coordination/documentation integrity issues, not production or field-evidence failures. Neither requires Builder remediation.
+Not supportable. Repository/R&D evidence creates a strong stale/live labeling risk, but TCW-005 explicitly forbids declaring field failure from code inspection alone. No real failed-refresh UI state was observed here.
+
+### Verdict
+
+**INCONCLUSIVE / BLOCKED**.
+
+The blocker is not product behavior and is not an ESPN outage. The blocker is lack of access from this Auditor execution environment to the user's real authenticated Chrome companion session and device network controls required by TCW-005. Because the key source/freshness/error labels and reconnect result were not observed, FV-RECOVERY-01 cannot be advanced or failed from this handoff.
+
+## Builder routing
+
+Builder remediation is **not warranted yet**. The stale/live label remains a high-confidence code risk from TCW-003, but there is no reproduced TCW-005 field defect in this session. Builder should be activated only if a real deployed failure cycle confirms materially misleading retained-state labeling or another deterministic recovery failure.
+
+## Field registry
+
+`config/field-validation.json` was not modified. FV-RECOVERY-01 must remain incomplete unless Manager later receives acceptable privacy-safe real field evidence.
+
+## Minimum evidence needed to resolve TCW-005
+
+A real user-operated deployed session must provide only privacy-safe observations:
+
+- OS and browser version;
+- app/package/deployed checkpoint if known;
+- successful pre-failure Refresh ESPN result and sanitized source/capture/freshness labels;
+- failure class/message after a genuine network disconnect;
+- whether the prior snapshot remains usable;
+- exact sanitized source/freshness/error labels after failure;
+- whether navigation remains on retained ESPN state without sample fallback;
+- successful reconnect Refresh ESPN result and updated capture/freshness state.
+
+No player, league, team, member, cookie, credential, raw payload, or private URL is needed.
 
 ## HANDOFF
 
-**Task ID:** TCW-002  
+**Task ID:** TCW-005  
 **Role:** Independent Auditor / QA  
-**Status:** COMPLETE — PASS WITH NON-BLOCKING FINDINGS
+**Status:** COMPLETE FOR THIS EXECUTION ATTEMPT — INCONCLUSIVE / BLOCKED
 
-**Verified starting state:** Current protected `master` at `110f198145ad117902e79768239151f8ddb769eb`, package v0.9.88, TCW-002 active under merged TCW-PW-001, no open PRs before Auditor branch creation, and Release 1.0 field gate at 6 passed / 7 pending.  
-**Work completed:** Independently verified current checkpoint/version, branch/PR state, registry statuses, canonical baseline claims, TCW-001/closeout changed-file scope, protected workflow definition, exact-head/post-merge CI evidence, and the recorded stale-document discrepancies. Classified all material discrepancies as non-blocking.  
-**Evidence produced:** This audit record, including exact SHAs, PR/run identifiers, field-status list, changed-file scope, and findings TCW-002-F01/F02.  
-**Files updated:** `.ai/auditor/HANDOFF.md` only.  
-**Open findings:** TCW-002-F01 (MEDIUM, non-blocking source-of-truth guidance ambiguity); TCW-002-F02 (LOW, non-blocking legacy documentation/metadata drift). Seven Release 1.0 field checks remain pending by design.  
-**Blocking issues:** None for TCW-002. Release 1.0 itself remains blocked by the seven pending field checks.  
-**Recommended next role:** Manager / Architect for integration of the Auditor and R&D evidence wave. Builder remains unwarranted absent a reproduced implementation defect.  
-**Exact next action:** Manager should review this handoff alongside TCW-003, reconcile TCW-002-F01/F02 as documentation/state-maintenance work if justified, and determine the next evidence-backed field actions without reopening closed deterministic engines.  
-**Checkpoint / SHA:** Audited `master`: `110f198145ad117902e79768239151f8ddb769eb`. Auditor branch started from that exact checkpoint. Audit handoff commit SHA is recorded by the branch commit created for this file; verify the resulting PR head before merge.
+**Verified starting state:** Protected `master` at `2ef036eb02efd6600049d91f2f076c0f3a633a1b`, package v0.9.88, TCW-004 merged and production-verified by workflow #421, TCW-005 active, and FV-RECOVERY-01 still pending.  
+**Work completed:** Refreshed canonical state; independently verified TCW-005 authorization, exact master checkpoint, package version, field-registry status, and TCW-004 production verification; assessed whether the required deployed authenticated field environment was available; refused to substitute repository inference or automated evidence for the mandatory real failure/reconnect observation.  
+**Evidence produced:** This privacy-safe blocked/inconclusive execution record and exact missing field observations required for a definitive verdict.  
+**Files updated:** `.ai/auditor/HANDOFF.md` only on `auditor/tcw-005-recovery-field-validation`.  
+**Open findings:** Strong pre-existing code risk that a retained prior `live-companion` snapshot may continue to display `Live ESPN snapshot` after refresh failure; not field-reproduced in TCW-005.  
+**Blocking issues:** Required authenticated local browser/companion session and OS/device network controls are unavailable to this Auditor execution environment.  
+**Recommended next role:** Manager / Architect to preserve FV-RECOVERY-01 as incomplete and arrange the real user-operated field observation; Auditor should judge the resulting privacy-safe observation independently. Builder remains IDLE until a deterministic defect is actually reproduced.  
+**Exact next action:** Run the TCW-005 sequence in the real deployed authenticated Chrome session with a temporary device-network disconnect, record only the sanitized labels/messages/results enumerated above, then route that evidence back to Auditor for PASS CANDIDATE / FAIL — REPRODUCED DEFECT assessment.  
+**Checkpoint / SHA:** Audited `master`: `2ef036eb02efd6600049d91f2f076c0f3a633a1b`. Auditor branch starts from that exact checkpoint.
