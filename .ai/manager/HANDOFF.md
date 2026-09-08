@@ -1,74 +1,68 @@
 # Manager Handoff
 
-Task ID: TCW-004
+Task ID: TCW-006
 Role: Manager / Architect
 Status: COMPLETE when this reconciliation passes protected PR and post-merge production verification
 
 Verified starting state:
 - Repository: `Ryan42062001/the-chip-winner`.
 - Package version: `0.9.88`.
-- TCW-001 canonical closeout checkpoint: `110f198145ad117902e79768239151f8ddb769eb`.
+- TCW-004 canonical checkpoint: `2ef036eb02efd6600049d91f2f076c0f3a633a1b`; workflow #421 passed test, deploy, and production verification.
 - Release 1.0 milestone: ACTIVE — FIELD VALIDATION.
 - Field registry: 6 passed / 7 pending.
-- TCW-002 Auditor PR #54 and duplicate TCW-003 R&D PRs #55/#56 were open at the start of Manager integration.
+- TCW-005 Auditor branch existed with PR #58 and verdict `INCONCLUSIVE / BLOCKED` because the required authenticated local Chrome/ESPN/network environment was unavailable.
 
 Work completed:
-- Refreshed canonical shared state, Manager assignments/handoff, specialist task specs, both specialist handoffs, PRs, branches, CI, current code, and field registry state.
-- Integrated TCW-002 Auditor handoff through PR #54. Auditor verdict: `PASS WITH NON-BLOCKING FINDINGS`.
-- Verified PR #54 exact-head test and post-merge master workflow #417, including test, deploy, and production smoke.
-- Compared duplicate TCW-003 handoffs and selected PR #56 as authoritative because it subsumed #55's core feasibility work and added stronger evidence classification plus recovery-label, lock-mode, and provider-acquisition findings.
-- Closed PR #55 unmerged as superseded.
-- Rebased the authoritative PR #56 content onto the verified post-TCW-002 master checkpoint, preserved its handoff blob exactly, reran exact-head CI, and merged it.
-- Independently verified the two most material R&D code findings: failed refresh retains the prior `live-companion` snapshot while normal source labeling remains `Live ESPN snapshot`; ESPN availability acquisition currently requests `kona_player_info` with `limit: 100`.
-- Classified those code observations as field risks rather than declared production defects because Release 1.0 evidence policy still requires live observation where specified.
-- Reconciled canonical project state and roadmap around completed TCW-PW-001.
-- Reconciled `AGENTS.md` authority guidance so `.ai/shared/*` is the canonical coordination layer while legacy roadmaps remain product/history/detail sources.
-- Defined TCW-005 as the strongest immediately executable next specialist task: live FV-RECOVERY-01 failure/reconnect validation by Auditor / QA.
-- Kept Builder, R&D, and Strategy idle rather than manufacturing work.
+- Refreshed canonical shared state, Manager assignments/handoff, TCW-005 spec, Auditor handoff, current branch/PR state, and field registry.
+- Verified PR #58 changed only `.ai/auditor/HANDOFF.md`, was one commit ahead/zero behind `master`, and exact-head workflow #422 passed.
+- Merged PR #58 as `748aed086de038cdd627d3cefb433c7bc1458761` without changing production behavior or field status.
+- Accepted the Auditor's blocked/inconclusive result as an environment limitation, not a product PASS or FAIL.
+- Preserved FV-RECOVERY-01 as pending and Release 1.0 at 6 passed / 7 pending.
+- Defined TCW-006 to reconcile canonical state around the blocked field attempt.
+- Documented the minimum privacy-safe user-operated evidence package required to resume TCW-005.
+- Kept Builder idle because no deterministic recovery defect has been field-reproduced.
+- Kept R&D and Strategy idle because no new research or policy uncertainty is required.
+- Kept Auditor idle until external local field evidence exists; repeating the same task in the same environment cannot satisfy the acceptance criteria.
 
 Evidence produced:
-- TCW-002 PR #54 Auditor branch exact head: `d4f7506cf74b79f6a53052c941d28c97c13323d1`; PR test workflow #414 passed.
-- TCW-002 merge checkpoint: `b63f162f1ae0c3267c543819622d21d2c780ce70`.
-- Post-TCW-002 master workflow #417 passed test, deploy, and `npm run smoke:production`.
-- Duplicate TCW-003 PR #55 closed unmerged as superseded.
-- Authoritative TCW-003 PR #56 rebased exact head: `4b8884dc37fbf13cea5dd7685e032a861b2a65ad`; PR test workflow #418 passed.
-- TCW-003 merge checkpoint: `f714cab4b8a50c876510c332faea42102428d638`.
-- TCW-003 authoritative handoff blob remained `62123466300ef592685a1a448a8fbd8b186d6353` across rebase.
-- Current code inspection confirms `src/app.js` source labeling and refresh-error behavior described above.
-- Current extension inspection confirms ESPN availability filter `limit: 100`.
+- TCW-005 Auditor branch head: `f99b8bf1b8514300657858cf30fc7be1c89e2719`.
+- PR #58 exact-head workflow #422 passed.
+- PR #58 changed exactly one file: `.ai/auditor/HANDOFF.md`.
+- TCW-005 merged handoff checkpoint: `748aed086de038cdd627d3cefb433c7bc1458761`.
+- Auditor handoff explicitly records every unobserved step and the privacy-safe evidence needed for a future independent verdict.
+- Field registry still shows FV-RECOVERY-01 pending and total gate 6 passed / 7 pending.
 
-Files updated by TCW-004 reconciliation branch:
-- `AGENTS.md`
+Files updated by TCW-006 reconciliation branch:
 - `.ai/shared/PROJECT_STATE.md`
 - `.ai/shared/ROADMAP.md`
 - `.ai/manager/ACTIVE_ASSIGNMENTS.md`
 - `.ai/manager/HANDOFF.md`
-- `.ai/manager/tasks/TCW-PW-001.md`
-- `.ai/manager/tasks/TCW-004.md`
-- `.ai/manager/tasks/TCW-005.md`
+- `.ai/manager/tasks/TCW-006.md`
 
 Open findings:
-- FV-RECOVERY-01 remains pending until a real network/session failure-reconnect observation is completed; code inspection predicts a likely stale/live source-label issue but does not substitute for field evidence.
-- FV-ESPN-05 remains pending; current standard lock logic materially relies on per-player kickoff and a whole-period lock configuration remains a live coverage risk.
-- FV-ESPN-02 requires access to a materially different custom FLEX/OP ESPN LM league.
-- FV-ESPN-04 requires natural IR edge-state opportunities.
+- FV-RECOVERY-01 remains pending and blocked on a real user-operated authenticated failure/reconnect cycle.
+- Existing code-level recovery risk remains: a retained prior `live-companion` snapshot may still display `Live ESPN snapshot` after refresh failure. This is not a field-reproduced defect yet.
+- FV-ESPN-05 remains pending and requires a real lock/availability transition.
+- FV-ESPN-02 requires access to a materially different custom FLEX/OP league.
+- FV-ESPN-04 requires naturally occurring IR edge states.
 - FV-SEASON-01 requires staged seasonal evidence.
-- FV-WAIVER-01 still needs real aggregate enumeration/timing capture; the UI does not clearly expose all four required domain counters, and upstream availability completeness beyond the current 100-record request is unverified.
-- FV-A11Y-02 remains pending until a real screen-reader critical workflow is available.
-- Legacy documentation/metadata drift remains explicit: `docs/next-codex-task.md`, historical wording in `docs/roadmap.md`, and field registry `baselineVersion: 0.9.81` versus package v0.9.88.
+- FV-WAIVER-01 requires real aggregate enumeration/timing evidence; upstream completeness beyond the current `limit: 100` request remains unverified.
+- FV-A11Y-02 requires a real screen-reader workflow.
+- Legacy documentation/metadata drift remains explicitly recorded.
 
 Blocking issues:
-- TCW-004 has no production blocker if its exact-head protected PR test and post-merge master test/deploy/production verification pass.
-- Release 1.0 remains blocked by all seven pending field checks until evidence-backed status changes occur.
+- TCW-006 itself has no product blocker if the merged TCW-005 checkpoint and this reconciliation pass their protected CI/production gates.
+- Release 1.0 remains blocked by all seven pending field checks.
+- TCW-005 cannot advance from the current Auditor environment without user-operated local observations.
 
 Recommended next role:
-- Independent Auditor / QA on TCW-005.
-- Manager remains active for evidence integration and routing.
-- Builder, R&D, and Strategy remain idle unless new evidence creates a legitimate assignment.
+- Manager remains active for Release 1.0 field-gate orchestration.
+- Auditor should be re-activated under TCW-005 only after the privacy-safe local field observations exist.
+- Builder, R&D, and Strategy remain idle.
 
 Exact next action:
-- Activate the Auditor chat on TCW-005 after this reconciliation merges and is production-verified. Run a real deployed authenticated ESPN refresh, temporarily disable client network connectivity, attempt Refresh ESPN, verify retained-data/source-label behavior, restore network, and verify successful refresh. Return privacy-safe evidence and an Auditor verdict without modifying the field registry directly.
+- In the real deployed authenticated Chrome session, record the TCW-005 privacy-safe sequence: successful Refresh ESPN baseline and labels; temporarily disable device network with the page open; after normal cooldown invoke Refresh ESPN and record the sanitized failure plus retained-state labels/usability/navigation; restore network; refresh successfully again and record the updated capture/freshness state. Return only those sanitized observations to the Auditor for an independent verdict.
 
 Checkpoint / SHA:
-- Evidence integration base / merged TCW-003 checkpoint: `f714cab4b8a50c876510c332faea42102428d638`.
-- TCW-004 branch head and final merge checkpoint must be verified from GitHub before reporting completion.
+- TCW-005 merged handoff checkpoint: `748aed086de038cdd627d3cefb433c7bc1458761`.
+- TCW-006 branch head and final merge checkpoint must be verified from GitHub before reporting completion.

@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-08
-Manager task: TCW-004 — evidence-wave integration
+Manager task: TCW-006 — blocked recovery-field reconciliation
 
 ## Repository
 
@@ -9,15 +9,15 @@ Manager task: TCW-004 — evidence-wave integration
 - Protected default branch: `master`
 - Package version: `0.9.88`
 - Canonical `.ai` workflow was bootstrapped by TCW-001.
-- TCW-001 bootstrap merge checkpoint: `40b2ae7fbf024976753250b969c18f03373aa83b`.
 - TCW-001 closeout checkpoint: `110f198145ad117902e79768239151f8ddb769eb`.
-- TCW-002 Auditor handoff merged through PR #54 at `b63f162f1ae0c3267c543819622d21d2c780ce70`; post-merge workflow #417 passed test, deploy, and production verification.
-- TCW-003 authoritative R&D handoff merged through PR #56 at `f714cab4b8a50c876510c332faea42102428d638` after exact-head CI passed. Duplicate PR #55 was closed unmerged as superseded.
-- TCW-002 and TCW-003 changed only their role handoff files under `.ai/`; neither changed production behavior or field status.
+- TCW-002 Auditor handoff merged through PR #54 at `b63f162f1ae0c3267c543819622d21d2c780ce70`; post-merge workflow #417 passed.
+- TCW-003 authoritative R&D handoff merged through PR #56 at `f714cab4b8a50c876510c332faea42102428d638`; duplicate PR #55 closed unmerged as superseded.
+- TCW-004 canonical integration merged at `2ef036eb02efd6600049d91f2f076c0f3a633a1b`; workflow #421 passed test, deploy, and production verification.
+- TCW-005 Auditor blocked/inconclusive handoff merged through PR #58 at `748aed086de038cdd627d3cefb433c7bc1458761`.
 
 ## Product boundary
 
-The Chip Winner is an ESPN-only, read-only, in-season fantasy-football decision companion. ESPN is authoritative for league state, roster rules, availability, locks, acquisition state, and other connected-league facts. External rankings/projections are independent overlays. Derived recommendations never mutate source snapshots. ESPN write actions remain outside Release 1.0.
+The Chip Winner remains an ESPN-only, read-only, in-season fantasy-football decision companion. ESPN is authoritative for connected-league state. External rankings/projections are independent overlays. Derived recommendations never mutate source snapshots. ESPN write actions remain outside Release 1.0.
 
 ## Architecture
 
@@ -28,22 +28,7 @@ Four primary layers remain established:
 3. Application layer — single state owner and explicit browser/application transitions.
 4. Interface layer — rendering and interaction without source normalization or a second state store.
 
-Key areas remain:
-
-- `src/providers/espn/`
-- `src/providers/projections/`
-- `src/providers/rankings/`
-- `src/domain/`
-- `src/application/`
-- `src/ui/`
-- `src/models/`
-- `src/sync/` and `worker/`
-- `schema/`
-- `test/`
-
 ## Completed major work
-
-Verified from repository documentation, current history, and independent audit:
 
 - Read-only authenticated ESPN companion path is implemented.
 - Waiver Engine v2 reviewed deterministic scope is complete as of v0.9.69.
@@ -53,8 +38,10 @@ Verified from repository documentation, current history, and independent audit:
 - Subsequent field-driven fixes and validation advanced through v0.9.88.
 - Authenticated standard ESPN workflow validation is passed in the registry.
 - TCW-001 canonical workflow bootstrap is merged and production-verified.
-- TCW-002 independently audited the v0.9.88 Release 1.0 baseline and returned `PASS WITH NON-BLOCKING FINDINGS`.
-- TCW-003 completed current ESPN field-validation feasibility research; its research does not itself pass or fail any field check.
+- TCW-002 independently audited the v0.9.88 Release 1.0 baseline: `PASS WITH NON-BLOCKING FINDINGS`.
+- TCW-003 completed ESPN field-validation feasibility research.
+- TCW-004 integrated the evidence wave and reconciled `.ai/shared/*` as canonical coordination authority in `AGENTS.md`.
+- TCW-005 completed one Auditor execution attempt but could not perform the mandatory real local failure/reconnect observation; verdict `INCONCLUSIVE / BLOCKED`.
 
 ## Current milestone
 
@@ -62,13 +49,13 @@ Verified from repository documentation, current history, and independent audit:
 
 Status: ACTIVE — FIELD VALIDATION
 
-The reviewed deterministic implementation baseline remains substantially complete. The active milestone is evidence-backed field validation and final release gating, not broad product expansion.
+The deterministic implementation baseline remains substantially complete. The active milestone is evidence-backed real-world validation and final release gating, not broad feature expansion.
 
 ## Release 1.0 field gate
 
-Machine-readable status source: `config/field-validation.json`.
+Machine-readable source: `config/field-validation.json`.
 
-Verified status during TCW-004 reconciliation: **6 passed / 7 pending**.
+Current verified status remains **6 passed / 7 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -87,82 +74,93 @@ Pending:
 - FV-RECOVERY-01
 - FV-WAIVER-01
 
-No TCW-002/TCW-003 research or audit result changes those field statuses. Release 1.0 remains blocked until every registry item is passed with privacy-safe evidence and the final release PR/master production gates are green.
+No TCW-005 evidence was added to the registry because the required live field sequence was not observed. Release 1.0 remains blocked until all registry items pass with privacy-safe evidence and the final release PR/master gates are green.
 
-## Evidence-wave results
+## TCW-005 outcome — recovery/reconnect
 
-`TCW-PW-001` is complete once TCW-004 reconciliation merges.
+Auditor verdict: **INCONCLUSIVE / BLOCKED — REQUIRED AUTHENTICATED FIELD ENVIRONMENT NOT AVAILABLE TO THAT SESSION**.
 
-### TCW-002 — Auditor
+What was verified:
 
-Verdict: `PASS WITH NON-BLOCKING FINDINGS`.
+- TCW-005 was authorized against a production-verified v0.9.88 baseline.
+- FV-RECOVERY-01 remained pending before the attempt.
+- The Auditor environment could inspect repository/CI state but could not access the user's authenticated Chrome/ESPN session, Chrome companion runtime, or OS/device network controls.
+- No production code, ESPN state, field status, credentials, or private league data were changed.
 
-Accepted findings:
+What was **not** observed:
 
-- `TCW-002-F01` — MEDIUM, non-blocking: `AGENTS.md` still named older `docs/roadmap.md` as the active backlog/completion authority despite the merged canonical `.ai/shared/*` hierarchy. TCW-004 reconciles this guidance without rewriting roadmap history.
-- `TCW-002-F02` — LOW, non-blocking: legacy documentation/metadata drift remains in `docs/next-codex-task.md`, historical wording in `docs/roadmap.md`, and `config/field-validation.json` `baselineVersion: 0.9.81` versus package v0.9.88. These remain explicit discrepancies rather than silently edited history.
+- a successful authenticated pre-failure Refresh ESPN baseline in the user's browser;
+- a real OS/device network disconnect with the page held open;
+- the actual failed-refresh message/class;
+- the retained snapshot's exact post-failure source/freshness/error labels;
+- authenticated navigation behavior in that failed-refresh state;
+- a restored-network reconnect/refresh.
 
-### TCW-003 — R&D
+Therefore FV-RECOVERY-01 remains pending. The existing code observation that a retained prior `live-companion` snapshot may continue to display `Live ESPN snapshot` after refresh failure remains a strong risk, not a reproduced field defect.
 
-Authoritative handoff: PR #56. Duplicate PR #55 was closed as superseded.
+## External prerequisite to resume TCW-005
 
-Accepted feasibility findings:
+A real user-operated deployed authenticated session must record only privacy-safe observations:
 
-- FV-RECOVERY-01 is safe to exercise now with a real temporary network failure/reconnect.
-- FV-ESPN-05 is time-windowed and should use a naturally relevant pre/post-kickoff or availability transition.
-- FV-ESPN-02 requires a materially different authenticated custom FLEX/OP league state.
+1. OS and browser/version.
+2. Deployed/package checkpoint when known.
+3. Successful pre-failure Refresh ESPN result and sanitized source/capture/freshness labels.
+4. Temporary OS/device network disconnect while the loaded page stays open.
+5. Refresh ESPN while offline after normal cooldown and the sanitized failure class/message.
+6. Whether the prior valid snapshot remains usable.
+7. Exact sanitized source/freshness/error labels after failure.
+8. Whether navigation stays on retained ESPN state without sample fallback.
+9. Restored network plus successful reconnect/refresh and updated capture/freshness state.
+
+No player, league, team, member, cookie, credential, raw payload, or private URL data is needed.
+
+When that evidence exists, Auditor should be re-activated under TCW-005 to render the independent field verdict. Builder remains unwarranted until a deterministic failure is actually reproduced.
+
+## Other accepted evidence-wave findings
+
+- FV-ESPN-05 is time-windowed around a real lock/availability transition.
+- FV-ESPN-02 requires a materially different authenticated custom FLEX/OP league.
 - FV-ESPN-04 is naturally occurring/opportunity-dependent.
-- FV-SEASON-01 is staged/seasonal; some playoff/fallback evidence can be observed earlier, while bye and complete future-window evidence depend on real season/source state.
-- FV-WAIVER-01 remains coverage/observability-dependent; the domain exposes `consideredAdds`, `completeAdds`, `scenarioCount`, and `qualifiedAdds`, while the normal UI does not clearly expose the complete tuple.
+- FV-SEASON-01 is seasonal/staged.
+- FV-WAIVER-01 remains coverage/observability-dependent; domain counters exist but the normal UI does not clearly surface the full required tuple.
+- The Chrome companion currently requests ESPN availability with `limit: 100`; whether this materially truncates live availability remains unverified.
+- A whole-period lock configuration remains a live coverage risk; no production defect is declared without relevant live evidence.
 
-Manager independently confirmed two R&D code observations:
+## Active coordination state
 
-1. A failed ESPN refresh leaves the previous valid `live-companion` snapshot in place; current `hydrateControls()` still labels such a snapshot `Live ESPN snapshot`. This is a verified code observation and a potential field failure, not yet a passed/failed field result.
-2. The Chrome companion's ESPN availability query currently requests `kona_player_info` with `limit: 100`. Whether that materially truncates the relevant live availability universe remains unverified.
+- TCW-006 — Manager reconciliation of the blocked TCW-005 attempt — ACTIVE until its protected PR and post-merge production verification complete.
+- Manager remains active for Release 1.0 field-gate orchestration.
+- Auditor is IDLE while TCW-005 waits on the external local evidence prerequisite.
+- Builder is IDLE because no field-reproduced deterministic defect exists.
+- R&D is IDLE because TCW-003 is complete and no new research is currently necessary.
+- Strategy is IDLE because no recommendation-policy uncertainty is active.
 
-R&D also identified a whole-period lock-policy coverage risk: ESPN supports a first-game-of-period lock mode, while the current normalized live model does not preserve a league-level lock mode. No production defect is declared without a relevant live configuration/observation.
-
-## Active coordination work after TCW-004
-
-- `TCW-005` — FV-RECOVERY-01 Live Failure/Reconnect Validation — Auditor / QA — ACTIVE after TCW-004 merges.
-- Manager remains active for Release 1.0 field-gate orchestration and evidence integration.
-- Builder remains IDLE until a field run reproduces an implementation defect or Manager approves an implementation-ready requirement.
-- R&D returns IDLE after TCW-003.
-- Strategy remains IDLE because no recommendation-policy uncertainty was identified.
-
-## Test and release infrastructure
-
-`package.json` provides `npm test`, `npm run eval:model`, `npm run check`, field-status, smoke, accessibility, mobile, extension, performance, readiness, security, and production-smoke commands.
-
-`.github/workflows/deploy-pages.yml` runs a `test` job for pull requests and master pushes, then `deploy` and `verify-production` on master pushes. Documentation/coordination changes remain subject to the same protected branch/PR workflow.
+No new parallel specialist wave is justified at this checkpoint.
 
 ## Current focus
 
-1. Execute TCW-005 against the deployed app using a real temporary network disconnect/reconnect and capture privacy-safe evidence.
-2. If TCW-005 reproduces stale/live mislabeling or another deterministic failure, route an implementation-ready Builder remediation and require field retest after merge.
-3. Use the next naturally relevant Week 1 kickoff/availability transition for FV-ESPN-05; do not manufacture a recommendation solely for validation.
-4. Seek access to an existing materially different ESPN LM custom FLEX/OP league for FV-ESPN-02 without reconfiguring the primary league just to manufacture evidence.
-5. Observe FV-ESPN-04 IR edge states naturally and accumulate FV-SEASON-01 evidence as the season/source state permits.
-6. For FV-WAIVER-01, prefer privacy-safe aggregate-only observation tooling if needed; do not reopen waiver selection policy or add hidden candidate caps merely to collect evidence.
-7. Preserve Release 1.0 read-only scope and the existing fail-closed identity/missing-data/IR/lock boundaries.
+1. Obtain the privacy-safe user-operated TCW-005 recovery/reconnect evidence package described above.
+2. Re-activate Auditor under TCW-005 only after that evidence exists.
+3. If Auditor confirms a deterministic recovery defect, route a narrow Builder remediation with regression coverage and require a real field retest.
+4. If recovery passes, integrate the evidence/status through a separate protected field-registry change.
+5. Continue the other six field checks only when their real prerequisites exist; do not manufacture league state or specialist work.
+6. Preserve Release 1.0 read-only scope and existing fail-closed identity/missing-data/IR/lock boundaries.
 
 ## Known limitations / gated work
 
-- Screen-reader field validation remains incomplete.
-- Authenticated custom FLEX/OP field validation remains incomplete.
-- Real ESPN IR-edge and lock/availability transition validation remains incomplete.
-- Real playoff/bye intelligence field validation remains incomplete.
-- Live recovery/reconnect validation remains incomplete and is the next active field task.
-- Real waiver enumeration/timing evidence remains incomplete.
+- Screen-reader critical-workflow field validation is incomplete.
+- Authenticated custom FLEX/OP validation is incomplete.
+- Real ESPN IR-edge and lock/availability transition validation is incomplete.
+- Real playoff/bye intelligence validation is incomplete.
+- Live recovery/reconnect validation is incomplete and currently blocked on user-operated local evidence.
+- Real waiver enumeration/timing evidence is incomplete.
 - Internal ESPN JSON endpoints/views remain observed integrations rather than a documented public ESPN API contract.
 - Trade analysis, external notifications, future-only IR-assisted stash discovery, playoff probability modeling, server-side models, and ESPN write actions remain gated future work.
 
 ## Reconciliation findings
 
-The following repository artifacts remain intentionally recorded as stale or historical relative to newer verified state:
+The following remain intentionally recorded as stale/historical rather than silently rewritten:
 
 - `docs/next-codex-task.md` still describes an expected v0.9.76 checkpoint.
-- `docs/roadmap.md` contains historical status language from earlier Release 1.0 execution even though work advanced through v0.9.88.
-- `config/field-validation.json` has `baselineVersion: 0.9.81` while package version is v0.9.88; current item statuses/evidence remain the authoritative field-check state.
-
-TCW-004 resolves the source-of-truth ambiguity in `AGENTS.md` by making `.ai/shared/*` the canonical coordination layer while retaining `docs/roadmap.md` and `docs/advanced-roadmap.md` as product/history/detail sources. It does not cosmetically rewrite historical evidence or alter field status.
+- `docs/roadmap.md` contains historical status wording from earlier Release 1.0 execution despite work advancing through v0.9.88.
+- `config/field-validation.json` has `baselineVersion: 0.9.81` while package version is v0.9.88; current item statuses/evidence remain authoritative for field-check state.
