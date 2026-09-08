@@ -6,13 +6,17 @@ The Chip Winner is an ESPN-only, read-only in-season fantasy football companion.
 
 ## Source of truth
 
-Before changing the repository, inspect `git status`, recent commits, `package.json`, `docs/roadmap.md`, and `docs/advanced-roadmap.md`.
+Before changing the repository, inspect `git status`, recent commits, `package.json`, the canonical `.ai/shared/*` coordination files, and the relevant product/history documentation.
 
 - `package.json` owns the current application version.
-- The **Current execution plan** in `docs/roadmap.md` owns the active implementation backlog and completion status.
-- `docs/advanced-roadmap.md` owns the longer release sequence and feature gates.
+- `.ai/shared/PROJECT_STATE.md` owns the latest reconciled project checkpoint, verified current state, active limitations, and repository discrepancies.
+- `.ai/shared/ROADMAP.md` owns the active milestone, execution dependency order, and current coordination backlog.
+- `.ai/shared/DECISIONS.md` owns durable reconciled project decisions.
+- `.ai/shared/WORKFLOW.md` owns the team roles, evidence hierarchy, task/branch/merge workflow, scope control, and handoff contract.
+- `docs/roadmap.md` and `docs/advanced-roadmap.md` remain important product-planning, release-history, technical-detail, and feature-gate sources, but older status wording in those files does not override newer verified canonical `.ai/shared/*` coordination state.
 - `config/field-validation.json` owns Release 1.0 field-check status; `docs/field-validation.md` owns the evidence policy and completion rule.
-- `docs/next-codex-task.md` is a point-in-time handoff. Refresh it when its checkpoint or primary task changes; do not treat an older handoff as more authoritative than the repository state or roadmap.
+- `docs/next-codex-task.md` is a point-in-time handoff. Refresh it when its checkpoint or primary task changes; do not treat an older handoff as more authoritative than verified repository/canonical state.
+- If repository sources disagree, record the discrepancy, verify the newest reliable evidence, and do not silently reconcile conflicting status claims.
 - Preserve user changes. Do not reimplement work already marked complete without first proving the current implementation is missing or incorrect.
 
 ## Protected master workflow
@@ -92,7 +96,7 @@ Performance policy: focused HTML, CSS, app-entry, and sample-data budgets remain
 
 ## Current priorities
 
-Work in the dependency order maintained in `docs/roadmap.md`. At the current stage that means:
+Work in the dependency order maintained in `.ai/shared/ROADMAP.md`, consulting `docs/roadmap.md` and `docs/advanced-roadmap.md` for supporting product/history/detail context. At the current stage that means:
 
 1. Complete the Release 1.0 field-validation registry in `config/field-validation.json` using the privacy-safe evidence rules in `docs/field-validation.md`. A real field defect reopens deterministic implementation only when reproduced; a missing real-world opportunity may remain `blocked` but cannot be silently counted as passed.
 2. Accumulate real multiweek projection coverage through the one-click browser workflow as each source publication becomes available. Preserve the explicit week-approval boundary, guarded publication rollover, stable-ID crosswalk, D/ST bridge, fail-closed reviewed identity bridges, explicit provider-ID supersession semantics, reviewed stale-source exclusions, and classification-only diagnostics. Never chase 100% coverage by weakening identity rules.
