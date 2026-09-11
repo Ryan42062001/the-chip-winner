@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at_utc": "2026-09-11T05:20:00Z",
+  "updated_at_utc": "2026-09-11T05:23:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED","BLOCKED","ASSIGNED","IN_PROGRESS","MANAGER_REVIEW_READY","AUDIT_READY","MERGE_READY","REWORK_REQUIRED","MERGED","CLOSED"],
@@ -24,18 +24,18 @@
     {
       "task_id": "TCW-008",
       "owner": "Manager",
-      "status": "IN_PROGRESS",
+      "status": "MERGE_READY",
       "task_file": ".ai/manager/tasks/TCW-008.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "cb383fd7a39d5f3404c319167541441d89da50aa",
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "cd9c0e98a5a1a729608022b980a402bb22a6540b",
       "branch": "manager/tcw-008-post-1-roadmap",
-      "pr": null,
+      "pr": 62,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "blocked_on": [],
-      "next_gate": "Open protected documentation-only PR after canonical roadmap and detailed post-1.0 candidate note are updated"
+      "next_gate": "PR #62 exact-head CI must pass before merge; then verify post-merge master test/deploy/production and close TCW-008 canonically"
     }
   ]
 }
