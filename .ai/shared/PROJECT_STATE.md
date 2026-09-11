@@ -8,9 +8,10 @@ Current operating state: Release 1.0 field-gate orchestration / no active implem
 - Repository: `Ryan42062001/the-chip-winner`
 - Protected default branch: `master`
 - Verified Workflow V3 integration checkpoint: `61c06843999df6a66236f352627f0fb2c29908c1`
+- Latest verified roadmap checkpoint: `e42e17ae2a065557c3ba121aaa4b8f96294360d4`
 - Package version: `0.9.88`
-- TCW-007 PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`.
-- Post-merge `master` workflow #427 passed test, deploy, and production verification.
+- TCW-007 PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`; post-merge workflow #427 passed test, deploy, and production verification.
+- TCW-008 PR #62 merged at `e42e17ae2a065557c3ba121aaa4b8f96294360d4`; post-merge workflow #433 passed test, deploy, and production verification.
 - Workflow V3 is canonical.
 
 ## Product boundary
@@ -48,7 +49,7 @@ Pending:
 - FV-RECOVERY-01
 - FV-WAIVER-01
 
-TCW-007 changed only the AI-team control plane. It did not modify production behavior or field status.
+TCW-007 and TCW-008 changed only AI-team/control-plane and roadmap documentation. Neither changed production behavior or field status.
 
 ## Completed coordination
 
@@ -59,6 +60,7 @@ TCW-007 changed only the AI-team control plane. It did not modify production beh
 - TCW-005 — Auditor execution attempt completed truthfully but field task remains BLOCKED awaiting local evidence.
 - TCW-006 — blocked recovery-field reconciliation — CLOSED.
 - TCW-007 — Workflow V3 operating upgrade — CLOSED after PR #60 merge and successful workflow #427.
+- TCW-008 — post-1.0 roadmap candidate sequencing — CLOSED after PR #62 merge and successful workflow #433.
 
 ## Workflow V3 operating state
 
@@ -101,6 +103,6 @@ Do not include player, league, team, member, cookie, credential, raw payload, or
 
 ## Known gated work
 
-Other pending field opportunities remain prerequisite-dependent: screen-reader workflow, materially custom FLEX/OP league, naturally occurring IR edge state, real lock/availability transition, seasonal playoff/bye state, and waiver-scale/timing evidence.
+Post-1.0 Roadmap Discovery input is now recorded in `.ai/shared/ROADMAP.md` and `docs/post-1.0-roadmap-candidates.md`. The proposed evaluation order is GM Action Plan / recommendation synthesis, Trade Analyzer, recommendation confidence + league-market intelligence, decision-impacting injury/news intelligence + notifications, and playoff probability / championship-path modeling. This is not an authorized successor milestone.
 
-Trade analysis, notifications, future-only IR-assisted stash discovery, playoff probability modeling, server-side models, and ESPN write actions remain gated future work.
+Other future work remains gated, including future-only IR-assisted stash discovery, server-side models, additional external sources, and ESPN write actions.
