@@ -62,4 +62,38 @@ No successor milestone is automatically authorized. A valid conclusion remains:
 
 `NO SUCCESSOR MILESTONE CURRENTLY JUSTIFIED.`
 
-Gated candidate areas remain trade analysis, external injury/news notifications, future-only IR-assisted stash discovery, playoff probability modeling, server-side models, and ESPN write actions.
+The following sequence is **Roadmap Discovery input**, not an authorized implementation schedule. It should be revalidated against real Release 1.0 usage, field evidence, source feasibility, and user value before any successor milestone is opened.
+
+### Proposed candidate order
+
+1. **GM Action Plan / recommendation synthesis**
+   - Convert existing lineup, waiver, season-plan, change-detection, freshness, and alert intelligence into one prioritized weekly action surface.
+   - Answer: **What should I do with my fantasy team today, and why?**
+   - Prefer synthesis of existing approved facts/recommendations over creating a new hidden scoring authority.
+
+2. **Trade Analyzer**
+   - Compare trades through lineup impact, depth, replacement value, bye/playoff effects, and short-vs-long-horizon consequences.
+   - Avoid a single opaque “winner” grade.
+   - Keep assumptions, projection coverage, and uncertainty inspectable.
+
+3. **Recommendation confidence + league-market intelligence**
+   - Expand confidence beyond simple point edge using source agreement/freshness, injury uncertainty, coverage, and state freshness where evidence exists.
+   - Add connected-league market context such as opponent roster needs, positional scarcity in the ESPN player pool, and transaction patterns when ESPN or another approved source supplies the facts.
+   - Never invent private opponent information or imply outcome probability from an uncalibrated score.
+
+4. **Decision-impacting injury/news intelligence and notifications**
+   - Research and approve a trustworthy source before implementation.
+   - Surface news only when it materially changes a lineup, waiver, trade, IR, or planning decision.
+   - Preserve source attribution, freshness, official-vs-commentary distinctions, and the read-only boundary.
+
+5. **Playoff probability / championship-path modeling**
+   - Treat qualification odds, championship odds, and opponent-win probability as separate calibrated modeling work.
+   - Require documented assumptions, validated inputs, uncertainty handling, and independent evaluation before user-facing probabilities are allowed.
+
+6. **ESPN write actions remain later gated**
+   - Lineup changes, add/drop submissions, waiver claims, trades, or other ESPN mutations require a separate explicitly authorized milestone after the read-only path proves trustworthy.
+   - No background or automatic transactions.
+
+Detailed discovery notes: `docs/post-1.0-roadmap-candidates.md`.
+
+Other gated candidate areas remain future-only IR-assisted stash discovery, server-side models, additional projection/news sources, and optional confirmed ESPN actions.
