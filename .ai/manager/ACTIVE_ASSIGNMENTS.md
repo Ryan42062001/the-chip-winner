@@ -9,7 +9,8 @@ Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 - TCW-002 — independent Release 1.0 baseline audit — COMPLETE / PASS WITH NON-BLOCKING FINDINGS.
 - TCW-003 — ESPN field-validation feasibility research — COMPLETE.
 - TCW-004 — evidence-wave integration/canonical authority reconciliation — COMPLETE.
-- TCW-006 — blocked recovery-field reconciliation — CLOSED after PR #59 merged at `a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63` and workflow #425 passed test/deploy/production verification.
+- TCW-006 — blocked recovery-field reconciliation — CLOSED.
+- TCW-007 — Workflow V3 operating upgrade — CLOSED; PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`; post-merge workflow #427 passed test, deploy, and production verification.
 
 ## TCW-005 — FV-RECOVERY-01 Live Failure/Reconnect Validation
 
@@ -20,30 +21,10 @@ Merged handoff checkpoint: `748aed086de038cdd627d3cefb433c7bc1458761`
 
 Do not re-run TCW-005 in an environment that still lacks the authenticated local browser and OS/device network controls. Re-activate Auditor only after the privacy-safe local observation package exists.
 
-## TCW-007 — Workflow V3 Operating Upgrade
-
-Role: Manager / Architect
-State: IN_PROGRESS
-Branch: `manager/tcw-007-workflow-v3`
-Execution mode: WORK_MODE_PREFERRED
-Fallback: normal GitHub/repository control-plane execution; Work Mode is not required.
-
-Scope:
-- reconcile TCW-006 closeout;
-- add ACTIVE_TASKS fast-path registry;
-- add compact role charters;
-- make worker chats task-scoped/disposable;
-- add Fast/Full Refresh;
-- add Work Mode recommendation/fallback;
-- add anti-loop temporary Troubleshooting escalation;
-- make Manager event-driven;
-- correct Strategy to In-Season Strategy & Decision Intelligence;
-- preserve product behavior and the 6 passed / 7 pending field gate.
-
 ## Role state
 
 ### Manager / Architect
-ACTIVE for TCW-007 only. After closeout, return to event-driven Release 1.0 orchestration.
+IDLE / event-driven Release 1.0 field-gate orchestration. Reactivate for new evidence, blockers, dependency transitions, integration/audit events, or explicit user direction.
 
 ### Implementation Engineer / Builder
 IDLE. No field-reproduced deterministic defect currently justifies implementation.

@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Roadmap
 
 Last reconciled: 2026-09-11
-Manager task: TCW-007 — Workflow V3 operating upgrade
+Current milestone: Release 1.0 field validation
 
 ## Current milestone
 
@@ -33,22 +33,19 @@ Completed:
 - TCW-003 ESPN field-feasibility research.
 - TCW-004 evidence-wave integration.
 - TCW-005 Auditor execution attempt (field task remains blocked).
-- TCW-006 blocked recovery-field reconciliation; PR #59 merged at `a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63`; workflow #425 passed.
-
-Active control-plane work:
-- TCW-007 — Workflow V3 operating upgrade. No production behavior or field-registry changes.
+- TCW-006 blocked recovery-field reconciliation.
+- TCW-007 Workflow V3 operating upgrade; PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`; workflow #427 passed test/deploy/production verification.
 
 ## Immediate dependency order
 
-1. Complete TCW-007 protected workflow upgrade and post-merge verification.
-2. Return Manager to event-driven orchestration; keep specialists idle unless a real prerequisite or defect exists.
-3. Obtain privacy-safe user-operated TCW-005 recovery/reconnect observations.
-4. Re-activate Auditor under TCW-005 for an independent field verdict.
-5. If the verdict reproduces a deterministic defect, route a narrow Builder remediation and require independent real field retest.
-6. If recovery passes, integrate privacy-safe field evidence/status through a separate protected task.
-7. Execute the other pending field checks only when their genuine real-world prerequisites exist.
-8. Complete final Release 1.0 PR/master gates after all field checks pass.
-9. Perform Roadmap Discovery before authorizing a successor milestone.
+1. Keep Manager event-driven and specialists IDLE unless a real prerequisite, finding, or explicit new requirement exists.
+2. Obtain privacy-safe user-operated TCW-005 recovery/reconnect observations.
+3. Re-activate Auditor under TCW-005 for an independent field verdict.
+4. If the verdict reproduces a deterministic defect, route a narrow Builder remediation and require independent real field retest.
+5. If recovery passes, integrate privacy-safe field evidence/status through a separate protected task.
+6. Execute the other pending field checks only when their genuine real-world prerequisites exist.
+7. Complete final Release 1.0 PR/master gates after all field checks pass.
+8. Perform Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 
