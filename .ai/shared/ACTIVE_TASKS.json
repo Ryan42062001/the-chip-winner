@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "updated_at_utc": "2026-09-11T05:00:00Z",
+  "canonical_branch": "master",
+  "manager_owned": true,
+  "lifecycle_states": ["PLANNED","BLOCKED","ASSIGNED","IN_PROGRESS","MANAGER_REVIEW_READY","AUDIT_READY","MERGE_READY","REWORK_REQUIRED","MERGED","CLOSED"],
+  "tasks": [
+    {
+      "task_id": "TCW-005",
+      "owner": "Auditor",
+      "status": "BLOCKED",
+      "task_file": ".ai/manager/tasks/TCW-005.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "2ef036eb02efd6600049d91f2f076c0f3a633a1b",
+      "worker_checkpoint_sha": "748aed086de038cdd627d3cefb433c7bc1458761",
+      "branch": null,
+      "pr": 58,
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "blocked_on": ["privacy-safe user-operated authenticated recovery/reconnect field evidence"],
+      "next_gate": "User supplies required local observations -> re-activate Auditor under TCW-005 for independent field verdict"
+    },
+    {
+      "task_id": "TCW-007",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-007.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63",
+      "worker_checkpoint_sha": null,
+      "branch": "manager/tcw-007-workflow-v3",
+      "pr": null,
+      "dependency": "INDEPENDENT",
+      "execution_mode": "WORK_MODE_PREFERRED",
+      "audit_required": false,
+      "blocked_on": [],
+      "next_gate": "Protected PR exact-head CI -> Manager merge -> post-merge master test/deploy/production verification -> canonical closeout"
+    }
+  ]
+}
