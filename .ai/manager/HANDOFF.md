@@ -2,34 +2,35 @@
 
 HANDOFF
 
-Task ID: TCW-007
+Task ID: TCW-008
 Role: Manager / Architect
-Status: CLOSED — WORKFLOW V3 ADOPTED
+Status: CLOSED — POST-1.0 ROADMAP DISCOVERY INPUT RECORDED
 
 Verified starting state:
 - Repository: `Ryan42062001/the-chip-winner`.
-- Protected starting `master`: `a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63`.
+- Protected starting `master`: `cb383fd7a39d5f3404c319167541441d89da50aa`.
 - Package: v0.9.88.
 - Release 1.0 field gate: 6 passed / 7 pending.
 
 Work completed:
-- created control-plane-only branch `manager/tcw-007-workflow-v3`;
-- added Workflow V3, ACTIVE_TASKS, compact role charters, Fast/Full Refresh, Work Mode routing/fallback, task-scoped disposable chats, event-driven Manager behavior, and anti-loop Troubleshooting escalation;
-- corrected Strategy authority to **In-Season Strategy & Decision Intelligence** and explicitly kept draft strategy in The War Room;
-- reconciled TCW-006 as closed from verified merge/production evidence;
-- preserved all production behavior and field-validation status.
+- created documentation/control-plane branch `manager/tcw-008-post-1-roadmap`;
+- added a proposed post-1.0 discovery sequence to `.ai/shared/ROADMAP.md`;
+- added detailed product guidance in `docs/post-1.0-roadmap-candidates.md`;
+- prioritized GM Action Plan / recommendation synthesis first, followed by Trade Analyzer, confidence + league-market intelligence, decision-impacting injury/news notifications, and playoff probability / championship-path modeling;
+- kept ESPN write actions later and separately gated;
+- explicitly preserved Release 1.0 as the only active milestone and kept all future sequence items non-binding pending formal Roadmap Discovery.
 
 Verified evidence:
-- TCW-007 branch head: `03e223f301dd7f9165bf00bab06c11c80f47ca40`.
-- PR #60 changed 19 files, all under `.ai/**`.
-- PR #60 exact-head workflow #426: SUCCESS.
-- PR #60 merged into `master` at `61c06843999df6a66236f352627f0fb2c29908c1`.
-- post-merge `master` workflow #427: test SUCCESS, deploy SUCCESS, verify-production SUCCESS.
+- PR #62 exact-head: `e9e9eba6a86e240c47e0c13f8634d0a731b7e3e6`.
+- PR #62 exact-head workflow #432: SUCCESS.
+- PR #62 merged into `master` at `e42e17ae2a065557c3ba121aaa4b8f96294360d4`.
+- post-merge `master` workflow #433: test SUCCESS, deploy SUCCESS, verify-production SUCCESS.
 
 Product/field impact:
 - no production JS/CSS/HTML behavior changed;
 - no ESPN/provider behavior changed;
-- no recommendation policy changed beyond correcting the employee role boundary;
+- no recommendation engine behavior changed;
+- no package version changed;
 - no field-registry item changed;
 - Release 1.0 remains 6 passed / 7 pending.
 
@@ -42,7 +43,8 @@ Current role state:
 - Troubleshooting not instantiated.
 
 Exact next action:
-- When available, obtain the privacy-safe user-operated TCW-005 recovery/reconnect observation package and re-activate Auditor for the independent field verdict. Do not manufacture substitute work while the real prerequisite is absent.
+- Continue Release 1.0 field-gate orchestration. When available, obtain the privacy-safe user-operated TCW-005 recovery/reconnect observation package and re-activate Auditor for the independent field verdict.
+- Do not activate the post-1.0 roadmap candidates until Release 1.0 closes and formal Roadmap Discovery authorizes a successor milestone.
 
 Checkpoint / SHA:
-- Workflow V3 integration checkpoint: `61c06843999df6a66236f352627f0fb2c29908c1`.
+- Latest verified roadmap checkpoint: `e42e17ae2a065557c3ba121aaa4b8f96294360d4`.
