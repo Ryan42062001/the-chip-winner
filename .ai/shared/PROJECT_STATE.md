@@ -1,16 +1,17 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-11
-Manager task: TCW-007 — Workflow V3 operating upgrade
+Current operating state: Release 1.0 field-gate orchestration / no active implementation task
 
 ## Repository
 
 - Repository: `Ryan42062001/the-chip-winner`
 - Protected default branch: `master`
-- Verified TCW-007 starting `master`: `a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63`
+- Verified Workflow V3 integration checkpoint: `61c06843999df6a66236f352627f0fb2c29908c1`
 - Package version: `0.9.88`
-- TCW-006 merged through PR #59 at `a7d9d1a3f36241bd11a0cae1c9bbb66f0c0cea63`.
-- Post-TCW-006 `master` workflow #425 passed test, deploy, and production verification.
+- TCW-007 PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`.
+- Post-merge `master` workflow #427 passed test, deploy, and production verification.
+- Workflow V3 is canonical.
 
 ## Product boundary
 
@@ -47,7 +48,7 @@ Pending:
 - FV-RECOVERY-01
 - FV-WAIVER-01
 
-TCW-007 does not modify production behavior or field status.
+TCW-007 changed only the AI-team control plane. It did not modify production behavior or field status.
 
 ## Completed coordination
 
@@ -56,35 +57,34 @@ TCW-007 does not modify production behavior or field status.
 - TCW-003 — ESPN field-validation feasibility research — COMPLETE.
 - TCW-004 — evidence-wave integration/canonical authority reconciliation — COMPLETE.
 - TCW-005 — Auditor execution attempt completed truthfully but field task remains BLOCKED awaiting local evidence.
-- TCW-006 — blocked recovery-field reconciliation — CLOSED after PR #59 merge and successful workflow #425.
+- TCW-006 — blocked recovery-field reconciliation — CLOSED.
+- TCW-007 — Workflow V3 operating upgrade — CLOSED after PR #60 merge and successful workflow #427.
 
-## TCW-007 — Workflow V3 operating upgrade
+## Workflow V3 operating state
 
-State: IN_PROGRESS on control-plane-only branch `manager/tcw-007-workflow-v3`.
+The normal permanent team is:
+- Manager / Architect
+- Implementation Engineer / Builder
+- In-Season Strategy & Decision Intelligence Analyst
+- R&D
+- Independent Auditor / QA
 
-Purpose:
-- adopt durable roles / disposable chats / repository memory;
-- add Fast Refresh and Full Refresh;
-- add Manager-owned `.ai/shared/ACTIVE_TASKS.json`;
-- add compact role charters;
-- classify new tasks as STANDARD_CHAT / WORK_MODE_PREFERRED / WORK_MODE_HIGH_VALUE with normal-chat fallback;
-- add anti-loop temporary Troubleshooting escalation;
-- make Manager event-driven;
-- correct Strategy from draft strategy to **In-Season Strategy & Decision Intelligence**;
-- preserve all current product behavior and Release 1.0 gates.
+Troubleshooting & Root Cause remains temporary/on-demand.
 
-Execution mode: WORK_MODE_PREFERRED; normal GitHub/repository execution is the fallback and remains valid.
+`ROLE = DURABLE`, `CHAT = DISPOSABLE`, `TASK = UNIT OF WORK`, `REPOSITORY = MEMORY`, `MANAGER = ROUTER / INTEGRATOR`.
+
+New meaningful tasks are classified `STANDARD_CHAT`, `WORK_MODE_PREFERRED`, or `WORK_MODE_HIGH_VALUE`; Work Mode is an accelerator, not a dependency, and preferred/high-value tasks receive a normal-chat fallback when feasible.
 
 ## Active coordination state
 
-- Manager — ACTIVE for TCW-007 control-plane upgrade only; after completion returns to event-driven Release 1.0 orchestration.
+- Manager — effectively IDLE/event-driven for Release 1.0 field-gate orchestration.
 - Auditor — IDLE/BLOCKED on TCW-005 until user-operated local recovery evidence exists.
 - Builder — IDLE; no reproduced deterministic defect exists.
 - R&D — IDLE; no unresolved research prerequisite currently requires it.
 - In-Season Strategy — IDLE; no recommendation-policy uncertainty is active.
 - Troubleshooting & Root Cause — IDLE/not instantiated.
 
-No new parallel specialist wave is justified.
+No parallel specialist wave is justified.
 
 ## TCW-005 external prerequisite
 
