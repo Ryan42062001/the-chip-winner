@@ -2,39 +2,37 @@
 
 HANDOFF
 
-Task ID: TCW-015
+Task ID: TCW-013
 Role: Manager / Architect
-Status: CLOSED — FV-WAIVER-01 PASSED AND WAIVER FIELD LOOP VERIFIED
+Status: IN_PROGRESS — CONTROL-PLANE CI EFFICIENCY & MERGE-AUTHORITY HARDENING
 
-Verified outcome:
-- TCW-012 PR #74 merged at `0d9e7b55b267d9eb3f0876fe077e1f19dc38f453`; workflow #463 passed test, deploy, and verify-production.
-- Real deployed authenticated TCW-014 retest observed 89 considered adds, 88 complete adds, 352 scenarios evaluated, and 0 qualified adds with acceptable page responsiveness.
-- Independent Auditor PR #78 returned PASS CANDIDATE with no findings; merged at `4ccdefcd3bda4cb527f91552b7533694b15675ae`; workflow #470 passed.
-- Manager integration PR #79 merged at `ae932395f87f77aad2c067ca16dc1042d4f79786`.
-- Post-merge workflow #473 / run `34736173196` passed the full test suite, Pages deployment, and production smoke.
-- `config/field-validation.json` records FV-WAIVER-01 as `passed` with privacy-safe evidence.
-- Release 1.0 field gate is **8 passed / 5 pending**.
+Verified starting state:
+- Canonical master: `67159238ed04118334915b58923f2a071ece19c8`.
+- TCW-015 is closed; Release 1.0 field gate is 8 passed / 5 pending.
+- Old TCW-013 PR #75 was closed as stale/superseded and is not safe to merge.
+- Replacement branch: `manager/tcw-013-workflow-efficiency-v2`.
 
-Remaining pending field checks:
-- FV-A11Y-02 — screen-reader critical workflow
-- FV-ESPN-02 — authenticated custom FLEX/OP league
-- FV-ESPN-04 — authenticated IR edge states
-- FV-ESPN-05 — authenticated lock/availability transitions
-- FV-SEASON-01 — real playoff/bye intelligence states
+Approved improvements:
+- full test/CI remains unconditional for PRs and master pushes;
+- `.ai/**`-only master pushes may skip Pages deploy and production smoke as NOT APPLICABLE;
+- any changed path outside `.ai/**`, manual dispatch, or unavailable classification deploys normally;
+- Workflow V3.1 now keeps durable roadmap state separate from volatile task inventory;
+- active tasks must declare `merge_authority: "Manager"`;
+- non-Manager workers must stop at validated PR/handoff and must not invoke merge/auto-merge;
+- an externally merged worker PR is repository fact but not automatically Manager-accepted; Manager must independently review/reconcile it.
 
-Verification matrix:
+Verification plan:
+1. deterministic classifier and workflow-audit tests;
+2. exact-head PR CI;
+3. merge workflow-changing PR only after green CI;
+4. verify post-merge master test/deploy/production smoke because this integration touches `.github/**`, `scripts/**`, and `test/**`;
+5. perform `.ai/**`-only TCW-013 closeout and verify test PASS while deploy/verify-production are skipped.
 
-| Dimension | Status | Evidence |
-| --- | --- | --- |
-| Waiver diagnostics implementation | PASS | PR #74 / workflow #463 |
-| Real deployed field evidence | PASS | 89 considered / 88 complete / 352 scenarios / 0 qualified; responsive UI |
-| Independent audit | PASS CANDIDATE ACCEPTED | PR #78 / no findings |
-| Field registry integration | PASS | PR #79 / merge `ae932395...` |
-| Post-merge master verification | PASS | workflow #473 / run `34736173196` |
-| Product behavior change in integration | NONE | field evidence/control-plane only |
-
-No unresolved waiver-field finding remains from TCW-014/TCW-015.
+Protected boundaries:
+- no product behavior changes;
+- no field-validation changes;
+- no recommendation/provider/ESPN changes.
 
 ACTIVATE NOW:
-- No specialist role automatically activates from this closeout.
-- Manager and specialists remain idle/event-driven until a genuine remaining field prerequisite or separately approved workflow task is ready.
+- Manager — TCW-013.
+- Builder, Auditor, Strategy, R&D, Troubleshooting — IDLE/event-driven.
