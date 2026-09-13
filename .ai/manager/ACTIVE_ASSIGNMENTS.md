@@ -2,6 +2,7 @@
 
 Last updated: 2026-09-12
 Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
+Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Completed coordination
 
@@ -12,57 +13,48 @@ Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 - TCW-006 — blocked recovery-field reconciliation — CLOSED.
 - TCW-007 — Workflow V3 operating upgrade — CLOSED.
 - TCW-008 — post-1.0 roadmap candidate sequencing — CLOSED.
+- TCW-010 — Workflow V3.1 coordination hardening — CLOSED after PR #68 merge at `86f1fadfb071f811d681de9244899a8abc2957e5` and successful master workflow #448 verification.
 
 ## TCW-005 — FV-RECOVERY-01 Live Failure/Reconnect Validation
 
 Role: Independent Auditor / QA
-Current state: BLOCKED on TCW-009 remediation and deployed retest
-Latest verdict: COMPLETE — FAIL — REPRODUCED DEFECT
+Current state: `WAITING_EXTERNAL_EVIDENCE`
+Latest field verdict: FAIL — REPRODUCED DEFECT before remediation
 Auditor PR: #65
-Merged verdict checkpoint: `42808c3c912742ffb88470a2a6d7b446a97eb9b6`
-Post-merge workflow #439: test, deploy, and production verification PASS.
 
-Accepted findings:
-- TCW-005-F01 — HIGH / blocking: retained last-valid ESPN data remained persistently labeled `Live ESPN snapshot` after a failed refresh, including after navigation removed the transient error notice.
-- TCW-005-F02 — MEDIUM: a real network/fetch failure displayed authentication-focused guidance even though authentication was unchanged and restoring connectivity alone recovered.
+The accepted recovery defect has been remediated and deployed by TCW-009. The next required input is external/user-operated: repeat the authenticated network disconnect/reconnect sequence against the deployed site and provide privacy-safe observations of retained-data labeling, failure guidance, navigation persistence, and successful reconnect.
 
-FV-RECOVERY-01 remains not passed. Re-activate Auditor under TCW-005 only after TCW-009 is accepted, merged, deployed, and production-verified.
+After that evidence exists, re-activate Auditor under TCW-005 for the independent verdict. Do not change `config/field-validation.json` directly from the Auditor task.
 
 ## TCW-009 — Recovery State Honesty Remediation
 
 Role: Implementation Engineer / Builder
-Status: ASSIGNED
-Execution mode: STANDARD_CHAT
-Task specification: `.ai/manager/tasks/TCW-009.md`
-Expected branch: `builder/tcw-009-recovery-state-remediation`
-Audit required: YES — independent deployed TCW-005 field retest after accepted implementation.
+Status: `AUDIT_READY`
+Task: `.ai/manager/tasks/TCW-009.md`
+Builder PR: #67
+Merged checkpoint: `267b44e7ccea02b903938ead2ee4658d60c2d20b`
+Post-merge workflow #444: test, deploy, and production verification PASS.
 
-Objective:
-- preserve the last valid ESPN snapshot after refresh failure;
-- add durable failed-refresh/stale qualification that survives navigation;
-- restore normal live labeling after successful reconnect;
-- correct misleading authentication-only fetch/network failure guidance;
-- add deterministic regression coverage;
-- do not modify the field registry.
+Builder implementation is complete. No further Builder work is authorized unless TCW-005 independently reproduces another deterministic defect.
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE / event-driven integration for TCW-009 and Release 1.0 field-gate orchestration.
+ACTIVE / event-driven Release 1.0 field-gate orchestration and evidence integration.
 
 ### Implementation Engineer / Builder
-ACTIVE — TCW-009.
+IDLE — TCW-009 is merged/deployed and awaiting independent field retest.
 
 ### In-Season Strategy & Decision Intelligence Analyst
 IDLE. No recommendation-policy uncertainty is involved.
 
 ### R&D
-IDLE. The reproduced defect and requirements are implementation-ready.
+IDLE. No unresolved research dependency is required for the recovery retest.
 
 ### Independent Auditor / QA
-IDLE/BLOCKED on TCW-005 until the TCW-009 remediation is deployed and production-verified.
+WAITING_EXTERNAL_EVIDENCE — TCW-005 resumes after the user-operated deployed recovery retest.
 
 ### Troubleshooting & Root Cause Engineer
-IDLE / not instantiated. Activate only if Builder reaches the Workflow V3 anti-loop threshold.
+IDLE / not instantiated.
 
-No parallel specialist wave is justified while recovery remediation is the hard dependency for FV-RECOVERY-01.
+No parallel specialist wave is justified while the next recovery gate is external field evidence.

@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-12
-Current operating state: Release 1.0 field validation / TCW-009 recovery remediation assigned
+Current operating state: Release 1.0 field validation / TCW-005 post-remediation recovery retest waiting on external evidence
 
 ## Repository
 
@@ -10,8 +10,10 @@ Current operating state: Release 1.0 field validation / TCW-009 recovery remedia
 - Workflow V3 integration checkpoint: `61c06843999df6a66236f352627f0fb2c29908c1`.
 - Post-1.0 roadmap checkpoint: `e42e17ae2a065557c3ba121aaa4b8f96294360d4`.
 - TCW-005 reproduced-defect verdict merged through PR #65 at `42808c3c912742ffb88470a2a6d7b446a97eb9b6`; post-merge workflow #439 passed test, deploy, and production verification.
+- TCW-009 remediation merged through PR #67 at `267b44e7ccea02b903938ead2ee4658d60c2d20b`; post-merge workflow #444 passed test, deploy, and production verification.
+- Workflow V3.1 merged through PR #68 at `86f1fadfb071f811d681de9244899a8abc2957e5`; post-merge workflow #448 passed test, deploy, and production verification.
 - Package version: `0.9.88` unless changed by an accepted later implementation.
-- Workflow V3 is canonical.
+- Workflow V3.1 is canonical through `.ai/shared/WORKFLOW_V3_1.md` over the V3 base workflow.
 
 ## Product boundary
 
@@ -21,9 +23,9 @@ The Chip Winner remains an ESPN-only, read-only, **in-season** fantasy-football 
 
 ### Release 1.0 — trustworthy read-only companion
 
-Status: ACTIVE — FIELD VALIDATION / RECOVERY REMEDIATION
+Status: ACTIVE — FIELD VALIDATION / RECOVERY RETEST
 
-The deterministic implementation baseline remains substantially complete. Current work is evidence-backed field validation and narrow remediation of reproduced field defects, not broad feature expansion.
+The deterministic implementation baseline remains substantially complete. Current work is evidence-backed field validation and independent retest of deployed remediation, not broad feature expansion.
 
 ## Field gate
 
@@ -48,7 +50,7 @@ Pending:
 - FV-RECOVERY-01
 - FV-WAIVER-01
 
-FV-RECOVERY-01 has now produced a real **FAIL — REPRODUCED DEFECT** verdict under TCW-005 but remains `pending` in the registry because neither Auditor nor Builder is authorized to advance the field status. It cannot pass until remediation is deployed and independently field-retested.
+FV-RECOVERY-01 produced a real **FAIL — REPRODUCED DEFECT** verdict under TCW-005 and remains `pending` in the field registry. TCW-009 has now been remediated, merged, deployed, and production-verified, but the field item cannot pass until the same real failure/reconnect sequence is independently retested.
 
 ## TCW-005 accepted findings
 
@@ -63,23 +65,24 @@ The real deployed authenticated recovery cycle against `5aea4b9a8a2bcdbae104a042
 
 Accepted findings:
 
-- **TCW-005-F01 — HIGH / blocking:** retained stale/last-valid data is materially mislabeled as live after failed refresh.
-- **TCW-005-F02 — MEDIUM:** network/fetch failure guidance misleadingly directs the user toward ESPN sign-in even when connectivity is the demonstrated cause.
+- **TCW-005-F01 — HIGH / blocking:** retained stale/last-valid data was materially mislabeled as live after failed refresh.
+- **TCW-005-F02 — MEDIUM:** network/fetch failure guidance misleadingly directed the user toward ESPN sign-in even when connectivity was the demonstrated cause.
 
-Snapshot retention and reconnect success are positive behaviors and must be preserved.
+Snapshot retention and reconnect success were positive behaviors and were required to be preserved by remediation.
 
-## Active remediation
+## Recovery remediation / retest gate
 
 ### TCW-009 — Recovery State Honesty Remediation
 
 Owner: Implementation Engineer / Builder  
-Status: ASSIGNED  
+Status: AUDIT_READY  
 Execution mode: STANDARD_CHAT  
 Task: `.ai/manager/tasks/TCW-009.md`  
-Expected branch: `builder/tcw-009-recovery-state-remediation`  
-Audit required: YES.
+Builder PR: #67  
+Merged checkpoint: `267b44e7ccea02b903938ead2ee4658d60c2d20b`  
+Post-merge workflow #444: test, deploy, and production verification PASS.
 
-Required outcome:
+Implemented outcome:
 - retain the last valid snapshot after failed refresh;
 - add durable failed-refresh/stale qualification that survives navigation without mutating ESPN source facts;
 - improve fetch/network failure guidance;
@@ -87,9 +90,9 @@ Required outcome:
 - add deterministic regression coverage;
 - leave `config/field-validation.json` unchanged until independent field retest succeeds.
 
-After an accepted implementation merges and production verification passes, re-activate Independent Auditor under TCW-005 for the same real deployed failure/reconnect field sequence.
+TCW-005 is now `WAITING_EXTERNAL_EVIDENCE`. The next required input is a real user-operated deployed failure/reconnect retest with privacy-safe observations. After that evidence exists, Independent Auditor resumes TCW-005 for the verdict.
 
-## Workflow V3 operating state
+## Workflow V3.1 operating state
 
 Permanent team:
 - Manager / Architect
@@ -102,16 +105,26 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 `ROLE = DURABLE`, `CHAT = DISPOSABLE`, `TASK = UNIT OF WORK`, `REPOSITORY = MEMORY`, `MANAGER = ROUTER / INTEGRATOR`.
 
+Workflow V3.1 additionally establishes:
+- `.ai/shared/ACTIVE_TASKS.json` as the single machine-authoritative operational registry;
+- `WAITING_EXTERNAL_EVIDENCE` and `VERIFYING_MASTER` lifecycle states;
+- atomic merge -> master verification -> canonical reconciliation before closeout;
+- the reproduced-defect fast lane;
+- verification matrices in meaningful handoffs;
+- PR/task supersession controls;
+- assignment-staleness classification;
+- `npm run audit:workflow`, enforced through the existing `npm test` CI gate.
+
 ## Active coordination state
 
-- Manager — ACTIVE/event-driven for TCW-009 integration and Release 1.0 field-gate orchestration.
-- Builder — ACTIVE on TCW-009.
-- Auditor — IDLE/BLOCKED on TCW-005 until TCW-009 is merged, deployed, and production-verified.
-- R&D — IDLE; no unresolved research dependency is needed for the reproduced recovery defect.
+- Manager — ACTIVE/event-driven for Release 1.0 field-gate orchestration and evidence integration.
+- Builder — IDLE; TCW-009 implementation is merged and deployed, with status `AUDIT_READY` pending independent field retest.
+- Auditor — `WAITING_EXTERNAL_EVIDENCE` on TCW-005 until the real deployed recovery retest is performed.
+- R&D — IDLE; no unresolved research dependency is needed for the recovery retest.
 - In-Season Strategy — IDLE; no recommendation-policy uncertainty is involved.
-- Troubleshooting & Root Cause — IDLE/not instantiated unless Builder reaches the anti-loop escalation threshold.
+- Troubleshooting & Root Cause — IDLE/not instantiated.
 
-No parallel specialist wave is justified while TCW-009 is the hard dependency for recovery validation.
+No parallel specialist wave is justified while the next recovery gate is external field evidence.
 
 ## Completed coordination
 
@@ -119,10 +132,13 @@ No parallel specialist wave is justified while TCW-009 is the hard dependency fo
 - TCW-002 — independent Release 1.0 baseline audit — COMPLETE / PASS WITH NON-BLOCKING FINDINGS.
 - TCW-003 — ESPN field-validation feasibility research — COMPLETE.
 - TCW-004 — evidence-wave integration/canonical authority reconciliation — COMPLETE.
-- TCW-005 — independent recovery field run completed with FAIL — REPRODUCED DEFECT; now blocked pending TCW-009 remediation/retest.
+- TCW-005 — initial real recovery field run completed with FAIL — REPRODUCED DEFECT; now waiting on post-remediation external retest evidence.
 - TCW-006 — blocked recovery-field reconciliation — CLOSED.
 - TCW-007 — Workflow V3 operating upgrade — CLOSED.
 - TCW-008 — post-1.0 roadmap candidate sequencing — CLOSED.
+- TCW-010 — Workflow V3.1 coordination hardening — CLOSED after PR #68 merge and successful master workflow #448 verification.
+
+TCW-009 implementation is complete and deployed but remains `AUDIT_READY` until TCW-005 independently retests the real deployed behavior.
 
 ## Known gated work
 
