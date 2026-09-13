@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T02:10:00Z",
+  "updated_at_utc": "2026-09-13T02:34:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -22,6 +22,22 @@
       "audit_required": false,
       "blocked_on": [],
       "next_gate": "Builder exposes existing waiver diagnostics with deterministic UI coverage -> Builder PR -> Manager integration/deployment -> real FV-WAIVER-01 field retest"
+    },
+    {
+      "task_id": "TCW-013",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-013.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "c66c02302fa014eb50ddbdf0e5a9dd4b933641dd",
+      "worker_checkpoint_sha": null,
+      "branch": "manager/tcw-013-workflow-efficiency",
+      "pr": null,
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "blocked_on": [],
+      "next_gate": "Manager exact-head CI -> merge -> verify master test and deployment-scope behavior -> closeout"
     }
   ]
 }
