@@ -20,6 +20,7 @@ import { HttpSyncProvider } from "./sync/sync-provider.js";
 import { renderManualProjectionDialog } from "./ui/manual-projection-dialog.js";
 import { createSectionRenderer } from "./ui/section-renderer.js";
 import { bindShellEvents } from "./application/app-event-bindings.js";
+import { describeEspnRefreshFailure, snapshotSourceLabel } from "./application/recovery-state.js";
 runCacheMigrations(globalThis.localStorage);
 const provider = new EspnSnapshotProvider();
 const companion = new EspnCompanionClient();
@@ -61,7 +62,7 @@ function hydrateControls() {
 const { snapshot } = state;
 teamSelect.innerHTML = snapshot.teams.map((team) => `<option value="${escapeHtml(team.id)}" ${team.id === state.selectedTeamId ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("");
 document.querySelector("#league-label").textContent = `ESPN · ${snapshot.league.name}`;
-document.querySelector("#source-label").textContent = state.source === "sync" ? "Encrypted mobile snapshot" : snapshot.meta?.kind === "live-companion" ? "Live ESPN snapshot" : state.source === "cache" ? "Imported snapshot" : "Sample snapshot";
+document.querySelector("#source-label").textContent = snapshotSourceLabel(state);
 document.querySelector("#source-time").textContent = snapshot.meta?.capturedAt ? `Captured ${new Date(snapshot.meta.capturedAt).toLocaleDateString()}` : "Capture time unavailable";
 document.querySelector("#reset-button").hidden = state.source !== "cache";
 const connected = snapshot.meta?.kind === "live-companion";
@@ -174,7 +175,8 @@ loadRankingSet(state.rankingSet || rankingProvider.readCache());
 if (snapshot.teams.some((team) => team.id === espnConnection.teamId)) store.dispatch({ type: "team/select", teamId: espnConnection.teamId });
 hydrateControls(); render(); showNotice(`Connected ${snapshot.league.name}. ESPN data refreshed successfully.`);
 } catch (error) {
-showNotice(error.message.includes("not detected") ? `${error.message} See the setup guide in the repository.` : `${error.message} Make sure ESPN is signed in within this Chrome profile.`, "error");
+if (state.snapshot?.meta?.kind === "live-companion") store.dispatch({ type: "refresh/failure" });
+showNotice(describeEspnRefreshFailure(error.message), "error");
 } finally {
 button.disabled = false;
 if (state.snapshot) hydrateControls();
