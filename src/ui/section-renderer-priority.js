@@ -93,7 +93,7 @@ function priorityPanel(deps, base) {
     ? `Selected future horizon: Weeks ${futureWeeks.join(", ")}. Future-only stashes require complete selected-week coverage for the current roster and simulated add/drop roster.`
     : "Future-week evidence is unavailable or no future weeks are selected; future-only stashes are withheld and missing future inputs are not scored as zero.";
   const discoveryContext = board.futureDiscovery?.status === "ready"
-    ? `${board.futureDiscovery.qualifiedAdds} positive future-only stash candidate${board.futureDiscovery.qualifiedAdds === 1 ? "" : "s"} cleared complete coverage and current ESPN legality.`
+    ? `Future discovery diagnostics — Considered adds: ${board.futureDiscovery.consideredAdds} · Complete adds: ${board.futureDiscovery.completeAdds} · Scenarios evaluated: ${board.futureDiscovery.scenarioCount} · Qualified adds: ${board.futureDiscovery.qualifiedAdds}.`
     : board.futureDiscovery?.reason || "Future-only stash discovery is unavailable in the current state.";
 
   section.innerHTML = `<div class="section-divider"><span id="waiver-priority-title">PRIORITY BOARD · TRANSPARENT MULTI-FACTOR</span></div>

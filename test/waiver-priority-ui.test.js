@@ -35,5 +35,19 @@ test("waiver priority UI clearly distinguishes future-only stashes from current-
   assert.match(priority, /FUTURE STASH · ADD \/ DROP/);
   assert.match(priority, /HELPS NOW · ADD \/ DROP/);
   assert.match(priority, /Future-only stashes require complete selected-week coverage/);
-  assert.match(priority, /future-only stash candidate/);
+});
+
+test("waiver priority UI exposes all ready future-discovery diagnostics together", () => {
+  assert.match(priority, /board\.futureDiscovery\?\.status === "ready"/);
+  assert.match(priority, /Future discovery diagnostics/);
+  assert.match(priority, /Considered adds: \$\{board\.futureDiscovery\.consideredAdds\}/);
+  assert.match(priority, /Complete adds: \$\{board\.futureDiscovery\.completeAdds\}/);
+  assert.match(priority, /Scenarios evaluated: \$\{board\.futureDiscovery\.scenarioCount\}/);
+  assert.match(priority, /Qualified adds: \$\{board\.futureDiscovery\.qualifiedAdds\}/);
+});
+
+test("waiver priority UI preserves non-ready discovery reasons without zero diagnostics or new shortlist behavior", () => {
+  assert.match(priority, /board\.futureDiscovery\?\.reason \|\| "Future-only stash discovery is unavailable in the current state\."/);
+  assert.doesNotMatch(priority, /consideredAdds\s*\?\?\s*0|completeAdds\s*\?\?\s*0|scenarioCount\s*\?\?\s*0|qualifiedAdds\s*\?\?\s*0/);
+  assert.doesNotMatch(priority, /candidateCap|candidateLimit|\.slice\(/i);
 });
