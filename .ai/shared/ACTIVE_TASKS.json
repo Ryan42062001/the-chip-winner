@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T01:08:00Z",
+  "updated_at_utc": "2026-09-13T01:55:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -22,9 +22,9 @@
       "audit_required": false,
       "blocked_on": [],
       "external_actor": "user",
-      "external_action": "Repeat the deployed authenticated ESPN network disconnect/reconnect recovery sequence against the TCW-009 production deployment and provide privacy-safe observations of retained-data labeling, failure guidance, navigation persistence, and successful reconnect.",
-      "resume_role": "Auditor",
-      "next_gate": "User field retest evidence -> re-activate Auditor under TCW-005 -> independent verdict -> Manager field-status integration"
+      "external_action": "Post-remediation field evidence has been supplied and accepted through Auditor PR #70; Manager integration is now in progress under TCW-011.",
+      "resume_role": "Manager",
+      "next_gate": "TCW-011 field-status integration and canonical recovery-loop closeout"
     },
     {
       "task_id": "TCW-009",
@@ -39,8 +39,24 @@
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": true,
-      "blocked_on": ["TCW-005 independent deployed recovery retest"],
-      "next_gate": "TCW-005 independent deployed field retest determines whether the accepted remediation satisfies FV-RECOVERY-01"
+      "blocked_on": ["TCW-011 Manager field-status integration"],
+      "next_gate": "TCW-011 integrates accepted TCW-005 PASS CANDIDATE and closes the recovery loop"
+    },
+    {
+      "task_id": "TCW-011",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-011.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "89820c1c5c7f13b91cd4dda304db5faadbae6603",
+      "worker_checkpoint_sha": null,
+      "branch": "manager/tcw-011-recovery-field-integration",
+      "pr": null,
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "blocked_on": [],
+      "next_gate": "Open Manager integration PR -> exact-head CI -> merge -> verify master -> canonical closeout"
     }
   ]
 }

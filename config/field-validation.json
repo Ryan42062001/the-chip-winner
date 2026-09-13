@@ -112,9 +112,12 @@
       "id": "FV-RECOVERY-01",
       "area": "recovery",
       "title": "Live ESPN session or network refresh failure and reconnect",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Observe an actual expired-session, companion, ESPN service, or network failure; verify the last valid snapshot survives and reconnect/refresh guidance is accurate."
+      "status": "passed",
+      "evidence": [
+        "2026-09-12: Initial authenticated deployed network-disconnect field run reproduced a recovery-trust defect: the previous ESPN snapshot remained usable after refresh failure and reconnect succeeded, but retained data stayed labeled `Live ESPN snapshot` and network failure guidance was authentication-focused. Auditor TCW-005 recorded TCW-005-F01 (HIGH) and TCW-005-F02 (MEDIUM); Manager accepted them and TCW-009 added durable retained-snapshot recovery state plus corrected failure guidance with deterministic regression coverage.",
+        "2026-09-12: Independent post-remediation TCW-005 field retest against deployed master `7bb8bcc34f519b8f8f7f41a2966a8b308245efb5` passed the required sequence. Online authenticated Refresh ESPN showed `Live ESPN snapshot`; after a real client network disconnect, refresh failed while the previous valid snapshot remained usable and the persistent source label changed to `Last valid ESPN snapshot · refresh failed`; guidance covered connectivity, Chrome companion availability, and ESPN authentication; the qualification persisted after navigation to Lineup Lab with no sample/demo fallback; restoring connectivity and refreshing succeeded and returned the source label to `Live ESPN snapshot`. Auditor PR #70 returned PASS CANDIDATE and TCW-005-F01/F02 did not reproduce."
+      ],
+      "notes": "Passed after TCW-009 remediation and independent deployed TCW-005 retest. Last-valid snapshot retention, durable failed-refresh qualification across navigation, truthful bounded recovery guidance, no sample fallback, and successful reconnect were all observed in the real authenticated workflow."
     },
     {
       "id": "FV-SYNC-01",
