@@ -4,13 +4,14 @@ Last updated: 2026-09-13
 Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
-## Active assignments
+## Active assignment
 
-- TCW-018 — FV-ESPN-05 Real Game-Lock / Availability Transition Field Retest — **BLOCKED on TCW-020** after Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT`.
-- TCW-020 — START/SIT Lock-Awareness Remediation — **Builder ASSIGNED**.
-- Expected Builder branch: `builder/tcw-020-start-sit-lock-remediation`.
-- Accepted finding: `TCW-018-F01 — MEDIUM — BLOCKING`.
-- Next gate: Builder remediation PR/handoff -> Manager review/integration/deploy verification -> fresh TCW-018 Independent Auditor post-remediation field retest.
+- TCW-018 — FV-ESPN-05 Real Game-Lock / Availability Transition Field Retest — **Independent Auditor / QA ASSIGNED — POST-REMEDIATION RETEST**.
+- Assignment production baseline: `b6e6a2dabb0e2d9e404704d7e8997110ce403060`.
+- Expected Auditor branch: `auditor/tcw-018-lock-post-remediation`.
+- Prior accepted finding: `TCW-018-F01 — MEDIUM — BLOCKING`.
+- TCW-020 remediation is merged, deployed, and production-verified through master workflow #509.
+- Next gate: smallest genuine deployed locked-state Auditor retest -> `PASS CANDIDATE`, `FAIL — REPRODUCED DEFECT`, or `INCONCLUSIVE` -> Manager integration only after accepted PASS CANDIDATE.
 
 ## Field state
 
@@ -29,29 +30,29 @@ Passed:
 
 Pending:
 - FV-ESPN-02 — authenticated custom FLEX/OP/Superflex league
-- FV-ESPN-05 — reproduced stale actionable START / SIT guidance after a genuine lock; TCW-020 remediation active
+- FV-ESPN-05 — post-remediation Independent Auditor retest active
 - FV-SEASON-01 — real playoff/bye intelligence states
 
-Manual screen-reader certification is not part of the Release 1.0 field gate under TCW-D012. Automated accessibility/readiness CI remains active.
+Manual screen-reader certification remains outside the Release 1.0 field gate under TCW-D012. Automated accessibility/readiness CI remains active.
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE — accepted TCW-018-F01, routing TCW-020, owns later integration and retest activation.
+AWAITING AUDITOR VERDICT — TCW-020 is integrated and production-verified; Manager owns any later FV-ESPN-05 field integration.
 
 ### Implementation Engineer / Builder
-ASSIGNED — TCW-020 bounded START / SIT lock-awareness remediation.
+IDLE — TCW-020 closed after PR #95 merge and workflow #509 production verification.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE — no unresolved strategy policy is required for this deterministic remediation.
+IDLE — no unresolved strategy policy question.
 
 ### R&D
-IDLE — no external-fact or feasibility question is required.
+IDLE — no unresolved external-fact or feasibility question.
 
 ### Independent Auditor / QA
-BLOCKED on TCW-020 deployment before the TCW-018 post-remediation retest.
+ASSIGNED — TCW-018 post-remediation deployed lock-state retest.
 
 ### Troubleshooting & Root Cause Engineer
-IDLE / not instantiated; the defect is already reproduced and bounded.
+IDLE / not instantiated.
 
 Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.

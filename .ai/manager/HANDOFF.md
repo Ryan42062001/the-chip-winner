@@ -2,85 +2,72 @@
 
 HANDOFF
 
-Task ID: TCW-020
+Task ID: TCW-018
 Role: Manager / Architect
-Status: REPRODUCED DEFECT ACCEPTED — BUILDER REMEDIATION ROUTED
-
-Accepted Auditor verdict merge:
-
-`f9029d8eaa603bdcb039492a554fcd699948fa29`
+Status: POST-REMEDIATION AUDITOR RETEST ACTIVATED
 
 Current Release 1.0 field gate:
 - **9 passed / 3 pending**.
 - Pending: FV-ESPN-02, FV-ESPN-05, FV-SEASON-01.
 
-## TCW-018 field result
+## Prior field result
 
-The user supplied three real deployed recordings across one naturally occurring 1:00 PM lock transition. Raw recordings are not committed. Privacy-safe intake remains:
+Privacy-safe real evidence remains at:
 
 `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTAKE.md`
 
-Independent Auditor PR #93 returned:
-
-`FAIL — REPRODUCED DEFECT`
-
-Accepted finding:
+Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT` with accepted finding:
 
 `TCW-018-F01 — MEDIUM — BLOCKING`
 
-The real transition showed the complete-lineup optimizer correctly respecting seven locks and returning no change recommended, but the separate START / SIT comparison still rendered the same unqualified James Cook III 15.9 vs Ashton Jeanty 17.9 projection lean after Cook had locked.
+The complete-lineup optimizer respected the genuine lock, but the separate START / SIT comparison continued to render an unqualified projection preference involving the locked player.
 
-Manager independently verified the production mismatch:
-- `compareRosterPlayers(...)` does not inspect roster-entry lock flags or passed kickoff;
-- `renderStartSitComparison(...)` presents a preferred player as `PROJECTION LEAN`;
-- Lineup Lab labels the surface `START / SIT` / `Compare roster players`.
+## Accepted remediation
 
-The finding is accepted. `FV-ESPN-05` remains pending.
+TCW-020 — START/SIT Lock-Awareness Remediation is complete.
 
-## Master verification note
+Builder PR #95 was independently reviewed and accepted by Manager.
 
-PR #93 exact-head workflow #502 passed the full test gate.
+Verified checkpoints:
+- Builder implementation checkpoint: `6804c8c0a1b55f5959daab8635fa8d71d6a43f73`;
+- Builder handoff checkpoint: `545bacc25a49a71179335323d6b1befc01562149`;
+- Manager merge-ready exact PR head: `61ade8aec1b9db28468f61ad698954d48c35d3b2`;
+- exact-head workflow #508: PASS;
+- merged master: `b6e6a2dabb0e2d9e404704d7e8997110ce403060`;
+- post-merge master workflow #509: test PASS, Pages deploy PASS, production smoke PASS.
 
-After Manager merged PR #93, master became:
+Integration evidence:
 
-`f9029d8eaa603bdcb039492a554fcd699948fa29`
+`.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`
 
-Master workflow #503 then failed only on the Workflow V3.1 assignment-staleness guard because TCW-018 still pointed to the pre-intake Auditor assignment checkpoint. The log reported:
+The deployed fix reuses the optimizer's existing lock semantics and makes locked/post-kickoff START / SIT comparisons explicitly informational/non-actionable rather than showing an unqualified actionable `PROJECTION LEAN`. Existing unlocked comparison behavior and source separation remain protected by deterministic coverage.
 
-`TCW-018: assignment is 5 commits behind HEAD; Full Refresh or target-advancement classification is required.`
+`config/field-validation.json` was not modified. `FV-ESPN-05` remains pending.
 
-No product test failed before that coordination guard. Deployment and production verification were correctly skipped because PR #93 was `.ai/**`-only.
-
-This routing checkpoint repairs that canonical coordination state and activates the required Builder remediation.
-
-## Builder remediation
-
-New bounded task:
-
-`TCW-020 — START/SIT Lock-Awareness Remediation`
-
-Expected Builder branch:
-
-`builder/tcw-020-start-sit-lock-remediation`
-
-Required outcome:
-- a player locked by ESPN or by passed kickoff cannot produce an unqualified actionable START / SIT preference;
-- lock qualification must make the comparison unavailable/non-actionable or clearly informational;
-- preserve unlocked comparison behavior, complete-lineup optimizer lock behavior, and projection/source separation;
-- add deterministic explicit-lock and passed-kickoff comparison coverage;
-- do not modify `config/field-validation.json`.
-
-## Routing
+## Active routing
 
 ACTIVATE NEXT:
-- Implementation Engineer / Builder — TCW-020.
+- Independent Auditor / QA — TCW-018 post-remediation deployed lock-state retest.
 
-BLOCKED UNTIL TCW-020 DEPLOYS:
-- TCW-018 Independent Auditor post-remediation field retest.
+Expected branch:
+
+`auditor/tcw-018-lock-post-remediation`
+
+Assignment production baseline:
+
+`b6e6a2dabb0e2d9e404704d7e8997110ce403060`
+
+The Auditor should reuse the existing real pre-lock/transition evidence where valid and obtain only the smallest genuinely necessary deployed evidence showing that a naturally locked/post-kickoff player no longer produces stale actionable START / SIT guidance. Do not manufacture another transition.
+
+Auditor must return exactly one:
+- `PASS CANDIDATE`
+- `FAIL — REPRODUCED DEFECT`
+- `INCONCLUSIVE`
+
+Manager owns any later field-registry integration after an accepted PASS CANDIDATE.
 
 IDLE:
-- Strategy — no unresolved policy question.
-- R&D — no unresolved external-fact/feasibility question.
-- Troubleshooting — defect is already reproduced and bounded.
-
-After TCW-020 Manager integration and production verification, reactivate TCW-018 for a fresh Independent Auditor field retest. Reuse existing real pre-lock/transition evidence where valid; do not manufacture another transition.
+- Builder — TCW-020 closed;
+- Strategy — no unresolved policy question;
+- R&D — no unresolved feasibility/external-fact question;
+- Troubleshooting — no active root-cause assignment.

@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T19:02:00Z",
+  "updated_at_utc": "2026-09-13T19:07:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -10,40 +10,19 @@
     {
       "task_id": "TCW-018",
       "owner": "Auditor",
-      "status": "BLOCKED",
+      "status": "ASSIGNED",
       "task_file": ".ai/manager/tasks/TCW-018.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "f9029d8eaa603bdcb039492a554fcd699948fa29",
-      "worker_checkpoint_sha": "129288651a0dbc8dc7727c0c2f5f847fb9246a86",
-      "branch": "auditor/tcw-018-lock-field-retest",
-      "pr": 93,
-      "dependency": "HARD",
+      "assignment_master_sha": "b6e6a2dabb0e2d9e404704d7e8997110ce403060",
+      "worker_checkpoint_sha": null,
+      "branch": "auditor/tcw-018-lock-post-remediation",
+      "pr": null,
+      "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
-      "blocked_on": ["TCW-020"],
-      "next_gate": "TCW-020 lock-aware START/SIT remediation merges and deploys -> Manager reactivates TCW-018 for a fresh Independent Auditor post-remediation field retest"
-    },
-    {
-      "task_id": "TCW-020",
-      "owner": "Builder",
-      "status": "MERGE_READY",
-      "task_file": ".ai/manager/tasks/TCW-020.md",
-      "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "4f362c78e4cc07447ad4415da90988c99ba8c0d1",
-      "worker_checkpoint_sha": "545bacc25a49a71179335323d6b1befc01562149",
-      "branch": "builder/tcw-020-start-sit-lock-remediation",
-      "pr": 95,
-      "dependency": "HARD",
-      "execution_mode": "STANDARD_CHAT",
-      "audit_required": true,
-      "merge_authority": "Manager",
       "blocked_on": [],
-      "target_advancement": {
-        "classification": "NON_OVERLAPPING",
-        "checked_at_sha": "4f362c78e4cc07447ad4415da90988c99ba8c0d1"
-      },
-      "next_gate": "Manager merge PR #95 after exact-head CI -> verify master deploy and production -> reactivate TCW-018 Independent Auditor retest"
+      "next_gate": "Independent Auditor performs the smallest genuine deployed post-remediation locked-state retest -> returns PASS CANDIDATE, FAIL — REPRODUCED DEFECT, or INCONCLUSIVE -> Manager integrates FV-ESPN-05 only after accepted PASS CANDIDATE"
     }
   ]
 }
