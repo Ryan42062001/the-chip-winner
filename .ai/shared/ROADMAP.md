@@ -14,18 +14,19 @@ Remaining milestone work is evidence-backed real-world validation, narrow remedi
 ## Release 1.0 blockers
 
 Authoritative live status is `config/field-validation.json`. Current reconciled snapshot:
-1. FV-A11Y-02 — screen-reader critical workflow.
-2. FV-ESPN-02 — authenticated custom FLEX/OP league.
-3. FV-ESPN-05 — authenticated lock/availability transitions.
-4. FV-SEASON-01 — real playoff/bye intelligence states.
+1. FV-ESPN-02 — authenticated custom FLEX/OP league.
+2. FV-ESPN-05 — authenticated lock/availability transitions.
+3. FV-SEASON-01 — real playoff/bye intelligence states.
 
-Registry field gate is **9 passed / 4 pending**.
+Registry field gate is **9 passed / 3 pending**.
 
 FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
 FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence through PR #79 with master workflow #473 passing.
 
 FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence through PR #85 with master workflow #485 passing tests, Pages deployment, and production verification. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
+
+Manual screen-reader field certification is no longer a Release 1.0 blocker. TCW-019 removed `FV-A11Y-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Completed keyboard-only and real 200% zoom evidence remain preserved, and automated accessibility/readiness regression checks remain deployment-blocking CI under durable decision TCW-D012.
 
 ## Completed field-remediation chains
 
@@ -69,21 +70,26 @@ Completed:
 - TCW-015 FV-WAIVER-01 evidence integration and closeout.
 - TCW-016 FV-ESPN-04 authenticated IR eligible-state retest.
 - TCW-017 FV-ESPN-04 evidence integration and closeout.
+- TCW-019 manual screen-reader Release 1.0 field-gate removal while retaining automated accessibility CI.
+
+Active/event-driven:
+- TCW-018 FV-ESPN-05 real game-lock / availability-transition field retest — waiting on genuine external evidence.
 
 Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
 
 ## Immediate dependency order
 
-1. Continue the four remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
+1. Continue the three remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
 2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
-3. Complete final Release 1.0 PR/master gates after all field checks pass.
+3. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
 4. Perform formal Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 
 Release 1.0 may close only when:
-- every field-validation item is passed with privacy-safe evidence;
-- no unresolved high-severity accessibility, privacy, security, ESPN-normalization, waiver-legality, recovery/freshness, or season-planning defect remains;
+- every scoped item remaining in `config/field-validation.json` is passed with privacy-safe evidence;
+- no unresolved high-severity privacy, security, ESPN-normalization, waiver-legality, recovery/freshness, or season-planning defect remains;
+- automated accessibility/readiness CI remains green;
 - exact final release PR validation is green;
 - post-merge `master` test/deploy/production verification is green;
 - product remains read-only.
