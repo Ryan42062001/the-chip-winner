@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T15:58:00Z",
+  "updated_at_utc": "2026-09-13T16:09:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -30,19 +30,19 @@
     {
       "task_id": "TCW-019",
       "owner": "Manager",
-      "status": "IN_PROGRESS",
+      "status": "VERIFYING_MASTER",
       "task_file": ".ai/manager/tasks/TCW-019.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "e386809dd4147fadefffcf8a97a5882abc1bcef7",
-      "worker_checkpoint_sha": null,
-      "branch": "manager/tcw-019-remove-screenreader-field-gate",
-      "pr": null,
+      "worker_checkpoint_sha": "a3496c38aca39e5a44c918e0184acf3c1a8c2944",
+      "branch": "manager/tcw-019-master-verification-repair",
+      "pr": 88,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Remove FV-A11Y-02 from Release 1.0 scope -> exact-head CI -> Manager merge -> verify master deploy/production -> .ai-only closeout"
+      "next_gate": "Repair post-merge lifecycle state -> full CI -> deploy -> production verification -> .ai-only closeout"
     }
   ]
 }
