@@ -6,13 +6,19 @@ Task ID: TCW-018
 Role: Manager / Architect
 Status: WAITING_EXTERNAL_EVIDENCE — FV-ESPN-05 REAL GAME-LOCK / AVAILABILITY TRANSITION
 
-Canonical prestage baseline: `dc1208a3199a0d2b86fe1291cd007cb2f1d7d7e2`.
+Canonical current master before closeout: `7e5d7bca6a5c608dd399b73c84ee4fae95ac2947`.
 
 Current Release 1.0 field gate:
-- **9 passed / 4 pending**.
-- Pending: FV-A11Y-02, FV-ESPN-02, FV-ESPN-05, FV-SEASON-01.
+- **9 passed / 3 pending**.
+- Pending: FV-ESPN-02, FV-ESPN-05, FV-SEASON-01.
 
-TCW-018 is pre-staged so the next genuine game-lock opportunity can be captured without additional setup delay.
+Accessibility scope disposition:
+- TCW-019 removed manual screen-reader field item `FV-A11Y-02` from Release 1.0 scope rather than marking it passed without evidence.
+- Existing keyboard-only and real 200% zoom field evidence remains preserved.
+- Automated accessibility/readiness CI remains active and passed during TCW-019 verification.
+- PR #88 integrated the scope change; PR #89 repaired the post-merge lifecycle state; master workflow #495 passed full tests, Pages deploy, and production smoke.
+
+TCW-018 remains pre-staged so the next genuine game-lock opportunity can be captured without additional setup delay.
 
 Required field sequence:
 - observe one real player shortly before a genuine ESPN lock/availability transition;

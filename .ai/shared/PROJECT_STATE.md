@@ -27,7 +27,7 @@ The deterministic implementation baseline remains substantially complete. Curren
 
 Authoritative registry: `config/field-validation.json`.
 
-Registry status is **9 passed / 4 pending**.
+Registry status is **9 passed / 3 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -41,10 +41,15 @@ Passed:
 - FV-WAIVER-01
 
 Pending:
-- FV-A11Y-02
 - FV-ESPN-02
 - FV-ESPN-05
 - FV-SEASON-01
+
+## Accessibility release-scope disposition
+
+At the product owner's explicit direction, TCW-019 removed the pending manual screen-reader field item `FV-A11Y-02` from the Release 1.0 field registry rather than falsely marking it passed. Existing keyboard-only and real 200% zoom field evidence remains preserved. Automated accessibility/readiness regression checks remain deployment-blocking CI and passed during the TCW-019 integration. Durable decision TCW-D012 records this scope boundary.
+
+TCW-019 PR #88 integrated the scope change. A master-only lifecycle guard correctly caught stale `IN_PROGRESS` coordination after that merge, and repair PR #89 reconciled the task to `VERIFYING_MASTER`; master `7e5d7bca6a5c608dd399b73c84ee4fae95ac2947` then passed workflow #495 including full tests, Pages deployment, and production smoke.
 
 ## Active lock-transition validation
 
@@ -79,10 +84,10 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 ## Active coordination state
 
-TCW-018 is Manager-owned and waiting on real field evidence. Builder, Auditor, Strategy, R&D, and Troubleshooting remain idle/event-driven until that evidence arrives or a new bounded dependency is approved.
+TCW-018 is the sole active task. It is Manager-owned and waiting on real field evidence. Builder, Auditor, Strategy, R&D, and Troubleshooting remain idle/event-driven until that evidence arrives or a new bounded dependency is approved.
 
 ## Known gated work
 
-The four remaining Release 1.0 checks require genuine prerequisites: screen-reader validation, an authenticated custom FLEX/OP league, a real lock/availability transition, and real playoff/bye-season states. Do not manufacture these conditions.
+The three remaining Release 1.0 field checks require genuine prerequisites: an authenticated custom FLEX/OP league, a real lock/availability transition, and real playoff/bye-season states. Do not manufacture these conditions.
 
 Post-1.0 Roadmap Discovery input remains recorded in `.ai/shared/ROADMAP.md` and `docs/post-1.0-roadmap-candidates.md`. No successor milestone is authorized.
