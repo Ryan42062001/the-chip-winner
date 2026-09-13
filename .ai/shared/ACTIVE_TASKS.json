@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T01:01:00Z",
+  "updated_at_utc": "2026-09-13T01:08:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -41,26 +41,6 @@
       "audit_required": true,
       "blocked_on": ["TCW-005 independent deployed recovery retest"],
       "next_gate": "TCW-005 independent deployed field retest determines whether the accepted remediation satisfies FV-RECOVERY-01"
-    },
-    {
-      "task_id": "TCW-010",
-      "owner": "Manager",
-      "status": "IN_PROGRESS",
-      "task_file": ".ai/manager/tasks/TCW-010.md",
-      "role_handoff": ".ai/manager/HANDOFF.md",
-      "assignment_master_sha": "399869d0781bcc7ba844dabaa5bc439be784e809",
-      "worker_checkpoint_sha": null,
-      "branch": "manager/tcw-010-workflow-v3-1",
-      "pr": 68,
-      "dependency": "INDEPENDENT",
-      "execution_mode": "STANDARD_CHAT",
-      "audit_required": false,
-      "blocked_on": [],
-      "target_advancement": {
-        "classification": "NON_OVERLAPPING",
-        "checked_at_sha": "267b44e7ccea02b903938ead2ee4658d60c2d20b"
-      },
-      "next_gate": "Workflow V3.1 exact-head PR CI -> Manager merge -> VERIFYING_MASTER -> post-merge verification -> CLOSED"
     }
   ]
 }
