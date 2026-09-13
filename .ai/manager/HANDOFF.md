@@ -2,50 +2,57 @@
 
 HANDOFF
 
-Task ID: TCW-011
+Task ID: TCW-012
 Role: Manager / Architect
-Status: CLOSED — FV-RECOVERY-01 PASSED AND RECOVERY LOOP VERIFIED
+Status: ASSIGNED — BUILDER WAIVER DIAGNOSTICS VISIBILITY
 
 Verified starting state:
 - Repository: `Ryan42062001/the-chip-winner`.
+- Canonical `master`: `074e110e85189f4473502c1c7fa72a18d88a2a10`.
 - Workflow V3.1 canonical.
-- Auditor PR #70 merged at `89820c1c5c7f13b91cd4dda304db5faadbae6603` with TCW-005 post-remediation PASS CANDIDATE.
-- PR #70 master workflow #454 passed test, deploy, and production verification.
+- Release 1.0 field gate: 7 passed / 6 pending.
+- `ACTIVE_TASKS.json` had no active tasks before this assignment.
+- FV-WAIVER-01 remains pending.
 
-Work completed:
-- accepted the independent TCW-005 post-remediation PASS CANDIDATE;
-- confirmed TCW-005-F01 and TCW-005-F02 did not reproduce after TCW-009;
-- integrated only FV-RECOVERY-01 from `pending` to `passed` with privacy-safe evidence;
-- preserved every other field-validation status/evidence entry;
-- merged Manager integration PR #71 at `eb45e87b426c67dca4f36d8fba97cc5bef47e1d4`;
-- verified master workflow #456 passed test, Pages deploy, and production smoke;
-- reconciled TCW-005, TCW-009, and TCW-011 out of active work.
+Evidence reviewed:
+- User supplied a real deployed Waivers recording after authenticated ESPN refresh.
+- The observed Waivers page was responsive and usable; no long freeze or broken intermediate state was visible.
+- The recording did not expose the four field-required exhaustive-run values: `consideredAdds`, `completeAdds`, `scenarioCount`, `qualifiedAdds`.
+- Repository inspection confirmed `buildWaiverPriorityBoard()` already returns all four values in `futureDiscovery`.
+- Current `src/ui/section-renderer-priority.js` visibly renders only `qualifiedAdds`.
 
-Field gate:
-- 7 passed / 6 pending.
-- Remaining: FV-A11Y-02, FV-ESPN-02, FV-ESPN-04, FV-ESPN-05, FV-SEASON-01, FV-WAIVER-01.
+Decision:
+- This is an implementation-ready transparency gap, not a Strategy or R&D ambiguity.
+- Open TCW-012 as a bounded Builder task.
+- Expose the existing four diagnostics in the Waivers UI only when discovery is `ready`; preserve blocked/unavailable reasons otherwise.
+- Do not change waiver enumeration, legality, priority bands, projections, thresholds, rankings, IR behavior, or candidate caps.
+- Do not change `config/field-validation.json` from TCW-012.
 
-Verification matrix:
+Assignment:
+- Owner: Implementation Engineer / Builder.
+- Task: `.ai/manager/tasks/TCW-012.md`.
+- Expected branch: `builder/tcw-012-waiver-field-diagnostics`.
+- Assignment master: `074e110e85189f4473502c1c7fa72a18d88a2a10`.
+- Execution mode: STANDARD_CHAT.
+
+Next gate:
+1. Builder implements the bounded UI visibility change with deterministic regression coverage.
+2. Builder opens a PR and returns the standard handoff.
+3. Manager reviews/integrates and verifies deployment.
+4. User records the deployed Waivers page with the four diagnostics visible.
+5. Only that real field evidence may support a later Manager-owned FV-WAIVER-01 status change.
+
+Verification matrix for assignment decision:
 
 | Dimension | Status | Evidence |
 | --- | --- | --- |
-| Independent real-world recovery retest | PASS CANDIDATE | Auditor PR #70; durable failed-refresh label, truthful guidance, navigation persistence, no sample fallback, reconnect success |
-| Auditor evidence integration | PASS | PR #70 merge `89820c1c...`; workflow #454 PASS |
-| Field-registry scope | PASS | only FV-RECOVERY-01 changed from pending to passed |
-| Manager integration exact-head CI | PASS | PR #71 head `976b1e21eacaf0dd7c642df6dfdb81d48f81e374`; workflow #455 PASS |
-| Post-merge master | PASS | `eb45e87b426c67dca4f36d8fba97cc5bef47e1d4`; workflow #456 PASS |
-| Production verification | PASS | workflow #456 deploy and `smoke:production` PASS |
+| Real field responsiveness | PASS OBSERVATION | user Waivers recording; responsive navigation/rendering |
+| Required enumeration evidence visible | FAIL / MISSING | four required diagnostics were not visible in the recording |
+| Engine diagnostics available | PASS | `futureDiscovery` already returns all four values |
+| Strategy/R&D dependency | N/A | no recommendation-policy or source-feasibility uncertainty |
+| Field registry change | NOT AUTHORIZED | FV-WAIVER-01 remains pending until deployed retest |
 
-Open findings:
-- none from the recovery validation sequence.
-- six unrelated Release 1.0 field checks remain pending and require genuine real-world prerequisites.
-
-Recommended next role:
-- no specialist is automatically activated. Manager remains event-driven and should select the next field check only when its prerequisite is available.
-
-Exact next action:
-- continue Release 1.0 field validation. Prefer an immediately exercisable remaining check if its real prerequisite exists; otherwise remain IDLE rather than inventing work.
-
-Checkpoint / SHA:
-- recovery field integration master: `eb45e87b426c67dca4f36d8fba97cc5bef47e1d4`.
-- post-merge workflow: #456 PASS.
+ACTIVATE NOW:
+- Builder — TCW-012.
+- Manager — oversight/integration.
+- Auditor, Strategy, R&D, Troubleshooting — IDLE.
