@@ -2,57 +2,51 @@
 
 HANDOFF
 
-Task ID: TCW-012
+Task IDs: TCW-012 / TCW-013
 Role: Manager / Architect
-Status: ASSIGNED — BUILDER WAIVER DIAGNOSTICS VISIBILITY
+Status: TCW-012 WAITING_EXTERNAL_EVIDENCE; TCW-013 IN_PROGRESS
 
-Verified starting state:
+Verified current state:
 - Repository: `Ryan42062001/the-chip-winner`.
-- Canonical `master`: `074e110e85189f4473502c1c7fa72a18d88a2a10`.
-- Workflow V3.1 canonical.
-- Release 1.0 field gate: 7 passed / 6 pending.
-- `ACTIVE_TASKS.json` had no active tasks before this assignment.
-- FV-WAIVER-01 remains pending.
+- Product `master` checkpoint: `0d9e7b55b267d9eb3f0876fe077e1f19dc38f453`.
+- TCW-012 Builder PR #74 merged at that checkpoint.
+- Post-merge workflow #463 passed full test, Pages deploy, and production smoke.
+- Release 1.0 field gate remains 7 passed / 6 pending; FV-WAIVER-01 is still pending.
 
-Evidence reviewed:
-- User supplied a real deployed Waivers recording after authenticated ESPN refresh.
-- The observed Waivers page was responsive and usable; no long freeze or broken intermediate state was visible.
-- The recording did not expose the four field-required exhaustive-run values: `consideredAdds`, `completeAdds`, `scenarioCount`, `qualifiedAdds`.
-- Repository inspection confirmed `buildWaiverPriorityBoard()` already returns all four values in `futureDiscovery`.
-- Current `src/ui/section-renderer-priority.js` visibly renders only `qualifiedAdds`.
+TCW-012 disposition:
+- ready-state Waivers UI now shows Considered adds, Complete adds, Scenarios evaluated, and Qualified adds together;
+- waiver engine/policy/provider/field-registry behavior was not changed;
+- implementation is merged and production-verified;
+- next prerequisite is a privacy-safe real deployed Waivers recording after a fresh ESPN refresh showing those four diagnostics and observed responsiveness;
+- after evidence arrives, resume Independent Auditor / QA for the FV-WAIVER-01 verdict.
 
-Decision:
-- This is an implementation-ready transparency gap, not a Strategy or R&D ambiguity.
-- Open TCW-012 as a bounded Builder task.
-- Expose the existing four diagnostics in the Waivers UI only when discovery is `ready`; preserve blocked/unavailable reasons otherwise.
-- Do not change waiver enumeration, legality, priority bands, projections, thresholds, rankings, IR behavior, or candidate caps.
-- Do not change `config/field-validation.json` from TCW-012.
+TCW-013 workflow improvement:
+- branch `manager/tcw-013-workflow-efficiency`;
+- assignment checkpoint `c66c02302fa014eb50ddbdf0e5a9dd4b933641dd`;
+- master advancement through TCW-012 is classified `NON_OVERLAPPING` at `0d9e7b55b267d9eb3f0876fe077e1f19dc38f453`;
+- full CI remains unconditional for PRs and master pushes;
+- a push-range classifier gates only Pages deploy + production smoke;
+- `.ai/**`-only master pushes skip deployment as not applicable;
+- any path outside `.ai/**`, manual dispatch, or unavailable classification still deploys;
+- durable ROADMAP no longer duplicates volatile current-task inventory.
 
-Assignment:
-- Owner: Implementation Engineer / Builder.
-- Task: `.ai/manager/tasks/TCW-012.md`.
-- Expected branch: `builder/tcw-012-waiver-field-diagnostics`.
-- Assignment master: `074e110e85189f4473502c1c7fa72a18d88a2a10`.
-- Execution mode: STANDARD_CHAT.
+Verification matrix:
 
-Next gate:
-1. Builder implements the bounded UI visibility change with deterministic regression coverage.
-2. Builder opens a PR and returns the standard handoff.
-3. Manager reviews/integrates and verifies deployment.
-4. User records the deployed Waivers page with the four diagnostics visible.
-5. Only that real field evidence may support a later Manager-owned FV-WAIVER-01 status change.
-
-Verification matrix for assignment decision:
-
-| Dimension | Status | Evidence |
+| Dimension | TCW-012 | TCW-013 |
 | --- | --- | --- |
-| Real field responsiveness | PASS OBSERVATION | user Waivers recording; responsive navigation/rendering |
-| Required enumeration evidence visible | FAIL / MISSING | four required diagnostics were not visible in the recording |
-| Engine diagnostics available | PASS | `futureDiscovery` already returns all four values |
-| Strategy/R&D dependency | N/A | no recommendation-policy or source-feasibility uncertainty |
-| Field registry change | NOT AUTHORIZED | FV-WAIVER-01 remains pending until deployed retest |
+| Static/scope review | PASS | PASS — non-overlapping workflow/tooling scope |
+| Deterministic tests | PASS via PR #74 / workflow #462 | PENDING exact-head PR CI |
+| Post-merge master | PASS at `0d9e7b55...` / #463 | PENDING |
+| Production verification | PASS / #463 | N/A for future control-plane-only commits; this workflow-changing merge itself must deploy because `.github/**` changes |
+| Real field validation | PENDING — user evidence required | NOT APPLICABLE |
+
+Exact next actions:
+1. Open and validate TCW-013 Manager PR; merge only on green exact-head CI and verify master behavior.
+2. User supplies the TCW-012 Waivers recording when convenient.
+3. Auditor resumes TCW-012 and returns the FV-WAIVER-01 verdict.
 
 ACTIVATE NOW:
-- Builder — TCW-012.
-- Manager — oversight/integration.
-- Auditor, Strategy, R&D, Troubleshooting — IDLE.
+- Manager — TCW-013.
+- Auditor — WAITING for TCW-012 external field evidence.
+- Builder — IDLE.
+- Strategy / R&D / Troubleshooting — IDLE.
