@@ -88,9 +88,11 @@
       "id": "FV-ESPN-04",
       "area": "espn-live-state",
       "title": "Authenticated IR edge states",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Observe supported eligible, grandfathered, filled, invalid, and/or unverified IR states as real league opportunities arise; never manufacture a live state."
+      "status": "passed",
+      "evidence": [
+        "2026-09-13: Real deployed authenticated TCW-016 field recording showed a naturally occurring supported eligible/filled IR state. ESPN already had one player occupying the configured IR slot with ESPN IR designation; Refresh ESPN succeeded; The Chip Winner preserved the occupant in its IR section with normalized INJURED_RESERVE status, preserved the observed ESPN 0.0 projection, kept the IR occupant out of the active Lineup Lab recommendation path, kept Waivers usable and legality-aware, and showed IR × 1 in League Setup. No roster transaction was performed to manufacture the state. Independent Auditor PR #84 returned PASS CANDIDATE with no findings."
+      ],
+      "notes": "Passed for the naturally observed supported eligible/filled IR state after independent TCW-016 audit. This does not claim field observation of grandfathered, invalid, over-capacity, unsupported, or unverified IR states; those remain unobserved and are not inferred."
     },
     {
       "id": "FV-ESPN-05",
