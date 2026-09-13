@@ -17,12 +17,24 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      deployment_required: ${{ steps.deployment-scope.outputs.required }}
+      deployment_reason: ${{ steps.deployment-scope.outputs.reason }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+      - name: Classify production deployment scope
+        id: deployment-scope
+        env:
+          DEPLOY_BASE_SHA: ${{ github.event.before }}
+        run: |
+          node scripts/deployment-scope.js --github-output >> "$GITHUB_OUTPUT"
+          node scripts/deployment-scope.js
       - run: npm ci
       - run: npm audit --audit-level=high
       - run: npm test
@@ -37,7 +49,7 @@ jobs:
       - run: npm run security
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && needs.test.outputs.deployment_required == 'true'
     needs: test
     permissions:
       contents: read

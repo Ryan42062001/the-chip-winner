@@ -29,6 +29,7 @@ const ACTIVE_STALE_STATUSES = new Set([
 const OWNERS = new Set(["Manager", "Builder", "Auditor", "R&D", "Strategy", "Troubleshooting"]);
 const DEPENDENCIES = new Set(["INDEPENDENT", "SOFT", "HARD"]);
 const EXECUTION_MODES = new Set(["STANDARD_CHAT", "WORK_MODE_PREFERRED", "WORK_MODE_HIGH_VALUE"]);
+const MERGE_AUTHORITIES = new Set(["Manager"]);
 const BRANCH_PREFIX = Object.freeze({
   Manager: "manager/",
   Builder: "builder/",
@@ -70,6 +71,7 @@ export function validateRegistryShape(registry) {
     add(errors, ALLOWED_STATUSES.includes(task?.status), `${id}: invalid status ${task?.status}`);
     add(errors, DEPENDENCIES.has(task?.dependency), `${id}: invalid dependency ${task?.dependency}`);
     add(errors, EXECUTION_MODES.has(task?.execution_mode), `${id}: invalid execution_mode ${task?.execution_mode}`);
+    add(errors, MERGE_AUTHORITIES.has(task?.merge_authority), `${id}: merge_authority must be Manager.`);
     add(errors, typeof task?.task_file === "string" && task.task_file.startsWith(".ai/manager/tasks/"), `${id}: task_file must be a Manager task spec path.`);
     add(errors, typeof task?.role_handoff === "string" && task.role_handoff.startsWith(".ai/"), `${id}: role_handoff must be an .ai path.`);
     add(errors, SHA_RE.test(task?.assignment_master_sha || ""), `${id}: assignment_master_sha must be a full SHA.`);

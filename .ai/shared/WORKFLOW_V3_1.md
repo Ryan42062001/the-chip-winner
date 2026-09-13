@@ -8,9 +8,11 @@ This file is a binding overlay on `.ai/shared/WORKFLOW.md`. The V3 base workflow
 
 ## 1. Single operational authority
 
-`.ai/shared/ACTIVE_TASKS.json` is the single machine-authoritative operational registry for current task ownership, lifecycle state, dependencies, branch/PR routing, external prerequisites, and next gates.
+`.ai/shared/ACTIVE_TASKS.json` is the single machine-authoritative operational registry for current task ownership, lifecycle state, dependencies, branch/PR routing, external prerequisites, merge authority, and next gates.
 
 Human-readable files such as `PROJECT_STATE.md`, `ROADMAP.md`, `ACTIVE_ASSIGNMENTS.md`, and role handoffs remain summaries/evidence and must not override a newer valid `ACTIVE_TASKS.json` entry for current operational state.
+
+Durable files such as `ROADMAP.md` and `DECISIONS.md` should not duplicate volatile active-task inventories or exact transient lifecycle status. When current task names/status are needed, point readers to `ACTIVE_TASKS.json`. `PROJECT_STATE.md`, `ACTIVE_ASSIGNMENTS.md`, and role handoffs may summarize operational state, but they remain secondary and should be reconciled when materially stale.
 
 The registry advertises the active workflow version and overlay path so Fast Refresh discovers V3.1 without requiring broad context loading.
 
@@ -24,6 +26,8 @@ Workflow V3.1 adds two lifecycle states:
 - `VERIFYING_MASTER` — the task has merged, but required post-merge master CI/deploy/runtime verification and canonical reconciliation are not complete.
 
 `WAITING_EXTERNAL_EVIDENCE` requires `external_actor`, `external_action`, and `resume_role`.
+
+Every active task must declare `merge_authority: "Manager"`. This makes the integration boundary machine-visible even when all GitHub actions use the same account identity.
 
 Use `BLOCKED` for an actual unresolved dependency/blocker. Do not use `BLOCKED` merely because a user-operated field action is required.
 
@@ -73,7 +77,7 @@ Fast Refresh remains the default, but an active assignment more than 3 commits b
 
 `npm run audit:workflow` validates the static workflow contract. The existing CI `npm test` command invokes the audit with `--ci` before running the Node test suite, so workflow-registry failures participate in the normal required test gate without a separate Actions-workflow step.
 
-The audit checks registry schema/workflow metadata, lifecycle values, unique Task IDs, valid owners/dependencies/execution modes, task/handoff paths, owner-consistent branch prefixes, external-evidence metadata, supersession metadata shape, atomic CLOSED verification evidence, stale active assignments when relevant history is available, and duplicate open task PRs when GitHub lookup succeeds.
+The audit checks registry schema/workflow metadata, lifecycle values, unique Task IDs, valid owners/dependencies/execution modes, Manager merge authority, task/handoff paths, owner-consistent branch prefixes, external-evidence metadata, supersession metadata shape, atomic CLOSED verification evidence, stale active assignments when relevant history is available, and duplicate open task PRs when GitHub lookup succeeds.
 
 Unresolvable shallow-history drift and unavailable external PR lookup warn rather than create a false CI failure. Manager/worker refresh discipline remains authoritative in those cases.
 
@@ -85,6 +89,31 @@ Manager-owned workflow/control-plane work may proceed concurrently with an indep
 
 Do not create a parallel specialist assignment merely to keep another role busy.
 
-## 10. Existing V3 principles preserved
+## 10. Control-plane-only deployment scope
+
+The normal test/CI gate still runs for every pull request and every `master` push.
+
+For a `master` push whose changed paths are entirely under `.ai/**`, GitHub Pages deployment and production smoke are `NOT APPLICABLE` because no deployed product surface changed. CI should skip those two jobs rather than perform a redundant website deployment.
+
+A deployment remains required when any changed path is outside `.ai/**`. `workflow_dispatch` always forces a deployment. If changed-path classification cannot be established safely, fail open to deployment rather than skipping it.
+
+Skipping deployment for a control-plane-only commit does not waive post-merge verification: the `master` test job must still pass, the skip reason must be observable in workflow state, and canonical coordination must still be reconciled before closeout.
+
+## 11. Merge authority and provenance
+
+Manager / Architect owns repository integration. Builder, Auditor, Strategy, R&D, and Troubleshooting workers must stop after producing their validated task PR and handoff. Those roles must not invoke merge, auto-merge, or an equivalent integration action on their own PR.
+
+A human user may merge a PR directly. Because GitHub actor identity may be shared across chat roles, a merged PR must not be assumed to have received Manager acceptance merely from its actor name.
+
+If Manager discovers that a worker PR is already merged before Manager acceptance:
+1. treat the physical merge as repository fact, not as an accepted task verdict;
+2. refresh canonical state and independently inspect the exact merged diff, task scope, PR-head CI, and post-merge master evidence;
+3. accept and reconcile only if the change is within scope and all required gates pass;
+4. otherwise route remediation/revert work under a new Manager-approved task;
+5. record the provenance anomaly in the Manager handoff when material.
+
+This rule prevents an accidental or external merge from silently bypassing the Manager review gate while avoiding false assumptions about which chat initiated an action.
+
+## 12. Existing V3 principles preserved
 
 Workflow V3.1 does not change the five-role permanent team, temporary Troubleshooting role, repository-as-memory model, task-scoped chats, protected branch/PR discipline, evidence hierarchy, field-validation rules, anti-loop escalation, Strategy/R&D advisory boundaries, or read-only product scope.
