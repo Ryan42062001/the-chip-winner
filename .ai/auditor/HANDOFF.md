@@ -1,88 +1,86 @@
-# Auditor Handoff — TCW-005
+# Auditor Handoff — TCW-014
 
-Independent verdict: **PASS CANDIDATE**
+Independent disposition: **PASS CANDIDATE**
 
 ## Audit scope
 
-TCW-005 post-remediation deployed recovery retest after accepted TCW-009 remediation.
+TCW-014 independently evaluates real deployed FV-WAIVER-01 evidence after TCW-012 exposed the existing waiver future-discovery diagnostics. No product code or field-registry status was modified by this Auditor task.
 
-No production code, field registry, ESPN state, credentials, raw private snapshots, private league identifiers, member data, or private sync data were modified or stored by this Auditor task.
+## Verified starting state
 
-Detailed privacy-safe post-remediation evidence is preserved in `.ai/auditor/TCW-005_POST_REMEDIATION.md`.
+- Fast Refresh verified `master` at `01eeacb0d4362384ede99603e13327cca0ce1e76`.
+- Workflow V3.1 is active and `.ai/shared/ACTIVE_TASKS.json` assigns TCW-014 to Auditor on `auditor/tcw-014-waiver-field-retest`.
+- `config/field-validation.json` still records `FV-WAIVER-01` as `pending` before this verdict.
+- TCW-012 Builder PR #74 merged at `0d9e7b55b267d9eb3f0876fe077e1f19dc38f453`.
+- TCW-012 post-merge workflow #463 / run `34733434181` completed successfully with `test`, `deploy`, and `verify-production` all passing.
+- Current master workflow #468 also completed successfully after the TCW-014 evidence-intake merge.
 
-## Verified deployed baseline
+## Independent implementation review
 
-- Repository: `Ryan42062001/the-chip-winner`.
-- Retested deployed `master`: `7bb8bcc34f519b8f8f7f41a2966a8b308245efb5`.
-- TCW-009 merged through PR #67 at `267b44e7ccea02b903938ead2ee4658d60c2d20b`.
-- Master workflow #451 / run `34730149140`: test PASS, deploy PASS, verify-production PASS.
-- FV-RECOVERY-01 remained pending before this Auditor verdict; Manager owns field-registry integration.
+Current `src/ui/section-renderer-priority.js` directly renders the ready-state engine values:
 
-## Privacy-safe field observations
+- `consideredAdds` as `Considered adds`
+- `completeAdds` as `Complete adds`
+- `scenarioCount` as `Scenarios evaluated`
+- `qualifiedAdds` as `Qualified adds`
 
-### Online baseline
+Non-ready states continue to display the engine reason rather than synthesizing zero diagnostics.
 
-- Authenticated **Refresh ESPN** succeeded.
-- Persistent source label showed `Live ESPN snapshot`.
+Current waiver-engine behavior derives these diagnostics from the actual future-discovery enumeration. In the ready state, `scenarioCount` is the number of generated add/drop inputs and `qualifiedAdds` is the count of future-only candidates that survive the engine qualification rules.
 
-### Real client network failure
+## Privacy-safe real field evidence reviewed
 
-- Network connectivity was disabled while the loaded app remained open.
-- **Refresh ESPN** failed.
-- Previous valid ESPN data remained visible and usable.
-- Persistent source label changed to `Last valid ESPN snapshot · refresh failed`.
-- Failure guidance instructed the user to check network connectivity, Chrome companion availability, and ESPN authentication before retrying rather than implying authentication alone.
-- No sample/demo fallback appeared.
+Manager intake records a real deployed authenticated run with:
 
-### Navigation persistence while offline
+- authenticated ESPN refresh: succeeded;
+- `consideredAdds`: **89**;
+- `completeAdds`: **88**;
+- `scenarioCount`: **352**;
+- `qualifiedAdds`: **0**;
+- Waivers page remained usable/responsive while scrolling;
+- no materially disruptive stall, visible freeze, broken intermediate state, or unusable interaction was observed;
+- the page continued to present the existing truthful no-priority/no-clear-upgrade outcome.
 
-- User navigated from Overview to Lineup Lab while still offline.
-- Retained ESPN data remained usable.
-- Persistent source label continued to read `Last valid ESPN snapshot · refresh failed`.
-- No sample/demo fallback appeared.
+The counts are internally consistent with the engine model: 88 complete adds produced 352 evaluated scenarios, i.e. 4 add/drop scenarios per complete add for this observed roster state. The difference between 89 considered and 88 complete adds is consistent with one considered add lacking complete selected-week projection coverage. `qualifiedAdds: 0` therefore does not indicate failed enumeration; it is a valid outcome after the 352 scenarios were evaluated.
 
-### Reconnect
+No private player/team/member identity, cookie, credential, raw snapshot, private URL, or sync secret is preserved in this handoff.
 
-- Connectivity was restored.
-- **Refresh ESPN** succeeded.
-- Normal `Live ESPN snapshot` presentation returned.
+## Independent assessment
 
-## Finding disposition
-
-- **TCW-005-F01 — HIGH / blocking:** **REMEDIATED IN FIELD RETEST.** The original retained-stale-as-live behavior did not reproduce after TCW-009.
-- **TCW-005-F02 — MEDIUM:** **REMEDIATED IN FIELD RETEST.** Refresh-failure guidance was no longer authentication-only.
+The deployed TCW-012 implementation exposes the required exhaustive-run diagnostics without changing waiver enumeration or recommendation policy. The real authenticated field run demonstrates non-trivial candidate/scenario volume, complete diagnostic visibility, and acceptable observed UI responsiveness. Nothing in the received field evidence indicates a reproduced waiver performance or diagnostics defect.
 
 ## Verification matrix
 
 | Dimension | Result | Evidence |
 | --- | --- | --- |
-| Code correctness | PASS CANDIDATE | observed deployed TCW-009 behavior matches accepted remediation intent |
-| Test correctness | PASS | TCW-009 exact-head and post-merge automated gates passed; Auditor evidence PR exact-head CI required |
-| State correctness | PASS CANDIDATE | retained last-valid snapshot is durably qualified across navigation and cleared on successful reconnect |
-| Strategic behavior | NOT APPLICABLE | recovery/freshness task only |
-| Real-world behavior | PASS CANDIDATE | real authenticated online -> offline failure -> navigation -> reconnect sequence completed |
+| Static/code review | PASS | current master renders the four existing `futureDiscovery` counters directly and preserves non-ready reason states |
+| Deterministic automated tests | PASS | TCW-012 exact-head CI covered diagnostics visibility and non-ready behavior; post-merge workflow #463 `test` passed |
+| Exact-head PR CI | PASS | PR #74 exact-head workflow #462 passed the protected test gate |
+| Post-merge master verification | PASS | workflow #463 on merge SHA `0d9e7b55...` passed |
+| Production/deployed verification | PASS | workflow #463 deploy and verify-production jobs passed |
+| Real field validation | PASS CANDIDATE | authenticated deployed run: 89 considered, 88 complete, 352 scenarios, 0 qualified; page remained responsive/usable |
 
-## Verdict
+## Findings
+
+No blocking or non-blocking defect finding is warranted from the TCW-014 evidence reviewed.
+
+## Disposition
 
 **PASS CANDIDATE**
 
-The deployed TCW-009 remediation satisfies the observed TCW-005 recovery acceptance behavior. The prior blocking and medium findings did not reproduce during the post-remediation field retest.
-
-## Field registry
-
-`config/field-validation.json` was **not modified** by the Auditor. Manager owns any FV-RECOVERY-01 evidence/status integration after accepting this verdict.
+FV-WAIVER-01 has sufficient privacy-safe real deployed evidence for Manager consideration of field-status integration. This Auditor does not directly modify the field registry.
 
 ## HANDOFF
 
-**Task ID:** TCW-005  
+**Task ID:** TCW-014  
 **Role:** Independent Auditor / QA  
-**Status:** COMPLETE — POST-REMEDIATION PASS CANDIDATE  
-**Verified starting state:** Deployed `master` `7bb8bcc34f519b8f8f7f41a2966a8b308245efb5`; TCW-009 merged/deployed; workflow #451 green.  
-**Work completed:** Independently assessed the real authenticated recovery sequence after remediation: successful online refresh -> genuine client network failure -> retained-data labeling and navigation persistence -> restored connectivity -> successful reconnect.  
-**Evidence produced:** `.ai/auditor/TCW-005_POST_REMEDIATION.md`; TCW-005-F01 and TCW-005-F02 did not reproduce after TCW-009.  
-**Files updated:** `.ai/auditor/TCW-005_POST_REMEDIATION.md` and `.ai/auditor/HANDOFF.md`.  
-**Open findings:** None from the post-remediation recovery retest.  
-**Blocking issues:** None for TCW-005 at the observed field-validation level; Manager integration remains required.  
+**Status:** COMPLETE — PASS CANDIDATE  
+**Verified starting state:** `master` `01eeacb0d4362384ede99603e13327cca0ce1e76`; TCW-014 assigned; FV-WAIVER-01 pending.  
+**Work completed:** Independently verified TCW-012 merge/deployment/CI, reviewed current diagnostic rendering and engine derivation, assessed the Manager privacy-safe real deployed field intake, and checked count consistency and observed responsiveness.  
+**Evidence produced:** TCW-014 PASS CANDIDATE with no findings; field values 89 considered / 88 complete / 352 scenarios / 0 qualified and acceptable observed responsiveness.  
+**Files updated:** `.ai/auditor/HANDOFF.md` only.  
+**Open findings:** None.  
+**Blocking issues:** None for TCW-014 at the observed field-validation level.  
 **Recommended next role:** Manager / Architect.  
-**Exact next action:** Manager reviews and integrates this PASS CANDIDATE, performs the Manager-owned FV-RECOVERY-01 registry evidence/status update if accepted, and reconciles TCW-005/TCW-009 through Workflow V3.1.  
-**Checkpoint / SHA:** Retested deployed `master`: `7bb8bcc34f519b8f8f7f41a2966a8b308245efb5`; Auditor PR head must be re-verified after this handoff update.
+**Exact next action:** Manager reviews this PASS CANDIDATE and, if accepted, performs the Manager-owned FV-WAIVER-01 privacy-safe evidence/status integration through the protected workflow; Auditor must not edit `config/field-validation.json` or merge its own PR.  
+**Checkpoint / SHA:** Audited `master` `01eeacb0d4362384ede99603e13327cca0ce1e76`; Auditor branch `auditor/tcw-014-waiver-field-retest` starts from that exact checkpoint.
