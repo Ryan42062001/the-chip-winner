@@ -11,9 +11,11 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 - External prerequisite: one naturally occurring real ESPN game-lock or availability transition.
 - Next gate: user supplies real pre/post transition evidence -> Manager privacy-safe intake -> Independent Auditor verdict.
 
+TCW-019 is closed after the explicit Release 1.0 accessibility scope change and verified master workflow #495.
+
 ## Field state
 
-Release 1.0 field gate: **9 passed / 4 pending**.
+Release 1.0 field gate: **9 passed / 3 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -27,10 +29,11 @@ Passed:
 - FV-WAIVER-01
 
 Pending:
-- FV-A11Y-02
 - FV-ESPN-02
 - FV-ESPN-05 — TCW-018 pre-staged, awaiting genuine transition evidence
 - FV-SEASON-01
+
+Manual screen-reader certification is not part of the Release 1.0 field gate under TCW-D012. Automated accessibility/readiness CI remains active.
 
 ## Role state
 
