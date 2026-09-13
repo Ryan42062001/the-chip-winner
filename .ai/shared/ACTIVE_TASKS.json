@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T12:22:00Z",
+  "updated_at_utc": "2026-09-13T12:27:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -17,10 +17,13 @@
       "worker_checkpoint_sha": null,
       "branch": "manager/tcw-018-lock-field-prestage",
       "pr": null,
-      "dependency": "EXTERNAL",
+      "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": true,
       "merge_authority": "Manager",
+      "external_actor": "User",
+      "external_action": "Capture a real authenticated pre/post ESPN game-lock or availability-transition recording without manufacturing the state.",
+      "resume_role": "Manager",
       "blocked_on": ["naturally occurring real ESPN game-lock or availability transition evidence"],
       "next_gate": "User captures real pre/post lock transition -> Manager privacy-safe evidence intake -> Independent Auditor field verdict"
     }
