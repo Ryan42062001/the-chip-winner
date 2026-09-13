@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T12:27:00Z",
+  "updated_at_utc": "2026-09-13T15:58:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -26,6 +26,23 @@
       "resume_role": "Manager",
       "blocked_on": ["naturally occurring real ESPN game-lock or availability transition evidence"],
       "next_gate": "User captures real pre/post lock transition -> Manager privacy-safe evidence intake -> Independent Auditor field verdict"
+    },
+    {
+      "task_id": "TCW-019",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-019.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "e386809dd4147fadefffcf8a97a5882abc1bcef7",
+      "worker_checkpoint_sha": null,
+      "branch": "manager/tcw-019-remove-screenreader-field-gate",
+      "pr": null,
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "merge_authority": "Manager",
+      "blocked_on": [],
+      "next_gate": "Remove FV-A11Y-02 from Release 1.0 scope -> exact-head CI -> Manager merge -> verify master deploy/production -> .ai-only closeout"
     }
   ]
 }
