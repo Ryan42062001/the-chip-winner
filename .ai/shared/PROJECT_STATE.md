@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-13
-Current operating state: Release 1.0 field validation / no active operational task
+Current operating state: Release 1.0 field validation / TCW-018 waiting for real game-lock evidence
 
 ## Repository
 
@@ -46,6 +46,10 @@ Pending:
 - FV-ESPN-05
 - FV-SEASON-01
 
+## Active lock-transition validation
+
+TCW-018 is pre-staged for `FV-ESPN-05`. It is intentionally `WAITING_EXTERNAL_EVIDENCE` until a real authenticated player crosses a genuine game-lock or availability transition. The evidence contract requires pre-transition and post-transition deployed refreshes and enough repeated UI context to determine whether prior advice is revalidated, withdrawn, qualified, or made non-actionable when required. No lock state or roster transaction may be manufactured merely to satisfy the field check.
+
 ## IR validation disposition
 
 The IR field loop is closed for the current Release 1.0 contract. Real deployed authenticated evidence established a naturally occurring supported eligible/filled IR state. The Chip Winner preserved the real IR occupant and normalized status, preserved the observed numeric zero projection, kept the occupant outside the active lineup path, retained legality-aware Waivers behavior, and preserved the configured IR slot without a manufactured roster transaction.
@@ -75,7 +79,7 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 ## Active coordination state
 
-No operational task is active after TCW-017 closeout. All durable roles are idle/event-driven until a genuine remaining field prerequisite, reproduced defect, or approved workflow task is ready.
+TCW-018 is Manager-owned and waiting on real field evidence. Builder, Auditor, Strategy, R&D, and Troubleshooting remain idle/event-driven until that evidence arrives or a new bounded dependency is approved.
 
 ## Known gated work
 
