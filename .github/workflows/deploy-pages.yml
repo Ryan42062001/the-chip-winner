@@ -17,8 +17,15 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      deployment_required: ${{ steps.deployment-scope.outputs.required }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Classify production deployment scope
+        id: deployment-scope
+        run: echo "required=$(node scripts/deployment-scope.js)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -37,7 +44,7 @@ jobs:
       - run: npm run security
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && needs.test.outputs.deployment_required == 'true'
     needs: test
     permissions:
       contents: read
