@@ -12,6 +12,8 @@ This file is a binding overlay on `.ai/shared/WORKFLOW.md`. The V3 base workflow
 
 Human-readable files such as `PROJECT_STATE.md`, `ROADMAP.md`, `ACTIVE_ASSIGNMENTS.md`, and role handoffs remain summaries/evidence and must not override a newer valid `ACTIVE_TASKS.json` entry for current operational state.
 
+The registry advertises the active workflow version and overlay path so Fast Refresh discovers V3.1 without requiring broad context loading.
+
 The field-validation registry remains separately authoritative for Release 1.0 field-check status.
 
 ## 2. Registry schema v2 lifecycle
@@ -43,9 +45,17 @@ Do not route through Strategy, R&D, Troubleshooting, or roadmap work unless a re
 
 ## 5. Verification matrix in handoffs
 
-Builder, Auditor, and meaningful Manager integration handoffs should include a compact verification matrix using `.ai/shared/HANDOFF_TEMPLATE.md`.
+Builder, Auditor, and meaningful Manager integration handoffs should include a compact verification matrix following this contract.
 
-Minimum dimensions are static/code review, deterministic automated tests, exact-head PR CI, post-merge master verification, production/deployed verification when applicable, and real field validation when applicable. Use explicit statuses such as PASS, FAIL, NOT RUN, NOT APPLICABLE, or PENDING — ROLE OWNED. A lower validation level never implies a higher one.
+Minimum dimensions are:
+- static/code review;
+- deterministic automated tests;
+- exact-head PR CI;
+- post-merge master verification;
+- production/deployed verification when applicable;
+- real field validation when applicable.
+
+Use explicit statuses such as `PASS`, `FAIL`, `NOT RUN`, `NOT APPLICABLE`, or `PENDING — ROLE OWNED`. Include the evidence reference beside each status. A lower validation level never implies a higher one.
 
 ## 6. Supersession and duplicate PR control
 
@@ -61,9 +71,11 @@ Fast Refresh remains the default, but an active assignment more than 3 commits b
 
 ## 8. Workflow-integrity audit
 
-`npm run audit:workflow` validates the static workflow contract. CI runs it with `--ci` to additionally inspect assignment drift and open PRs when those sources are available.
+`npm run audit:workflow` validates the static workflow contract. The existing CI `npm test` command invokes the audit with `--ci` before running the Node test suite, so workflow-registry failures participate in the normal required test gate without a separate Actions-workflow step.
 
-The audit checks registry schema/lifecycle values, unique Task IDs, valid owners/dependencies/execution modes, task/handoff paths, owner-consistent branch prefixes, external-evidence metadata, supersession metadata shape, atomic CLOSED verification evidence, stale active assignments, and duplicate open task PRs.
+The audit checks registry schema/workflow metadata, lifecycle values, unique Task IDs, valid owners/dependencies/execution modes, task/handoff paths, owner-consistent branch prefixes, external-evidence metadata, supersession metadata shape, atomic CLOSED verification evidence, stale active assignments when relevant history is available, and duplicate open task PRs when GitHub lookup succeeds.
+
+Unresolvable shallow-history drift and unavailable external PR lookup warn rather than create a false CI failure. Manager/worker refresh discipline remains authoritative in those cases.
 
 The workflow audit is a coordination guardrail, not a substitute for Manager judgment, application tests, independent audit, or real field evidence.
 
