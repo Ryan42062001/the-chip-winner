@@ -12,6 +12,8 @@ This file is a binding overlay on `.ai/shared/WORKFLOW.md`. The V3 base workflow
 
 Human-readable files such as `PROJECT_STATE.md`, `ROADMAP.md`, `ACTIVE_ASSIGNMENTS.md`, and role handoffs remain summaries/evidence and must not override a newer valid `ACTIVE_TASKS.json` entry for current operational state.
 
+Durable files such as `ROADMAP.md` and `DECISIONS.md` should not duplicate volatile active-task inventories or exact transient lifecycle status. When current task names/status are needed, point readers to `ACTIVE_TASKS.json`. `PROJECT_STATE.md`, `ACTIVE_ASSIGNMENTS.md`, and role handoffs may summarize operational state, but they remain secondary and should be reconciled when materially stale.
+
 The registry advertises the active workflow version and overlay path so Fast Refresh discovers V3.1 without requiring broad context loading.
 
 The field-validation registry remains separately authoritative for Release 1.0 field-check status.
@@ -85,6 +87,16 @@ Manager-owned workflow/control-plane work may proceed concurrently with an indep
 
 Do not create a parallel specialist assignment merely to keep another role busy.
 
-## 10. Existing V3 principles preserved
+## 10. Control-plane-only deployment scope
+
+The normal test/CI gate still runs for every PR and every `master` push.
+
+For a `master` push whose changed paths are entirely under `.ai/**`, GitHub Pages deployment and production smoke are `NOT APPLICABLE` because no deployed product surface changed. CI should skip those two jobs rather than perform a redundant website deployment.
+
+A deployment remains required when any changed path is outside `.ai/**`. `workflow_dispatch` always forces a deployment. If changed-path classification cannot be established safely, fail open to deployment rather than skipping it.
+
+Skipping deployment for a control-plane-only commit does not waive post-merge verification: the `master` test job must still pass, the skip reason must be observable in workflow state, and canonical coordination must still be reconciled before closeout.
+
+## 11. Existing V3 principles preserved
 
 Workflow V3.1 does not change the five-role permanent team, temporary Troubleshooting role, repository-as-memory model, task-scoped chats, protected branch/PR discipline, evidence hierarchy, field-validation rules, anti-loop escalation, Strategy/R&D advisory boundaries, or read-only product scope.
