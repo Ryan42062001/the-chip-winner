@@ -1,6 +1,6 @@
 # The Chip Winner — Durable Decisions
 
-Last reconciled: 2026-09-11
+Last reconciled: 2026-09-13
 
 These entries codify durable decisions established by repository evidence. They do not create unapproved product scope.
 
@@ -58,3 +58,8 @@ Status: ACTIVE
 Status: ACTIVE
 
 The Chip Winner Strategy role is **In-Season Strategy & Decision Intelligence**. It owns recommendation-policy reasoning for waivers/add-drops, lineup/start-sit decisions, roster construction/depth, replacement value/scarcity, IR/injury implications, bye/playoff planning, and in-season horizon tradeoffs. Draft-specific strategy belongs to The War Room and must not leak into The Chip Winner merely because the projects are both fantasy-football tools.
+
+## TCW-D012 — Manual screen-reader certification is not a Release 1.0 requirement
+Status: ACTIVE
+
+At the product owner's explicit direction, the pending manual screen-reader field item `FV-A11Y-02` is removed from the Release 1.0 field registry rather than marked passed without evidence. Previously completed keyboard-only and real 200% zoom field evidence remains preserved. Automated accessibility/readiness regression checks remain deployment-blocking CI because they require no manual user validation and continue to protect basic interface quality.

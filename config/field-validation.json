@@ -14,14 +14,6 @@
       "notes": "Keyboard-only production workflow passed for the tested Chrome/Windows session."
     },
     {
-      "id": "FV-A11Y-02",
-      "area": "accessibility",
-      "title": "Screen-reader critical workflow",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Run the critical workflow with NVDA, VoiceOver, or an equivalent assistive technology and record browser/AT versions plus any defects."
-    },
-    {
       "id": "FV-A11Y-03",
       "area": "accessibility",
       "title": "Real browser 200 percent zoom",
