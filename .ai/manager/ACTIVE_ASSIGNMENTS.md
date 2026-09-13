@@ -24,14 +24,30 @@ Role: Implementation Engineer / Builder
 Status: `ASSIGNED`
 Task: `.ai/manager/tasks/TCW-012.md`
 Expected branch: `builder/tcw-012-waiver-field-diagnostics`
-Assignment master: `074e110e85189f4473502c1c7fa72a18d88a2a10`
 Execution mode: STANDARD_CHAT
 
-Real FV-WAIVER-01 recording confirmed acceptable deployed responsiveness, but the required exhaustive-run diagnostics were not visible. The engine already returns `consideredAdds`, `completeAdds`, `scenarioCount`, and `qualifiedAdds`; TCW-012 is limited to exposing those existing values truthfully in the Waivers UI with deterministic regression coverage.
-
-No waiver enumeration, legality, priority, projection, threshold, ranking, or candidate-cap behavior may change. `config/field-validation.json` remains unchanged until a deployed real retest captures the diagnostics.
+TCW-012 remains the bounded Waivers transparency task. It does not overlap TCW-013 workflow/tooling files.
 
 Next gate: Builder implementation PR -> Manager review/integration -> verified deployment -> real FV-WAIVER-01 retest.
+
+## TCW-013 — Control-Plane CI Efficiency & Durable-State Deduplication
+
+Role: Manager / Architect
+Status: `IN_PROGRESS`
+Task: `.ai/manager/tasks/TCW-013.md`
+Branch: `manager/tcw-013-workflow-efficiency`
+Assignment master: `c66c02302fa014eb50ddbdf0e5a9dd4b933641dd`
+Execution mode: STANDARD_CHAT
+Dependency: INDEPENDENT
+
+Scope:
+- retain the full CI/test gate for every PR/push;
+- skip Pages deploy + production smoke only for `master` commits whose changed paths are entirely `.ai/**`;
+- fail open to deployment when scope classification is unavailable;
+- keep manual workflow dispatch deploying;
+- remove volatile active-task claims from the durable roadmap.
+
+Parallel classification: non-overlapping Manager workflow/tooling work. If TCW-013 merges before TCW-012, treat that target advancement as `CONTROL_PLANE_ONLY` for TCW-012 unless later evidence shows overlap.
 
 ## Field state
 
@@ -40,19 +56,19 @@ FV-RECOVERY-01 is passed. Release 1.0 remains **7 passed / 6 pending** while FV-
 ## Role state
 
 ### Manager / Architect
-ACTIVE — overseeing TCW-012 and Release 1.0 field-gate orchestration.
+ACTIVE — TCW-013 workflow hardening plus TCW-012 oversight/integration.
 
 ### Implementation Engineer / Builder
 ASSIGNED — TCW-012.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE — no recommendation-policy ambiguity exists in TCW-012.
+IDLE.
 
 ### R&D
-IDLE — no research dependency exists in TCW-012.
+IDLE.
 
 ### Independent Auditor / QA
-IDLE — real field evidence is required after deployment; no pre-merge independent audit is required for this transparency-only change.
+IDLE pending real deployed field evidence.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
