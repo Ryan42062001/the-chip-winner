@@ -2,22 +2,26 @@
 
 HANDOFF
 
-Task ID: TCW-013
+Task ID: TCW-016
 Role: Manager / Architect
-Status: CLOSED
+Status: ASSIGNED — FV-ESPN-04 AUTHENTICATED IR ELIGIBLE-STATE RETEST
 
-Implementation PR #81 merged at `e52a7c196a0673ac1d7d17d570703a08ec7db521`.
-Master workflow #477 / run `34736732538` passed test, Pages deploy, and production smoke.
+Canonical assignment baseline: `c454072927b0984bd76ee9bfa7fbe889847fd5bf`.
 
-Completed workflow improvements:
-- full tests remain required for pull requests and master pushes;
-- `.ai/**`-only master pushes may skip Pages deployment and production smoke;
-- changes outside `.ai/**` still deploy normally;
-- unavailable scope classification defaults to deployment;
-- Workflow V3.1 separates durable planning state from volatile task state;
-- active tasks declare Manager merge authority and workflow audit validates it;
-- worker PR integration remains a Manager review responsibility.
+Received real deployed field evidence:
+- ESPN My Team showed one real player occupying the league IR slot with ESPN `IR` designation.
+- The Chip Winner completed a live ESPN refresh successfully.
+- Overview preserved the same player in an `IR` section with normalized `INJURED_RESERVE` status and the observed 0.0 ESPN projection.
+- The IR occupant remained outside the active lineup recommendation path.
+- Waivers remained legality-aware with the current IR occupant present.
+- League Setup preserved one configured `IR × 1` slot.
+- No roster transaction was performed to manufacture the state.
 
-The final closeout contains only `.ai/**` changes. Its master workflow is expected to pass tests while deployment jobs are skipped as not applicable.
+Privacy-safe intake is stored at `.ai/manager/evidence/TCW-016_IR_FIELD_INTAKE.md`.
 
-Release 1.0 field state remains 8 passed / 5 pending.
+Manager classification: real supported eligible/filled IR opportunity suitable for independent `FV-ESPN-04` review. Manager has not changed `config/field-validation.json` and has not declared a pass.
+
+ACTIVATE NOW:
+- Independent Auditor / QA — execute `.ai/manager/tasks/TCW-016.md` on `auditor/tcw-016-ir-field-retest` and return exactly one disposition: `PASS CANDIDATE`, `FAIL — REPRODUCED DEFECT`, or `INCONCLUSIVE`.
+- Manager — oversight/integration after Auditor handoff.
+- Builder, Strategy, R&D, Troubleshooting — IDLE unless a reproduced defect or new bounded dependency requires them.
