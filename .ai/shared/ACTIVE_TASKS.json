@@ -1,6 +1,8 @@
 {
   "schema_version": 2,
-  "updated_at_utc": "2026-09-13T00:58:00Z",
+  "workflow_version": "V3.1",
+  "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
+  "updated_at_utc": "2026-09-13T01:01:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -49,7 +51,7 @@
       "assignment_master_sha": "399869d0781bcc7ba844dabaa5bc439be784e809",
       "worker_checkpoint_sha": null,
       "branch": "manager/tcw-010-workflow-v3-1",
-      "pr": null,
+      "pr": 68,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
