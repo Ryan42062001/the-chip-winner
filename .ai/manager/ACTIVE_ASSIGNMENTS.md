@@ -6,14 +6,14 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Active assignment
 
-- TCW-016 — FV-ESPN-04 Authenticated IR Eligible-State Retest — **Auditor ASSIGNED**.
-- Expected branch: `auditor/tcw-016-ir-field-retest`.
-- Manager evidence intake: `.ai/manager/evidence/TCW-016_IR_FIELD_INTAKE.md`.
-- Next gate: independent Auditor verdict; Manager owns field-registry integration if PASS CANDIDATE.
+- TCW-017 — FV-ESPN-04 Evidence Integration and Closeout — **Manager IN_PROGRESS**.
+- Branch: `manager/tcw-017-ir-field-integration`.
+- Upstream TCW-016 independent verdict: `PASS CANDIDATE`, accepted after Auditor PR #84 and verified master workflow #483.
+- Next gate: exact-head integration CI -> Manager merge -> verified master deployment -> `.ai/**`-only closeout.
 
 ## Field state
 
-Release 1.0 field gate remains **8 passed / 5 pending** until independent TCW-016 review and Manager integration.
+The integration branch records Release 1.0 at **9 passed / 4 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -21,6 +21,7 @@ Passed:
 - FV-MOBILE-01
 - FV-ESPN-01
 - FV-ESPN-03
+- FV-ESPN-04 — real supported eligible/filled IR state independently accepted
 - FV-RECOVERY-01
 - FV-SYNC-01
 - FV-WAIVER-01
@@ -28,14 +29,13 @@ Passed:
 Pending:
 - FV-A11Y-02
 - FV-ESPN-02
-- FV-ESPN-04 — real eligible/filled IR evidence received; TCW-016 audit assigned
 - FV-ESPN-05
 - FV-SEASON-01
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE — TCW-016 routing/oversight; field status integration only after independent verdict.
+ACTIVE — TCW-017 integration/closeout.
 
 ### Implementation Engineer / Builder
 IDLE — no approved implementation task.
@@ -47,7 +47,7 @@ IDLE — no approved strategy task.
 IDLE — no approved research task.
 
 ### Independent Auditor / QA
-ASSIGNED — TCW-016.
+IDLE — TCW-016 PASS CANDIDATE complete and accepted for Manager integration.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
