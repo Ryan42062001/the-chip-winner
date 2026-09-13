@@ -53,7 +53,7 @@ Completed:
 - TCW-010 Workflow V3.1 coordination hardening.
 - TCW-011 FV-RECOVERY-01 evidence integration and recovery-loop closeout.
 
-Current operational tasks: none. Workflow V3.1 is canonical and `.ai/shared/ACTIVE_TASKS.json` is the machine-authoritative operational registry.
+Current operational task ownership/status is intentionally not duplicated in this durable roadmap. Use `.ai/shared/ACTIVE_TASKS.json` for the machine-authoritative live task inventory.
 
 ## Immediate dependency order
 
@@ -68,7 +68,7 @@ Release 1.0 may close only when:
 - every field-validation item is passed with privacy-safe evidence;
 - no unresolved high-severity accessibility, privacy, security, ESPN-normalization, waiver-legality, recovery/freshness, or season-planning defect remains;
 - exact final release PR validation is green;
-- post-merge `master` test/deploy/production verification is green;
+- post-merge `master` test/deploy/production verification is green when deployment is applicable;
 - product remains read-only.
 
 ## Post-1.0 Roadmap Discovery
