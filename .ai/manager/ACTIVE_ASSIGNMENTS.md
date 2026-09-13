@@ -4,14 +4,13 @@ Last updated: 2026-09-13
 Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
-## Active assignment
+## Active assignments
 
-- TCW-018 — FV-ESPN-05 Real Game-Lock / Availability Transition Field Retest — **Manager WAITING_EXTERNAL_EVIDENCE**.
-- Prestage branch: `manager/tcw-018-lock-field-prestage`.
-- External prerequisite: one naturally occurring real ESPN game-lock or availability transition.
-- Next gate: user supplies real pre/post transition evidence -> Manager privacy-safe intake -> Independent Auditor verdict.
-
-TCW-019 is closed after the explicit Release 1.0 accessibility scope change and verified master workflow #495.
+- TCW-018 — FV-ESPN-05 Real Game-Lock / Availability Transition Field Retest — **BLOCKED on TCW-020** after Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT`.
+- TCW-020 — START/SIT Lock-Awareness Remediation — **Builder ASSIGNED**.
+- Expected Builder branch: `builder/tcw-020-start-sit-lock-remediation`.
+- Accepted finding: `TCW-018-F01 — MEDIUM — BLOCKING`.
+- Next gate: Builder remediation PR/handoff -> Manager review/integration/deploy verification -> fresh TCW-018 Independent Auditor post-remediation field retest.
 
 ## Field state
 
@@ -29,30 +28,30 @@ Passed:
 - FV-WAIVER-01
 
 Pending:
-- FV-ESPN-02
-- FV-ESPN-05 — TCW-018 pre-staged, awaiting genuine transition evidence
-- FV-SEASON-01
+- FV-ESPN-02 — authenticated custom FLEX/OP/Superflex league
+- FV-ESPN-05 — reproduced stale actionable START / SIT guidance after a genuine lock; TCW-020 remediation active
+- FV-SEASON-01 — real playoff/bye intelligence states
 
 Manual screen-reader certification is not part of the Release 1.0 field gate under TCW-D012. Automated accessibility/readiness CI remains active.
 
 ## Role state
 
 ### Manager / Architect
-WAITING_EXTERNAL_EVIDENCE — TCW-018.
+ACTIVE — accepted TCW-018-F01, routing TCW-020, owns later integration and retest activation.
 
 ### Implementation Engineer / Builder
-IDLE — no approved implementation task.
+ASSIGNED — TCW-020 bounded START / SIT lock-awareness remediation.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE — no approved strategy task.
+IDLE — no unresolved strategy policy is required for this deterministic remediation.
 
 ### R&D
-IDLE — no approved research task.
+IDLE — no external-fact or feasibility question is required.
 
 ### Independent Auditor / QA
-IDLE until TCW-018 evidence intake is ready.
+BLOCKED on TCW-020 deployment before the TCW-018 post-remediation retest.
 
 ### Troubleshooting & Root Cause Engineer
-IDLE / not instantiated.
+IDLE / not instantiated; the defect is already reproduced and bounded.
 
 Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.

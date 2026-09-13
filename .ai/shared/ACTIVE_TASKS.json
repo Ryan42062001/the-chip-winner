@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T17:20:00Z",
+  "updated_at_utc": "2026-09-13T17:50:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -10,19 +10,36 @@
     {
       "task_id": "TCW-018",
       "owner": "Auditor",
-      "status": "ASSIGNED",
+      "status": "BLOCKED",
       "task_file": ".ai/manager/tasks/TCW-018.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "ae70fa75274f201e2fd849f6f578d32043cee4ee",
-      "worker_checkpoint_sha": null,
+      "assignment_master_sha": "f9029d8eaa603bdcb039492a554fcd699948fa29",
+      "worker_checkpoint_sha": "129288651a0dbc8dc7727c0c2f5f847fb9246a86",
       "branch": "auditor/tcw-018-lock-field-retest",
-      "pr": null,
-      "dependency": "INDEPENDENT",
+      "pr": 93,
+      "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
+      "blocked_on": ["TCW-020"],
+      "next_gate": "TCW-020 lock-aware START/SIT remediation merges and deploys -> Manager reactivates TCW-018 for a fresh Independent Auditor post-remediation field retest"
+    },
+    {
+      "task_id": "TCW-020",
+      "owner": "Builder",
+      "status": "ASSIGNED",
+      "task_file": ".ai/manager/tasks/TCW-020.md",
+      "role_handoff": ".ai/builder/HANDOFF.md",
+      "assignment_master_sha": "f9029d8eaa603bdcb039492a554fcd699948fa29",
+      "worker_checkpoint_sha": null,
+      "branch": "builder/tcw-020-start-sit-lock-remediation",
+      "pr": null,
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": true,
+      "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Independent Auditor evaluates real FV-ESPN-05 lock-transition evidence -> Auditor PR/handoff -> Manager field integration only if PASS CANDIDATE"
+      "next_gate": "Builder remediation PR/handoff -> Manager review/integration and deployed verification -> TCW-018 Independent Auditor retest"
     }
   ]
 }
