@@ -1,15 +1,15 @@
 # The Chip Winner — Canonical Roadmap
 
-Last reconciled: 2026-09-11
+Last reconciled: 2026-09-12
 Current milestone: Release 1.0 field validation
 
 ## Current milestone
 
 ### M1 — Release 1.0 trustworthy read-only companion
 
-Status: ACTIVE — FIELD VALIDATION
+Status: ACTIVE — FIELD VALIDATION / RECOVERY REMEDIATION
 
-Remaining milestone work is evidence-backed real-world validation and final release gating. Broad feature expansion remains out of scope.
+Remaining milestone work is evidence-backed real-world validation, narrow remediation of reproduced field defects, and final release gating. Broad feature expansion remains out of scope.
 
 ## Release 1.0 blockers
 
@@ -22,7 +22,20 @@ Pending checks in `config/field-validation.json`:
 6. FV-RECOVERY-01 — live ESPN/session/network failure and reconnect.
 7. FV-WAIVER-01 — real waiver candidate volume and timing.
 
-Field gate remains **6 passed / 7 pending**.
+Registry field gate remains **6 passed / 7 pending**.
+
+FV-RECOVERY-01 now has a real TCW-005 `FAIL — REPRODUCED DEFECT` verdict. It remains unpassed until TCW-009 is remediated, merged, deployed, production-verified, and independently retested.
+
+## Recovery remediation dependency chain
+
+1. TCW-005 real deployed field run reproduced:
+   - HIGH blocking stale/live source-label defect;
+   - MEDIUM misleading authentication-focused network/fetch guidance.
+2. TCW-009 — Builder implements the bounded recovery-state remediation with deterministic regression coverage.
+3. Manager reviews/merges only an accepted TCW-009 implementation with exact-head CI green.
+4. Post-merge `master` test/deploy/production verification must pass.
+5. Independent Auditor resumes TCW-005 and repeats the same real deployed failure/reconnect sequence.
+6. Only a successful independent retest may support a separate Manager field-evidence/status integration for FV-RECOVERY-01.
 
 ## Coordination sequence
 
@@ -32,26 +45,30 @@ Completed:
 - TCW-002 baseline audit.
 - TCW-003 ESPN field-feasibility research.
 - TCW-004 evidence-wave integration.
-- TCW-005 Auditor execution attempt (field task remains blocked).
+- TCW-005 initial blocked attempt and later definitive real field verdict: FAIL — REPRODUCED DEFECT.
 - TCW-006 blocked recovery-field reconciliation.
-- TCW-007 Workflow V3 operating upgrade; PR #60 merged at `61c06843999df6a66236f352627f0fb2c29908c1`; workflow #427 passed test/deploy/production verification.
+- TCW-007 Workflow V3 operating upgrade.
+- TCW-008 post-1.0 roadmap candidate sequencing.
+
+Active:
+- TCW-009 — Recovery State Honesty Remediation — Builder.
 
 ## Immediate dependency order
 
-1. Keep Manager event-driven and specialists IDLE unless a real prerequisite, finding, or explicit new requirement exists.
-2. Obtain privacy-safe user-operated TCW-005 recovery/reconnect observations.
-3. Re-activate Auditor under TCW-005 for an independent field verdict.
-4. If the verdict reproduces a deterministic defect, route a narrow Builder remediation and require independent real field retest.
-5. If recovery passes, integrate privacy-safe field evidence/status through a separate protected task.
-6. Execute the other pending field checks only when their genuine real-world prerequisites exist.
+1. Builder executes TCW-009 only within the accepted recovery-state scope.
+2. Manager reviews Builder evidence/PR and merges only after exact-head validation passes.
+3. Verify post-merge `master` test, deploy, and production smoke.
+4. Re-activate Auditor under TCW-005 for the independent deployed recovery retest.
+5. If the retest passes, integrate privacy-safe field evidence/status through a separate protected Manager task.
+6. Continue the other pending field checks only when their genuine real-world prerequisites exist.
 7. Complete final Release 1.0 PR/master gates after all field checks pass.
-8. Perform Roadmap Discovery before authorizing a successor milestone.
+8. Perform formal Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 
 Release 1.0 may close only when:
 - every field-validation item is passed with privacy-safe evidence;
-- no unresolved high-severity accessibility, privacy, security, ESPN-normalization, waiver-legality, or season-planning defect remains;
+- no unresolved high-severity accessibility, privacy, security, ESPN-normalization, waiver-legality, recovery/freshness, or season-planning defect remains;
 - exact final release PR validation is green;
 - post-merge `master` test/deploy/production verification is green;
 - product remains read-only.
@@ -62,37 +79,16 @@ No successor milestone is automatically authorized. A valid conclusion remains:
 
 `NO SUCCESSOR MILESTONE CURRENTLY JUSTIFIED.`
 
-The following sequence is **Roadmap Discovery input**, not an authorized implementation schedule. It should be revalidated against real Release 1.0 usage, field evidence, source feasibility, and user value before any successor milestone is opened.
+The following sequence is **Roadmap Discovery input**, not an authorized implementation schedule. Revalidate it against real Release 1.0 usage, field evidence, source feasibility, and user value before opening a successor milestone.
 
 ### Proposed candidate order
 
-1. **GM Action Plan / recommendation synthesis**
-   - Convert existing lineup, waiver, season-plan, change-detection, freshness, and alert intelligence into one prioritized weekly action surface.
-   - Answer: **What should I do with my fantasy team today, and why?**
-   - Prefer synthesis of existing approved facts/recommendations over creating a new hidden scoring authority.
-
-2. **Trade Analyzer**
-   - Compare trades through lineup impact, depth, replacement value, bye/playoff effects, and short-vs-long-horizon consequences.
-   - Avoid a single opaque “winner” grade.
-   - Keep assumptions, projection coverage, and uncertainty inspectable.
-
-3. **Recommendation confidence + league-market intelligence**
-   - Expand confidence beyond simple point edge using source agreement/freshness, injury uncertainty, coverage, and state freshness where evidence exists.
-   - Add connected-league market context such as opponent roster needs, positional scarcity in the ESPN player pool, and transaction patterns when ESPN or another approved source supplies the facts.
-   - Never invent private opponent information or imply outcome probability from an uncalibrated score.
-
-4. **Decision-impacting injury/news intelligence and notifications**
-   - Research and approve a trustworthy source before implementation.
-   - Surface news only when it materially changes a lineup, waiver, trade, IR, or planning decision.
-   - Preserve source attribution, freshness, official-vs-commentary distinctions, and the read-only boundary.
-
-5. **Playoff probability / championship-path modeling**
-   - Treat qualification odds, championship odds, and opponent-win probability as separate calibrated modeling work.
-   - Require documented assumptions, validated inputs, uncertainty handling, and independent evaluation before user-facing probabilities are allowed.
-
-6. **ESPN write actions remain later gated**
-   - Lineup changes, add/drop submissions, waiver claims, trades, or other ESPN mutations require a separate explicitly authorized milestone after the read-only path proves trustworthy.
-   - No background or automatic transactions.
+1. **GM Action Plan / recommendation synthesis** — one prioritized weekly action surface using existing approved facts/recommendations.
+2. **Trade Analyzer** — lineup/depth/replacement/bye/playoff impacts without an opaque single winner grade.
+3. **Recommendation confidence + league-market intelligence** — inspectable source agreement/freshness/coverage and approved connected-league market context.
+4. **Decision-impacting injury/news intelligence and notifications** — only after a trustworthy source is approved; surface news when it changes a decision.
+5. **Playoff probability / championship-path modeling** — separate calibrated qualification/championship/opponent-win modeling with documented assumptions and uncertainty.
+6. **ESPN write actions remain later gated** — no lineup/add-drop/waiver/trade mutations without a separately authorized milestone; no background automatic transactions.
 
 Detailed discovery notes: `docs/post-1.0-roadmap-candidates.md`.
 

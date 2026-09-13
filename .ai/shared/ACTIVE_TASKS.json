@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at_utc": "2026-09-11T05:27:00Z",
+  "updated_at_utc": "2026-09-13T00:31:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED","BLOCKED","ASSIGNED","IN_PROGRESS","MANAGER_REVIEW_READY","AUDIT_READY","MERGE_READY","REWORK_REQUIRED","MERGED","CLOSED"],
@@ -12,14 +12,30 @@
       "task_file": ".ai/manager/tasks/TCW-005.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "2ef036eb02efd6600049d91f2f076c0f3a633a1b",
-      "worker_checkpoint_sha": "748aed086de038cdd627d3cefb433c7bc1458761",
-      "branch": null,
-      "pr": 58,
+      "worker_checkpoint_sha": "4b398533b23c28fa1f9963590b46dea6b4901282",
+      "branch": "auditor/tcw-005-field-verdict",
+      "pr": 65,
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
-      "blocked_on": ["privacy-safe user-operated authenticated recovery/reconnect field evidence"],
-      "next_gate": "User supplies required local observations -> re-activate Auditor under TCW-005 for independent field verdict"
+      "blocked_on": ["TCW-009 remediation deployed and production-verified"],
+      "next_gate": "Re-activate Auditor under TCW-005 for the independent deployed recovery retest"
+    },
+    {
+      "task_id": "TCW-009",
+      "owner": "Builder",
+      "status": "ASSIGNED",
+      "task_file": ".ai/manager/tasks/TCW-009.md",
+      "role_handoff": ".ai/builder/HANDOFF.md",
+      "assignment_master_sha": "42808c3c912742ffb88470a2a6d7b446a97eb9b6",
+      "worker_checkpoint_sha": null,
+      "branch": "builder/tcw-009-recovery-state-remediation",
+      "pr": null,
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": true,
+      "blocked_on": [],
+      "next_gate": "Builder remediation and tests -> Manager integration -> production verification -> TCW-005 independent field retest"
     }
   ]
 }
