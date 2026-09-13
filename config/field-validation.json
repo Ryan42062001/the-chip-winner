@@ -140,13 +140,14 @@
       "id": "FV-WAIVER-01",
       "area": "waiver-performance",
       "title": "Real waiver candidate volume and timing",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "2026-09-05: User recorded opening the real Waivers page after an authenticated v0.9.74 refresh and reported a small perceptible delay. Video review shows the transition from Overview to the rendered Waiver Wire completing within a few tenths of a second at 30 fps, with no visible long freeze or broken intermediate state. Candidate/scenario enumeration counts were not visible in this recording, so this performance item remains pending until those counts and timing are captured as projection coverage grows.",
         "2026-09-05: v0.9.76 candidate adds runtime performance gates without a hidden candidate cap. GitHub Actions exhaustively evaluated 24 available adds x 4 unlocked bench drops (96 future scenarios) and measured 15.9 ms cold waiver analysis, 52.2 ms full priority-board evaluation after the waiver render, 0.6 ms playoff-only future baseline evaluation, and 37.0 ms repeat priority navigation on the CI runner. These deterministic measurements do not replace the required real deployed browser retest.",
-        "2026-09-05: After v0.9.76 was merged, deployed, and production-smoke verified, the user hard-refreshed the real app and confirmed the previously visible Waivers and Season Plan navigation lag is gone. This validates the responsiveness fix in the real browser; candidate/scenario enumeration counts are still required before this field item can pass."
+        "2026-09-05: After v0.9.76 was merged, deployed, and production-smoke verified, the user hard-refreshed the real app and confirmed the previously visible Waivers and Season Plan navigation lag is gone. This validates the responsiveness fix in the real browser; candidate/scenario enumeration counts are still required before this field item can pass.",
+        "2026-09-13: Real deployed authenticated TCW-014 retest after TCW-012 diagnostics visibility showed consideredAdds=89, completeAdds=88, scenarioCount=352, and qualifiedAdds=0. Authenticated Refresh ESPN succeeded; the Waivers page remained usable and responsive while scrolling with no materially disruptive stall or broken intermediate state. Independent Auditor PR #78 returned PASS CANDIDATE with no findings and verified the counts were internally consistent with the observed engine path."
       ],
-      "notes": "Real deployed v0.9.76 navigation responsiveness is confirmed fixed. Keep this item pending until consideredAdds, completeAdds, scenarioCount, and qualifiedAdds are captured as projection coverage grows. Do not introduce a hidden candidate cap."
+      "notes": "Passed after TCW-012 exposed the existing exhaustive-run diagnostics and TCW-014 independently accepted the real deployed retest. The observed run evaluated 89 considered adds, 88 complete adds, and 352 scenarios with 0 qualified adds while maintaining acceptable real-browser responsiveness; no hidden candidate cap was introduced."
     }
   ]
 }
