@@ -2,27 +2,27 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T04:12:00Z",
+  "updated_at_utc": "2026-09-13T04:48:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
   "tasks": [
     {
-      "task_id": "TCW-016",
-      "owner": "Auditor",
-      "status": "ASSIGNED",
-      "task_file": ".ai/manager/tasks/TCW-016.md",
-      "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "c454072927b0984bd76ee9bfa7fbe889847fd5bf",
+      "task_id": "TCW-017",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-017.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "9207cd6f6e239cfb2f3189aea0fa72e9b090c6bf",
       "worker_checkpoint_sha": null,
-      "branch": "auditor/tcw-016-ir-field-retest",
+      "branch": "manager/tcw-017-ir-field-integration",
       "pr": null,
-      "dependency": "INDEPENDENT",
+      "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Independent Auditor evaluates real FV-ESPN-04 IR evidence -> Auditor PR/handoff -> Manager field integration if PASS CANDIDATE"
+      "next_gate": "Manager integrates accepted TCW-016 PASS CANDIDATE -> exact-head CI -> merge -> verify master deploy/production -> .ai-only closeout"
     }
   ]
 }
