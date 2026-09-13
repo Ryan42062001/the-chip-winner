@@ -7,9 +7,18 @@ export function requiresProductionDeploy(paths = []) {
   return changed.some((item) => !item.startsWith(".ai/"));
 }
 
-function changedFilesFromPreviousCommit(cwd = process.cwd()) {
+export function classifyDeploymentScope({ eventName, changedFiles }) {
+  if (eventName === "workflow_dispatch") return Object.freeze({ required: true, reason: "manual-dispatch" });
+  if (eventName !== "push") return Object.freeze({ required: false, reason: "non-push" });
+  if (!Array.isArray(changedFiles)) return Object.freeze({ required: true, reason: "classification-unavailable" });
+  if (requiresProductionDeploy(changedFiles)) return Object.freeze({ required: true, reason: "deployable-change" });
+  return Object.freeze({ required: false, reason: "control-plane-only" });
+}
+
+function changedFilesForPushRange({ baseSha = process.env.DEPLOY_BASE_SHA, cwd = process.cwd() } = {}) {
+  if (!baseSha || /^0+$/.test(baseSha)) return null;
   try {
-    return execFileSync("git", ["diff", "--name-only", "HEAD^", "HEAD"], {
+    return execFileSync("git", ["diff", "--name-only", baseSha, "HEAD"], {
       cwd,
       encoding: "utf8"
     }).split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
@@ -18,18 +27,21 @@ function changedFilesFromPreviousCommit(cwd = process.cwd()) {
   }
 }
 
-export function classifyCurrentDeploymentScope({ eventName = process.env.GITHUB_EVENT_NAME, cwd = process.cwd() } = {}) {
-  if (eventName === "workflow_dispatch") return Object.freeze({ required: true, reason: "manual-dispatch" });
-  if (eventName !== "push") return Object.freeze({ required: false, reason: "non-push" });
-
-  const changedFiles = changedFilesFromPreviousCommit(cwd);
-  if (changedFiles === null) return Object.freeze({ required: true, reason: "classification-unavailable" });
-  if (requiresProductionDeploy(changedFiles)) return Object.freeze({ required: true, reason: "deployable-change" });
-  return Object.freeze({ required: false, reason: "control-plane-only" });
+export function classifyCurrentDeploymentScope({
+  eventName = process.env.GITHUB_EVENT_NAME,
+  baseSha = process.env.DEPLOY_BASE_SHA,
+  cwd = process.cwd()
+} = {}) {
+  if (eventName !== "push") return classifyDeploymentScope({ eventName, changedFiles: [] });
+  return classifyDeploymentScope({ eventName, changedFiles: changedFilesForPushRange({ baseSha, cwd }) });
 }
 
 const invokedAsScript = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   const result = classifyCurrentDeploymentScope();
-  process.stdout.write(result.required ? "true" : "false");
+  if (process.argv.includes("--github-output")) {
+    process.stdout.write(`required=${result.required}\nreason=${result.reason}\n`);
+  } else {
+    process.stdout.write(JSON.stringify(result));
+  }
 }
