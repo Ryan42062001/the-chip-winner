@@ -19,7 +19,7 @@ const requiredIds = [
   "FV-WAIVER-01",
 ];
 
-test("Release 1.0 field-validation registry is complete and evidence-gated", () => {
+test("Release 1.0 scoped field-validation registry is complete and evidence-gated", () => {
   assert.equal(registry.schemaVersion, 1);
   assert.equal(registry.releaseTarget, "1.0");
   assert.equal(registry.baselineVersion, "0.9.81");
