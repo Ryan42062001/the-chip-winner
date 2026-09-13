@@ -27,14 +27,16 @@ source: null,
 rankingSet: null,
 rankingReconciliation: null,
 rankingCompatibility: null,
+refreshRecovery: null,
 error: null
 });
 export function appReducer(state, action) {
 switch (action.type) {
 case "load/start": return { ...state, status: "loading", error: null };
-case "load/success": return { ...state, status: "ready", snapshot: action.snapshot, previousSnapshot: action.previousSnapshot ?? null, source: action.source, selectedTeamId: action.snapshot.teams[0]?.id || null, error: null };
+case "load/success": return { ...state, status: "ready", snapshot: action.snapshot, previousSnapshot: action.previousSnapshot ?? null, source: action.source, selectedTeamId: action.snapshot.teams[0]?.id || null, refreshRecovery: null, error: null };
 case "rankings/load": return { ...state, rankingSet: action.rankingSet, rankingReconciliation: action.reconciliation, rankingCompatibility: action.compatibility };
 case "rankings/clear": return { ...state, rankingSet: null, rankingReconciliation: null, rankingCompatibility: null };
+case "refresh/failure": return state.snapshot?.meta?.kind === "live-companion" ? { ...state, refreshRecovery: { status: "failed" } } : state;
 case "load/error": return { ...state, status: "error", error: action.error };
 case "team/select": return state.snapshot?.teams.some((team) => team.id === action.teamId) ? { ...state, selectedTeamId: action.teamId } : state;
 case "section/select": return { ...state, section: action.section };

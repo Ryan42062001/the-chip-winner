@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "updated_at_utc": "2026-09-13T00:45:00Z",
+  "updated_at_utc": "2026-09-13T00:58:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -8,7 +8,7 @@
     {
       "task_id": "TCW-005",
       "owner": "Auditor",
-      "status": "BLOCKED",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
       "task_file": ".ai/manager/tasks/TCW-005.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "2ef036eb02efd6600049d91f2f076c0f3a633a1b",
@@ -18,24 +18,27 @@
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
-      "blocked_on": ["TCW-009 remediation deployed and production-verified"],
-      "next_gate": "Re-activate Auditor under TCW-005 for the independent deployed recovery retest"
+      "blocked_on": [],
+      "external_actor": "user",
+      "external_action": "Repeat the deployed authenticated ESPN network disconnect/reconnect recovery sequence against the TCW-009 production deployment and provide privacy-safe observations of retained-data labeling, failure guidance, navigation persistence, and successful reconnect.",
+      "resume_role": "Auditor",
+      "next_gate": "User field retest evidence -> re-activate Auditor under TCW-005 -> independent verdict -> Manager field-status integration"
     },
     {
       "task_id": "TCW-009",
       "owner": "Builder",
-      "status": "ASSIGNED",
+      "status": "AUDIT_READY",
       "task_file": ".ai/manager/tasks/TCW-009.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "42808c3c912742ffb88470a2a6d7b446a97eb9b6",
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "c8c9eb2f8f44a646ab9732623057d24fe3f0aa1d",
       "branch": "builder/tcw-009-recovery-state-remediation",
-      "pr": null,
+      "pr": 67,
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": true,
-      "blocked_on": [],
-      "next_gate": "Builder remediation and tests -> Manager integration -> production verification -> TCW-005 independent field retest"
+      "blocked_on": ["TCW-005 independent deployed recovery retest"],
+      "next_gate": "TCW-005 independent deployed field retest determines whether the accepted remediation satisfies FV-RECOVERY-01"
     },
     {
       "task_id": "TCW-010",
@@ -51,6 +54,10 @@
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "blocked_on": [],
+      "target_advancement": {
+        "classification": "NON_OVERLAPPING",
+        "checked_at_sha": "267b44e7ccea02b903938ead2ee4658d60c2d20b"
+      },
       "next_gate": "Workflow V3.1 exact-head PR CI -> Manager merge -> VERIFYING_MASTER -> post-merge verification -> CLOSED"
     }
   ]
