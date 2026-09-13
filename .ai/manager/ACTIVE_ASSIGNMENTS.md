@@ -4,30 +4,38 @@ Last updated: 2026-09-13
 Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
-## Completed coordination
+## Active assignment
 
-- TCW-001 through TCW-011 — completed/closed under their recorded evidence.
-- TCW-012 — Waiver Field Diagnostics Visibility — CLOSED after PR #74 merge/deployment.
-- TCW-014 — FV-WAIVER-01 Deployed Field Retest — CLOSED / independent PASS CANDIDATE accepted through Auditor PR #78.
-- TCW-015 — FV-WAIVER-01 Evidence Integration and Closeout — CLOSED after PR #79 merge `ae932395f87f77aad2c067ca16dc1042d4f79786` and workflow #473 passed test/deploy/production verification.
+- TCW-016 — FV-ESPN-04 Authenticated IR Eligible-State Retest — **Auditor ASSIGNED**.
+- Expected branch: `auditor/tcw-016-ir-field-retest`.
+- Manager evidence intake: `.ai/manager/evidence/TCW-016_IR_FIELD_INTAKE.md`.
+- Next gate: independent Auditor verdict; Manager owns field-registry integration if PASS CANDIDATE.
 
 ## Field state
 
-Release 1.0 field gate: **8 passed / 5 pending**.
+Release 1.0 field gate remains **8 passed / 5 pending** until independent TCW-016 review and Manager integration.
 
-FV-WAIVER-01 is passed with privacy-safe real deployed evidence: 89 considered adds, 88 complete adds, 352 scenarios evaluated, 0 qualified adds, successful authenticated refresh, and acceptable observed Waivers-page responsiveness.
+Passed:
+- FV-A11Y-01
+- FV-A11Y-03
+- FV-MOBILE-01
+- FV-ESPN-01
+- FV-ESPN-03
+- FV-RECOVERY-01
+- FV-SYNC-01
+- FV-WAIVER-01
 
-Remaining pending:
+Pending:
 - FV-A11Y-02
 - FV-ESPN-02
-- FV-ESPN-04
+- FV-ESPN-04 — real eligible/filled IR evidence received; TCW-016 audit assigned
 - FV-ESPN-05
 - FV-SEASON-01
 
 ## Role state
 
 ### Manager / Architect
-IDLE / event-driven — Release 1.0 field-gate orchestration resumes when a genuine remaining prerequisite or approved workflow task is ready.
+ACTIVE — TCW-016 routing/oversight; field status integration only after independent verdict.
 
 ### Implementation Engineer / Builder
 IDLE — no approved implementation task.
@@ -39,7 +47,7 @@ IDLE — no approved strategy task.
 IDLE — no approved research task.
 
 ### Independent Auditor / QA
-IDLE — TCW-014 complete with PASS CANDIDATE accepted.
+ASSIGNED — TCW-016.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
