@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T02:40:00Z",
+  "updated_at_utc": "2026-09-13T02:55:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -10,10 +10,10 @@
     {
       "task_id": "TCW-014",
       "owner": "Auditor",
-      "status": "WAITING_EXTERNAL_EVIDENCE",
+      "status": "ASSIGNED",
       "task_file": ".ai/manager/tasks/TCW-014.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "0d9e7b55b267d9eb3f0876fe077e1f19dc38f453",
+      "assignment_master_sha": "aa1d5bb40c2db51d1b593d48e2246d03f9a15e26",
       "worker_checkpoint_sha": null,
       "branch": "auditor/tcw-014-waiver-field-retest",
       "pr": null,
@@ -21,10 +21,7 @@
       "execution_mode": "STANDARD_CHAT",
       "audit_required": true,
       "blocked_on": [],
-      "external_actor": "user",
-      "external_action": "Refresh deployed authenticated ESPN, open Waivers, and provide a privacy-safe recording showing Considered adds, Complete adds, Scenarios evaluated, Qualified adds, and observed page responsiveness.",
-      "resume_role": "Auditor",
-      "next_gate": "User deployed Waivers recording -> Auditor PASS CANDIDATE / FAIL / INCONCLUSIVE -> Manager field-status integration if passed"
+      "next_gate": "Auditor independently reviews TCW-014 privacy-safe field evidence intake and deployed waiver behavior -> PASS CANDIDATE / FAIL / INCONCLUSIVE -> Manager field-status integration only if passed"
     }
   ]
 }
