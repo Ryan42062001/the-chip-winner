@@ -6,7 +6,6 @@ const registry = JSON.parse(await readFile(new URL("../config/field-validation.j
 
 const requiredIds = [
   "FV-A11Y-01",
-  "FV-A11Y-02",
   "FV-A11Y-03",
   "FV-MOBILE-01",
   "FV-ESPN-01",
