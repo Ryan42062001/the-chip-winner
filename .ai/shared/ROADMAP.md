@@ -19,23 +19,27 @@ Pending checks in `config/field-validation.json`:
 3. FV-ESPN-04 — authenticated IR edge states.
 4. FV-ESPN-05 — authenticated lock/availability transitions.
 5. FV-SEASON-01 — real playoff/bye intelligence states.
-6. FV-WAIVER-01 — real waiver candidate volume and timing.
 
-Registry field gate is **7 passed / 6 pending**.
+Registry field gate is **8 passed / 5 pending**.
 
-FV-RECOVERY-01 is now passed. TCW-005 first reproduced stale/live labeling and misleading failure guidance; TCW-009 remediated both findings; the independent post-remediation TCW-005 field retest returned PASS CANDIDATE; TCW-011 integrated the privacy-safe evidence and status after PR #71 and master workflow #456 passed.
+FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
-## Recovery remediation dependency chain
+FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence through PR #79 with master workflow #473 passing.
 
-Completed:
-1. TCW-005 real deployed field run reproduced TCW-005-F01 HIGH and TCW-005-F02 MEDIUM.
+## Completed field-remediation chains
+
+### Recovery
+1. TCW-005 reproduced stale/live labeling and misleading failure guidance.
 2. TCW-009 implemented bounded recovery-state remediation with deterministic regression coverage.
-3. Builder PR #67 merged at `267b44e7ccea02b903938ead2ee4658d60c2d20b`; workflow #444 passed test, deploy, and production smoke.
-4. Independent TCW-005 post-remediation field retest verified durable `Last valid ESPN snapshot · refresh failed` labeling, truthful recovery guidance, navigation persistence, no sample fallback, and successful reconnect.
-5. Auditor PR #70 merged at `89820c1c5c7f13b91cd4dda304db5faadbae6603`; workflow #454 passed.
-6. TCW-011 integrated FV-RECOVERY-01 as passed through PR #71 at `eb45e87b426c67dca4f36d8fba97cc5bef47e1d4`; workflow #456 passed test, deploy, and production verification.
+3. Independent post-remediation field retest passed.
+4. TCW-011 integrated FV-RECOVERY-01 as passed.
 
-The recovery loop is closed unless a new independent field defect is reproduced later.
+### Waivers
+1. Real FV-WAIVER-01 evidence confirmed responsiveness but lacked visible exhaustive-run counts.
+2. TCW-012 exposed existing `futureDiscovery` diagnostics without changing waiver enumeration or recommendation logic.
+3. TCW-014 real deployed retest captured the required diagnostics and responsiveness evidence.
+4. Independent Auditor PR #78 returned PASS CANDIDATE with no findings.
+5. TCW-015 integrated FV-WAIVER-01 as passed; PR #79 merged at `ae932395f87f77aad2c067ca16dc1042d4f79786` and workflow #473 passed test, deploy, and production verification.
 
 ## Coordination sequence
 
@@ -45,19 +49,22 @@ Completed:
 - TCW-002 baseline audit.
 - TCW-003 ESPN field-feasibility research.
 - TCW-004 evidence-wave integration.
-- TCW-005 recovery field validation — post-remediation PASS CANDIDATE accepted.
+- TCW-005 recovery field validation.
 - TCW-006 blocked recovery-field reconciliation.
 - TCW-007 Workflow V3 operating upgrade.
 - TCW-008 post-1.0 roadmap candidate sequencing.
 - TCW-009 recovery-state honesty remediation.
 - TCW-010 Workflow V3.1 coordination hardening.
 - TCW-011 FV-RECOVERY-01 evidence integration and recovery-loop closeout.
+- TCW-012 waiver field diagnostics visibility.
+- TCW-014 FV-WAIVER-01 deployed field retest.
+- TCW-015 FV-WAIVER-01 evidence integration and closeout.
 
-Current operational tasks: none. Workflow V3.1 is canonical and `.ai/shared/ACTIVE_TASKS.json` is the machine-authoritative operational registry.
+Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
 
 ## Immediate dependency order
 
-1. Continue the six remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
+1. Continue the five remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
 2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
 3. Complete final Release 1.0 PR/master gates after all field checks pass.
 4. Perform formal Roadmap Discovery before authorizing a successor milestone.
