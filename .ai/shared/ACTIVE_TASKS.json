@@ -1,9 +1,9 @@
 {
-  "schema_version": 1,
-  "updated_at_utc": "2026-09-13T00:31:00Z",
+  "schema_version": 2,
+  "updated_at_utc": "2026-09-13T00:45:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
-  "lifecycle_states": ["PLANNED","BLOCKED","ASSIGNED","IN_PROGRESS","MANAGER_REVIEW_READY","AUDIT_READY","MERGE_READY","REWORK_REQUIRED","MERGED","CLOSED"],
+  "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
   "tasks": [
     {
       "task_id": "TCW-005",
@@ -36,6 +36,22 @@
       "audit_required": true,
       "blocked_on": [],
       "next_gate": "Builder remediation and tests -> Manager integration -> production verification -> TCW-005 independent field retest"
+    },
+    {
+      "task_id": "TCW-010",
+      "owner": "Manager",
+      "status": "IN_PROGRESS",
+      "task_file": ".ai/manager/tasks/TCW-010.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "399869d0781bcc7ba844dabaa5bc439be784e809",
+      "worker_checkpoint_sha": null,
+      "branch": "manager/tcw-010-workflow-v3-1",
+      "pr": null,
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "blocked_on": [],
+      "next_gate": "Workflow V3.1 exact-head PR CI -> Manager merge -> VERIFYING_MASTER -> post-merge verification -> CLOSED"
     }
   ]
 }

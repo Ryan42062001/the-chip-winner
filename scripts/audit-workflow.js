@@ -55,7 +55,9 @@ export function validateRegistryShape(registry) {
   add(errors, Array.isArray(registry?.lifecycle_states), "lifecycle_states must be an array.");
 
   const lifecycle = new Set(registry?.lifecycle_states || []);
-  for (const status of ALLOWED_STATUSES) add(errors, lifecycle.has(status), `lifecycle_states is missing ${status}.`);
+  for (const status of ALLOWED_STATUSES) {
+    add(errors, lifecycle.has(status), `lifecycle_states is missing ${status}.`);
+  }
 
   const ids = new Set();
   for (const task of registry?.tasks || []) {
@@ -72,9 +74,15 @@ export function validateRegistryShape(registry) {
     add(errors, typeof task?.role_handoff === "string" && task.role_handoff.startsWith(".ai/"), `${id}: role_handoff must be an .ai path.`);
     add(errors, SHA_RE.test(task?.assignment_master_sha || ""), `${id}: assignment_master_sha must be a full SHA.`);
 
-    if (task?.branch) add(errors, task.branch.startsWith(BRANCH_PREFIX[task.owner] || ""), `${id}: branch ${task.branch} does not match owner ${task.owner}.`);
-    if (task?.pr !== null && task?.pr !== undefined) add(errors, Number.isInteger(task.pr) && task.pr > 0, `${id}: pr must be a positive integer or null.`);
-    if (task?.supersedes_pr !== undefined && task?.supersedes_pr !== null) add(errors, Number.isInteger(task.supersedes_pr) && task.supersedes_pr > 0, `${id}: supersedes_pr must be a positive integer.`);
+    if (task?.branch) {
+      add(errors, task.branch.startsWith(BRANCH_PREFIX[task.owner] || ""), `${id}: branch ${task.branch} does not match owner ${task.owner}.`);
+    }
+    if (task?.pr !== null && task?.pr !== undefined) {
+      add(errors, Number.isInteger(task.pr) && task.pr > 0, `${id}: pr must be a positive integer or null.`);
+    }
+    if (task?.supersedes_pr !== undefined && task?.supersedes_pr !== null) {
+      add(errors, Number.isInteger(task.supersedes_pr) && task.supersedes_pr > 0, `${id}: supersedes_pr must be a positive integer.`);
+    }
     if (task?.supersedes_task !== undefined && task?.supersedes_task !== null) {
       add(errors, TASK_ID_RE.test(task.supersedes_task), `${id}: invalid supersedes_task ${task.supersedes_task}.`);
       add(errors, task.supersedes_task !== id, `${id}: a task cannot supersede itself.`);
@@ -144,34 +152,41 @@ export function detectDuplicateTaskPullRequests(prs) {
     if (group.length < 2) continue;
     const numbers = new Set(group.map((pr) => Number(pr.number)));
     const hasExplicitSupersession = group.some((pr) => supersedesPrNumbers(pr).some((number) => numbers.has(number)));
-    if (hasExplicitSupersession) warnings.push(`${taskId}: multiple open PRs exist with explicit supersession metadata; close the superseded PR promptly.`);
-    else errors.push(`${taskId}: multiple open PRs claim the same Task ID without Supersedes-PR metadata.`);
+    if (hasExplicitSupersession) {
+      warnings.push(`${taskId}: multiple open PRs exist but explicit Supersedes-PR metadata is present; close the superseded PR promptly.`);
+    } else {
+      errors.push(`${taskId}: multiple open PRs claim the same Task ID without Supersedes-PR metadata.`);
+    }
   }
   return { errors, warnings };
 }
 
-function gitCommitCount(fromSha, cwd = process.cwd()) {
+function gitCommitCount(fromSha, targetRef, cwd = process.cwd()) {
   try {
     execFileSync("git", ["cat-file", "-e", `${fromSha}^{commit}`], { cwd, stdio: "ignore" });
-    return Number(execFileSync("git", ["rev-list", "--count", `${fromSha}..HEAD`], { cwd, encoding: "utf8" }).trim());
+    execFileSync("git", ["cat-file", "-e", `${targetRef}^{commit}`], { cwd, stdio: "ignore" });
+    return Number(execFileSync("git", ["rev-list", "--count", `${fromSha}..${targetRef}`], { cwd, encoding: "utf8" }).trim());
   } catch {
     return null;
   }
 }
 
-export function checkAssignmentStaleness(registry, { rootDir = process.cwd(), threshold = 3 } = {}) {
+export function checkAssignmentStaleness(registry, { rootDir = process.cwd(), threshold = 3, targetRef = "HEAD" } = {}) {
   const errors = [];
   const warnings = [];
   for (const task of registry?.tasks || []) {
     if (!ACTIVE_STALE_STATUSES.has(task.status)) continue;
-    const count = gitCommitCount(task.assignment_master_sha, rootDir);
+    const count = gitCommitCount(task.assignment_master_sha, targetRef, rootDir);
     if (count === null) {
       warnings.push(`${task.task_id}: assignment drift could not be calculated; perform Fast Refresh manually.`);
       continue;
     }
     if (count <= threshold) continue;
-    if (!task.target_advancement) errors.push(`${task.task_id}: assignment is ${count} commits behind HEAD; Full Refresh or target-advancement classification is required.`);
-    else warnings.push(`${task.task_id}: assignment is ${count} commits behind HEAD; recorded ${task.target_advancement.classification} classification must be rechecked before merge.`);
+    if (!task.target_advancement) {
+      errors.push(`${task.task_id}: assignment is ${count} commits behind HEAD; Full Refresh or target-advancement classification is required.`);
+    } else {
+      warnings.push(`${task.task_id}: assignment is ${count} commits behind HEAD; recorded ${task.target_advancement.classification} classification must be rechecked before merge.`);
+    }
   }
   return { errors, warnings };
 }
@@ -189,11 +204,14 @@ async function main() {
   const registry = JSON.parse(await readFile(path.join(rootDir, ".ai/shared/ACTIVE_TASKS.json"), "utf8"));
   const shape = validateRegistryShape(registry);
   const fileErrors = await validateRegistryFiles(registry, rootDir);
-  const stale = checkAssignmentStaleness(registry, { rootDir });
+  const ciMode = process.argv.includes("--ci");
+  const inGitHubActions = process.env.GITHUB_ACTIONS === "true";
+  const targetRef = inGitHubActions && process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : "HEAD";
+  const stale = ciMode && inGitHubActions ? checkAssignmentStaleness(registry, { rootDir, targetRef }) : { errors: [], warnings: [] };
   const errors = [...shape.errors, ...fileErrors, ...stale.errors];
   const warnings = [...shape.warnings, ...stale.warnings];
 
-  if (process.argv.includes("--ci") && process.env.GITHUB_REPOSITORY) {
+  if (ciMode && process.env.GITHUB_REPOSITORY) {
     try {
       const duplicatePrs = detectDuplicateTaskPullRequests(await fetchOpenPullRequests(process.env.GITHUB_REPOSITORY));
       errors.push(...duplicatePrs.errors);
