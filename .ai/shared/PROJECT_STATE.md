@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-13
-Current operating state: Release 1.0 field validation / no active implementation task
+Current operating state: Release 1.0 field validation / TCW-016 independent IR-field audit assigned
 
 ## Repository
 
@@ -9,8 +9,7 @@ Current operating state: Release 1.0 field validation / no active implementation
 - Default branch: `master`.
 - Workflow V3.1 is canonical through `.ai/shared/WORKFLOW_V3_1.md` over `.ai/shared/WORKFLOW.md`.
 - Package version: `0.9.88` unless changed by a later accepted implementation.
-- Latest accepted waiver-field integration checkpoint: `ae932395f87f77aad2c067ca16dc1042d4f79786`.
-- Post-merge workflow #473 passed test, Pages deploy, and production verification.
+- TCW-013 workflow hardening closed on master `c454072927b0984bd76ee9bfa7fbe889847fd5bf`; its `.ai/**`-only closeout master workflow proved full tests still run while Pages deploy and production smoke are skipped as not applicable.
 
 ## Product boundary
 
@@ -28,7 +27,7 @@ The deterministic implementation baseline remains substantially complete. Curren
 
 Authoritative registry: `config/field-validation.json`.
 
-Registry status is **8 passed / 5 pending**.
+Registry status remains **8 passed / 5 pending** until TCW-016 receives an independent verdict and any accepted pass is integrated.
 
 Passed:
 - FV-A11Y-01
@@ -47,15 +46,21 @@ Pending:
 - FV-ESPN-05
 - FV-SEASON-01
 
+## Active IR validation
+
+Real deployed evidence has now been received for `FV-ESPN-04`:
+- ESPN showed a real player occupying the league IR slot with IR designation;
+- a successful authenticated refresh preserved the same player in The Chip Winner IR section with normalized `INJURED_RESERVE` status;
+- the IR occupant remained outside the active lineup recommendation path;
+- Waivers remained legality-aware;
+- League Setup preserved one configured IR slot;
+- no transaction was performed to manufacture the state.
+
+TCW-016 routes this privacy-safe evidence to the Independent Auditor. Manager has not changed the field registry and will not declare a pass before the independent verdict.
+
 ## Waiver validation disposition
 
-The initial real Waivers evidence showed acceptable responsiveness but did not expose exhaustive-run diagnostics. TCW-012 exposed the engine's existing `consideredAdds`, `completeAdds`, `scenarioCount`, and `qualifiedAdds` values without changing waiver behavior. The deployed authenticated TCW-014 retest then showed 89 considered adds, 88 complete adds, 352 scenarios, and 0 qualified adds while the page remained responsive. Independent Auditor PR #78 returned PASS CANDIDATE with no findings. TCW-015 integrated that evidence and FV-WAIVER-01 is passed.
-
-Key checkpoints:
-- TCW-012 implementation PR #74: merge `0d9e7b55b267d9eb3f0876fe077e1f19dc38f453`; workflow #463 PASS.
-- TCW-014 evidence intake PR #77: merge `01eeacb0d4362384ede99603e13327cca0ce1e76`; workflow #468 PASS.
-- TCW-014 Auditor PR #78: merge `4ccdefcd3bda4cb527f91552b7533694b15675ae`; workflow #470 PASS.
-- TCW-015 field integration PR #79: merge `ae932395f87f77aad2c067ca16dc1042d4f79786`; workflow #473 PASS.
+The waiver field loop is closed. TCW-012 exposed existing exhaustive-run diagnostics, TCW-014 independently passed the deployed real retest, and TCW-015 integrated FV-WAIVER-01 as passed.
 
 ## Recovery validation disposition
 
@@ -76,17 +81,10 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 ## Active coordination state
 
-No operational task is active after TCW-015 closeout. Manager and specialist roles are idle/event-driven until a genuine remaining field prerequisite, reproduced defect, or approved workflow task is ready.
-
-## Completed coordination
-
-- TCW-001 through TCW-011 — completed/closed under their recorded evidence.
-- TCW-012 — waiver field diagnostics visibility — CLOSED after implementation/deployment.
-- TCW-014 — FV-WAIVER-01 deployed field retest — CLOSED / PASS CANDIDATE accepted.
-- TCW-015 — FV-WAIVER-01 evidence integration and closeout — CLOSED after PR #79 and workflow #473.
+TCW-016 is assigned to the Independent Auditor for FV-ESPN-04 evidence review. Manager owns integration after the verdict. Builder, Strategy, R&D, and Troubleshooting remain idle unless a reproduced defect or new bounded dependency requires them.
 
 ## Known gated work
 
-The five remaining Release 1.0 checks require genuine prerequisites: screen-reader validation, an authenticated custom FLEX/OP league, natural IR edge states, a real lock/availability transition, and real playoff/bye-season states. Do not manufacture these conditions.
+After the current IR audit, the other pending Release 1.0 checks still require genuine prerequisites: screen-reader validation, an authenticated custom FLEX/OP league, a real lock/availability transition, and real playoff/bye-season states. Do not manufacture these conditions.
 
 Post-1.0 Roadmap Discovery input remains recorded in `.ai/shared/ROADMAP.md` and `docs/post-1.0-roadmap-candidates.md`. No successor milestone is authorized.
