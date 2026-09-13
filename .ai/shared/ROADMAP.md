@@ -13,18 +13,19 @@ Remaining milestone work is evidence-backed real-world validation, narrow remedi
 
 ## Release 1.0 blockers
 
-Pending checks in `config/field-validation.json`:
+Authoritative live status is `config/field-validation.json`. Current reconciled snapshot:
 1. FV-A11Y-02 — screen-reader critical workflow.
 2. FV-ESPN-02 — authenticated custom FLEX/OP league.
-3. FV-ESPN-04 — authenticated IR edge states.
-4. FV-ESPN-05 — authenticated lock/availability transitions.
-5. FV-SEASON-01 — real playoff/bye intelligence states.
+3. FV-ESPN-05 — authenticated lock/availability transitions.
+4. FV-SEASON-01 — real playoff/bye intelligence states.
 
-Registry field gate is **8 passed / 5 pending**.
+Registry field gate is **9 passed / 4 pending**.
 
 FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
 FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence through PR #79 with master workflow #473 passing.
+
+FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence through PR #85 with master workflow #485 passing tests, Pages deployment, and production verification. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
 
 ## Completed field-remediation chains
 
@@ -40,6 +41,12 @@ FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics
 3. TCW-014 real deployed retest captured the required diagnostics and responsiveness evidence.
 4. Independent Auditor PR #78 returned PASS CANDIDATE with no findings.
 5. TCW-015 integrated FV-WAIVER-01 as passed; PR #79 merged at `ae932395f87f77aad2c067ca16dc1042d4f79786` and workflow #473 passed test, deploy, and production verification.
+
+### IR
+1. A real authenticated league naturally presented one supported eligible/filled IR state without a manufactured roster transaction.
+2. TCW-016 routed the privacy-safe deployed evidence to Independent Auditor / QA.
+3. Independent Auditor PR #84 returned PASS CANDIDATE with no findings, bounded to the state actually observed.
+4. TCW-017 integrated FV-ESPN-04 as passed; PR #85 merged at `55b9322fcb4ed37a2fa20ac3ce3564ce9463abab` and workflow #485 passed test, deploy, and production verification.
 
 ## Coordination sequence
 
@@ -57,14 +64,17 @@ Completed:
 - TCW-010 Workflow V3.1 coordination hardening.
 - TCW-011 FV-RECOVERY-01 evidence integration and recovery-loop closeout.
 - TCW-012 waiver field diagnostics visibility.
+- TCW-013 control-plane CI efficiency and merge-authority hardening.
 - TCW-014 FV-WAIVER-01 deployed field retest.
 - TCW-015 FV-WAIVER-01 evidence integration and closeout.
+- TCW-016 FV-ESPN-04 authenticated IR eligible-state retest.
+- TCW-017 FV-ESPN-04 evidence integration and closeout.
 
 Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
 
 ## Immediate dependency order
 
-1. Continue the five remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
+1. Continue the four remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
 2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
 3. Complete final Release 1.0 PR/master gates after all field checks pass.
 4. Perform formal Roadmap Discovery before authorizing a successor milestone.
