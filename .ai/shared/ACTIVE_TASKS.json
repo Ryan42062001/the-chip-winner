@@ -2,9 +2,26 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T02:00:00Z",
+  "updated_at_utc": "2026-09-13T02:10:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
-  "tasks": []
+  "tasks": [
+    {
+      "task_id": "TCW-012",
+      "owner": "Builder",
+      "status": "ASSIGNED",
+      "task_file": ".ai/manager/tasks/TCW-012.md",
+      "role_handoff": ".ai/builder/HANDOFF.md",
+      "assignment_master_sha": "074e110e85189f4473502c1c7fa72a18d88a2a10",
+      "worker_checkpoint_sha": null,
+      "branch": "builder/tcw-012-waiver-field-diagnostics",
+      "pr": null,
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT",
+      "audit_required": false,
+      "blocked_on": [],
+      "next_gate": "Builder exposes existing waiver diagnostics with deterministic UI coverage -> Builder PR -> Manager integration/deployment -> real FV-WAIVER-01 field retest"
+    }
+  ]
 }
