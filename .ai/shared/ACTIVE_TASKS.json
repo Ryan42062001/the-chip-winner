@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T17:50:00Z",
+  "updated_at_utc": "2026-09-13T19:02:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -27,19 +27,23 @@
     {
       "task_id": "TCW-020",
       "owner": "Builder",
-      "status": "ASSIGNED",
+      "status": "MERGE_READY",
       "task_file": ".ai/manager/tasks/TCW-020.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "f9029d8eaa603bdcb039492a554fcd699948fa29",
-      "worker_checkpoint_sha": null,
+      "assignment_master_sha": "4f362c78e4cc07447ad4415da90988c99ba8c0d1",
+      "worker_checkpoint_sha": "545bacc25a49a71179335323d6b1befc01562149",
       "branch": "builder/tcw-020-start-sit-lock-remediation",
-      "pr": null,
+      "pr": 95,
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": true,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Builder remediation PR/handoff -> Manager review/integration and deployed verification -> TCW-018 Independent Auditor retest"
+      "target_advancement": {
+        "classification": "NON_OVERLAPPING",
+        "checked_at_sha": "4f362c78e4cc07447ad4415da90988c99ba8c0d1"
+      },
+      "next_gate": "Manager merge PR #95 after exact-head CI -> verify master deploy and production -> reactivate TCW-018 Independent Auditor retest"
     }
   ]
 }
