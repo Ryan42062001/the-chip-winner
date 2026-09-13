@@ -16,32 +16,43 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 - TCW-008 — post-1.0 roadmap candidate sequencing — CLOSED.
 - TCW-009 — Recovery State Honesty Remediation — CLOSED after PR #67 merge/deploy and successful independent TCW-005 field retest.
 - TCW-010 — Workflow V3.1 coordination hardening — CLOSED.
-- TCW-011 — FV-RECOVERY-01 evidence integration and recovery-loop closeout — CLOSED after PR #71 merge at `eb45e87b426c67dca4f36d8fba97cc5bef47e1d4` and successful master workflow #456.
+- TCW-011 — FV-RECOVERY-01 evidence integration and recovery-loop closeout — CLOSED.
 
-## Recovery field result
+## TCW-012 — Waiver Field Diagnostics Visibility
 
-FV-RECOVERY-01 is passed with privacy-safe evidence. The field gate is **7 passed / 6 pending**.
+Role: Implementation Engineer / Builder
+Status: `ASSIGNED`
+Task: `.ai/manager/tasks/TCW-012.md`
+Expected branch: `builder/tcw-012-waiver-field-diagnostics`
+Assignment master: `074e110e85189f4473502c1c7fa72a18d88a2a10`
+Execution mode: STANDARD_CHAT
 
-The prior TCW-005 findings TCW-005-F01 and TCW-005-F02 did not reproduce after TCW-009 remediation. No further Builder remediation is authorized from this recovery sequence.
+Real FV-WAIVER-01 recording confirmed acceptable deployed responsiveness, but the required exhaustive-run diagnostics were not visible. The engine already returns `consideredAdds`, `completeAdds`, `scenarioCount`, and `qualifiedAdds`; TCW-012 is limited to exposing those existing values truthfully in the Waivers UI with deterministic regression coverage.
+
+No waiver enumeration, legality, priority, projection, threshold, ranking, or candidate-cap behavior may change. `config/field-validation.json` remains unchanged until a deployed real retest captures the diagnostics.
+
+Next gate: Builder implementation PR -> Manager review/integration -> verified deployment -> real FV-WAIVER-01 retest.
+
+## Field state
+
+FV-RECOVERY-01 is passed. Release 1.0 remains **7 passed / 6 pending** while FV-WAIVER-01 stays pending.
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE / event-driven Release 1.0 field-gate orchestration.
+ACTIVE — overseeing TCW-012 and Release 1.0 field-gate orchestration.
 
 ### Implementation Engineer / Builder
-IDLE.
+ASSIGNED — TCW-012.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE.
+IDLE — no recommendation-policy ambiguity exists in TCW-012.
 
 ### R&D
-IDLE.
+IDLE — no research dependency exists in TCW-012.
 
 ### Independent Auditor / QA
-IDLE.
+IDLE — real field evidence is required after deployment; no pre-merge independent audit is required for this transparency-only change.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
-
-No active specialist assignment or parallel wave is currently justified. Activate work only when a genuine prerequisite exists for one of the six remaining field checks or new evidence creates an implementation-ready defect.
