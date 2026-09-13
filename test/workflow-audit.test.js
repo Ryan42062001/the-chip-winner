@@ -22,6 +22,7 @@ function registry(overrides = {}) {
       dependency: "INDEPENDENT",
       execution_mode: "STANDARD_CHAT",
       audit_required: false,
+      merge_authority: "Manager",
       blocked_on: [],
       next_gate: "Manager PR",
       ...overrides
@@ -31,6 +32,11 @@ function registry(overrides = {}) {
 
 test("accepts valid active task metadata", () => {
   assert.deepEqual(validateRegistryShape(registry()).errors, []);
+});
+
+test("requires Manager merge authority on active tasks", () => {
+  assert.match(validateRegistryShape(registry({ merge_authority: undefined })).errors.join("\n"), /merge_authority must be Manager/);
+  assert.match(validateRegistryShape(registry({ merge_authority: "Builder" })).errors.join("\n"), /merge_authority must be Manager/);
 });
 
 test("rejects duplicate task ids", () => {
