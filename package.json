@@ -28,5 +28,5 @@
     "check": "node --check src/app.js && node --check src/domain/recommendations.js && node scripts/audit-workflow.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js && node scripts/audit-mobile.js && node scripts/field-validation-status.js"
   },
   "engines": { "node": ">=20" },
-  "devDependencies": { "axe-core": "^4.13.0", "playwright-core": "^1.62.1" }
+  "devDependencies": { "axe-core": "^4.13.0", "playwright-core": "^1.63.0" }
 }
