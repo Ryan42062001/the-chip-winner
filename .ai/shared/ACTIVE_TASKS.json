@@ -2,26 +2,29 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T02:10:00Z",
+  "updated_at_utc": "2026-09-13T02:40:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
   "tasks": [
     {
-      "task_id": "TCW-012",
-      "owner": "Builder",
-      "status": "ASSIGNED",
-      "task_file": ".ai/manager/tasks/TCW-012.md",
-      "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "074e110e85189f4473502c1c7fa72a18d88a2a10",
+      "task_id": "TCW-014",
+      "owner": "Auditor",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
+      "task_file": ".ai/manager/tasks/TCW-014.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "0d9e7b55b267d9eb3f0876fe077e1f19dc38f453",
       "worker_checkpoint_sha": null,
-      "branch": "builder/tcw-012-waiver-field-diagnostics",
+      "branch": "auditor/tcw-014-waiver-field-retest",
       "pr": null,
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
-      "audit_required": false,
+      "audit_required": true,
       "blocked_on": [],
-      "next_gate": "Builder exposes existing waiver diagnostics with deterministic UI coverage -> Builder PR -> Manager integration/deployment -> real FV-WAIVER-01 field retest"
+      "external_actor": "user",
+      "external_action": "Refresh deployed authenticated ESPN, open Waivers, and provide a privacy-safe recording showing Considered adds, Complete adds, Scenarios evaluated, Qualified adds, and observed page responsiveness.",
+      "resume_role": "Auditor",
+      "next_gate": "User deployed Waivers recording -> Auditor PASS CANDIDATE / FAIL / INCONCLUSIVE -> Manager field-status integration if passed"
     }
   ]
 }
