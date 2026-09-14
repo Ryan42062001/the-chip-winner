@@ -1,6 +1,6 @@
 # The Chip Winner — Canonical Roadmap
 
-Last reconciled: 2026-09-13
+Last reconciled: 2026-09-14
 Current milestone: Release 1.0 field validation
 
 ## Current milestone
@@ -9,24 +9,26 @@ Current milestone: Release 1.0 field validation
 
 Status: ACTIVE — FIELD VALIDATION
 
-Remaining milestone work is evidence-backed real-world validation, narrow remediation of any newly reproduced field defects, and final release gating. Broad feature expansion remains out of scope.
+Remaining milestone work is evidence-backed real-world validation, narrow remediation of any newly reproduced field defects, explicit product-owner release-scope decisions, and final release gating. Broad feature expansion remains out of scope.
 
 ## Release 1.0 blockers
 
-Authoritative live status is `config/field-validation.json`. Current reconciled snapshot:
-1. FV-ESPN-02 — authenticated custom FLEX/OP league.
-2. FV-ESPN-05 — authenticated lock/availability transitions.
-3. FV-SEASON-01 — real playoff/bye intelligence states.
+Authoritative live status is `config/field-validation.json`. Candidate reconciled snapshot after TCW-021:
+1. FV-SEASON-01 — real playoff/bye intelligence states.
 
-Registry field gate is **9 passed / 3 pending**.
+Registry field gate is **10 passed / 1 pending**.
 
 FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
-FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence through PR #79 with master workflow #473 passing.
+FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence.
 
-FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence through PR #85 with master workflow #485 passing tests, Pages deployment, and production verification. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
+FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
+
+FV-ESPN-05 is passed after a genuine lock transition reproduced stale actionable-looking START / SIT guidance, TCW-020 remediated the defect, Independent Auditor PR #98 returned a post-remediation PASS CANDIDATE using a genuine naturally locked state, and Manager integrated and production-verified the field pass through workflow #522.
 
 Manual screen-reader field certification is no longer a Release 1.0 blocker. TCW-019 removed `FV-A11Y-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Completed keyboard-only and real 200% zoom evidence remain preserved, and automated accessibility/readiness regression checks remain deployment-blocking CI under durable decision TCW-D012.
+
+Custom FLEX/OP/Superflex field certification is no longer a Release 1.0 blocker. TCW-021 removes `FV-ESPN-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed handling, and automated regression coverage remain intact under durable decision TCW-D013. No unobserved custom OP/Superflex behavior is claimed as field-validated.
 
 ## Completed field-remediation chains
 
@@ -41,13 +43,19 @@ Manual screen-reader field certification is no longer a Release 1.0 blocker. TCW
 2. TCW-012 exposed existing `futureDiscovery` diagnostics without changing waiver enumeration or recommendation logic.
 3. TCW-014 real deployed retest captured the required diagnostics and responsiveness evidence.
 4. Independent Auditor PR #78 returned PASS CANDIDATE with no findings.
-5. TCW-015 integrated FV-WAIVER-01 as passed; PR #79 merged at `ae932395f87f77aad2c067ca16dc1042d4f79786` and workflow #473 passed test, deploy, and production verification.
+5. TCW-015 integrated FV-WAIVER-01 as passed.
 
 ### IR
 1. A real authenticated league naturally presented one supported eligible/filled IR state without a manufactured roster transaction.
 2. TCW-016 routed the privacy-safe deployed evidence to Independent Auditor / QA.
 3. Independent Auditor PR #84 returned PASS CANDIDATE with no findings, bounded to the state actually observed.
-4. TCW-017 integrated FV-ESPN-04 as passed; PR #85 merged at `55b9322fcb4ed37a2fa20ac3ce3564ce9463abab` and workflow #485 passed test, deploy, and production verification.
+4. TCW-017 integrated FV-ESPN-04 as passed.
+
+### Game lock / START-SIT
+1. TCW-018 captured a real pre-kickoff -> post-kickoff transition and independently reproduced stale actionable-looking START / SIT guidance after lock.
+2. TCW-020 implemented bounded lock-awareness remediation.
+3. Independent Auditor PR #98 returned PASS CANDIDATE with no findings using a genuine naturally locked deployed state.
+4. Manager integrated FV-ESPN-05 as passed and verified master test, Pages deployment, and production smoke in workflow #522.
 
 ## Coordination sequence
 
@@ -70,19 +78,22 @@ Completed:
 - TCW-015 FV-WAIVER-01 evidence integration and closeout.
 - TCW-016 FV-ESPN-04 authenticated IR eligible-state retest.
 - TCW-017 FV-ESPN-04 evidence integration and closeout.
+- TCW-018 FV-ESPN-05 real game-lock field validation and accepted post-remediation retest.
 - TCW-019 manual screen-reader Release 1.0 field-gate removal while retaining automated accessibility CI.
+- TCW-020 START/SIT lock-awareness remediation.
 
-Active/event-driven:
-- TCW-018 FV-ESPN-05 real game-lock / availability-transition field retest — waiting on genuine external evidence.
+Active:
+- TCW-021 custom FLEX/OP/Superflex Release 1.0 field-gate removal under explicit product-owner scope direction.
 
 Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
 
 ## Immediate dependency order
 
-1. Continue the three remaining Release 1.0 field checks only when their genuine real-world prerequisites exist.
-2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
-3. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
-4. Perform formal Roadmap Discovery before authorizing a successor milestone.
+1. Verify and close TCW-021 scope integration through exact-head CI, master test, Pages deployment, and production smoke.
+2. Complete the sole remaining `FV-SEASON-01` field check only when its genuine real-world prerequisites exist.
+3. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
+4. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
+5. Perform formal Roadmap Discovery before authorizing a successor milestone.
 
 ## Release 1.0 exit gate
 
