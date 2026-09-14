@@ -36,6 +36,31 @@ The original real transition supplies the genuine before/after lock evidence. Th
 
 The pass is bounded to the observed real game-lock/post-kickoff behavior. It does not infer unobserved injury/availability transitions or other unobserved lock variants.
 
-## Integration gate
+## Field-registry integration
 
-This Manager integration changes `config/field-validation.json`, so the integration is not complete until the field-registry PR merges and the resulting `master` passes the full test gate, GitHub Pages deployment, and production smoke verification.
+Manager PR #99 integrated `FV-ESPN-05` as `passed` in `config/field-validation.json` with the accepted privacy-safe evidence.
+
+- PR #99 exact-head workflow #518: PASS;
+- PR #99 merged at `708798009ab8dd081d1b7f75c65353de3c6e809e`.
+
+The initial master workflow #519 correctly classified the merge as deployable but stopped before application tests and deployment on the Workflow V3.1 assignment-staleness guard. This was a coordination-only failure; no product test failed and no production deployment occurred in that run.
+
+## Verification repair and final production proof
+
+Manager PR #100 moved TCW-018 to `VERIFYING_MASTER`, refreshed canonical coordination, and reconciled README Current focus to the accepted Release 1.0 field state without changing recommendation logic or the field verdict.
+
+- PR #100 exact-head workflow #521: PASS;
+- PR #100 merged at `85e4c6dfe1667be88cb5caec59216aca7c62f0d7`;
+- master workflow #522: full test PASS;
+- GitHub Pages deploy: PASS;
+- `npm run smoke:production`: PASS.
+
+This verifies the accepted FV-ESPN-05 field-registry integration in production.
+
+## Final state
+
+`FV-ESPN-05` is passed.
+
+Release 1.0 field gate is **10 passed / 2 pending**.
+
+Remaining pending checks are `FV-ESPN-02` and `FV-SEASON-01`.
