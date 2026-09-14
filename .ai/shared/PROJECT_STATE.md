@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
-Last reconciled: 2026-09-13
-Current operating state: Release 1.0 field validation / TCW-018 post-remediation lock retest
+Last reconciled: 2026-09-14
+Current operating state: Release 1.0 field validation — 10 passed / 2 pending
 
 ## Repository
 
@@ -27,7 +27,7 @@ The deterministic implementation baseline remains substantially complete. Curren
 
 Authoritative registry: `config/field-validation.json`.
 
-Registry status is **9 passed / 3 pending**.
+Registry status is **10 passed / 2 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -36,41 +36,52 @@ Passed:
 - FV-ESPN-01
 - FV-ESPN-03
 - FV-ESPN-04
+- FV-ESPN-05
 - FV-RECOVERY-01
 - FV-SYNC-01
 - FV-WAIVER-01
 
 Pending:
 - FV-ESPN-02
-- FV-ESPN-05
 - FV-SEASON-01
+
+## Lock-transition validation disposition
+
+The TCW-018 / TCW-020 lock-transition loop is closed.
+
+A genuine real pre-kickoff -> post-kickoff ESPN transition originally reproduced stale actionable-looking generic START / SIT guidance after the observed player locked. Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT` with accepted finding `TCW-018-F01 — MEDIUM — BLOCKING`.
+
+TCW-020 implemented bounded START / SIT lock awareness in Builder PR #95. The deployed fix reuses `getLineupLockReason()` from the complete-lineup optimizer. When either selected START / SIT player is explicitly locked by ESPN or kickoff has passed, the comparison becomes clearly informational/non-actionable rather than showing an unqualified actionable projection lean.
+
+Verified remediation production baseline:
+- PR #95 exact-head workflow #508: PASS;
+- merged master `b6e6a2dabb0e2d9e404704d7e8997110ce403060`;
+- master workflow #509: test PASS, GitHub Pages deploy PASS, production smoke PASS.
+
+Independent post-remediation Auditor PR #98 used a genuine naturally locked/post-kickoff deployed state and returned `PASS CANDIDATE` with no findings. The comparison rendered `LINEUP MOVE LOCKED · INFORMATION ONLY` and `NO LINEUP ACTION`, the prior actionable `PROJECTION LEAN` was absent, and ESPN/FantasyPros projection context remained source-separated and informational. No lock state or roster transaction was manufactured.
+
+Manager accepted the verdict and integrated `FV-ESPN-05` as passed through PR #99. Initial master workflow #519 stopped before deployment only on V3.1 assignment staleness. Manager PR #100 repaired the verification lifecycle and reconciled field status.
+
+Final verified production integration:
+- master `85e4c6dfe1667be88cb5caec59216aca7c62f0d7`;
+- workflow #522: full test PASS;
+- GitHub Pages deploy PASS;
+- production smoke PASS.
+
+Durable integration evidence:
+- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTAKE.md`
+- `.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`
+- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTEGRATION.md`
+
+The FV-ESPN-05 pass is bounded to the observed genuine game-lock/post-kickoff behavior; unobserved injury/availability transitions or other lock variants are not inferred.
 
 ## Accessibility release-scope disposition
 
 At the product owner's explicit direction, TCW-019 removed the pending manual screen-reader field item `FV-A11Y-02` from the Release 1.0 field registry rather than falsely marking it passed. Existing keyboard-only and real 200% zoom field evidence remains preserved. Automated accessibility/readiness regression checks remain deployment-blocking CI and durable decision TCW-D012 records this scope boundary.
 
-## Lock-transition validation disposition
-
-TCW-018 received real deployed evidence across one naturally occurring ESPN game-lock transition. Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT` with accepted finding `TCW-018-F01 — MEDIUM — BLOCKING`: the complete-lineup optimizer respected the real lock, while the separate START / SIT comparison remained actionable-looking after the selected player had locked.
-
-TCW-020 implemented the bounded lock-awareness remediation in Builder PR #95. The deployed fix reuses `getLineupLockReason()` from the complete-lineup optimizer. When either selected START / SIT player is explicitly locked by ESPN or kickoff has passed, the comparison becomes clearly informational/non-actionable rather than showing an unqualified actionable projection lean. Unlocked comparison behavior and source separation remain protected.
-
-Verified production integration:
-- PR #95 exact-head workflow #508: PASS;
-- merged master: `b6e6a2dabb0e2d9e404704d7e8997110ce403060`;
-- master workflow #509: test PASS, GitHub Pages deploy PASS, production smoke PASS.
-
-Integration evidence is preserved at `.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`.
-
-TCW-020 is closed. TCW-018 is reactivated for a fresh Independent Auditor post-remediation deployed lock-state retest. Existing real pre-lock/transition evidence should be reused where valid; no lock state or roster transaction may be manufactured.
-
-`FV-ESPN-05` remains pending until that independent retest returns `PASS CANDIDATE` and Manager separately integrates the field registry.
-
 ## IR validation disposition
 
-The IR field loop is closed for the current Release 1.0 contract. Real deployed authenticated evidence established a naturally occurring supported eligible/filled IR state. The Chip Winner preserved the real IR occupant and normalized status, preserved the observed numeric zero projection, kept the occupant outside the active lineup path, retained legality-aware Waivers behavior, and preserved the configured IR slot without a manufactured roster transaction.
-
-Independent Auditor TCW-016 / PR #84 returned `PASS CANDIDATE` with no findings. Manager TCW-017 / PR #85 integrated FV-ESPN-04 as passed.
+The IR field loop is closed for the current Release 1.0 contract. Real deployed authenticated evidence established a naturally occurring supported eligible/filled IR state. Independent Auditor TCW-016 / PR #84 returned `PASS CANDIDATE` with no findings, and Manager TCW-017 integrated FV-ESPN-04 as passed.
 
 ## Waiver validation disposition
 
@@ -95,12 +106,16 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 ## Active coordination state
 
-- TCW-018 is assigned to Independent Auditor / QA for the post-remediation deployed lock-state retest.
-- Builder is idle after verified TCW-020 production integration.
-- Strategy, R&D, and Troubleshooting remain idle.
+No Manager-approved active task is registered after TCW-018 closeout.
+
+Manager, Builder, Strategy, R&D, Auditor, and Troubleshooting are idle until a genuine remaining field condition is available or Manager authorizes another bounded task.
 
 ## Known gated work
 
-FV-ESPN-02 still requires a real authenticated custom FLEX/OP/Superflex league. FV-SEASON-01 still requires real playoff/bye-season states. FV-ESPN-05 requires the active TCW-018 independent post-remediation field verdict. Do not manufacture any field condition.
+`FV-ESPN-02` still requires a real authenticated custom FLEX/OP/Superflex-style league.
+
+`FV-SEASON-01` still requires genuine playoff/bye-season states.
+
+Do not manufacture either field condition.
 
 Post-1.0 Roadmap Discovery input remains recorded in `.ai/shared/ROADMAP.md` and `docs/post-1.0-roadmap-candidates.md`. No successor milestone is authorized.
