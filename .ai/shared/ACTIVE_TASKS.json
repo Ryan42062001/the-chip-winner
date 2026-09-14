@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-14T23:45:00Z",
+  "updated_at_utc": "2026-09-14T23:52:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -14,15 +14,15 @@
       "task_file": ".ai/manager/tasks/TCW-021.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "04dc0c4a349bb41faa331ca12cfbe26d80b21a34",
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "5df4a523c11664fb4c594d0d2a4c3464af5d222c",
       "branch": "manager/tcw-021-remove-custom-flex-field-gate",
-      "pr": null,
+      "pr": 102,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Manager removes FV-ESPN-02 from Release 1.0 scope -> exact-head CI -> merge -> master test + Pages deploy + production smoke -> atomic closeout"
+      "next_gate": "Exact-head PR CI -> Manager merge -> master full test + GitHub Pages deploy + production smoke -> atomic .ai/** TCW-021 closeout"
     }
   ]
 }
