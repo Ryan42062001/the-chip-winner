@@ -145,11 +145,11 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Current focus
 
-The read-only foundation is substantially implemented. The active work is to finish it rather than start a new product layer:
+The read-only foundation is substantially implemented. Release 1.0 remains in real-world field validation rather than a new product layer. The authoritative field registry currently records **10 passed / 2 pending** checks after the accepted FV-ESPN-05 lock-transition retest.
 
-1. Accumulate real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
-2. Finish Waiver Engine v2 with projection-gated multiweek waiver impact after coverage is complete. Current-week ESPN IR legality and explicit IR-assisted add-without-drop paths are implemented; multiweek IR-retained roster modeling remains intentionally gated.
-3. Add position-specific schedule difficulty only after approving and documenting a trustworthy source and methodology.
-4. Complete manual accessibility, companion security, recovery/deletion, and materially different live-league validation for the v1.0 read-only release gate.
+1. Complete `FV-ESPN-02` using a real authenticated custom FLEX/OP/Superflex-style league; do not simulate unsupported lineup-slot state.
+2. Complete `FV-SEASON-01` when genuine playoff/bye-season states are observable; preserve the existing fail-closed behavior for missing future data.
+3. Continue accumulating real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
+4. Keep the current read-only, source-separated recommendation boundary intact while the two remaining Release 1.0 field checks are completed.
 
 Trade analysis, notifications, server-side model integrations, and ESPN write actions remain later gated work. See [`docs/roadmap.md`](docs/roadmap.md) for the authoritative execution status.
