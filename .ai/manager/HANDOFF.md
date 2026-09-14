@@ -2,62 +2,61 @@
 
 HANDOFF
 
-Task ID: TCW-018
+Task ID: TCW-021
 Role: Manager / Architect
-Status: CLOSED — FV-ESPN-05 VERIFIED PASS
+Status: VERIFYING_MASTER — CUSTOM FLEX / OP RELEASE-GATE REMOVAL
 
 ## Current Release 1.0 field gate
 
-- **10 passed / 2 pending**.
-- Pending: `FV-ESPN-02`, `FV-SEASON-01`.
-- `FV-ESPN-05 — Authenticated lock and availability transitions` is passed.
+Candidate scope after TCW-021 integration:
+- **10 passed / 1 pending**.
+- Sole pending item: `FV-SEASON-01 — Real playoff and bye intelligence states`.
+- `FV-ESPN-02 — Authenticated custom FLEX or OP league` is removed from Release 1.0 scope, not marked passed.
 
-## TCW-018 final disposition
+## Product-owner scope decision
 
-The original real pre-kickoff -> post-kickoff ESPN transition reproduced stale actionable-looking START / SIT guidance after the observed player locked.
+The product owner explicitly stated that Superflex field validation is not important for this release.
 
-Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT` with accepted finding:
+Manager therefore authorized the narrow TCW-021 scope change:
+- remove the dedicated custom FLEX/OP/Superflex field-certification item from `config/field-validation.json`;
+- preserve ordinary FLEX support and previously observed standard-league FLEX evidence;
+- preserve lineup-slot normalization, eligibility enforcement, fail-closed behavior, and automated regression coverage;
+- make no claim that unobserved custom OP/Superflex behavior has been field-validated.
 
-`TCW-018-F01 — MEDIUM — BLOCKING`
+Durable decision: `TCW-D013` in `.ai/shared/DECISIONS.md`.
 
-TCW-020 remediated the defect in Builder PR #95 by reusing the optimizer's existing lock semantics and making locked/post-kickoff START / SIT comparisons information-only/no-action.
+Privacy-safe integration record:
+- `.ai/manager/evidence/TCW-021_CUSTOM_FLEX_SCOPE_INTEGRATION.md`
 
-Verified TCW-020 production baseline:
-- merged master `b6e6a2dabb0e2d9e404704d7e8997110ce403060`;
-- workflow #509: test PASS, Pages deploy PASS, production smoke PASS.
+## Prior completed field loop
 
-Independent post-remediation Auditor PR #98 then returned `PASS CANDIDATE` with no findings. The real deployed locked-state retest showed `LINEUP MOVE LOCKED · INFORMATION ONLY`, `NO LINEUP ACTION`, no actionable `PROJECTION LEAN`, and preserved ESPN/FantasyPros source separation. No lock state or roster transaction was manufactured.
+TCW-018 / TCW-020 is closed. `FV-ESPN-05` is passed after the reproduced locked-player START / SIT defect was remediated, independently retested, and production-verified.
 
-Auditor evidence integration:
-- PR #98 exact-head workflow #515: PASS;
-- evidence merge `29feabd4dc343b15f6e264fbdbd8614b2b2dc53d`;
-- master workflow #516: test PASS.
-
-Manager field integration:
-- PR #99 exact-head workflow #518: PASS;
-- field-registry merge `708798009ab8dd081d1b7f75c65353de3c6e809e`;
-- initial master workflow #519 stopped only on V3.1 assignment staleness before application tests/deploy.
-
-Verification repair:
-- PR #100 exact-head workflow #521: PASS;
-- verified production integration master `85e4c6dfe1667be88cb5caec59216aca7c62f0d7`;
-- master workflow #522: test PASS, GitHub Pages deploy PASS, production smoke PASS.
-
-Privacy-safe durable evidence:
-- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTAKE.md`
-- `.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`
-- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTEGRATION.md`
-
-The pass is bounded to the observed genuine game-lock/post-kickoff behavior. Unobserved injury/availability transitions or other lock variants are not inferred.
+Verified production integration baseline before TCW-021:
+- canonical master `04dc0c4a349bb41faa331ca12cfbe26d80b21a34`;
+- final TCW-018 closeout workflow #524: full test gate PASS; deploy/production correctly skipped for `.ai/**` closeout;
+- product integration baseline `85e4c6dfe1667be88cb5caec59216aca7c62f0d7` passed workflow #522 test, GitHub Pages deploy, and production smoke.
 
 ## Active routing
 
-No Manager-approved active task is currently registered in `.ai/shared/ACTIVE_TASKS.json` after TCW-018 closeout.
+Manager / Architect owns TCW-021 directly.
 
-All permanent worker roles are idle until Manager authorizes the next bounded task.
+Expected branch:
+`manager/tcw-021-remove-custom-flex-field-gate`
 
-Known remaining Release 1.0 field gates:
-- `FV-ESPN-02` — requires a real authenticated custom FLEX/OP/Superflex-style league;
-- `FV-SEASON-01` — requires genuine playoff/bye-season states.
+Required next sequence:
+1. exact-head PR CI PASS;
+2. Manager merge;
+3. resulting master full test PASS;
+4. GitHub Pages deploy PASS;
+5. production smoke PASS;
+6. `.ai/**` atomic TCW-021 closeout.
 
-Do not manufacture either field condition merely to create work.
+IDLE:
+- Builder — no implementation task;
+- Independent Auditor — no audit task;
+- Strategy — no unresolved policy question;
+- R&D — no unresolved feasibility/external-fact question;
+- Troubleshooting — no active root-cause assignment.
+
+Do not create a replacement Superflex validation task unless the product owner later re-authorizes that scope.
