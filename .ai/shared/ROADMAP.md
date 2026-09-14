@@ -13,7 +13,9 @@ Remaining milestone work is evidence-backed real-world validation, narrow remedi
 
 ## Release 1.0 blockers
 
-Authoritative live status is `config/field-validation.json`. Candidate reconciled snapshot after TCW-021:
+Authoritative live status is `config/field-validation.json`.
+
+Sole remaining blocker:
 1. FV-SEASON-01 — real playoff/bye intelligence states.
 
 Registry field gate is **10 passed / 1 pending**.
@@ -28,7 +30,12 @@ FV-ESPN-05 is passed after a genuine lock transition reproduced stale actionable
 
 Manual screen-reader field certification is no longer a Release 1.0 blocker. TCW-019 removed `FV-A11Y-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Completed keyboard-only and real 200% zoom evidence remain preserved, and automated accessibility/readiness regression checks remain deployment-blocking CI under durable decision TCW-D012.
 
-Custom FLEX/OP/Superflex field certification is no longer a Release 1.0 blocker. TCW-021 removes `FV-ESPN-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed handling, and automated regression coverage remain intact under durable decision TCW-D013. No unobserved custom OP/Superflex behavior is claimed as field-validated.
+Custom FLEX/OP/Superflex field certification is no longer a Release 1.0 blocker. TCW-021 removed `FV-ESPN-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed handling, and automated regression coverage remain intact under durable decision TCW-D013. No unobserved custom OP/Superflex behavior is claimed as field-validated.
+
+TCW-021 verified integration:
+- PR #102 exact-head workflow #530: PASS;
+- merged master `fd845bfbc1c28a746ef7cb455c6abe80e6ac945e`;
+- master workflow #531: full test PASS, GitHub Pages deploy PASS, production smoke PASS.
 
 ## Completed field-remediation chains
 
@@ -81,19 +88,21 @@ Completed:
 - TCW-018 FV-ESPN-05 real game-lock field validation and accepted post-remediation retest.
 - TCW-019 manual screen-reader Release 1.0 field-gate removal while retaining automated accessibility CI.
 - TCW-020 START/SIT lock-awareness remediation.
+- TCW-021 custom FLEX/OP/Superflex Release 1.0 field-gate removal while retaining ordinary FLEX support and regression safeguards.
 
 Active:
-- TCW-021 custom FLEX/OP/Superflex Release 1.0 field-gate removal under explicit product-owner scope direction.
+- None.
 
 Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
 
 ## Immediate dependency order
 
-1. Verify and close TCW-021 scope integration through exact-head CI, master test, Pages deployment, and production smoke.
-2. Complete the sole remaining `FV-SEASON-01` field check only when its genuine real-world prerequisites exist.
-3. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
-4. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
-5. Perform formal Roadmap Discovery before authorizing a successor milestone.
+1. Complete the sole remaining `FV-SEASON-01` field check only when its genuine real-world prerequisites exist.
+2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
+3. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
+4. Perform formal Roadmap Discovery before authorizing a successor milestone.
+
+No task should be invented merely to keep a role busy while the remaining field condition is unavailable.
 
 ## Release 1.0 exit gate
 
