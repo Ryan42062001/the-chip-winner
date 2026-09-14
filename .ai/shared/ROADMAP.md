@@ -20,11 +20,11 @@ Registry field gate is **10 passed / 1 pending**.
 
 FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
-FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence.
+FV-WAIVER-01 is passed after TCW-012 exposed existing exhaustive-run diagnostics, the real deployed TCW-014 retest captured 89 considered adds / 88 complete adds / 352 evaluated scenarios / 0 qualified adds with acceptable responsiveness, the Independent Auditor returned PASS CANDIDATE through PR #78, and TCW-015 integrated the evidence through PR #79 with master workflow #473 passing.
 
-FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
+FV-ESPN-04 is passed after real authenticated TCW-016 evidence captured a naturally occurring eligible/filled IR state, Independent Auditor PR #84 returned PASS CANDIDATE with no findings, and TCW-017 integrated the bounded evidence through PR #85 with master workflow #485 passing tests, Pages deployment, and production verification. The pass does not infer unobserved grandfathered, invalid, over-capacity, unsupported, or unverified IR states.
 
-FV-ESPN-05 is passed after a genuine lock transition reproduced stale actionable-looking START / SIT guidance, TCW-020 remediated the defect, Independent Auditor PR #98 returned a post-remediation PASS CANDIDATE using a genuine naturally locked state, and Manager integrated and production-verified the field pass through workflow #522.
+FV-ESPN-05 is passed after a genuine lock transition reproduced stale actionable-looking START / SIT guidance, TCW-020 remediated the defect, Independent Auditor PR #98 returned a post-remediation PASS CANDIDATE using a genuine naturally locked state, and Manager integrated and production-verified the field pass. Product integration master `85e4c6dfe1667be88cb5caec59216aca7c62f0d7` passed workflow #522 tests, Pages deployment, and production smoke.
 
 Manual screen-reader field certification is no longer a Release 1.0 blocker. TCW-019 removed `FV-A11Y-02` from the field registry at the product owner's explicit direction rather than marking it passed without evidence. Completed keyboard-only and real 200% zoom evidence remain preserved, and automated accessibility/readiness regression checks remain deployment-blocking CI under durable decision TCW-D012.
 
@@ -43,13 +43,13 @@ Custom FLEX/OP/Superflex field certification is no longer a Release 1.0 blocker.
 2. TCW-012 exposed existing `futureDiscovery` diagnostics without changing waiver enumeration or recommendation logic.
 3. TCW-014 real deployed retest captured the required diagnostics and responsiveness evidence.
 4. Independent Auditor PR #78 returned PASS CANDIDATE with no findings.
-5. TCW-015 integrated FV-WAIVER-01 as passed.
+5. TCW-015 integrated FV-WAIVER-01 as passed; PR #79 merged at `ae932395f87f77aad2c067ca16dc1042d4f79786` and workflow #473 passed test, deploy, and production verification.
 
 ### IR
 1. A real authenticated league naturally presented one supported eligible/filled IR state without a manufactured roster transaction.
 2. TCW-016 routed the privacy-safe deployed evidence to Independent Auditor / QA.
 3. Independent Auditor PR #84 returned PASS CANDIDATE with no findings, bounded to the state actually observed.
-4. TCW-017 integrated FV-ESPN-04 as passed.
+4. TCW-017 integrated FV-ESPN-04 as passed; PR #85 merged at `55b9322fcb4ed37a2fa20ac3ce3564ce9463abab` and workflow #485 passed test, deploy, and production verification.
 
 ### Game lock / START-SIT
 1. TCW-018 captured a real pre-kickoff -> post-kickoff transition and independently reproduced stale actionable-looking START / SIT guidance after lock.
