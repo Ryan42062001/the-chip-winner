@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-14
-Current operating state: Release 1.0 field validation — TCW-021 scope integration
+Current operating state: Release 1.0 field validation — event-gated
 
 ## Repository
 
@@ -27,7 +27,7 @@ The deterministic implementation baseline remains substantially complete. Curren
 
 Authoritative registry: `config/field-validation.json`.
 
-Candidate registry status after TCW-021 integration is **10 passed / 1 pending**.
+Registry status is **10 passed / 1 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -50,7 +50,7 @@ Removed from Release 1.0 scope rather than falsely marked passed:
 
 ## Custom FLEX / OP release-scope disposition
 
-At the product owner's explicit direction, TCW-021 removes `FV-ESPN-02 — Authenticated custom FLEX or OP league` from the Release 1.0 field registry rather than marking it passed without evidence.
+At the product owner's explicit direction, TCW-021 removed `FV-ESPN-02 — Authenticated custom FLEX or OP league` from the Release 1.0 field registry rather than marking it passed without evidence.
 
 This is a release-certification scope decision only. It does **not** remove ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed behavior, or automated regression coverage. Existing authenticated standard-league evidence already includes a normal FLEX slot and remains preserved. No unobserved custom OP/Superflex behavior is claimed as field-validated.
 
@@ -59,7 +59,15 @@ Durable decision: TCW-D013.
 Integration evidence:
 - `.ai/manager/evidence/TCW-021_CUSTOM_FLEX_SCOPE_INTEGRATION.md`
 
-TCW-021 remains active until exact-head CI, master tests, Pages deployment, and production smoke verify the scope integration.
+Verified integration:
+- PR #102 exact head `11a0679bd0513a7ed5b555a1c7ff3dcb3e27176d`;
+- exact-head workflow #530 PASS;
+- merged master `fd845bfbc1c28a746ef7cb455c6abe80e6ac945e`;
+- master workflow #531 full test PASS;
+- GitHub Pages deploy PASS;
+- production smoke PASS.
+
+TCW-021 is closed. No replacement Superflex/custom OP certification task is authorized unless the product owner explicitly reopens that scope.
 
 ## Lock-transition validation disposition
 
@@ -122,8 +130,7 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 ## Active coordination state
 
-- TCW-021 is owned directly by Manager / Architect for the bounded release-scope integration.
-- Builder, Strategy, R&D, Auditor, and Troubleshooting are idle.
+There is no active Manager-approved task. Manager, Builder, Strategy, R&D, Auditor, and Troubleshooting are idle.
 
 ## Known gated work
 
