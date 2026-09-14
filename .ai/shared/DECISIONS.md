@@ -1,6 +1,6 @@
 # The Chip Winner — Durable Decisions
 
-Last reconciled: 2026-09-13
+Last reconciled: 2026-09-14
 
 These entries codify durable decisions established by repository evidence. They do not create unapproved product scope.
 
@@ -63,3 +63,8 @@ The Chip Winner Strategy role is **In-Season Strategy & Decision Intelligence**.
 Status: ACTIVE
 
 At the product owner's explicit direction, the pending manual screen-reader field item `FV-A11Y-02` is removed from the Release 1.0 field registry rather than marked passed without evidence. Previously completed keyboard-only and real 200% zoom field evidence remains preserved. Automated accessibility/readiness regression checks remain deployment-blocking CI because they require no manual user validation and continue to protect basic interface quality.
+
+## TCW-D013 — Custom FLEX / OP / Superflex field certification is not a Release 1.0 requirement
+Status: ACTIVE
+
+At the product owner's explicit direction, the pending field item `FV-ESPN-02` is removed from the Release 1.0 field registry rather than marked passed without evidence. This scope decision removes only the dedicated requirement to certify a materially custom FLEX/OP/Superflex-style ESPN league in the field. It does not remove ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed handling, or existing automated regression coverage. Previously observed standard-league FLEX behavior remains preserved as evidence, but no unobserved custom OP/Superflex behavior is claimed as field-validated.

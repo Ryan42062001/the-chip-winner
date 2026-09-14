@@ -9,7 +9,6 @@ const requiredIds = [
   "FV-A11Y-03",
   "FV-MOBILE-01",
   "FV-ESPN-01",
-  "FV-ESPN-02",
   "FV-ESPN-03",
   "FV-ESPN-04",
   "FV-ESPN-05",

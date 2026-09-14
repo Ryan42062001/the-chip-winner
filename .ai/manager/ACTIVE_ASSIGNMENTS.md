@@ -6,15 +6,17 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Active assignment
 
-None.
-
-TCW-018 is closed after accepted independent post-remediation field evidence, FV-ESPN-05 field-registry integration, and verified production deployment through master workflow #522.
+- TCW-021 — Remove Custom FLEX / OP Release Gate — **Manager / Architect VERIFYING_MASTER**.
+- Assignment master: `04dc0c4a349bb41faa331ca12cfbe26d80b21a34`.
+- Integration branch: `manager/tcw-021-remove-custom-flex-field-gate`.
+- Scope: remove `FV-ESPN-02` from Release 1.0 rather than mark it passed; preserve ordinary FLEX support and all existing normalization/eligibility safeguards.
+- Next gate: exact-head CI -> Manager merge -> master test + Pages deploy + production smoke -> `.ai/**` closeout.
 
 Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.
 
 ## Field state
 
-Release 1.0 field gate: **10 passed / 2 pending**.
+Candidate Release 1.0 field gate after TCW-021 integration: **10 passed / 1 pending**.
 
 Passed:
 - FV-A11Y-01
@@ -29,15 +31,16 @@ Passed:
 - FV-WAIVER-01
 
 Pending:
-- FV-ESPN-02 — authenticated custom FLEX/OP/Superflex-style league
 - FV-SEASON-01 — real playoff/bye intelligence states
 
-Manual screen-reader certification remains outside the Release 1.0 field gate under TCW-D012. Automated accessibility/readiness CI remains active.
+Removed from Release 1.0 scope by explicit product-owner direction:
+- FV-A11Y-02 — manual screen-reader certification, under TCW-D012;
+- FV-ESPN-02 — custom FLEX/OP/Superflex field certification, under TCW-D013.
 
 ## Role state
 
 ### Manager / Architect
-IDLE — TCW-018 is closed; no new bounded task has been authorized.
+ACTIVE — TCW-021 release-scope integration and production verification.
 
 ### Implementation Engineer / Builder
 IDLE — no active implementation task.
@@ -49,9 +52,9 @@ IDLE — no unresolved strategy policy question.
 IDLE — no unresolved external-fact or feasibility question.
 
 ### Independent Auditor / QA
-IDLE — TCW-018 post-remediation PASS CANDIDATE was accepted and integrated.
+IDLE — no active audit task.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
 
-The remaining field gates require genuine external conditions. Do not manufacture them merely to create work.
+The sole remaining field gate requires a genuine season/playoff condition. Do not manufacture it merely to create work.

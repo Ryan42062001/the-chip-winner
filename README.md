@@ -145,11 +145,12 @@ See [`secure mobile synchronization`](docs/mobile-sync.md) for the encrypted cro
 
 ## Current focus
 
-The read-only foundation is substantially implemented. Release 1.0 remains in real-world field validation rather than a new product layer. The authoritative field registry currently records **10 passed / 2 pending** checks after the accepted FV-ESPN-05 lock-transition retest.
+The read-only foundation is substantially implemented. Release 1.0 remains in real-world field validation rather than a new product layer. The authoritative field registry now records **10 passed / 1 pending** check after the product-owner scope decision removed the dedicated custom FLEX/OP/Superflex field-certification requirement.
 
-1. Complete `FV-ESPN-02` using a real authenticated custom FLEX/OP/Superflex-style league; do not simulate unsupported lineup-slot state.
-2. Complete `FV-SEASON-01` when genuine playoff/bye-season states are observable; preserve the existing fail-closed behavior for missing future data.
-3. Continue accumulating real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
-4. Keep the current read-only, source-separated recommendation boundary intact while the two remaining Release 1.0 field checks are completed.
+1. Complete `FV-SEASON-01` when genuine playoff/bye-season states are observable; preserve the existing fail-closed behavior for missing future data.
+2. Continue accumulating real weekly PPR player-week coverage through the browser update workflow as each source publication becomes available; keep exact gaps visible and never infer an upstream week or identity that the evidence cannot support.
+3. Keep the current read-only, source-separated recommendation boundary intact while the sole remaining Release 1.0 field check is completed.
+
+Custom OP/Superflex field certification is no longer a Release 1.0 release gate. Existing standard-league FLEX support and regression coverage remain intact; no unobserved custom OP/Superflex behavior is claimed as field-validated.
 
 Trade analysis, notifications, server-side model integrations, and ESPN write actions remain later gated work. See [`docs/roadmap.md`](docs/roadmap.md) for the authoritative execution status.
