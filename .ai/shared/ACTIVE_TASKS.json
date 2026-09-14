@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-13T19:13:00Z",
+  "updated_at_utc": "2026-09-14T23:20:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -10,19 +10,19 @@
     {
       "task_id": "TCW-018",
       "owner": "Auditor",
-      "status": "ASSIGNED",
+      "status": "MERGE_READY",
       "task_file": ".ai/manager/tasks/TCW-018.md",
       "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "d89de5ad1acce1a54f0cfc63dd0a21d6b7c8f257",
-      "worker_checkpoint_sha": null,
+      "assignment_master_sha": "937db024d06d536e441eb389203f4043be794602",
+      "worker_checkpoint_sha": "7d45ca850528c7373fb115b574fd4380e1deea8a",
       "branch": "auditor/tcw-018-lock-post-remediation",
-      "pr": null,
+      "pr": 98,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Independent Auditor performs the smallest genuine deployed post-remediation locked-state retest -> returns PASS CANDIDATE, FAIL — REPRODUCED DEFECT, or INCONCLUSIVE -> Manager integrates FV-ESPN-05 only after accepted PASS CANDIDATE"
+      "next_gate": "Manager merges accepted PASS CANDIDATE evidence -> verifies master CI -> performs separate bounded FV-ESPN-05 field-registry integration and TCW-018 closeout"
     }
   ]
 }
