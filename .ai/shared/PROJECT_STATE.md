@@ -21,7 +21,7 @@ The Chip Winner remains an ESPN-only, read-only, **in-season** fantasy-football 
 
 Status: ACTIVE — FIELD VALIDATION
 
-The deterministic implementation baseline remains substantially complete. Current work is genuine real-world validation, bounded remediation for reproduced defects, and explicit product-owner release-scope decisions.
+The deterministic implementation baseline remains substantially complete. Current work is genuine real-world validation and bounded remediation only when a field defect is reproduced or evidence visibility is insufficient, plus explicit product-owner release-scope decisions.
 
 ## Field gate
 
@@ -67,15 +67,29 @@ The TCW-018 / TCW-020 lock-transition loop is closed.
 
 A genuine real pre-kickoff -> post-kickoff ESPN transition originally reproduced stale actionable-looking generic START / SIT guidance after the observed player locked. Independent Auditor PR #93 returned `FAIL — REPRODUCED DEFECT` with accepted finding `TCW-018-F01 — MEDIUM — BLOCKING`.
 
-TCW-020 implemented bounded START / SIT lock awareness in Builder PR #95. Independent post-remediation Auditor PR #98 used a genuine naturally locked/post-kickoff deployed state and returned `PASS CANDIDATE` with no findings. Manager integrated `FV-ESPN-05` as passed.
+TCW-020 implemented bounded START / SIT lock awareness in Builder PR #95. The deployed fix reuses `getLineupLockReason()` from the complete-lineup optimizer. When either selected START / SIT player is explicitly locked by ESPN or kickoff has passed, the comparison becomes clearly informational/non-actionable rather than showing an unqualified actionable projection lean.
 
-Verified production integration:
-- product integration master `85e4c6dfe1667be88cb5caec59216aca7c62f0d7`;
-- workflow #522: full test PASS, GitHub Pages deploy PASS, production smoke PASS;
-- final TCW-018 closeout master `04dc0c4a349bb41faa331ca12cfbe26d80b21a34`;
-- workflow #524: full test gate PASS.
+Verified remediation production baseline:
+- PR #95 exact-head workflow #508: PASS;
+- merged master `b6e6a2dabb0e2d9e404704d7e8997110ce403060`;
+- master workflow #509: test PASS, GitHub Pages deploy PASS, production smoke PASS.
 
-The FV-ESPN-05 pass remains bounded to the observed genuine game-lock/post-kickoff behavior; unobserved injury/availability transitions or other lock variants are not inferred.
+Independent post-remediation Auditor PR #98 used a genuine naturally locked/post-kickoff deployed state and returned `PASS CANDIDATE` with no findings. The comparison rendered `LINEUP MOVE LOCKED · INFORMATION ONLY` and `NO LINEUP ACTION`, the prior actionable `PROJECTION LEAN` was absent, and ESPN/FantasyPros projection context remained source-separated and informational. No lock state or roster transaction was manufactured.
+
+Manager accepted the verdict and integrated `FV-ESPN-05` as passed through PR #99. Initial master workflow #519 stopped before deployment only on V3.1 assignment staleness. Manager PR #100 repaired the verification lifecycle and reconciled field status.
+
+Final verified production integration:
+- master `85e4c6dfe1667be88cb5caec59216aca7c62f0d7`;
+- workflow #522: full test PASS;
+- GitHub Pages deploy PASS;
+- production smoke PASS.
+
+Durable integration evidence:
+- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTAKE.md`
+- `.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`
+- `.ai/manager/evidence/TCW-018_LOCK_FIELD_INTEGRATION.md`
+
+The FV-ESPN-05 pass is bounded to the observed genuine game-lock/post-kickoff behavior; unobserved injury/availability transitions or other lock variants are not inferred.
 
 ## Accessibility release-scope disposition
 
