@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-14T23:29:00Z",
+  "updated_at_utc": "2026-09-14T23:31:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -14,15 +14,15 @@
       "task_file": ".ai/manager/tasks/TCW-018.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "708798009ab8dd081d1b7f75c65353de3c6e809e",
-      "worker_checkpoint_sha": "7e0bd0535399fbf1e38657f4a9420061e786ac79",
+      "worker_checkpoint_sha": "20e4930dc043b9cc1458f0e9f0afa14fe47ea37d",
       "branch": "manager/tcw-018-post-integration-verification-repair",
-      "pr": null,
+      "pr": 100,
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "audit_required": false,
       "merge_authority": "Manager",
       "blocked_on": [],
-      "next_gate": "Repair master verification lifecycle after workflow #519 coordination-only failure -> merge repair with deployable field-registry provenance -> require master test + GitHub Pages deploy + production smoke -> atomic .ai/** TCW-018 closeout"
+      "next_gate": "Merge verification repair -> require master test + GitHub Pages deploy + production smoke -> atomic .ai/** TCW-018 closeout"
     }
   ]
 }
