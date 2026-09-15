@@ -6,49 +6,53 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Active assignment
 
-### TCW-022 — Trade Analyzer v1 Strategy Contract
+### TCW-024 — Trade Analyzer v1 Independent Audit
 
-- Owner: In-Season Strategy & Decision Intelligence Analyst
+- Owner: Independent Auditor / QA
 - Status: ASSIGNED
-- Branch: `strategy/tcw-022-trade-analyzer-policy`
-- Assignment master: `3eedb76e4bfd33802c23972720f79a4135e2adf5`
+- Branch: `auditor/tcw-024-trade-analyzer-v1-audit`
+- Exact deployed audit target: `e112156deedf453fb3e0081412c07e2e15c0256d`
 - Execution mode: `STANDARD_CHAT`
 - Merge authority: Manager / Architect
-- Task spec: `.ai/manager/tasks/TCW-022.md`
-- Deliverable: `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
-- Next gate: Strategy PR -> Manager review -> Builder routing only after policy acceptance.
+- Task spec: `.ai/manager/tasks/TCW-024.md`
+- Deliverable: independent audit evidence in `.ai/auditor/HANDOFF.md`
+- Next gate: Auditor exact-head green evidence PR -> Manager verdict review.
 
 Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.
+
+## Recently integrated
+
+TCW-023 — Trade Analyzer v1 Production Implementation — CLOSED.
+
+- Builder PR #109 exact head `5c492f22ce7ab107771d946ee318c2ac5665ce16` passed workflow #556.
+- Merged production master `e112156deedf453fb3e0081412c07e2e15c0256d`.
+- Master workflow #557 passed tests, GitHub Pages deployment, and production smoke.
 
 ## Field state
 
 Release 1.0 field gate remains **10 passed / 1 pending**.
 
 Pending:
-- FV-SEASON-01 — real playoff/bye intelligence states
+- FV-SEASON-01 — real playoff/bye intelligence states.
 
-The season field check is event-gated and independent from TCW-022. Do not manufacture playoff/bye evidence merely to unblock feature work.
-
-Removed from Release 1.0 scope by explicit product-owner direction:
-- FV-A11Y-02 — manual screen-reader certification, under TCW-D012;
-- FV-ESPN-02 — custom FLEX/OP/Superflex field certification, under TCW-D013.
+This field item remains event-gated and independent from TCW-024. Do not manufacture qualifying field evidence.
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE — owns TCW-022 acceptance/routing and eventual integration.
-
-### Implementation Engineer / Builder
-IDLE — wait for Manager-approved Trade Analyzer strategy contract.
-
-### In-Season Strategy & Decision Intelligence Analyst
-ASSIGNED — TCW-022 Trade Analyzer v1 strategy contract.
-
-### R&D
-IDLE — only route if Strategy identifies a genuine unresolved data/source/feasibility question.
+ACTIVE — owns TCW-024 verdict review and integration.
 
 ### Independent Auditor / QA
-IDLE — audit follows implementation, not policy drafting.
+ASSIGNED — TCW-024.
+
+### Implementation Engineer / Builder
+IDLE — wait for an accepted audit finding/remediation task.
+
+### In-Season Strategy & Decision Intelligence Analyst
+IDLE — accepted Trade Analyzer policy is frozen for v1.
+
+### R&D
+IDLE — no blocking source/feasibility question.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.

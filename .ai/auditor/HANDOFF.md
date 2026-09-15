@@ -1,98 +1,104 @@
-# Auditor Handoff — TCW-018
+# Auditor Handoff — TCW-024
 
-Independent disposition: **PASS CANDIDATE**
+HANDOFF
 
-## Audit scope
+Task ID: TCW-024  
+Role: Independent Auditor / QA  
+Status: ASSIGNED — Trade Analyzer v1 independent audit
 
-TCW-018 post-remediation independently evaluates whether accepted finding `TCW-018-F01` still reproduces after deployed TCW-020 START / SIT lock-awareness remediation. No product code or field-registry state is modified by this Auditor task.
+## Assignment
 
-## Verified starting state
+Independently audit the deployed Trade Analyzer v1 implementation against the accepted TCW-022 Strategy contract and TCW-023 production boundary.
 
-- Fast Refresh verified current `master` at `937db024d06d536e441eb389203f4043be794602`.
-- Workflow V3.1 is active and `.ai/shared/ACTIVE_TASKS.json` assigns TCW-018 to Auditor on `auditor/tcw-018-lock-post-remediation` with Manager merge authority.
-- `config/field-validation.json` still records `FV-ESPN-05` as `pending` before this verdict.
-- TCW-020 remediation merged through PR #95 at production baseline `b6e6a2dabb0e2d9e404704d7e8997110ce403060`.
-- Post-merge production workflow #509 / run `34776578979` passed `test`, GitHub Pages `deploy`, and `verify-production`.
-- Current control-plane-only master workflow #513 / run `34777054712` passed the full `test` gate; deploy and verify-production were correctly skipped as not applicable.
+Exact deployed audit target:
 
-## Privacy-safe real deployed evidence reviewed
+`e112156deedf453fb3e0081412c07e2e15c0256d`
 
-The user supplied one short deployed recording from the still-natural post-kickoff state. The raw recording is not committed.
+Expected branch:
 
-Observed sequence:
+`auditor/tcw-024-trade-analyzer-v1-audit`
 
-- Authenticated `Refresh ESPN` completed successfully and the persistent source state showed `Live ESPN snapshot`.
-- Lineup Lab recognized the naturally locked/post-kickoff roster state and reported **15 roster locks respected because ESPN reported a lock or kickoff passed**.
-- The START / SIT comparison displayed the same two roster players previously used to reproduce TCW-018-F01.
-- Both selected players were now naturally post-kickoff in this later observation; the UI surfaced the reported-kickoff lock reason rather than treating the comparison as actionable.
-- The comparison prominently rendered **`LINEUP MOVE LOCKED · INFORMATION ONLY`**.
-- The center verdict rendered **`NO LINEUP ACTION`** and **`Locked comparison`**.
-- ESPN projection values remained visible as informational context, but the prior unqualified actionable **`PROJECTION LEAN`** was absent.
-- The separate FantasyPros weekly source remained visible and source-separated, with its higher-projection result explicitly labeled **`Informational only`** rather than action-like `Leans ...` language.
-- The normal optimizer area continued to report no lineup changes identified in the observed locked state.
-- Waivers remained usable during the same recording.
+Execution mode: `STANDARD_CHAT`  
+Merge authority: Manager / Architect only.
 
-No ESPN credentials, cookies, private league/member identifiers, raw private snapshot, private URL/token, or raw recording is preserved in repository evidence.
+## Required starting evidence
 
-## Independent implementation review
+Read:
+- `.ai/shared/WORKFLOW.md`
+- `.ai/shared/WORKFLOW_V3_1.md`
+- `.ai/shared/ACTIVE_TASKS.json`
+- `.ai/roles/AUDITOR.md`
+- `.ai/manager/tasks/TCW-024.md`
+- `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
+- `.ai/manager/tasks/TCW-023.md`
+- `.ai/manager/evidence/TCW-023_TRADE_ANALYZER_INTEGRATION.md`
+- Builder PR #109 and relevant exact deployed production/domain/UI/tests
+- only additional evidence required to judge the bounded audit.
 
-Current deployed code matches the observed repaired behavior:
+## Verified Manager integration evidence
 
-- `renderStartSitComparison(...)` now imports and reuses `getLineupLockReason()` from the complete-lineup optimizer rather than introducing a competing lock definition.
-- selected roster entries are evaluated for explicit ESPN lock state and passed kickoff.
-- when either selected player is locked, the renderer emits `LINEUP MOVE LOCKED · INFORMATION ONLY`, `NO LINEUP ACTION`, the specific lock reason, and informational-only external-source wording.
-- locked comparisons preserve projection values and source separation but suppress the ordinary actionable `PROJECTION LEAN` treatment.
-- ordinary unlocked preference/tossup rendering remains unchanged by the remediation code path.
+TCW-023 implementation was Manager-reviewed at exact Builder PR head `5c492f22ce7ab107771d946ee318c2ac5665ce16`.
 
-Focused deterministic coverage now verifies explicit ESPN locks, passed kickoff, suppression of `PROJECTION LEAN` for locked comparisons, informational external-source wording, and unchanged unlocked/missing/invalid behavior.
+PR workflow #556 / run `34918806042` passed the full required test gate.
 
-## Contract assessment
+Manager merged the implementation as deployed production master:
 
-The original real pre-lock -> post-lock transition remains valid Level-4 evidence for the transition itself. This post-remediation recording supplies the smallest additional real evidence required by the Manager task: the same class of naturally locked/post-kickoff START / SIT comparison is now clearly non-actionable after a successful deployed refresh.
+`e112156deedf453fb3e0081412c07e2e15c0256d`
 
-`TCW-018-F01` did **not** reproduce.
+Master workflow #557 / run `34919138546` passed:
+- full test/model/browser/accessibility/readiness/mobile/performance/security gate;
+- GitHub Pages deployment;
+- production release smoke.
 
-The recording does not independently re-prove unlocked comparison behavior, and this verdict does not claim that it did; unlocked behavior is covered by deterministic regression evidence rather than inferred from this locked-state field observation.
+This evidence proves integration/deployment; it does **not** predetermine the independent audit verdict.
 
-## Verification matrix
+## Independent audit emphasis
 
-| Dimension | Result | Evidence |
-| --- | --- | --- |
-| Static/code review | PASS | current renderer reuses `getLineupLockReason()` and converts locked START / SIT results to information-only / no-action UI |
-| Deterministic automated tests | PASS | focused tests cover explicit lock, passed kickoff, informational external context, and preserved unlocked behavior |
-| Exact current-master CI | PASS | workflow #513 / run `34777054712` full test gate passed at `937db024...` |
-| Production/deployed verification | PASS | TCW-020 production baseline workflow #509 passed test, deploy, and verify-production |
-| Real field validation | PASS CANDIDATE | deployed authenticated recording showed natural post-kickoff locks, `LINEUP MOVE LOCKED · INFORMATION ONLY`, `NO LINEUP ACTION`, no actionable `PROJECTION LEAN`, and informational-only FantasyPros context |
-| Exact-head Auditor PR CI | PENDING — ROLE OWNED | verify after this Auditor handoff commit/PR is created |
-| Post-merge master verification | PENDING — MANAGER OWNED | Auditor does not merge its own PR |
+Challenge, rather than assume:
+- no hidden score or mutation behavior;
+- proposal identity and unequal-count roster consequences;
+- explicit follow-up drop / `ROSTER_ACTION_REQUIRED` behavior;
+- no inherited opponent slot or automatic IR;
+- configured lineup skeleton and no optimizer regression;
+- current union-roster projection completeness;
+- lock informational behavior;
+- starter versus bench consequence;
+- depth/contingency/fragility and missing availability handling;
+- source separation and material disagreement rules;
+- complete-only future/playoff math using mean-weekly materiality;
+- cross-horizon conclusion precedence;
+- objective framing only;
+- production UI create/edit/analyze flow and reasonable a11y/responsive sanity.
 
-## Findings
+## Evidence boundary
 
-No blocking or non-blocking defect finding is warranted from the post-remediation field evidence.
+Do not manufacture authenticated ESPN, playoff, bye, lock, or private-league evidence. Deterministic/sample evidence is not Level-4 proof. If a specific authenticated behavior cannot be independently established, label it unverified rather than inventing a field verdict.
 
-Previously accepted `TCW-018-F01 — MEDIUM — BLOCKING` is **not reproduced** on the deployed TCW-020 remediation.
+Do not preserve credentials, cookies, tokens, private URLs, private league/member identifiers, or raw private snapshots.
 
-## Disposition
+## Deliverable
 
-**PASS CANDIDATE**
+Update this handoff with:
+- independent review methods;
+- verification matrix;
+- findings with severity and evidence, if any;
+- explicit Level-4 limitations where applicable;
+- final disposition.
 
-The observed real locked/post-kickoff state now satisfies the current `FV-ESPN-05` field contract when combined with the already accepted original real transition evidence. Manager owns any field-registry evidence/status integration.
+Open an Auditor PR containing audit evidence only. Do not modify production code or `config/field-validation.json` and do not merge your own PR.
 
-## Field registry
+Return:
 
-`config/field-validation.json` was **not modified** by this task.
+`PASS CANDIDATE`
 
-## HANDOFF
+or
 
-**Task ID:** TCW-018  
-**Role:** Independent Auditor / QA  
-**Status:** COMPLETE — POST-REMEDIATION PASS CANDIDATE  
-**Verified starting state:** `master` `937db024d06d536e441eb389203f4043be794602`; TCW-018 assigned to Auditor; TCW-020 already merged/deployed; FV-ESPN-05 pending.  
-**Work completed:** Independently reviewed the real deployed post-remediation recording, verified natural locked-state recognition, audited current lock-aware START / SIT implementation/tests, and verified relevant master/production CI.  
-**Evidence produced:** PASS CANDIDATE; TCW-018-F01 did not reproduce. Locked START / SIT output is now explicitly information-only/no-action while preserving ESPN/FantasyPros source separation.  
-**Files updated:** `.ai/auditor/HANDOFF.md` only.  
-**Open findings:** None.  
-**Blocking issues:** None for TCW-018 post-remediation at the observed field-validation scope.  
-**Recommended next role:** Manager / Architect.  
-**Exact next action:** Manager reviews this PASS CANDIDATE and, if accepted, performs the separate privacy-safe `FV-ESPN-05` evidence/status integration and Workflow V3.1 closeout. Auditor must not modify `config/field-validation.json` or merge its own PR.  
-**Checkpoint / SHA:** Audited current `master` `937db024d06d536e441eb389203f4043be794602`; deployed remediation baseline `b6e6a2dabb0e2d9e404704d7e8997110ce403060`; Auditor branch `auditor/tcw-018-lock-post-remediation`.
+`FAIL`
+
+or, only if genuinely blocked,
+
+`STALLED / ESCALATION REQUIRED`
+
+## Exact next action
+
+Fast Refresh from canonical master, independently inspect the exact deployed target and its evidence, execute the bounded audit, update this handoff, open one exact-head green Auditor PR, and stop for Manager review.
