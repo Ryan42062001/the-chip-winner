@@ -2,27 +2,27 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-15T00:57:00Z",
+  "updated_at_utc": "2026-09-15T01:58:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
   "tasks": [
     {
-      "task_id": "TCW-023",
-      "title": "Trade Analyzer v1 Production Implementation",
-      "owner": "Builder",
+      "task_id": "TCW-024",
+      "title": "Trade Analyzer v1 Independent Audit",
+      "owner": "Auditor",
       "status": "ASSIGNED",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT",
       "merge_authority": "Manager",
-      "task_file": ".ai/manager/tasks/TCW-023.md",
-      "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "9273128e677e332dd37529993974bed36a341669",
-      "branch": "builder/tcw-023-trade-analyzer-v1",
+      "task_file": ".ai/manager/tasks/TCW-024.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "e112156deedf453fb3e0081412c07e2e15c0256d",
+      "branch": "auditor/tcw-024-trade-analyzer-v1-audit",
       "pr": null,
       "worker_checkpoint_sha": null,
       "blockers": [],
-      "next_gate": "Builder implements the accepted TCW-022 Trade Analyzer v1 contract, opens an exact-head green production PR, and returns MANAGER_REVIEW_READY."
+      "next_gate": "Auditor independently audits exact deployed Trade Analyzer master e112156deedf453fb3e0081412c07e2e15c0256d, opens an exact-head green evidence PR, and returns PASS CANDIDATE, FAIL, or a precise escalation."
     }
   ]
 }
