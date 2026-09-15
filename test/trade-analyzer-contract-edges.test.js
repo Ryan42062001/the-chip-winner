@@ -82,3 +82,31 @@ test("snapshot, current source, and replacement context preserve capture and fre
   assert.equal(result.replacement.capturedAt, capturedAt);
   assert.equal(result.replacement.freshness.status, "fresh");
 });
+
+test("complete future rows retain pre and post optimized starter assignments", () => {
+  const snapshot = baseSnapshot();
+  snapshot.league.rosterRules.positionLimits = [];
+  const externalCapturedAt = new Date().toISOString();
+  const ids = ["q1", "r1", "w1", "r2"];
+  const identityMap = new Map(ids.map((id) => [`ext-${id}`, id]));
+  const futureProjectionSet = {
+    provider: "External fixture",
+    scoringFormat: "PPR",
+    season: 2026,
+    capturedAt: externalCapturedAt,
+    projections: ids.map((id) => ({ providerPlayerId: `ext-${id}`, week: 6, points: id === "r2" ? 18 : id === "r1" ? 14 : id === "q1" ? 20 : 8, capturedAt: externalCapturedAt }))
+  };
+  const result = analyzeTrade(snapshot, "mine", {
+    outgoingPlayerIds: ["r1"],
+    incomingPlayerIds: ["r2"],
+    plannedFollowUpDropIds: [],
+    teamObjective: "BALANCED"
+  }, { now: NOW, futureProjectionSet, identityMap, futureWeeks: [6], playoffWeeks: [] });
+
+  assert.equal(result.future.status, "READY");
+  assert.equal(result.future.rows[0].preAssignments.length, 2);
+  assert.equal(result.future.rows[0].postAssignments.length, 2);
+  assert.equal(result.future.rows[0].preAssignments.find((item) => item.slot === "RB").player.id, "r1");
+  assert.equal(result.future.rows[0].postAssignments.find((item) => item.slot === "RB").player.id, "r2");
+  assert.equal(result.future.rows[0].assignments.changes.length, 1);
+});
