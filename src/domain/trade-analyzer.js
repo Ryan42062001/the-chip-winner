@@ -2,6 +2,7 @@ import { canFillSlot } from "./recommendations.js";
 import { createLineupOptimizer, getLineupLockReason } from "./lineup-optimizer.js";
 import { isStarter, SUPPORTED_LINEUP_SLOTS } from "./model.js";
 import { buildByeWeekCoverage } from "./season-intelligence.js";
+import { selectSnapshotFreshness } from "./selectors.js";
 import { evaluateAcquisitionCapacity } from "./waiver-engine.js";
 import { evaluateFutureProjectionCompatibility, selectMappedFutureProjection } from "../providers/projections/future-projection-provider.js";
 
@@ -22,6 +23,14 @@ function unique(values) { return [...new Set(Array.isArray(values) ? values : []
 function activeEntries(entries) { return (entries || []).filter((entry) => entry.lineupSlot !== "IR"); }
 function withRoster(snapshot, teamId, entries) {
   return { ...snapshot, rosters: snapshot.rosters.map((roster) => roster.teamId === teamId ? { ...roster, entries } : roster) };
+}
+function freshnessFor(capturedAt, now) {
+  return Object.freeze(selectSnapshotFreshness({ meta: { capturedAt: capturedAt || null } }, now));
+}
+function minimumFollowUpRemovals(violations) {
+  const sizeExcess = Math.max(0, ...violations.filter((item) => item.kind === "ROSTER_SIZE").map((item) => item.excess || 0));
+  const positionExcess = violations.filter((item) => item.kind === "POSITION_LIMIT").reduce((sum, item) => sum + (item.excess || 0), 0);
+  return Math.max(sizeExcess, positionExcess);
 }
 
 function lineupConfiguration(snapshot, roster) {
@@ -141,20 +150,21 @@ function assignmentChanges(pre, post, incomingIds, outgoingIds, retainedIds) {
   });
 }
 
-function evaluateLineupSource(snapshot, preEntries, postEntries, config, source, points, now, incomingIds, outgoingIds) {
+function evaluateLineupSource(snapshot, preEntries, postEntries, config, sourceContext, points, now, incomingIds, outgoingIds) {
   const playerIds = unionActiveIds(preEntries, postEntries);
   const missing = playerIds.filter((id) => !Number.isFinite(points.get(id)));
-  if (config.status === "unsupported" || config.status === "missing") return Object.freeze({ source, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(playerIds), reason: config.reason, assignments: null });
-  if (missing.length) return Object.freeze({ source, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(missing), reason: "Complete active pre/post union-roster projection coverage is required.", assignments: null });
+  const sourceFields = { source: sourceContext.name, capturedAt: sourceContext.capturedAt || null, freshness: sourceContext.freshness || freshnessFor(sourceContext.capturedAt, now) };
+  if (config.status === "unsupported" || config.status === "missing") return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(playerIds), reason: config.reason, assignments: null });
+  if (missing.length) return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(missing), reason: "Complete active pre/post union-roster projection coverage is required.", assignments: null });
   const projectedPlayers = new Map(snapshot.players.map((player) => [player.id, { ...player, projection: points.get(player.id) }]));
   const optimizer = createLineupOptimizer(projectedPlayers, now);
   const pre = optimizer.optimize(preEntries, config.items);
   const post = optimizer.optimize(postEntries, config.items);
-  if (pre.projectedTotal == null || post.projectedTotal == null || pre.status === "incomplete" || post.status === "incomplete") return Object.freeze({ source, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(unique([...(pre.missingPlayerIds || []), ...(post.missingPlayerIds || [])])), reason: "A complete legal lineup could not be produced for both rosters.", assignments: null });
+  if (pre.projectedTotal == null || post.projectedTotal == null || pre.status === "incomplete" || post.status === "incomplete") return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(unique([...(pre.missingPlayerIds || []), ...(post.missingPlayerIds || [])])), reason: "A complete legal lineup could not be produced for both rosters.", assignments: null });
   const delta = round(post.projectedTotal - pre.projectedTotal);
   const retained = new Set(preEntries.map((entry) => entry.playerId).filter((id) => postEntries.some((entry) => entry.playerId === id)));
   return Object.freeze({
-    source,
+    ...sourceFields,
     status: "READY",
     direction: direction(delta),
     preTotal: pre.projectedTotal,
@@ -186,23 +196,24 @@ function currentLocks(snapshot, proposalIds, now) {
   }));
 }
 
-function evaluateHorizon(snapshot, preEntries, postEntries, config, set, identityMap, weeks, label) {
+function evaluateHorizon(snapshot, preEntries, postEntries, config, set, identityMap, weeks, label, now) {
   const normalizedWeeks = unique(weeks).filter((week) => Number.isInteger(week) && week >= 1 && week <= 18).sort((a, b) => a - b);
   if (!normalizedWeeks.length) return Object.freeze({ label, status: "UNKNOWN", weeks: freezeList([]), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: "No weeks are selected for this horizon." });
   const compatibility = set ? evaluateFutureProjectionCompatibility(set, snapshot) : null;
-  if (!set || !compatibility?.usable || !(identityMap instanceof Map)) return Object.freeze({ label, status: "UNKNOWN", weeks: freezeList(normalizedWeeks), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: compatibility?.errors?.join(" ") || "A compatible mapped future projection source is unavailable." });
+  const sourceFields = set ? { source: set.provider, capturedAt: set.capturedAt || null, freshness: freshnessFor(set.capturedAt, now) } : {};
+  if (!set || !compatibility?.usable || !(identityMap instanceof Map)) return Object.freeze({ ...sourceFields, label, status: "UNKNOWN", weeks: freezeList(normalizedWeeks), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: compatibility?.errors?.join(" ") || "A compatible mapped future projection source is unavailable." });
   const ids = unionActiveIds(preEntries, postEntries);
   const rows = normalizedWeeks.map((week) => {
     const mapped = mappedExternalPoints(set, identityMap, ids, week);
     if (mapped.missing.length) return Object.freeze({ week, status: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missing: freezeList(mapped.missing) });
-    const evaluated = evaluateLineupSource(snapshot, preEntries, postEntries, config, set.provider, mapped.points, FUTURE_EVALUATION_TIME, [], []);
+    const evaluated = evaluateLineupSource(snapshot, preEntries, postEntries, config, { name: set.provider, capturedAt: set.capturedAt, freshness: freshnessFor(set.capturedAt, now) }, mapped.points, FUTURE_EVALUATION_TIME, [], []);
     return Object.freeze({ week, status: evaluated.status, preTotal: evaluated.preTotal, postTotal: evaluated.postTotal, delta: evaluated.delta, direction: evaluated.direction, missing: freezeList([]) });
   });
   const complete = rows.length === normalizedWeeks.length && rows.every((row) => row.status === "READY" && Number.isFinite(row.delta));
-  if (!complete) return Object.freeze({ label, source: set.provider, status: "UNKNOWN", weeks: freezeList(normalizedWeeks), rows: freezeList(rows), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: "At least one selected week lacks complete compatible pre/post union-roster coverage." });
+  if (!complete) return Object.freeze({ ...sourceFields, label, status: "UNKNOWN", weeks: freezeList(normalizedWeeks), rows: freezeList(rows), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: "At least one selected week lacks complete compatible pre/post union-roster coverage." });
   const horizonDelta = round(rows.reduce((sum, row) => sum + row.delta, 0));
   const meanWeeklyDelta = round(horizonDelta / normalizedWeeks.length);
-  return Object.freeze({ label, source: set.provider, status: "READY", weeks: freezeList(normalizedWeeks), rows: freezeList(rows), horizonDelta, meanWeeklyDelta, direction: direction(meanWeeklyDelta), reason: null });
+  return Object.freeze({ ...sourceFields, label, status: "READY", weeks: freezeList(normalizedWeeks), rows: freezeList(rows), horizonDelta, meanWeeklyDelta, direction: direction(meanWeeklyDelta), reason: null });
 }
 
 function maximumFillable(players, slots) {
@@ -242,11 +253,12 @@ function contingency(entries, assignments, players, config) {
   return Object.freeze({ status: "READY", maxUncoveredAfterLoss: items.length ? Math.max(...items.map((item) => item.uncoveredAfterLoss)) : 0, items: freezeList(items) });
 }
 
-function replacementContext(snapshot, teamId, players) {
+function replacementContext(snapshot, teamId, players, now) {
   const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
-  if (!Array.isArray(snapshot.availablePlayers)) return Object.freeze({ status: "UNKNOWN", candidates: freezeList([]), acquisitionCapacity: capacity, reason: "ESPN availability is missing from the latest snapshot; replacement quality is unknown, not weak or empty." });
+  const sourceFields = { source: "ESPN availability", capturedAt: snapshot.meta?.capturedAt || null, freshness: freshnessFor(snapshot.meta?.capturedAt, now) };
+  if (!Array.isArray(snapshot.availablePlayers)) return Object.freeze({ ...sourceFields, status: "UNKNOWN", candidates: freezeList([]), acquisitionCapacity: capacity, reason: "ESPN availability is missing from the latest snapshot; replacement quality is unknown, not weak or empty." });
   const candidates = snapshot.availablePlayers.map((id) => players.get(id)).filter(Boolean).sort((a, b) => (b.projection ?? -Infinity) - (a.projection ?? -Infinity));
-  return Object.freeze({ status: "READY", candidates: freezeList(candidates.slice(0, 12).map((player) => Object.freeze({ playerId: player.id, name: player.name, position: player.position, projection: Number.isFinite(player.projection) ? player.projection : null }))), acquisitionCapacity: capacity, reason: candidates.length ? null : "ESPN explicitly reported no available players in the captured pool." });
+  return Object.freeze({ ...sourceFields, status: "READY", candidates: freezeList(candidates.slice(0, 12).map((player) => Object.freeze({ playerId: player.id, name: player.name, position: player.position, projection: Number.isFinite(player.projection) ? player.projection : null }))), acquisitionCapacity: capacity, reason: candidates.length ? null : "ESPN explicitly reported no available players in the captured pool." });
 }
 
 function byeEffects(snapshot, teamId, preEntries, postEntries, affectedIds) {
@@ -328,26 +340,27 @@ function chooseConclusion({ currentDirection, longDirection, sourceDisagreement,
   return "INSUFFICIENT_EVIDENCE";
 }
 
-function resultBase(snapshot, objective, outgoing, incoming, drops) {
+function resultBase(snapshot, objective, outgoing, incoming, drops, now) {
   const playerMap = new Map((snapshot.players || []).map((player) => [player.id, player]));
   const describe = (ids) => freezeList(ids.map((id) => Object.freeze({ id, name: playerMap.get(id)?.name || "Unknown player", position: playerMap.get(id)?.position || null })));
   return {
     proposal: Object.freeze({ outgoing: describe(outgoing), incoming: describe(incoming), plannedFollowUpDrops: describe(drops), teamObjective: objective }),
-    snapshot: Object.freeze({ provider: snapshot.provider || "espn", capturedAt: snapshot.meta?.capturedAt || null, kind: snapshot.meta?.kind || null, currentWeek: snapshot.currentWeek ?? null }),
+    snapshot: Object.freeze({ provider: snapshot.provider || "espn", projectionsSource: snapshot.meta?.projectionsSource || null, capturedAt: snapshot.meta?.capturedAt || null, freshness: freshnessFor(snapshot.meta?.capturedAt, now), kind: snapshot.meta?.kind || null, currentWeek: snapshot.currentWeek ?? null }),
     readOnly: true,
     transactionActions: freezeList([])
   };
 }
 
 export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
+  const now = options.now ?? Date.now();
   const checked = validateProposal(snapshot, teamId, proposal);
   const fallbackObjective = OBJECTIVES.has(proposal?.teamObjective) ? proposal.teamObjective : "BALANCED";
-  if (checked.error) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot || { players: [] }, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || []), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList([checked.error]), limitations: freezeList([checked.error]) });
+  if (checked.error) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot || { players: [] }, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || [], now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList([checked.error]), limitations: freezeList([checked.error]) });
   const { roster, players, outgoing, incoming, drops, objective } = checked;
   const directEntries = buildDirectEntries(snapshot, roster, outgoing, incoming);
   const directRules = rosterRuleState(snapshot, directEntries, players);
-  if (!directRules.violations.length && drops.length) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
-  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
+  if (!directRules.violations.length && drops.length) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
+  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
   const resolvedEntries = directRules.violations.length && drops.length ? directEntries.filter((entry) => !drops.includes(entry.playerId)) : directEntries;
   const resolvedRules = rosterRuleState(snapshot, resolvedEntries, players);
   const rosterConsequences = Object.freeze({
@@ -355,31 +368,33 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
     direct: directRules,
     resolved: resolvedRules,
     openRosterSpots: resolvedRules.rosterSpaceDelta != null ? Math.max(0, resolvedRules.rosterSpaceDelta) : null,
-    requiredFollowUpRemovals: directRules.violations.length ? Math.max(...directRules.violations.map((item) => item.excess || 1)) : 0,
+    requiredFollowUpRemovals: minimumFollowUpRemovals(directRules.violations),
     incomingPlacedOnIr: false
   });
   if (directRules.violations.length && (!drops.length || resolvedRules.violations.length)) {
     const reasons = directRules.violations.map((item) => item.kind === "ROSTER_SIZE" ? `Known ESPN roster size requires at least ${item.excess} explicit follow-up removal${item.excess === 1 ? "" : "s"}.` : `Known ESPN ${item.position} limit ${item.limit} is exceeded by ${item.excess}.`);
+    if (rosterConsequences.requiredFollowUpRemovals > 1) reasons.unshift(`At least ${rosterConsequences.requiredFollowUpRemovals} explicit follow-up removals are required to resolve the known combined roster constraints.`);
     if (drops.length && resolvedRules.violations.length) reasons.push("The selected follow-up drop set does not yet resolve every known roster constraint.");
-    return Object.freeze({ analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, objective, outgoing, incoming, drops), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
+    return Object.freeze({ analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
   }
 
-  const now = options.now ?? Date.now();
   const config = lineupConfiguration(snapshot, roster);
-  const espnCurrent = evaluateLineupSource(snapshot, roster.entries, resolvedEntries, config, "ESPN", mapForEspn(snapshot), now, incoming, outgoing);
+  const espnSourceContext = { name: snapshot.meta?.projectionsSource || "ESPN", capturedAt: snapshot.meta?.capturedAt || null, freshness: freshnessFor(snapshot.meta?.capturedAt, now) };
+  const espnCurrent = evaluateLineupSource(snapshot, roster.entries, resolvedEntries, config, espnSourceContext, mapForEspn(snapshot), now, incoming, outgoing);
   const currentSources = [espnCurrent];
   const futureSet = options.futureProjectionSet || null;
   const identityMap = options.identityMap instanceof Map ? options.identityMap : null;
   if (futureSet) {
     const compatibility = evaluateFutureProjectionCompatibility(futureSet, snapshot);
+    const externalContext = { name: futureSet.provider, capturedAt: futureSet.capturedAt || null, freshness: freshnessFor(futureSet.capturedAt, now) };
     if (compatibility.usable) {
       const ids = unionActiveIds(roster.entries, resolvedEntries);
       const mapped = mappedExternalPoints(futureSet, identityMap, ids, snapshot.currentWeek);
       currentSources.push(mapped.missing.length
-        ? Object.freeze({ source: futureSet.provider, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(mapped.missing.map((item) => item.playerId)), reason: "External current-week union-roster coverage is incomplete.", assignments: null })
-        : evaluateLineupSource(snapshot, roster.entries, resolvedEntries, config, futureSet.provider, mapped.points, now, incoming, outgoing));
+        ? Object.freeze({ source: externalContext.name, capturedAt: externalContext.capturedAt, freshness: externalContext.freshness, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(mapped.missing.map((item) => item.playerId)), reason: "External current-week union-roster coverage is incomplete.", assignments: null })
+        : evaluateLineupSource(snapshot, roster.entries, resolvedEntries, config, externalContext, mapped.points, now, incoming, outgoing));
     } else {
-      currentSources.push(Object.freeze({ source: futureSet.provider || "External projections", status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList([]), reason: compatibility.errors.join(" "), assignments: null }));
+      currentSources.push(Object.freeze({ source: externalContext.name || "External projections", capturedAt: externalContext.capturedAt, freshness: externalContext.freshness, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList([]), reason: compatibility.errors.join(" "), assignments: null }));
     }
   }
   const currentResolution = resolveDirection(currentSources);
@@ -396,11 +411,11 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const importedWeeks = futureSet ? unique(futureSet.projections.map((item) => item.week)).sort((a, b) => a - b) : [];
   const futureWeeks = Array.isArray(options.futureWeeks) ? options.futureWeeks : importedWeeks.filter((week) => week > snapshot.currentWeek && !(snapshot.league?.playoffWeeks || []).includes(week));
   const playoffWeeks = Array.isArray(options.playoffWeeks) ? options.playoffWeeks : (Array.isArray(snapshot.league?.playoffWeeks) ? snapshot.league.playoffWeeks : []);
-  const future = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, futureWeeks, futureWeeks.length ? `Weeks ${unique(futureWeeks).sort((a, b) => a - b).join(", ")}` : "Selected future weeks");
-  const playoffs = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, playoffWeeks, playoffWeeks.length ? `Playoff weeks ${unique(playoffWeeks).sort((a, b) => a - b).join(", ")}` : "Playoff window");
+  const future = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, futureWeeks, futureWeeks.length ? `Weeks ${unique(futureWeeks).sort((a, b) => a - b).join(", ")}` : "Selected future weeks", now);
+  const playoffs = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, playoffWeeks, playoffWeeks.length ? `Playoff weeks ${unique(playoffWeeks).sort((a, b) => a - b).join(", ")}` : "Playoff window", now);
 
   const bye = byeEffects(snapshot, teamId, roster.entries, resolvedEntries, unique([...outgoing, ...incoming, ...drops]));
-  const replacement = replacementContext(snapshot, teamId, players);
+  const replacement = replacementContext(snapshot, teamId, players, now);
   const primaryCurrentSource = espnCurrent.status === "READY" ? espnCurrent : currentSources.find((item) => item.status === "READY");
   const preContingency = contingency(roster.entries, primaryCurrentSource?.preAssignments || null, players, config);
   const postContingency = contingency(resolvedEntries, primaryCurrentSource?.postAssignments || null, players, config);
@@ -444,7 +459,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
 
   return Object.freeze({
     analysisState,
-    ...resultBase(snapshot, objective, outgoing, incoming, drops),
+    ...resultBase(snapshot, objective, outgoing, incoming, drops, now),
     roster: rosterConsequences,
     directPostTradeEntries: freezeList(directEntries),
     resolvedPostTradeEntries: freezeList(resolvedEntries),
