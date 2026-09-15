@@ -8,15 +8,35 @@ export function getLineupLockReason(entry, player, now = Date.now()) {
   return null;
 }
 
-function optimizeEntries(playerIndex, entries, now) {
+function configuredSlots(entries, lineupSlots = null) {
   const starterEntries = (entries || []).filter((entry) => isStarter(entry.lineupSlot));
-  if (!starterEntries.length) return { status: "invalid", reason: "No supported starting slots were found." };
+  if (!Array.isArray(lineupSlots) || !lineupSlots.length) {
+    return starterEntries.map((entry, index) => ({ id: `${entry.lineupSlot}:${index}`, slot: entry.lineupSlot, currentPlayerId: entry.playerId }));
+  }
+  const currentBySlot = new Map();
+  for (const entry of starterEntries) {
+    if (!currentBySlot.has(entry.lineupSlot)) currentBySlot.set(entry.lineupSlot, []);
+    currentBySlot.get(entry.lineupSlot).push(entry.playerId);
+  }
+  const slots = [];
+  for (const item of lineupSlots) {
+    if (!isStarter(item?.slot) || !Number.isInteger(item.count) || item.count <= 0) continue;
+    for (let index = 0; index < item.count; index += 1) {
+      slots.push({
+        id: `${item.slot}:${index}`,
+        slot: item.slot,
+        currentPlayerId: currentBySlot.get(item.slot)?.shift() || null
+      });
+    }
+  }
+  return slots;
+}
 
-  const slots = starterEntries.map((entry, index) => ({
-    id: `${entry.lineupSlot}:${index}`,
-    slot: entry.lineupSlot,
-    currentPlayerId: entry.playerId
-  }));
+function optimizeEntries(playerIndex, entries, now, lineupSlots = null) {
+  const starterEntries = (entries || []).filter((entry) => isStarter(entry.lineupSlot));
+  const slots = configuredSlots(entries, lineupSlots);
+  if (!slots.length) return { status: "invalid", reason: "No supported starting slots were found." };
+
   const rosterPlayers = (entries || [])
     .filter((entry) => entry.lineupSlot !== "IR")
     .map((entry) => ({ entry, player: playerIndex.get(entry.playerId) }))
@@ -49,10 +69,6 @@ function optimizeEntries(playerIndex, entries, now) {
     return indexes;
   });
 
-  // Preserve the original slot and roster iteration order so equal-scoring
-  // lineups keep the same deterministic tie behavior as the prior DFS. The
-  // memoized bitmask search removes repeated candidate filtering and avoids
-  // re-solving the same suffix assignment many times.
   const memo = Array.from({ length: slots.length }, () => new Map());
   function solve(slotIndex, usedMask) {
     if (slotIndex === slots.length) return Object.freeze({ total: 0, choice: null });
@@ -141,8 +157,8 @@ export function createLineupOptimizer(players, now = Date.now()) {
     : new Map((players || []).map((player) => [player.id, player]));
   return Object.freeze({
     playerIndex,
-    optimize(entries) {
-      return optimizeEntries(playerIndex, entries, now);
+    optimize(entries, lineupSlots = null) {
+      return optimizeEntries(playerIndex, entries, now, lineupSlots);
     }
   });
 }
