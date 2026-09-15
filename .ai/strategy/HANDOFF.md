@@ -4,7 +4,7 @@ HANDOFF
 
 Task ID: TCW-022  
 Role: In-Season Strategy & Decision Intelligence Analyst  
-Status: STRATEGY CONTRACT COMPLETE / PR VALIDATION PENDING
+Status: MANAGER_REVIEW_READY
 
 ## Verified starting state
 
@@ -84,6 +84,15 @@ Blocking R&D dependency: **NONE** for the approved v1 Strategy contract.
 
 Non-blocking future questions are recorded in the policy artifact for ESPN trade-processing rules, trade-market/acceptance modeling, calibrated playoff probability, and new injury/news sources. They are explicitly out of v1 scope.
 
+## Validation evidence
+
+- Strategy PR: `#106 — TCW-022 Trade Analyzer v1 Strategy Contract`
+- First complete Strategy-content head: `3d8199e20c6a02aede900d93b562bb3f6cf9968f`
+- Exact-head PR workflow: run `34913133214` / workflow run #538 — **PASS** at that head.
+- Passed gates included `npm audit --audit-level=high`, `npm test`, `npm run eval:model`, `npm run smoke`, `npm run smoke:browser`, accessibility, readiness, mobile, extension, performance, and security audits.
+- Deploy and production-verification jobs were skipped by workflow scope classification because the PR changes Strategy/control-plane documentation only.
+- This final handoff-status commit must itself receive an exact-head PR CI PASS before Strategy's final response treats the branch as validated.
+
 ## Files updated
 
 - `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
@@ -102,14 +111,15 @@ None for Strategy contract completion.
 
 ## Recommended next role
 
-Manager / Architect after the Strategy PR has passed exact-head CI.
+Manager / Architect.
 
 ## Exact next action
 
-Open the Strategy PR against `master`, verify CI on the exact PR head, then stop for Manager review. Strategy must not merge its own PR.
+Manager reviews PR #106 and the Strategy contract, resolves/accepts the policy, and if accepted routes a separate Builder implementation task. Strategy must not merge its own PR.
 
 ## Checkpoint / SHA
 
 - Canonical starting master: `3a4df7cf812ecdf409f6c59149aa79db169daadb`
 - Policy artifact commit: `b03e77fcecd0f37913c85a3f89366f307f0501bb`
-- Final Strategy PR head: verify from PR metadata after this handoff commit.
+- Strategy content/handoff validation checkpoint before final status commit: `3d8199e20c6a02aede900d93b562bb3f6cf9968f`
+- Final Strategy PR head: verify from PR metadata after this handoff-status commit; exact-head CI is required before closeout.
