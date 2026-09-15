@@ -8,7 +8,7 @@ import { createSectionRenderer as createPrioritySectionRenderer } from "./sectio
 import { decorateOverviewReserve } from "./overview-reserve.js";
 import { renderWaiverPositionBoard } from "./waiver-position-board.js";
 
-const SYNC_SECTIONS = new Set(["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]);
+const SYNC_SECTIONS = new Set(["overview", "lineup", "trade", "waivers", "alerts", "changes", "season", "league"]);
 
 export function createSectionRenderer(deps) {
 const base = createPrioritySectionRenderer(deps);
