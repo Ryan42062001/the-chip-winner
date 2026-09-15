@@ -1,32 +1,36 @@
 # Active Assignments
 
-Last updated: 2026-09-14
+Last updated: 2026-09-15
 Fast-path registry: `.ai/shared/ACTIVE_TASKS.json`
 Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Active assignment
 
-### TCW-024 — Trade Analyzer v1 Independent Audit
+### TCW-025 — Trade Analyzer Audit Remediation
 
-- Owner: Independent Auditor / QA
+- Owner: Implementation Engineer / Builder
 - Status: ASSIGNED
-- Branch: `auditor/tcw-024-trade-analyzer-v1-audit`
-- Exact deployed audit target: `e112156deedf453fb3e0081412c07e2e15c0256d`
+- Branch: `builder/tcw-025-trade-analyzer-audit-remediation`
+- Assignment master: `1407da4043fbdf9ced1ef19b81dbc564d798ada6`
 - Execution mode: `STANDARD_CHAT`
 - Merge authority: Manager / Architect
-- Task spec: `.ai/manager/tasks/TCW-024.md`
-- Deliverable: independent audit evidence in `.ai/auditor/HANDOFF.md`
-- Next gate: Auditor exact-head green evidence PR -> Manager verdict review.
+- Task spec: `.ai/manager/tasks/TCW-025.md`
+- Deliverable: bounded remediation of accepted TCW-024-F01 through F04 plus exact-head green Builder PR and updated `.ai/builder/HANDOFF.md`
+- Next gate: Builder exact-head green production PR -> Manager review/integration -> deployed independent Auditor retest.
 
 Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.
 
-## Recently integrated
+## Accepted audit state
 
-TCW-023 — Trade Analyzer v1 Production Implementation — CLOSED.
+TCW-024 Independent Audit returned **FAIL** and is integrated as evidence.
 
-- Builder PR #109 exact head `5c492f22ce7ab107771d946ee318c2ac5665ce16` passed workflow #556.
-- Merged production master `e112156deedf453fb3e0081412c07e2e15c0256d`.
-- Master workflow #557 passed tests, GitHub Pages deployment, and production smoke.
+Accepted findings:
+- F01 HIGH — replacement-path eligibility/full-pool defect;
+- F02 HIGH — current explicit locks leak into future/playoff optimization;
+- F03 MEDIUM — unverified contingency incorrectly asserted as THIN;
+- F04 LOW — Trade Analyzer omitted from dedicated accessibility/mobile route loops.
+
+Auditor PR #111 exact head `d6c506b2cd504e12133a335979c2b399da7f0f2b` passed workflow #561 and merged as control-plane master `1407da4043fbdf9ced1ef19b81dbc564d798ada6`. Master workflow #562 passed the full test gate; deploy/production were correctly skipped as `.ai/**` only.
 
 ## Field state
 
@@ -35,21 +39,21 @@ Release 1.0 field gate remains **10 passed / 1 pending**.
 Pending:
 - FV-SEASON-01 — real playoff/bye intelligence states.
 
-This field item remains event-gated and independent from TCW-024. Do not manufacture qualifying field evidence.
+This field item remains event-gated and independent from TCW-025. Do not manufacture qualifying field evidence.
 
 ## Role state
 
 ### Manager / Architect
-ACTIVE — owns TCW-024 verdict review and integration.
-
-### Independent Auditor / QA
-ASSIGNED — TCW-024.
+ACTIVE — owns TCW-025 integration and later retest routing.
 
 ### Implementation Engineer / Builder
-IDLE — wait for an accepted audit finding/remediation task.
+ASSIGNED — TCW-025.
+
+### Independent Auditor / QA
+IDLE — waits for deployed TCW-025 remediation target.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE — accepted Trade Analyzer policy is frozen for v1.
+IDLE — accepted Trade Analyzer policy remains frozen.
 
 ### R&D
 IDLE — no blocking source/feasibility question.
