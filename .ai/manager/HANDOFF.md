@@ -2,56 +2,55 @@
 
 HANDOFF
 
-Task ID: NONE
+Task ID: TCW-022
 Role: Manager / Architect
-Status: IDLE — RELEASE 1.0 FIELD VALIDATION EVENT-GATED
+Status: ACTIVE — TRADE ANALYZER STRATEGY CONTRACT
 
-## Current Release 1.0 field gate
+## Product-owner authorization
 
-Authoritative registry status:
-- **10 passed / 1 pending**.
-- Sole pending item: `FV-SEASON-01 — Real playoff and bye intelligence states`.
+On 2026-09-14 the product owner explicitly chose to proceed with the **Trade Analyzer** as the next product feature.
 
-Removed from Release 1.0 scope rather than falsely marked passed:
-- `FV-A11Y-02` — manual screen-reader certification, under TCW-D012;
-- `FV-ESPN-02` — custom FLEX/OP/Superflex field certification, under TCW-D013.
+This supersedes the prior proposed discovery order that placed GM Action Plan first. The Trade Analyzer is now the authorized next feature lane.
 
-## TCW-021 completed scope decision
+## TCW-022 routing
 
-The product owner explicitly stated that Superflex field validation is not important for this release.
+Manager has opened `TCW-022 — Trade Analyzer v1 Strategy Contract` and routed the first bounded task to the In-Season Strategy & Decision Intelligence Analyst.
 
-TCW-021 therefore removed the dedicated custom FLEX/OP/Superflex field-certification item from `config/field-validation.json` while preserving:
-- ordinary FLEX support and previously observed standard-league FLEX evidence;
-- lineup-slot normalization;
-- eligibility enforcement;
-- fail-closed behavior;
-- automated regression coverage.
+Assignment:
+- owner: Strategy;
+- expected branch: `strategy/tcw-022-trade-analyzer-policy`;
+- assignment master: `3eedb76e4bfd33802c23972720f79a4135e2adf5`;
+- execution mode: `STANDARD_CHAT`;
+- task spec: `.ai/manager/tasks/TCW-022.md`;
+- required artifact: `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`;
+- merge authority: Manager / Architect.
 
-No unobserved custom OP/Superflex behavior is claimed as field-validated.
+Strategy must define a testable v1 contract covering pre/post legal lineup impact, depth and ESPN replacement context, unequal-count package effects, supported time horizons, bye/playoff effects when data exists, source disagreement, uncertainty, known roster constraints, team-objective framing, and an inspectable conclusion taxonomy.
 
-Verified TCW-021 integration:
-- PR #102 exact head `11a0679bd0513a7ed5b555a1c7ff3dcb3e27176d`;
-- exact-head workflow #530 PASS;
-- merged master `fd845bfbc1c28a746ef7cb455c6abe80e6ac945e`;
-- master workflow #531 full test PASS;
-- GitHub Pages deploy PASS;
-- production smoke PASS.
+The analyzer must not use a single opaque trade score as its primary verdict and remains completely read-only.
 
-Durable decision: `TCW-D013` in `.ai/shared/DECISIONS.md`.
-Integration evidence: `.ai/manager/evidence/TCW-021_CUSTOM_FLEX_SCOPE_INTEGRATION.md`.
+Builder is intentionally not assigned yet. Implementation waits for Manager acceptance of the Strategy contract.
+
+## Release 1.0 field gate remains separate
+
+Authoritative registry status remains:
+- **10 passed / 1 pending**;
+- sole pending item: `FV-SEASON-01 — Real playoff and bye intelligence states`.
+
+That field item is naturally event-gated. TCW-022 may proceed independently while the required real season state is unavailable. Do not fabricate or prematurely pass `FV-SEASON-01`.
 
 ## Current routing
 
-No active Manager-approved task exists.
+ACTIVE:
+- Strategy — TCW-022 policy/decision contract.
+- Manager / Architect — acceptance and next-role routing.
 
 IDLE:
-- Manager / Architect — no active integration task;
-- Builder — no implementation task;
-- Independent Auditor — no audit task;
-- Strategy — no unresolved policy question;
-- R&D — no unresolved feasibility/external-fact question;
-- Troubleshooting — no active root-cause assignment.
+- Builder — waits for approved Strategy contract;
+- Independent Auditor — waits for implementation candidate;
+- R&D — only if Strategy identifies a genuine unresolved source/feasibility question;
+- Troubleshooting — no root-cause assignment.
 
-The sole remaining field gate requires a genuine season/playoff condition. Do not manufacture it merely to create work. When a real qualifying `FV-SEASON-01` state becomes observable, Manager should open the smallest evidence task required by the canonical workflow.
+## Next Manager gate
 
-Do not recreate a Superflex/custom OP field-validation task unless the product owner explicitly re-authorizes that scope.
+Review the Strategy PR and artifact. If the contract is coherent and implementable with approved inputs, accept it and open a separately bounded Builder implementation task. If Strategy identifies a genuine data/source gap, route only that exact question to R&D before implementation.

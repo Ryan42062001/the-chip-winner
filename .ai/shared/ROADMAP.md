@@ -1,24 +1,42 @@
 # The Chip Winner — Canonical Roadmap
 
 Last reconciled: 2026-09-14
-Current milestone: Release 1.0 field validation
+Current work: Release 1.0 event-gated field validation + authorized Trade Analyzer v1 strategy lane
 
-## Current milestone
+## Current milestone state
 
 ### M1 — Release 1.0 trustworthy read-only companion
 
-Status: ACTIVE — FIELD VALIDATION
+Status: ACTIVE — FIELD VALIDATION EVENT-GATED
 
-Remaining milestone work is evidence-backed real-world validation, narrow remediation of any newly reproduced field defects, explicit product-owner release-scope decisions, and final release gating. Broad feature expansion remains out of scope.
-
-## Release 1.0 blockers
-
-Authoritative live status is `config/field-validation.json`.
+Authoritative live field status is `config/field-validation.json`.
 
 Sole remaining blocker:
 1. FV-SEASON-01 — real playoff/bye intelligence states.
 
 Registry field gate is **10 passed / 1 pending**.
+
+The remaining field check requires a genuine season condition and must not be manufactured merely to create work.
+
+### Next feature lane — Trade Analyzer v1
+
+Status: AUTHORIZED — STRATEGY CONTRACT IN PROGRESS
+
+On 2026-09-14 the product owner explicitly chose to proceed with the **Trade Analyzer** now, ahead of the previously proposed GM Action Plan sequencing.
+
+Manager opened `TCW-022 — Trade Analyzer v1 Strategy Contract` and routed the first bounded task to Strategy. This lane may proceed independently while `FV-SEASON-01` remains naturally event-gated. Release 1.0 is not falsely marked complete by starting this work.
+
+Approved product direction:
+- analyze proposed trades through roster consequences, not a single opaque trade-value score;
+- analyze the connected user's team;
+- support one-for-one and multi-player / unequal-count packages;
+- evaluate immediate lineup impact, depth/replaceability, roster-space consequences, supported future/bye/playoff horizons, projection-source disagreement, uncertainty, known roster constraints, and short-term versus long-term team objectives;
+- remain read-only with no ESPN trade write actions;
+- use approved existing inputs for v1 and route genuine unresolved source/feasibility questions to R&D rather than inventing certainty.
+
+Builder implementation is not yet authorized. Strategy must first produce the accepted decision contract under TCW-022.
+
+## Release 1.0 verified field history
 
 FV-RECOVERY-01 is passed after the TCW-005 -> TCW-009 -> TCW-011 recovery validation/remediation chain.
 
@@ -90,19 +108,16 @@ Completed:
 - TCW-020 START/SIT lock-awareness remediation.
 - TCW-021 custom FLEX/OP/Superflex Release 1.0 field-gate removal while retaining ordinary FLEX support and regression safeguards.
 
-Active:
-- None.
-
-Operational task inventory is owned by `.ai/shared/ACTIVE_TASKS.json`; durable roadmap text must not override that registry.
+Active operational inventory is authoritative in `.ai/shared/ACTIVE_TASKS.json`.
 
 ## Immediate dependency order
 
-1. Complete the sole remaining `FV-SEASON-01` field check only when its genuine real-world prerequisites exist.
-2. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic field defect.
-3. Complete final Release 1.0 PR/master gates after all scoped field checks pass.
-4. Perform formal Roadmap Discovery before authorizing a successor milestone.
-
-No task should be invented merely to keep a role busy while the remaining field condition is unavailable.
+1. Strategy completes TCW-022 Trade Analyzer v1 decision contract.
+2. Manager accepts or returns that contract; route only genuine unresolved data/source questions to R&D.
+3. After accepted policy, Manager may open a separately bounded Builder implementation task.
+4. Independent Auditor verifies the implementation candidate before final Manager integration.
+5. Complete `FV-SEASON-01` when its genuine real-world prerequisites exist; it remains independent and event-gated.
+6. Use the Workflow V3.1 defect fast lane for any newly reproduced deterministic defect.
 
 ## Release 1.0 exit gate
 
@@ -114,23 +129,18 @@ Release 1.0 may close only when:
 - post-merge `master` test/deploy/production verification is green;
 - product remains read-only.
 
-## Post-1.0 Roadmap Discovery
+Starting Trade Analyzer work does not waive or alter this exit gate.
 
-No successor milestone is automatically authorized. A valid conclusion remains:
+## Product roadmap after explicit Trade Analyzer authorization
 
-`NO SUCCESSOR MILESTONE CURRENTLY JUSTIFIED.`
+The earlier TCW-008 sequence was discovery input, not a binding order. The product owner has now explicitly selected Trade Analyzer ahead of GM Action Plan.
 
-The following sequence is **Roadmap Discovery input**, not an authorized implementation schedule. Revalidate it against real Release 1.0 usage, field evidence, source feasibility, and user value before opening a successor milestone.
+Current order:
+1. **Trade Analyzer v1 — AUTHORIZED** — strategy contract first, then bounded implementation/audit if accepted.
+2. **GM Action Plan / recommendation synthesis — DISCOVERY CANDIDATE**.
+3. **Recommendation confidence + league-market intelligence — DISCOVERY CANDIDATE**.
+4. **Decision-impacting injury/news intelligence and notifications — DISCOVERY CANDIDATE**, only after trustworthy-source feasibility.
+5. **Playoff probability / championship-path modeling — DISCOVERY CANDIDATE**, only after calibrated-model prerequisites.
+6. **ESPN write actions — LATER GATED**, requiring a separately authorized milestone and explicit confirmation safeguards.
 
-### Proposed candidate order
-
-1. **GM Action Plan / recommendation synthesis** — one prioritized weekly action surface using existing approved facts/recommendations.
-2. **Trade Analyzer** — lineup/depth/replacement/bye/playoff impacts without an opaque single winner grade.
-3. **Recommendation confidence + league-market intelligence** — inspectable source agreement/freshness/coverage and approved connected-league market context.
-4. **Decision-impacting injury/news intelligence and notifications** — only after a trustworthy source is approved; surface news when it changes a decision.
-5. **Playoff probability / championship-path modeling** — separate calibrated qualification/championship/opponent-win modeling with documented assumptions and uncertainty.
-6. **ESPN write actions remain later gated** — no lineup/add-drop/waiver/trade mutations without a separately authorized milestone; no background automatic transactions.
-
-Detailed discovery notes: `docs/post-1.0-roadmap-candidates.md`.
-
-Other gated candidate areas remain future-only IR-assisted stash discovery, server-side models, additional projection/news sources, and optional confirmed ESPN actions.
+Detailed design input remains in `docs/post-1.0-roadmap-candidates.md`; where that older discovery document conflicts with this explicit authorization, this canonical roadmap and ACTIVE_TASKS control current routing.

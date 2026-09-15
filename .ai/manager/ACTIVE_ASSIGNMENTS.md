@@ -6,56 +6,49 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_1.md`
 
 ## Active assignment
 
-None.
+### TCW-022 — Trade Analyzer v1 Strategy Contract
 
-Operational authority remains `.ai/shared/ACTIVE_TASKS.json`, which contains no active tasks after verified TCW-021 closeout.
+- Owner: In-Season Strategy & Decision Intelligence Analyst
+- Status: ASSIGNED
+- Branch: `strategy/tcw-022-trade-analyzer-policy`
+- Assignment master: `3eedb76e4bfd33802c23972720f79a4135e2adf5`
+- Execution mode: `STANDARD_CHAT`
+- Merge authority: Manager / Architect
+- Task spec: `.ai/manager/tasks/TCW-022.md`
+- Deliverable: `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
+- Next gate: Strategy PR -> Manager review -> Builder routing only after policy acceptance.
+
+Operational authority remains `.ai/shared/ACTIVE_TASKS.json`.
 
 ## Field state
 
-Release 1.0 field gate: **10 passed / 1 pending**.
-
-Passed:
-- FV-A11Y-01
-- FV-A11Y-03
-- FV-MOBILE-01
-- FV-ESPN-01
-- FV-ESPN-03
-- FV-ESPN-04
-- FV-ESPN-05
-- FV-RECOVERY-01
-- FV-SYNC-01
-- FV-WAIVER-01
+Release 1.0 field gate remains **10 passed / 1 pending**.
 
 Pending:
 - FV-SEASON-01 — real playoff/bye intelligence states
+
+The season field check is event-gated and independent from TCW-022. Do not manufacture playoff/bye evidence merely to unblock feature work.
 
 Removed from Release 1.0 scope by explicit product-owner direction:
 - FV-A11Y-02 — manual screen-reader certification, under TCW-D012;
 - FV-ESPN-02 — custom FLEX/OP/Superflex field certification, under TCW-D013.
 
-TCW-021 verified integration:
-- PR #102 exact-head workflow #530: PASS;
-- merged master `fd845bfbc1c28a746ef7cb455c6abe80e6ac945e`;
-- master workflow #531: full test PASS, GitHub Pages deploy PASS, production smoke PASS.
-
 ## Role state
 
 ### Manager / Architect
-IDLE — no active task. Await genuine Release 1.0 season/playoff evidence or explicit new product-owner authorization.
+ACTIVE — owns TCW-022 acceptance/routing and eventual integration.
 
 ### Implementation Engineer / Builder
-IDLE — no active implementation task.
+IDLE — wait for Manager-approved Trade Analyzer strategy contract.
 
 ### In-Season Strategy & Decision Intelligence Analyst
-IDLE — no unresolved strategy policy question.
+ASSIGNED — TCW-022 Trade Analyzer v1 strategy contract.
 
 ### R&D
-IDLE — no unresolved external-fact or feasibility question.
+IDLE — only route if Strategy identifies a genuine unresolved data/source/feasibility question.
 
 ### Independent Auditor / QA
-IDLE — no active audit task.
+IDLE — audit follows implementation, not policy drafting.
 
 ### Troubleshooting & Root Cause Engineer
 IDLE / not instantiated.
-
-The sole remaining Release 1.0 field gate requires a genuine season/playoff condition. Do not manufacture it merely to create work. Custom OP/Superflex field certification must not be recreated unless the product owner later re-authorizes it.
