@@ -4,122 +4,85 @@ HANDOFF
 
 Task ID: TCW-022  
 Role: In-Season Strategy & Decision Intelligence Analyst  
-Status: MANAGER_REVIEW_READY
+Status: REWORK COMPLETE / EXACT-HEAD CI PENDING
 
 ## Verified starting state
 
 - Repository: `Ryan42062001/the-chip-winner`
 - Canonical branch: `master`
-- Fast Refresh canonical master: `3a4df7cf812ecdf409f6c59149aa79db169daadb`
-- Assigned branch: `strategy/tcw-022-trade-analyzer-policy`
-- Branch was verified at the exact canonical master before Strategy writes.
+- Fast Refresh master: `6cd89dd7bacf6331b55dff17f39cdc01f8e37afc`
+- Existing Strategy branch: `strategy/tcw-022-trade-analyzer-policy`
+- Existing Strategy PR: `#106 — TCW-022 Trade Analyzer v1 Strategy Contract`
 - Workflow: canonical V3.1 overlay active.
-- `ACTIVE_TASKS.json` is machine-authoritative and lists TCW-022 as `ASSIGNED`, owner `Strategy`, dependency `INDEPENDENT`, execution mode `STANDARD_CHAT`, merge authority `Manager`.
-- Strategy's prior handoff contained an older assignment checkpoint; current `master` plus `ACTIVE_TASKS.json` were used as the authoritative refreshed state.
+- `.ai/shared/ACTIVE_TASKS.json` is machine-authoritative and records TCW-022 as `REWORK_REQUIRED`, owner `Strategy`, dependency `INDEPENDENT`, execution mode `STANDARD_CHAT`, merge authority `Manager`.
+- Manager review comment on PR #106 was verified and contains exactly two bounded blockers: undefined future/multiweek materiality and conclusion precedence that could hide a supported cross-horizon cost.
+- `master` advanced one commit from the original Strategy base. Compare evidence shows that advance changes only `.ai/manager/tasks/TCW-022.md` and `.ai/shared/ACTIVE_TASKS.json`; target advancement is therefore `CONTROL_PLANE_ONLY` and non-overlapping with Strategy-owned artifacts.
 
 ## Work completed
 
-Created:
+Bounded rework was applied only to `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`.
 
-- `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
+### Finding 1 — deterministic future/multiweek materiality
 
-The contract defines Trade Analyzer v1 as a roster-consequence analyzer rather than a hidden package-value score. It specifies:
+Resolved with an inspectable per-week normalization rule:
 
-- deterministic proposal/identity validation;
-- direct versus resolved post-trade roster state;
-- explicit unequal-count roster-space handling;
-- no silent follow-up drop or free-agent add;
-- pre/post best legal lineup comparison by projection source;
-- current-week lock/actionability treatment;
-- starter-versus-bench consequence;
-- listed-position depth plus legal contingency coverage;
-- ESPN free-agent replacement context where supported;
-- narrow `COVERED` / `THIN` / `SCARCE_THIN` / `DANGEROUS` fragility semantics;
-- deterministic bye-gap comparison;
-- compatible complete future-window and playoff-window gates;
-- source disagreement without averaging;
-- inspectable evidence states instead of a numeric confidence score;
-- explicit team-objective framing that cannot change source facts;
-- primary conclusion taxonomy;
-- missing-data policy;
-- Builder-facing output/acceptance requirements;
-- synthetic acceptance scenarios covering every Manager-required case;
-- explicit non-blocking future R&D questions and v1 exclusions.
+- complete selected future window: `HorizonMeanWeeklyDelta = HorizonDelta / SelectedWeekCount`;
+- complete playoff window: `PlayoffMeanWeeklyDelta = PlayoffWindowDelta / PlayoffWeekCount`;
+- `UPGRADE` at mean `>= +1.0` projected point/week;
+- `DOWNGRADE` at mean `<= -1.0` projected point/week;
+- `TOSSUP` when absolute mean `< 1.0`;
+- `UNKNOWN` whenever required horizon coverage is incomplete.
 
-## Key Strategy decisions
+The raw aggregate remains visible. Direction uses the mean weekly delta so longer windows do not become material merely because they contain more weeks. This normalization occurs only within one named source and one homogeneous weekly horizon. Current week, future, playoff, and different projection sources are never averaged together.
 
-1. **Team consequence, not package arithmetic.** The immediate metric is the change in the user's optimized legal lineup, not summed player projections or rankings.
-2. **Unequal-count trades expose the second transaction.** A 2-for-1 reports the open roster spot and optional replacement separately; a 1-for-2 on a full roster returns `ROSTER_ACTION_REQUIRED` until an explicit follow-up drop resolves the final roster.
-3. **No fake legal lineup.** An over-capacity provisional roster may not be labeled the final legal post-trade roster.
-4. **Complete coverage before numeric trade conclusions.** Source-specific pre/post numeric deltas require complete active pre/post union-roster projection coverage. Future/playoff aggregates require every selected week complete.
-5. **Sources remain separate.** Material ESPN/external disagreement becomes `SOURCE_DISAGREEMENT`; values are never averaged into a winner score.
-6. **Depth is not one score.** Raw listed-position depth and legal contingency coverage are exposed separately.
-7. **Dangerous fragility is narrow.** Ordinary depth loss is not automatically fatal; `DANGEROUS` requires a supported-horizon lineup gap plus no verified replacement path (or a known constraint blocking it).
-8. **Objective framing is explicit.** `BALANCED`, `CURRENT_WEEK_STABILITY`, and `FUTURE_UPSIDE` may change narrative preference only, never the underlying facts or formulas.
+### Finding 2 — conclusion precedence
 
-## Evidence used
+Resolved by making horizon direction and precedence explicit:
 
-- `.ai/shared/WORKFLOW.md`
-- `.ai/shared/WORKFLOW_V3_1.md`
-- `.ai/shared/ACTIVE_TASKS.json`
-- `.ai/manager/tasks/TCW-022.md`
-- `.ai/roles/STRATEGY.md`
-- `docs/post-1.0-roadmap-candidates.md`
-- `src/domain/lineup-optimizer.js`
-- `src/domain/recommendations.js`
-- `src/domain/roster-planning.js`
-- `src/domain/waiver-engine.js`
-- `src/domain/scenario-planner.js`
-- `src/domain/season-intelligence.js`
-- `src/providers/espn/espn-normalizer.js`
-- `src/providers/projections/future-projection-provider.js`
-- `docs/season-playoff-intelligence.md`
-- `docs/projection-source-research.md`
-- `.ai/manager/evidence/TCW-020_START_SIT_LOCK_REMEDIATION_INTEGRATION.md`
-- `.ai/manager/evidence/TCW-021_CUSTOM_FLEX_SCOPE_INTEGRATION.md`
+- each horizon must be source-resolved before it can drive a generic direction conclusion;
+- supported future/playoff directions reduce to `UPGRADE`, `DOWNGRADE`, `TOSSUP`, `MIXED`, or `UNKNOWN` using directions only, never numeric cross-horizon weighting;
+- `DANGEROUS_POSITIONAL_FRAGILITY` remains the narrow structural top guard;
+- short-term/long-term material conflict labels are evaluated before generic upgrade/depth labels;
+- `CLEAR_TEAM_UPGRADE` cannot apply when current week is a material downgrade or any supported long-term state is `DOWNGRADE`/`MIXED`;
+- `STARTER_UPGRADE_DEPTH_COST` cannot apply when a supported long-term `DOWNGRADE`/`MIXED` exists;
+- incomplete future evidence is `UNKNOWN`, not a fabricated conflict.
 
-## R&D dependencies
+Scenario E now deterministically produces `LONG_TERM_GAIN_SHORT_TERM_COST`. New inverse Scenario K deterministically produces `SHORT_TERM_GAIN_LONG_TERM_COST`. Scenario L proves that raw multiweek aggregate magnitude alone cannot manufacture materiality.
 
-Blocking R&D dependency: **NONE** for the approved v1 Strategy contract.
+## Evidence produced
 
-Non-blocking future questions are recorded in the policy artifact for ESPN trade-processing rules, trade-market/acceptance modeling, calibrated playoff probability, and new injury/news sources. They are explicitly out of v1 scope.
-
-## Validation evidence
-
-- Strategy PR: `#106 — TCW-022 Trade Analyzer v1 Strategy Contract`
-- First complete Strategy-content head: `3d8199e20c6a02aede900d93b562bb3f6cf9968f`
-- Exact-head PR workflow: run `34913133214` / workflow run #538 — **PASS** at that head.
-- Passed gates included `npm audit --audit-level=high`, `npm test`, `npm run eval:model`, `npm run smoke`, `npm run smoke:browser`, accessibility, readiness, mobile, extension, performance, and security audits.
-- Deploy and production-verification jobs were skipped by workflow scope classification because the PR changes Strategy/control-plane documentation only.
-- This final handoff-status commit must itself receive an exact-head PR CI PASS before Strategy's final response treats the branch as validated.
+- Revised `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
+- Policy rework commit: `9dcb5b4ee111afceb8050aefffb2ff2f66dd7cb9`
+- Existing Manager review comment on PR #106 verified before rework.
+- Existing PR #106 retained; no replacement PR created.
 
 ## Files updated
 
 - `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
 - `.ai/strategy/HANDOFF.md`
 
-No production code, UI, Manager-owned task scope, or `.ai/shared/*` coordination file was modified.
+No production code, UI, data source, Manager-owned coordination file, or ESPN transaction behavior was changed.
 
 ## Open findings
 
-- Exact ESPN trade-processing legality (trade deadlines, veto/review behavior, locked-player transaction handling, undroppable rules) is intentionally not claimed by v1 and would require separate R&D before product assertions.
-- Release 1.0 `FV-SEASON-01` remains independent/event-gated and does not block TCW-022 Strategy design.
+- Blocking R&D dependency: **NONE** for this bounded rework.
+- Existing non-blocking future R&D questions remain unchanged: ESPN trade-processing legality, opponent acceptance/market modeling, calibrated playoff probability, and new injury/news sources.
 
 ## Blocking issues
 
-None for Strategy contract completion.
+- Exact-head CI has not yet completed for the reworked PR head. Strategy must not return `MANAGER_REVIEW_READY` until the full required PR CI passes at the exact current head.
 
 ## Recommended next role
 
-Manager / Architect.
+Strategy remains active only through exact-head CI validation. After a green exact-head run, Manager / Architect is next.
 
 ## Exact next action
 
-Manager reviews PR #106 and the Strategy contract, resolves/accepts the policy, and if accepted routes a separate Builder implementation task. Strategy must not merge its own PR.
+Verify PR #106 current head, run/observe the full required CI at that exact head, then update this handoff to `MANAGER_REVIEW_READY` with the verified run evidence. Strategy must not merge PR #106.
 
 ## Checkpoint / SHA
 
-- Canonical starting master: `3a4df7cf812ecdf409f6c59149aa79db169daadb`
-- Policy artifact commit: `b03e77fcecd0f37913c85a3f89366f307f0501bb`
-- Strategy content/handoff validation checkpoint before final status commit: `3d8199e20c6a02aede900d93b562bb3f6cf9968f`
-- Final Strategy PR head: verify from PR metadata after this handoff-status commit; exact-head CI is required before closeout.
+- Current canonical master: `6cd89dd7bacf6331b55dff17f39cdc01f8e37afc`
+- Original Manager-reviewed Strategy head: `a97ef2ddd74eda11494d9036180d3a89faf036bc`
+- Bounded policy rework commit: `9dcb5b4ee111afceb8050aefffb2ff2f66dd7cb9`
+- Current Strategy PR head: verify after this handoff commit.
