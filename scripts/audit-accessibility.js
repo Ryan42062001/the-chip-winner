@@ -61,7 +61,7 @@ async function auditSampleContext(browser, contextOptions, label) {
   await audit(page, `${label} player detail`);
   await page.getByRole("button", { name: "Close player details" }).click();
 
-  for (const section of ["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]) {
+  for (const section of ["overview", "lineup", "trade", "waivers", "alerts", "changes", "season", "league"]) {
     const menu = page.locator(".mobile-menu");
     if (await menu.isVisible() && await menu.getAttribute("aria-expanded") !== "true") await menu.click();
     await page.locator(`a[data-section="${section}"]`).click();
@@ -81,7 +81,7 @@ try {
   if (violations.length) {
     throw new Error(`WCAG audit violations:\n${violations.map((item) => `${item.section}: ${item.id} (${item.impact}, ${item.nodes} nodes) — ${item.help} [${item.targets}]`).join("\n")}`);
   }
-  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding, player detail, and all seven primary sections on desktop and 390x844 phone layouts.");
+  console.log("Automated WCAG 2.2 A/AA browser audit passed across onboarding, player detail, and all eight primary sections on desktop and 390x844 phone layouts.");
 } finally {
   await browser?.close();
   server.kill();
