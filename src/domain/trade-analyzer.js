@@ -205,9 +205,9 @@ function evaluateHorizon(snapshot, preEntries, postEntries, config, set, identit
   const ids = unionActiveIds(preEntries, postEntries);
   const rows = normalizedWeeks.map((week) => {
     const mapped = mappedExternalPoints(set, identityMap, ids, week);
-    if (mapped.missing.length) return Object.freeze({ week, status: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missing: freezeList(mapped.missing) });
+    if (mapped.missing.length) return Object.freeze({ week, status: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missing: freezeList(mapped.missing), assignments: null, preAssignments: null, postAssignments: null });
     const evaluated = evaluateLineupSource(snapshot, preEntries, postEntries, config, { name: set.provider, capturedAt: set.capturedAt, freshness: freshnessFor(set.capturedAt, now) }, mapped.points, FUTURE_EVALUATION_TIME, [], []);
-    return Object.freeze({ week, status: evaluated.status, preTotal: evaluated.preTotal, postTotal: evaluated.postTotal, delta: evaluated.delta, direction: evaluated.direction, missing: freezeList([]) });
+    return Object.freeze({ week, status: evaluated.status, preTotal: evaluated.preTotal, postTotal: evaluated.postTotal, delta: evaluated.delta, direction: evaluated.direction, missing: freezeList([]), assignments: evaluated.assignments, preAssignments: evaluated.preAssignments, postAssignments: evaluated.postAssignments });
   });
   const complete = rows.length === normalizedWeeks.length && rows.every((row) => row.status === "READY" && Number.isFinite(row.delta));
   if (!complete) return Object.freeze({ ...sourceFields, label, status: "UNKNOWN", weeks: freezeList(normalizedWeeks), rows: freezeList(rows), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: "At least one selected week lacks complete compatible pre/post union-roster coverage." });
