@@ -1,9 +1,10 @@
 # TCW-022 — Trade Analyzer v1 Strategy Contract
 
-Status: STRATEGY CONTRACT — MANAGER REVIEW CANDIDATE  
+Status: STRATEGY CONTRACT — BOUNDED MANAGER REWORK CANDIDATE  
 Role: In-Season Strategy & Decision Intelligence Analyst  
 Task: `TCW-022`  
 Canonical starting master: `3a4df7cf812ecdf409f6c59149aa79db169daadb`  
+Bounded rework refresh master: `6cd89dd7bacf6331b55dff17f39cdc01f8e37afc`  
 Branch: `strategy/tcw-022-trade-analyzer-policy`
 
 ## 1. Product question
@@ -48,7 +49,7 @@ A trade should be evaluated by the roster's **marginal consequence**, not by sum
 
 ### HEURISTIC
 
-The existing project's 1.0-point current-week lineup action threshold is reused only to distinguish a **material projected lineup change** from a projection-level tossup. It is not a probability or universal value threshold.
+The existing project's 1.0-point current-week lineup action threshold is reused to distinguish a **material projected lineup change** from a projection-level tossup. For a complete multiweek window, the same 1.0-point threshold is applied to that window's **mean weekly lineup delta**, not to its raw aggregate. This keeps the unit comparable to a weekly lineup decision and prevents a longer window from becoming "material" merely because it contains more weeks. It is not a probability or universal player/trade-value threshold.
 
 The existing 0.5-point waiver action threshold may be used only as an inspectable flag that an internal depth option is materially better than a currently available replacement in the same decision context. It must never be converted into a hidden trade score.
 
@@ -309,13 +310,27 @@ Only if **every selected week** has complete pre/post union-roster coverage may 
 
 `HorizonDelta[s] = sum(WeeklyDelta[s,w])`
 
+`HorizonMeanWeeklyDelta[s] = HorizonDelta[s] / SelectedWeekCount`
+
+`HorizonDirection[s]` is then deterministic:
+
+- `UPGRADE` when `HorizonMeanWeeklyDelta[s] >= +1.0` projected point per evaluated week;
+- `DOWNGRADE` when `HorizonMeanWeeklyDelta[s] <= -1.0` projected point per evaluated week;
+- `TOSSUP` when `abs(HorizonMeanWeeklyDelta[s]) < 1.0`;
+- `UNKNOWN` when the selected window does not have complete compatible pre/post union-roster coverage.
+
+The raw `HorizonDelta` remains visible as the total projected-point consequence across that named window. **Direction/materiality uses the mean weekly delta**, not the aggregate, because the aggregate scales automatically with the number of weeks. A four-week `+4.0` and an eight-week `+4.0` therefore do not receive the same strategic materiality merely because their raw totals match.
+
+This normalization is within one source and one homogeneous weekly projection horizon. It must not be used to average current-week and future horizons together, average playoff and rest-of-season windows together, or average projection sources together.
+
 If any selected week is incomplete:
 
 - preserve complete week rows if useful;
-- set aggregate horizon delta to unavailable;
+- set aggregate horizon delta, mean weekly delta, and direction to unavailable/`UNKNOWN`;
 - do not sum partial weeks;
 - do not substitute missing values with zero;
-- do not call the partial window "rest of season."
+- do not call the partial window "rest of season";
+- do not treat incomplete future evidence as a known upgrade, downgrade, or cross-horizon conflict.
 
 The label `REST_OF_SEASON` is allowed only when the application has an explicit supported definition of all remaining evaluated fantasy weeks and the selected projection source covers that whole window completely. Otherwise label the output `SELECTED_FUTURE_WINDOW` and name its weeks.
 
@@ -330,9 +345,18 @@ Then:
 
 `PlayoffWindowDelta[s] = sum(PostBestLegalLineupTotal[s,w] - PreBestLegalLineupTotal[s,w])`
 
+`PlayoffMeanWeeklyDelta[s] = PlayoffWindowDelta[s] / PlayoffWeekCount`
+
 across the configured playoff weeks.
 
-If any playoff week is incomplete, the aggregate and any "playoff upgrade" conclusion are withheld.
+`PlayoffDirection[s]` uses the same deterministic per-week materiality rule as Step 10:
+
+- `UPGRADE` at `>= +1.0` mean projected point per playoff week;
+- `DOWNGRADE` at `<= -1.0` mean projected point per playoff week;
+- `TOSSUP` when the absolute mean is `< 1.0`;
+- `UNKNOWN` when any configured playoff week is incomplete.
+
+If any playoff week is incomplete, the aggregate, mean, direction, and any "playoff upgrade/downgrade" conclusion are withheld.
 
 FantasyPros `SOS PLAYOFFS` stars remain an independent provider-defined advisory lens. They are not assumed to map exactly to the ESPN league's playoff weeks and are never converted into projected points or combined with the weekly projection delta.
 
@@ -340,20 +364,28 @@ FantasyPros `SOS PLAYOFFS` stars remain an independent provider-defined advisory
 
 Evaluate each compatible complete source independently.
 
-For a given horizon, classify each source as `UPGRADE`, `DOWNGRADE`, `TOSSUP`, or `UNKNOWN` using the applicable supported delta and the 1.0 current-week materiality threshold for current-week analysis. For a multiweek horizon, report the actual source-specific aggregate; do not invent a universal cross-horizon threshold.
+For each horizon, first classify each source using only that horizon's rule:
 
-Current-week **material source disagreement** exists when:
+- current week: `CurrentWeekLineupDelta` and the +/-1.0 current-week threshold from Step 5;
+- selected future/rest-of-season window: `HorizonMeanWeeklyDelta` from Step 10;
+- playoff window: `PlayoffMeanWeeklyDelta` from Step 11.
 
-- at least one complete source says `UPGRADE` and another says `DOWNGRADE`; or
+For any one horizon, **material source disagreement** exists when:
+
+- at least one complete source says `UPGRADE` and another complete source says `DOWNGRADE`; or
 - at least one complete source says a material change (`UPGRADE`/`DOWNGRADE`) while another complete source says `TOSSUP`.
+
+`UNKNOWN` does not count as agreement or disagreement; it preserves incomplete/partial evidence.
 
 When material disagreement exists:
 
 - expose each source result side by side;
 - set evidence state `SOURCE_DISAGREEMENT`;
-- do not average the projections;
-- do not produce an unqualified source-agnostic lineup winner;
+- do not average the projections, mean weekly deltas, or directions;
+- do not produce an unqualified source-agnostic winner for that horizon;
 - phrase the conclusion as source-sensitive unless a separate structural fact (for example illegal roster state or dangerous bye gap) independently dominates.
+
+A horizon is **source-resolved** for conclusion precedence only when exactly one complete compatible source exists, or when every complete compatible source has the same non-`UNKNOWN` direction. A source-disputed horizon cannot be silently converted into a generic `UPGRADE` or `DOWNGRADE` for Step 15.
 
 ### Step 13 — Assign evidence state
 
@@ -383,43 +415,107 @@ The analyzer must state that this is strategic framing, not source fact.
 
 ### Step 15 — Choose conclusion taxonomy
 
-Choose the first defensible primary conclusion below after the earlier legality/evidence gates. Attach separate reason/modifier fields for bye relief, roster-space, source disagreement, lock state, and replacement context.
+Apply the earlier legality/evidence gates first. Then derive horizon direction **without combining projected points across horizons**.
 
-#### `CLEAR_TEAM_UPGRADE`
+#### 15.1 Source-resolved current direction
 
-Supported current or complete future lineup improves materially and there is no material newly created depth/fragility cost. Reason text must say whether the benefit is starter-only or starter-plus-depth.
+`CurrentDirection` is the current-week direction from Step 5 only when the current-week horizon is source-resolved under Step 12. Otherwise it is `SOURCE_SENSITIVE` or `UNKNOWN` as applicable.
 
-#### `STARTER_UPGRADE_DEPTH_COST`
+#### 15.2 Supported long-term direction state
 
-The optimized starting lineup improves materially, but internal contingency coverage or meaningful depth worsens. The result is not automatically a rejection; objective framing and replacement context explain the tradeoff.
+Collect every source-resolved, complete `HorizonDirection` and `PlayoffDirection` that the analyzer actually evaluated. Reduce **directions only**, never numeric values:
 
-#### `DEPTH_GAIN_STARTERS_FLAT`
+- `UPGRADE` — at least one supported long-term horizon is `UPGRADE` and none is `DOWNGRADE`;
+- `DOWNGRADE` — at least one supported long-term horizon is `DOWNGRADE` and none is `UPGRADE`;
+- `TOSSUP` — at least one complete supported long-term horizon exists and none is `UPGRADE` or `DOWNGRADE`;
+- `MIXED` — at least one supported long-term horizon is `UPGRADE` and another supported long-term horizon is `DOWNGRADE`;
+- `UNKNOWN` — no complete source-resolved future/playoff horizon is available.
 
-Current best legal lineup is a tossup/no material improvement, while the resolved roster gains useful legal contingency/bye depth.
+A `TOSSUP` alongside an `UPGRADE` leaves the long-term state `UPGRADE`; a `TOSSUP` alongside a `DOWNGRADE` leaves it `DOWNGRADE`. `MIXED` is reserved for actual opposing material directions. This directional reduction is an inspectable precedence device, not a composite trade score.
 
-#### `SHORT_TERM_GAIN_LONG_TERM_COST`
+#### 15.3 Primary-conclusion precedence
 
-Current-week supported impact improves materially while a complete compatible future window worsens materially or creates a supported future coverage problem.
+Choose the first applicable primary conclusion in this order. Attach separate reason/modifier fields for bye relief, roster-space, source disagreement, lock state, replacement context, and any incomplete horizon.
 
-#### `LONG_TERM_GAIN_SHORT_TERM_COST`
+1. `DANGEROUS_POSITIONAL_FRAGILITY`
+2. Cross-horizon material conflict labels (`SHORT_TERM_GAIN_LONG_TERM_COST` / `LONG_TERM_GAIN_SHORT_TERM_COST`)
+3. `BALANCED_OBJECTIVE_DEPENDENT` for a `MIXED` supported long-term state or unresolved material source sensitivity that is not independently dominated by a structural conclusion
+4. `CLEAR_TEAM_UPGRADE`
+5. `STARTER_UPGRADE_DEPTH_COST`
+6. `DEPTH_GAIN_STARTERS_FLAT`
+7. `NO_MEANINGFUL_SUPPORTED_CHANGE`
+8. `INSUFFICIENT_EVIDENCE` when the material thesis depends on evidence that remains unavailable/incomplete and no earlier responsible conclusion applies
 
-Current-week supported impact worsens materially while a complete compatible future/playoff window improves and the future claim meets all coverage gates.
+This precedence is intentional: a supported opposing future cost must be considered **before** a generic upgrade/depth label. Missing/incomplete future evidence is `UNKNOWN`, not a known opposing cost.
 
 #### `DANGEROUS_POSITIONAL_FRAGILITY`
 
 The trade creates `DANGEROUS` fragility as defined above. Explain the exact position/slot/week and replacement-path limitation; do not merely say "too thin."
 
+#### `SHORT_TERM_GAIN_LONG_TERM_COST`
+
+Requires:
+
+- `CurrentDirection = UPGRADE`; and
+- supported long-term direction state `DOWNGRADE`.
+
+The current-week gain and each complete long-term downgrade remain separately displayed. This label takes precedence over `CLEAR_TEAM_UPGRADE` and `STARTER_UPGRADE_DEPTH_COST`. Depth loss, if present, is an additional modifier rather than a replacement primary label.
+
+#### `LONG_TERM_GAIN_SHORT_TERM_COST`
+
+Requires:
+
+- `CurrentDirection = DOWNGRADE`; and
+- supported long-term direction state `UPGRADE`.
+
+The current-week cost and each complete long-term upgrade remain separately displayed. This label takes precedence over generic upgrade/depth labels. Scenario E therefore resolves deterministically to this label.
+
 #### `BALANCED_OBJECTIVE_DEPENDENT`
 
-Supported benefits and costs are real but do not yield a dominant team consequence without the user's stated objective, including meaningful source-sensitive tradeoffs that are not otherwise blocked.
+Use when supported benefits and costs are real but do not yield a single dominant team consequence without the user's stated objective, including:
+
+- supported long-term direction state `MIXED`;
+- meaningful source-sensitive tradeoffs not resolved by an independent structural fact;
+- deterministic bye/depth benefits and costs that do not satisfy a more specific earlier label.
+
+#### `CLEAR_TEAM_UPGRADE`
+
+Requires all of the following:
+
+- at least one supported source-resolved evaluated horizon is `UPGRADE`;
+- `CurrentDirection` is not `DOWNGRADE`;
+- supported long-term direction state is neither `DOWNGRADE` nor `MIXED`;
+- there is no material newly created depth/fragility cost that qualifies for `STARTER_UPGRADE_DEPTH_COST` or `DANGEROUS_POSITIONAL_FRAGILITY`.
+
+If long-term evidence is `UNKNOWN` because it is incomplete/unavailable, this label may describe a **current-week-supported upgrade only** when current week is `UPGRADE`; wording must explicitly bound the claim and may not imply known long-term benefit.
+
+Reason text must say whether the supported benefit is current starter-only, future-window-only, or starter-plus-depth.
+
+#### `STARTER_UPGRADE_DEPTH_COST`
+
+Requires:
+
+- `CurrentDirection = UPGRADE`;
+- internal contingency coverage or meaningful depth worsens;
+- supported long-term direction state is neither `DOWNGRADE` nor `MIXED`.
+
+If a complete long-term downgrade exists, `SHORT_TERM_GAIN_LONG_TERM_COST` wins precedence and the depth loss is a modifier. If long-term evidence is `UNKNOWN`, the conclusion remains explicitly current-week/depth bounded.
+
+The result is not automatically a rejection; objective framing and replacement context explain the tradeoff.
+
+#### `DEPTH_GAIN_STARTERS_FLAT`
+
+Current best legal lineup is `TOSSUP`/no material improvement, while the resolved roster gains useful legal contingency/bye depth, and no supported complete evaluated horizon contains a material opposing downgrade that would require `BALANCED_OBJECTIVE_DEPENDENT` or another earlier label.
 
 #### `NO_MEANINGFUL_SUPPORTED_CHANGE`
 
-All complete supported lineup deltas are below material thresholds and no meaningful depth, bye, roster-space, or future effect is supported.
+All complete supported lineup directions are `TOSSUP` and no meaningful depth, bye, roster-space, or future effect is supported.
 
 #### `INSUFFICIENT_EVIDENCE`
 
 The material reason to prefer or reject the trade depends on unavailable/incomplete future data, unresolved source disagreement with no independent structural answer, or other missing inputs that prevent a responsible recommendation.
+
+A current-week `DOWNGRADE` plus incomplete future evidence is **not** `LONG_TERM_GAIN_SHORT_TERM_COST`; the long-term side is unknown. If the only pro-trade thesis is the missing future window, return `INSUFFICIENT_EVIDENCE` for that thesis while still displaying the supported current-week downside.
 
 ## 6. Missing-data policy
 
@@ -455,7 +551,7 @@ Unknown bye remains unknown. Never treat it as "no bye conflict."
 
 ### Future projections
 
-A partial future week may be displayed as a partial row but cannot contribute to a summed horizon conclusion.
+A partial future week may be displayed as a partial row but cannot contribute to a summed horizon conclusion, mean weekly direction, or cross-horizon conflict label.
 
 ### Playoff weeks
 
@@ -471,7 +567,7 @@ Use only currently approved connected injury facts already present in the snapsh
 2. Apply roster/lineup optimization separately per source.
 3. Never average incompatible sources.
 4. Never convert ranking position, SOS stars, and projected points into one mixed numeric score.
-5. If two complete sources disagree materially, present the disagreement as a first-class result.
+5. If two complete sources disagree materially under the horizon-specific direction rule from Step 12, present the disagreement as a first-class result.
 6. A complete ESPN projection result remains the platform baseline; an external compatible source is an independent forecast, not a silent override.
 7. If an external source is stale under its existing provider rules, show the staleness warning and do not increase confidence because two sources numerically agree.
 8. FantasyPros ROS ordinal rankings may be shown as player-level context when available, but v1 must not sum ranks or convert them into team projected points.
@@ -564,7 +660,7 @@ Wrong behavior: saying the trade "adds X ROS points" without a complete future p
 
 ### Scenario E — favorable playoff window with complete data
 
-Current-week delta: `-2.0`.  
+Current-week delta: `-2.0` => `CurrentDirection = DOWNGRADE`.  
 Explicit playoff weeks: 15, 16, 17.  
 Compatible external weekly source has complete pre/post union-roster coverage for all three weeks.  
 Pre playoff totals: 120, 118, 123.  
@@ -572,9 +668,14 @@ Post playoff totals: 124, 122, 127.
 
 Expected:
 
+- weekly deltas are `+4.0`, `+4.0`, `+4.0`;
 - `PlayoffWindowDelta = +12.0` for that named source;
+- `PlayoffMeanWeeklyDelta = +4.0`;
+- `PlayoffDirection = UPGRADE`;
+- supported long-term direction state = `UPGRADE`;
 - current-week cost remains visible;
-- conclusion `LONG_TERM_GAIN_SHORT_TERM_COST` under `BALANCED` or `FUTURE_UPSIDE` framing;
+- conclusion **must** be `LONG_TERM_GAIN_SHORT_TERM_COST` because the cross-horizon conflict is evaluated before generic upgrade labels;
+- `CLEAR_TEAM_UPGRADE` and `STARTER_UPGRADE_DEPTH_COST` are not permitted for this evidence state;
 - no win/championship probability is claimed;
 - any FantasyPros playoff SOS stars remain separate advisory context.
 
@@ -585,9 +686,10 @@ Same proposal, but Week 16 coverage is incomplete for one pre/post union-roster 
 Expected:
 
 - Week 15 and 17 rows may be shown as complete rows;
-- playoff aggregate is unavailable;
-- no `+12` or extrapolated playoff total;
+- playoff aggregate, mean weekly delta, and direction are unavailable/`UNKNOWN`;
+- no `+12`, average-fill, or extrapolated playoff total;
 - no "playoff upgrade" conclusion;
+- no cross-horizon conflict label is created from incomplete future evidence;
 - because the pro-trade case depends on missing playoff data while current week is -2.0, primary conclusion becomes `INSUFFICIENT_EVIDENCE` for the long-term thesis, with the current-week downside still stated.
 
 Wrong behavior: sum Weeks 15 and 17 and treat Week 16 as zero or average-fill it.
@@ -643,9 +745,39 @@ Trade creates a material starter upgrade and one open roster spot. Post-trade co
 
 Expected:
 
-- direct trade conclusion can remain `STARTER_UPGRADE_DEPTH_COST`;
+- direct trade conclusion can remain `STARTER_UPGRADE_DEPTH_COST` when no complete supported long-term horizon is a material downgrade;
 - under `FUTURE_UPSIDE` or `BALANCED`, narrative may say consolidation is strategically defensible for a deep roster;
 - replacement candidates are conditional follow-up options, not part of the trade package or score.
+
+### Scenario K — short-term gain with complete long-term cost
+
+Current-week delta: `+2.5` => `CurrentDirection = UPGRADE`.  
+Selected future window: Weeks 10-13, complete under one compatible source.  
+Weekly deltas: `-1.5`, `-2.0`, `-1.0`, `-1.5`.  
+
+Expected:
+
+- `HorizonDelta = -6.0`;
+- `HorizonMeanWeeklyDelta = -1.5`;
+- `HorizonDirection = DOWNGRADE`;
+- supported long-term direction state = `DOWNGRADE`;
+- conclusion **must** be `SHORT_TERM_GAIN_LONG_TERM_COST`;
+- `CLEAR_TEAM_UPGRADE` and `STARTER_UPGRADE_DEPTH_COST` cannot swallow the supported future downside;
+- current/future values remain separate and are never averaged together.
+
+### Scenario L — multiweek aggregate positive but normalized direction is tossup
+
+Selected future window: Weeks 10-17, complete under one compatible source.  
+`HorizonDelta = +6.4` across 8 weeks.  
+
+Expected:
+
+- `HorizonMeanWeeklyDelta = +0.8`;
+- `HorizonDirection = TOSSUP`;
+- the analyzer may display the `+6.4` raw window total but must not call that future window a material upgrade;
+- no cross-horizon gain/cost label may use this horizon as a material future upgrade.
+
+This fixture proves that raw aggregate magnitude alone does not manufacture materiality as window length grows.
 
 ## 10. Builder-facing output contract
 
@@ -658,6 +790,7 @@ Exact implementation shape is Builder-owned, but production behavior must expose
 - `rosterSpaceDelta`, open-slot count, required-drop count, position-limit findings;
 - pre/post optimized starter assignments by source/horizon when complete;
 - source-specific projected totals and deltas;
+- for complete multiweek/playoff windows, aggregate delta, week count, mean weekly delta, and deterministic direction;
 - starter/bench assignment changes;
 - listed-position depth changes;
 - legal contingency/fragility findings;
@@ -687,18 +820,26 @@ Builder implementation is acceptable only if deterministic tests demonstrate all
 10. Numeric current-week source deltas require complete active pre/post union-roster coverage; incomplete source coverage cannot silently become zero.
 11. Projection sources remain separate and material disagreement produces `SOURCE_DISAGREEMENT` without averaging.
 12. Future weekly deltas are computed independently per source using legal lineups.
-13. Multiweek aggregate is withheld if any selected week lacks complete baseline or post-trade coverage.
-14. `REST_OF_SEASON` wording is used only for a genuinely complete defined remaining-season window; partial windows name their actual weeks.
-15. Playoff aggregate requires explicit playoff weeks plus complete compatible coverage for every configured playoff week.
-16. FantasyPros SOS stars remain separate from projected-point calculations and are not assumed to match the exact ESPN playoff window.
-17. Bye analysis preserves unknown bye facts as unknown and compares uncovered legal starter capacity pre/post.
-18. Fragility analysis can distinguish ordinary depth loss from the narrow `DANGEROUS` condition.
-19. ESPN free-agent replacement context is conditional, snapshot-attributed, and never treated as automatically acquired.
-20. Missing ESPN availability never becomes a claim that the free-agent pool is weak/empty.
-21. Team objective changes narrative preference only; it cannot alter source facts, projection totals, legality, or coverage gates.
-22. Every required Manager scenario A-I above has a deterministic fixture/test with the expected state/conclusion behavior.
-23. Analyzer remains read-only and contains no ESPN propose/send/accept/reject transaction action.
-24. No hidden composite trade-value score exists.
+13. A complete multiweek window exposes `HorizonDelta`, week count, `HorizonMeanWeeklyDelta`, and direction; direction is `UPGRADE` at mean >= +1.0, `DOWNGRADE` at mean <= -1.0, and `TOSSUP` otherwise.
+14. Multiweek aggregate, mean, and direction are withheld/`UNKNOWN` if any selected week lacks complete baseline or post-trade coverage.
+15. Raw aggregate magnitude alone cannot create materiality; an 8-week `+6.4` aggregate is a `+0.8` mean and therefore `TOSSUP`.
+16. `REST_OF_SEASON` wording is used only for a genuinely complete defined remaining-season window; partial windows name their actual weeks.
+17. Playoff aggregate requires explicit playoff weeks plus complete compatible coverage for every configured playoff week; its material direction uses `PlayoffMeanWeeklyDelta` with the same +/-1.0 per-week rule.
+18. FantasyPros SOS stars remain separate from projected-point calculations and are not assumed to match the exact ESPN playoff window.
+19. Bye analysis preserves unknown bye facts as unknown and compares uncovered legal starter capacity pre/post.
+20. Fragility analysis can distinguish ordinary depth loss from the narrow `DANGEROUS` condition.
+21. ESPN free-agent replacement context is conditional, snapshot-attributed, and never treated as automatically acquired.
+22. Missing ESPN availability never becomes a claim that the free-agent pool is weak/empty.
+23. Team objective changes narrative preference only; it cannot alter source facts, projection totals, legality, coverage gates, or direction thresholds.
+24. Multi-source disagreement is evaluated per horizon using that horizon's deterministic direction rule; sources are never averaged.
+25. Cross-horizon material conflict is evaluated before `CLEAR_TEAM_UPGRADE` and `STARTER_UPGRADE_DEPTH_COST`.
+26. Scenario E deterministically returns `LONG_TERM_GAIN_SHORT_TERM_COST`; Scenario K deterministically returns `SHORT_TERM_GAIN_LONG_TERM_COST`.
+27. `CLEAR_TEAM_UPGRADE` is forbidden when any supported source-resolved evaluated long-term horizon is a material `DOWNGRADE` or the long-term direction state is `MIXED`.
+28. `STARTER_UPGRADE_DEPTH_COST` is forbidden when a supported complete long-term `DOWNGRADE` exists; the cross-horizon conflict label wins and depth becomes a modifier.
+29. Incomplete future evidence produces `UNKNOWN`, never a fabricated cross-horizon conflict; Scenario F remains bounded and does not infer a playoff upgrade.
+30. Every concrete scenario A-L above has a deterministic fixture/test with the expected state/conclusion behavior.
+31. Analyzer remains read-only and contains no ESPN propose/send/accept/reject transaction action.
+32. No hidden composite trade-value score exists.
 
 ## 12. Strategic invariants
 
@@ -708,7 +849,8 @@ Builder implementation is acceptable only if deterministic tests demonstrate all
 - **Depth matters without rigidly forbidding consolidation.** Elite starter upgrades can rationally justify manageable depth loss.
 - **Scarcity is connected-league context.** ESPN availability can mitigate or amplify depth risk; missing availability cannot be guessed.
 - **Current and future horizons stay distinct.** Short-term and long-term tradeoffs are allowed to disagree.
-- **Future claims require complete compatible data.** Partial weeks never become a complete horizon.
+- **Multiweek materiality is per-week normalized.** Raw window totals remain visible, but direction uses the mean weekly lineup delta so longer windows do not become material solely from duration.
+- **Future claims require complete compatible data.** Partial weeks never become a complete horizon or a known conflict.
 - **Bye/playoff facts remain source-bounded.** No inferred playoff window or fabricated bye.
 - **Sources stay inspectable.** Disagreement lowers the strength of wording; it is not averaged away.
 - **Objective framing is subjective and explicit.** It never mutates the underlying evidence.
@@ -731,6 +873,10 @@ The ESPN free-agent pool can change immediately after refresh. Replacement notes
 ### Objective-dependent conclusions cannot be made universally "correct"
 
 A contending/deep roster may rationally consolidate while an unstable roster prefers diversification. The product should expose the tradeoff and let an explicit objective guide wording rather than hiding subjective weights in a score.
+
+### Mean-weekly materiality can smooth isolated spikes
+
+A complete multiweek window may contain one unusually large weekly gain or loss while the mean remains `TOSSUP`. v1 deliberately reports those weekly rows plus the aggregate and mean rather than inventing a second weighted rule. If later evidence supports a volatility-sensitive horizon policy, that is separate Strategy/R&D work rather than a hidden v1 adjustment.
 
 ## 14. Explicit unresolved R&D questions
 
