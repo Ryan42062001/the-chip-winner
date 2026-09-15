@@ -65,7 +65,7 @@ test("Trade Analyzer roster-action-required result does not present an expanded 
     limitations: ["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]
   }), snapshot, escapeHtml);
   assert.match(html, /Another explicit roster action is required/);
-  assert.match(html, /never chooses one silently/);
+  assert.match(html, /does not silently choose a drop/);
   assert.match(html, /ROSTER_ACTION_REQUIRED/);
 });
 
