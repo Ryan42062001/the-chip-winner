@@ -2,72 +2,102 @@
 
 HANDOFF
 
-Task ID: TCW-020
+Task ID: TCW-023
 Role: Implementation Engineer / Builder
-Status: MANAGER_REVIEW_READY — bounded START/SIT lock-awareness remediation complete; PR open; independent deployed TCW-018 field retest remains required after merge/deploy
+Status: ASSIGNED
 
-Verified starting state:
-- Fast Refresh verified `master` at `4f362c78e4cc07447ad4415da90988c99ba8c0d1`.
-- Workflow V3.1 is active through `.ai/shared/WORKFLOW_V3_1.md`.
-- `.ai/shared/ACTIVE_TASKS.json` assigns TCW-020 to Builder on `builder/tcw-020-start-sit-lock-remediation` with no blocking prerequisite; TCW-018 is blocked on TCW-020.
-- TCW-020 assignment checkpoint `f9029d8eaa603bdcb039492a554fcd699948fa29` was only one Manager routing commit behind current `master`, below the V3.1 staleness trigger.
-- FV-ESPN-05 remains pending; field status was not changed.
-- The complete-lineup optimizer already exposes `getLineupLockReason()` for explicit ESPN locks and passed kickoff.
+## Assignment
 
-Work completed:
-- Created `builder/tcw-020-start-sit-lock-remediation` from verified `master`.
-- Kept `compareRosterPlayers()` preference/tossup/missing/invalid policy unchanged.
-- Made the START / SIT renderer reuse the optimizer's existing `getLineupLockReason()` semantics against the selected roster entries and player kickoff state; no competing lock definition was introduced.
-- When either selected player is explicitly locked by ESPN or the reported kickoff has passed, the comparison is rendered as `LINEUP MOVE LOCKED · INFORMATION ONLY` with `NO LINEUP ACTION` and the exact lock reason.
-- Retained ESPN projection values as informational context but removed the actionable `PROJECTION LEAN` treatment for locked comparisons.
-- Retained external-source context and source separation; on a locked comparison, external wording becomes `Informational only · higher projection ...` or `Informational only · near tie` instead of an action-like `Leans ...` verdict.
-- Preserved ordinary unlocked preference and tossup rendering.
-- Preserved missing-data and invalid-comparison behavior.
-- Added deterministic regression coverage for explicit ESPN locks, passed kickoff, dominant non-actionable lock qualification, source-separated informational external context, ordinary unlocked preference/tossup behavior, and existing missing/invalid behavior.
-- Did not modify complete-lineup optimizer behavior, recommendation thresholds/policy, waiver/acquisition logic, rankings, projections, roster/provider normalization, IR policy, season intelligence, read-only behavior, or `config/field-validation.json`.
-- Opened Builder PR #95 targeting `master`.
+Implement the accepted **Trade Analyzer v1** production feature under `.ai/manager/tasks/TCW-023.md`.
 
-Evidence produced:
-- Implementation checkpoint: `6804c8c0a1b55f5959daab8635fa8d71d6a43f73`.
-- PR #95 — `TCW-020 START/SIT lock-awareness remediation`.
-- Implementation diff from starting master: 2 files only — `src/ui/start-sit-comparison.js` and `test/start-sit-comparison-ui.test.js`; branch was 0 commits behind master.
-- PR workflow `Deploy website` run #506 on implementation checkpoint completed the `test` job successfully, including deployment-scope classification, `npm audit`, Workflow V3.1 audit/full `npm test`, model eval, static/browser smoke, accessibility, readiness, mobile, extension, performance, and security.
-- Full `npm test` therefore exercised the new START/SIT lock regressions and the pre-existing complete-lineup optimizer explicit-lock/passed-kickoff regressions together.
-- PR-only `deploy` and `verify-production` jobs were skipped as expected.
+Canonical assignment baseline:
 
-Files updated:
-- `src/ui/start-sit-comparison.js`
-- `test/start-sit-comparison-ui.test.js`
-- `.ai/builder/HANDOFF.md`
+`9273128e677e332dd37529993974bed36a341669`
 
-Verification matrix:
+Expected branch:
 
-| Dimension | Status | Evidence |
-| --- | --- | --- |
-| Static/code review | PASS | Implementation diff is limited to START/SIT renderer + focused tests; optimizer/domain/provider/field-registry files unchanged |
-| Deterministic automated tests | PASS | PR workflow #506 `npm test` PASS on implementation checkpoint; includes Workflow V3.1 audit, new START/SIT lock tests, and existing optimizer lock tests |
-| Exact-head PR CI | PENDING — ROLE OWNED | This handoff-only commit advances PR head; final CI must pass before Manager merge |
-| Post-merge master verification | PENDING — MANAGER OWNED | Not merged by Builder |
-| Production/deployed verification | PENDING — MANAGER OWNED | PR-only deploy/verify-production skipped as expected |
-| Real field validation | PENDING — AUDITOR / EXTERNAL | TCW-018 post-remediation natural locked-state field retest remains required; FV-ESPN-05 remains pending |
+`builder/tcw-023-trade-analyzer-v1`
 
-Open findings:
-- FV-ESPN-05 remains pending; deterministic tests and PR CI do not satisfy real field validation.
-- This handoff-only commit advances the PR beyond implementation checkpoint `6804c8c...`; final PR-head CI must be verified.
+Execution mode: `STANDARD_CHAT`
 
-Blocking issues:
-- No known implementation blocker.
-- Merge remains Manager-owned and gated on exact-head PR CI/review.
-- TCW-018 remains blocked until TCW-020 is accepted, merged, deployed, and production-verified.
+Merge authority: Manager / Architect only.
 
-Recommended next role:
-- Manager / Architect.
+## Accepted Strategy dependency
 
-Exact next action:
-- Verify PR #95 exact-head CI and bounded scope; merge only if the Manager gate is satisfied; verify post-merge master deploy/production checks; then re-activate TCW-018 Independent Auditor / QA for the smallest genuinely necessary post-remediation deployed lock-state retest. Reuse prior transition evidence where valid and do not manufacture another lock transition. FV-ESPN-05 must remain pending until the Auditor returns a PASS CANDIDATE and Manager separately integrates the field registry.
+TCW-022 is accepted and merged. The production contract is:
 
-Checkpoint / SHA:
-- Starting master: `4f362c78e4cc07447ad4415da90988c99ba8c0d1`
-- Implementation checkpoint: `6804c8c0a1b55f5959daab8635fa8d71d6a43f73`
-- PR: #95
-- Final handoff-only branch tip must be verified from GitHub; a file cannot self-reference the commit SHA that contains itself.
+`.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
+
+Builder must implement that policy without reinterpreting the recommendation model.
+
+Important accepted decisions include:
+
+- roster consequence over package arithmetic;
+- pre/post best legal lineup comparison;
+- explicit unequal-count roster-space handling;
+- no silent drops, free-agent adds, or IR moves;
+- current lock/kickoff semantics remain informational when action is not realizable;
+- depth and legal contingency are separate lenses;
+- narrow `DANGEROUS` positional fragility;
+- complete-coverage gates for numeric current/future/playoff comparisons;
+- multiweek direction uses mean weekly lineup delta at the accepted +/-1.0 projected-point-per-week materiality threshold;
+- projection sources remain separate;
+- cross-horizon gain/cost conclusions take precedence over generic upgrade/depth labels;
+- no hidden trade/winner/confidence score;
+- read-only only; no ESPN trade write action.
+
+## Required implementation result
+
+Create a usable Trade Analyzer entry point in the existing application where the connected user can:
+
+- choose one or more outgoing roster players;
+- choose one or more incoming players represented in the connected ESPN snapshot;
+- construct unequal-count packages;
+- select explicit follow-up drop(s) when known roster rules require them;
+- select `BALANCED`, `CURRENT_WEEK_STABILITY`, or `FUTURE_UPSIDE`;
+- run analysis and inspect lineup, depth, roster-space, replacement, bye/future/playoff, source-agreement, evidence, conclusion, and limitation output supported by current data.
+
+Prefer a dedicated domain module for Trade Analyzer policy and keep UI rendering separate from decision logic.
+
+## Required tests
+
+Implement deterministic coverage for the Manager task and accepted Strategy scenarios, including:
+
+- 1-for-1 starter upgrade;
+- bench-only incoming improvement;
+- 2-for-1 consolidation/open-slot/depth cost;
+- 1-for-2 full-roster action requirement and explicit-drop resolution;
+- roster position limits;
+- no automatic IR placement;
+- lock/kickoff qualification;
+- incomplete projection coverage;
+- source disagreement;
+- complete/incomplete future and playoff windows;
+- mean-weekly horizon materiality;
+- bye relief;
+- ordinary depth loss versus narrow dangerous fragility;
+- missing replacement availability;
+- objective framing without factual mutation;
+- deterministic short-term/long-term conflict precedence;
+- absence of hidden score or ESPN mutation path;
+- UI/browser interaction for creating/editing/analyzing a proposal.
+
+## Boundaries
+
+Do not:
+
+- modify the accepted Strategy policy except for an unavoidable implementation clarification escalated to Manager;
+- add a new external data source;
+- add injury/news ingestion;
+- add trade-market/acceptance probability;
+- add dynasty/keeper/draft-pick valuation;
+- execute or stage ESPN trade mutation requests;
+- modify `config/field-validation.json`;
+- manufacture future/playoff evidence;
+- merge your own PR.
+
+## Exact next action
+
+Fast Refresh from canonical `master`, read Workflow V3.1, ACTIVE_TASKS, TCW-023, Builder role/handoff, the accepted TCW-022 Strategy contract, and only production/domain/UI/tests needed for the bounded implementation.
+
+Implement, test, open a Builder PR, verify exact-head full CI, update this handoff, and return `MANAGER_REVIEW_READY` or a precise escalation.
