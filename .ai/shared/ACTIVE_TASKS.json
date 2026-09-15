@@ -2,9 +2,27 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-14T23:58:00Z",
+  "updated_at_utc": "2026-09-15T00:05:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
-  "tasks": []
+  "tasks": [
+    {
+      "task_id": "TCW-022",
+      "title": "Trade Analyzer v1 Strategy Contract",
+      "owner": "Strategy",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT",
+      "merge_authority": "Manager",
+      "task_file": ".ai/manager/tasks/TCW-022.md",
+      "role_handoff": ".ai/strategy/HANDOFF.md",
+      "assignment_master_sha": "3eedb76e4bfd33802c23972720f79a4135e2adf5",
+      "branch": "strategy/tcw-022-trade-analyzer-policy",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "blockers": [],
+      "next_gate": "Strategy produces the Trade Analyzer v1 decision-policy artifact and validated PR for Manager review."
+    }
+  ]
 }
