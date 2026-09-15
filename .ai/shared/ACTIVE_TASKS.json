@@ -2,7 +2,7 @@
   "schema_version": 2,
   "workflow_version": "V3.1",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_1.md",
-  "updated_at_utc": "2026-09-15T00:13:00Z",
+  "updated_at_utc": "2026-09-15T00:34:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "lifecycle_states": ["PLANNED", "WAITING_EXTERNAL_EVIDENCE", "BLOCKED", "ASSIGNED", "IN_PROGRESS", "MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY", "REWORK_REQUIRED", "MERGED", "VERIFYING_MASTER", "CLOSED"],
@@ -11,18 +11,21 @@
       "task_id": "TCW-022",
       "title": "Trade Analyzer v1 Strategy Contract",
       "owner": "Strategy",
-      "status": "ASSIGNED",
+      "status": "REWORK_REQUIRED",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT",
       "merge_authority": "Manager",
       "task_file": ".ai/manager/tasks/TCW-022.md",
       "role_handoff": ".ai/strategy/HANDOFF.md",
-      "assignment_master_sha": "84f4a597a315f0242f01cd83bf64d86ce49e4754",
+      "assignment_master_sha": "3a4df7cf812ecdf409f6c59149aa79db169daadb",
       "branch": "strategy/tcw-022-trade-analyzer-policy",
-      "pr": null,
-      "worker_checkpoint_sha": null,
-      "blockers": [],
-      "next_gate": "Strategy produces the Trade Analyzer v1 decision-policy artifact and validated PR for Manager review."
+      "pr": 106,
+      "worker_checkpoint_sha": "a97ef2ddd74eda11494d9036180d3a89faf036bc",
+      "blockers": [
+        "Define deterministic future/multiweek materiality or an explicit deterministic alternative for horizon-direction conclusions.",
+        "Make primary-conclusion precedence mutually exclusive so cross-horizon costs cannot be hidden by earlier upgrade labels."
+      ],
+      "next_gate": "Strategy revises PR #106 for the two Manager findings, updates affected scenarios/acceptance criteria, and returns an exact-head green MANAGER_REVIEW_READY candidate."
     }
   ]
 }
