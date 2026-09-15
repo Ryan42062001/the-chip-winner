@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
-Last reconciled: 2026-09-14
-Current operating state: Release 1.0 field validation event-gated + Trade Analyzer v1 independent audit
+Last reconciled: 2026-09-15
+Current operating state: Release 1.0 field validation event-gated + Trade Analyzer v1 audit remediation
 
 ## Repository
 
@@ -36,32 +36,45 @@ Product owner explicitly authorized Trade Analyzer ahead of the previously propo
 
 ### Strategy
 
-TCW-022 produced and Manager accepted `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md` after bounded rework defined deterministic mean-weekly future materiality and cross-horizon conclusion precedence.
+TCW-022 produced and Manager accepted `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`. The policy remains frozen for the current remediation lane.
 
 ### Production implementation
 
 TCW-023 is CLOSED after accepted production integration.
 
-Builder PR #109 implemented the bounded v1 contract without changing Strategy policy or the field-validation registry.
-
-Verified production integration:
-- Builder PR exact head `5c492f22ce7ab107771d946ee318c2ac5665ce16`;
-- exact-head workflow #556 full gate PASS;
-- merged production master `e112156deedf453fb3e0081412c07e2e15c0256d`;
-- master workflow #557 full test gate PASS;
-- GitHub Pages deploy PASS;
-- production release smoke PASS.
-
-Trade Analyzer v1 now includes read-only multi-player proposal analysis, roster legality/space handling, pre/post best legal lineup consequence, depth/fragility, supported replacement/bye/future/playoff context, source separation, inspectable conclusion precedence, and a first-class production UI. It intentionally has no ESPN trade mutation path and no hidden trade/winner/confidence score.
+Verified implementation baseline:
+- Builder PR #109 exact head `5c492f22ce7ab107771d946ee318c2ac5665ce16`;
+- exact-head workflow #556 PASS;
+- deployed production master `e112156deedf453fb3e0081412c07e2e15c0256d`;
+- master workflow #557 test/deploy/production verification PASS.
 
 Durable integration evidence:
 - `.ai/manager/evidence/TCW-023_TRADE_ANALYZER_INTEGRATION.md`
 
 ### Independent audit
 
-TCW-024 is the active Manager-approved task. Independent Auditor / QA must audit the exact deployed target `e112156deedf453fb3e0081412c07e2e15c0256d` without relying on Builder's conclusions.
+TCW-024 returned **FAIL**. Manager independently reviewed and accepted all four findings.
 
-The audit must not fabricate Level-4 authenticated/private ESPN evidence. Where such evidence is genuinely required but unavailable, the correct result is an explicit validation-level limitation rather than an invented field verdict.
+Accepted findings:
+- `TCW-024-F01 — HIGH` — replacement-path eligibility/full-pool defect can falsely produce DANGEROUS.
+- `TCW-024-F02 — HIGH` — explicit current lock state leaks into future/playoff optimization.
+- `TCW-024-F03 — MEDIUM` — unverified contingency is asserted as THIN instead of remaining unknown.
+- `TCW-024-F04 — LOW` — dedicated accessibility/mobile section loops omit Trade Analyzer.
+
+Auditor PR #111 exact head `d6c506b2cd504e12133a335979c2b399da7f0f2b` passed workflow #561. Auditor evidence merged as control-plane master `1407da4043fbdf9ced1ef19b81dbc564d798ada6`; master workflow #562 passed the full test gate with deployment/production correctly skipped because only `.ai/**` changed.
+
+Durable acceptance evidence:
+- `.ai/manager/evidence/TCW-024_TRADE_ANALYZER_AUDIT_ACCEPTANCE.md`
+
+Private authenticated Trade Analyzer behavior remains **UNVERIFIED AT LEVEL 4**. No private field state is manufactured or inferred.
+
+### Active remediation
+
+TCW-025 is the active Manager-approved Builder task.
+
+Scope is limited to direct remediation of TCW-024-F01 through F04. No Strategy change, field-registry change, new data source, ESPN write behavior, hidden trade score, or unrelated feature expansion is authorized.
+
+After Builder remediation, Manager must verify exact-head PR scope/CI, merge only if accepted, verify master deployment/production behavior, and then route an Independent Auditor retest under the Workflow V3.1 defect fast lane.
 
 ## Workflow V3.1 operating state
 
@@ -78,9 +91,9 @@ Troubleshooting & Root Cause remains temporary/on-demand.
 
 See `.ai/shared/ACTIVE_TASKS.json`.
 
-Current active lane: TCW-024 Independent Auditor / QA review of Trade Analyzer v1.
+Current active lane: TCW-025 Builder remediation of accepted Trade Analyzer audit findings.
 
-Builder, Strategy, R&D, and Troubleshooting are idle unless a concrete audit finding or genuine dependency requires them.
+Strategy, R&D, and Troubleshooting are idle. Auditor waits for the deployed remediation retest target.
 
 ## Known gated work
 
