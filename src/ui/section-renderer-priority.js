@@ -4,6 +4,7 @@ import { buildWaiverPriorityBoard } from "../domain/waiver-priority-engine.js";
 import { evaluateFutureProjectionCompatibility } from "../providers/projections/future-projection-provider.js";
 import { createSectionRenderer as createBaseSectionRenderer } from "./section-renderer-base.js";
 import { renderSeasonPlayoffIntelligence } from "./season-intelligence.js";
+import { createTradeAnalyzerView } from "./trade-analyzer.js";
 
 function signedPoints(value) {
   if (value == null) return "Unavailable";
@@ -128,8 +129,16 @@ function seasonIntelligencePanel(deps) {
 
 export function createSectionRenderer(deps) {
   const base = createBaseSectionRenderer(deps);
+  const tradeAnalyzer = createTradeAnalyzerView({ content: deps.content, getContext: deps.getContext, escapeHtml: base.escapeHtml });
   const render = (...args) => {
     const result = base.render(...args);
+    const context = deps.getContext();
+    if (context.state?.section === "trade") {
+      const title = document.querySelector("#page-title");
+      if (title) title.textContent = "Trade Analyzer";
+      tradeAnalyzer.render();
+      return result;
+    }
     const panel = priorityPanel(deps, base) || seasonIntelligencePanel(deps);
     if (panel) {
       const firstDivider = deps.content.querySelector(".section-divider");
@@ -139,5 +148,5 @@ export function createSectionRenderer(deps) {
     return result;
   };
 
-  return Object.freeze({ ...base, render });
+  return Object.freeze({ ...base, render, tradeAnalyzer });
 }
