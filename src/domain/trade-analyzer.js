@@ -150,14 +150,14 @@ function assignmentChanges(pre, post, incomingIds, outgoingIds, retainedIds) {
   });
 }
 
-function evaluateLineupSource(snapshot, preEntries, postEntries, config, sourceContext, points, now, incomingIds, outgoingIds) {
+function evaluateLineupSource(snapshot, preEntries, postEntries, config, sourceContext, points, now, incomingIds, outgoingIds, optimizerOptions = {}) {
   const playerIds = unionActiveIds(preEntries, postEntries);
   const missing = playerIds.filter((id) => !Number.isFinite(points.get(id)));
   const sourceFields = { source: sourceContext.name, capturedAt: sourceContext.capturedAt || null, freshness: sourceContext.freshness || freshnessFor(sourceContext.capturedAt, now) };
   if (config.status === "unsupported" || config.status === "missing") return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(playerIds), reason: config.reason, assignments: null });
   if (missing.length) return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(missing), reason: "Complete active pre/post union-roster projection coverage is required.", assignments: null });
   const projectedPlayers = new Map(snapshot.players.map((player) => [player.id, { ...player, projection: points.get(player.id) }]));
-  const optimizer = createLineupOptimizer(projectedPlayers, now);
+  const optimizer = createLineupOptimizer(projectedPlayers, now, optimizerOptions);
   const pre = optimizer.optimize(preEntries, config.items);
   const post = optimizer.optimize(postEntries, config.items);
   if (pre.projectedTotal == null || post.projectedTotal == null || pre.status === "incomplete" || post.status === "incomplete") return Object.freeze({ ...sourceFields, status: "UNKNOWN", direction: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missingPlayerIds: freezeList(unique([...(pre.missingPlayerIds || []), ...(post.missingPlayerIds || [])])), reason: "A complete legal lineup could not be produced for both rosters.", assignments: null });
@@ -206,7 +206,7 @@ function evaluateHorizon(snapshot, preEntries, postEntries, config, set, identit
   const rows = normalizedWeeks.map((week) => {
     const mapped = mappedExternalPoints(set, identityMap, ids, week);
     if (mapped.missing.length) return Object.freeze({ week, status: "UNKNOWN", preTotal: null, postTotal: null, delta: null, missing: freezeList(mapped.missing), assignments: null, preAssignments: null, postAssignments: null });
-    const evaluated = evaluateLineupSource(snapshot, preEntries, postEntries, config, { name: set.provider, capturedAt: set.capturedAt, freshness: freshnessFor(set.capturedAt, now) }, mapped.points, FUTURE_EVALUATION_TIME, [], []);
+    const evaluated = evaluateLineupSource(snapshot, preEntries, postEntries, config, { name: set.provider, capturedAt: set.capturedAt, freshness: freshnessFor(set.capturedAt, now) }, mapped.points, FUTURE_EVALUATION_TIME, [], [], { ignoreLocks: true });
     return Object.freeze({ week, status: evaluated.status, preTotal: evaluated.preTotal, postTotal: evaluated.postTotal, delta: evaluated.delta, direction: evaluated.direction, missing: freezeList([]), assignments: evaluated.assignments, preAssignments: evaluated.preAssignments, postAssignments: evaluated.postAssignments });
   });
   const complete = rows.length === normalizedWeeks.length && rows.every((row) => row.status === "READY" && Number.isFinite(row.delta));
@@ -256,9 +256,20 @@ function contingency(entries, assignments, players, config) {
 function replacementContext(snapshot, teamId, players, now) {
   const capacity = evaluateAcquisitionCapacity(snapshot, teamId);
   const sourceFields = { source: "ESPN availability", capturedAt: snapshot.meta?.capturedAt || null, freshness: freshnessFor(snapshot.meta?.capturedAt, now) };
-  if (!Array.isArray(snapshot.availablePlayers)) return Object.freeze({ ...sourceFields, status: "UNKNOWN", candidates: freezeList([]), acquisitionCapacity: capacity, reason: "ESPN availability is missing from the latest snapshot; replacement quality is unknown, not weak or empty." });
-  const candidates = snapshot.availablePlayers.map((id) => players.get(id)).filter(Boolean).sort((a, b) => (b.projection ?? -Infinity) - (a.projection ?? -Infinity));
-  return Object.freeze({ ...sourceFields, status: "READY", candidates: freezeList(candidates.slice(0, 12).map((player) => Object.freeze({ playerId: player.id, name: player.name, position: player.position, projection: Number.isFinite(player.projection) ? player.projection : null }))), acquisitionCapacity: capacity, reason: candidates.length ? null : "ESPN explicitly reported no available players in the captured pool." });
+  if (!Array.isArray(snapshot.availablePlayers)) return Object.freeze({ ...sourceFields, status: "UNKNOWN", candidates: freezeList([]), structuralCandidates: freezeList([]), acquisitionCapacity: capacity, reason: "ESPN availability is missing from the latest snapshot; replacement quality is unknown, not weak or empty." });
+  const candidates = snapshot.availablePlayers
+    .map((id) => players.get(id))
+    .filter(Boolean)
+    .sort((a, b) => (b.projection ?? -Infinity) - (a.projection ?? -Infinity) || String(a.name || a.id).localeCompare(String(b.name || b.id)) || String(a.id).localeCompare(String(b.id)));
+  const describe = (player) => Object.freeze({ playerId: player.id, name: player.name, position: player.position, projection: Number.isFinite(player.projection) ? player.projection : null });
+  return Object.freeze({
+    ...sourceFields,
+    status: "READY",
+    candidates: freezeList(candidates.slice(0, 12).map(describe)),
+    structuralCandidates: freezeList(candidates.map(describe)),
+    acquisitionCapacity: capacity,
+    reason: candidates.length ? null : "ESPN explicitly reported no available players in the captured pool."
+  });
 }
 
 function byeEffects(snapshot, teamId, preEntries, postEntries, affectedIds) {
@@ -283,28 +294,50 @@ function byeEffects(snapshot, teamId, preEntries, postEntries, affectedIds) {
   });
 }
 
-function bestEligibleReplacement(replacement, slots, players) {
-  if (replacement.status !== "READY") return null;
-  const candidateObjects = replacement.candidates.map((item) => players.get(item.playerId)).filter(Boolean);
-  return candidateObjects.find((player) => slots.some((slot) => canFillSlot(player, slot))) || null;
+function structuralReplacementPlayers(replacement, players) {
+  if (replacement.status !== "READY") return [];
+  return (replacement.structuralCandidates || replacement.candidates || []).map((item) => players.get(item.playerId)).filter(Boolean);
 }
 
-function fragilityState({ preContingency, postContingency, bye, replacement, outgoing, players }) {
-  if (postContingency.status !== "READY") return Object.freeze({ state: "THIN", reason: "Contingency coverage could not be fully verified." });
+function hasKnownLegalAcquisitionPath(snapshot, postEntries, candidate, players) {
+  const candidateEntry = { playerId: candidate.id, lineupSlot: "BE" };
+  const direct = rosterRuleState(snapshot, [...postEntries, candidateEntry], players);
+  if (!direct.violations.length) return true;
+  for (const entry of activeEntries(postEntries)) {
+    const simulated = [...postEntries.filter((item) => item !== entry), candidateEntry];
+    if (!rosterRuleState(snapshot, simulated, players).violations.length) return true;
+  }
+  return false;
+}
+
+function replacementPathState(snapshot, postEntries, replacement, slots, players) {
+  if (replacement.status !== "READY") return Object.freeze({ status: "UNKNOWN", player: null, reason: replacement.reason });
+  if (replacement.acquisitionCapacity?.status === "exhausted") return Object.freeze({ status: "BLOCKED", player: null, reason: replacement.acquisitionCapacity.reason });
+  const candidateObjects = structuralReplacementPlayers(replacement, players);
+  const eligible = candidateObjects.filter((player) => slots.some((slot) => canFillSlot(player, slot)));
+  if (!eligible.length) return Object.freeze({ status: "NO_ELIGIBLE", player: null, reason: `The latest ESPN pool has no verified eligible replacement for ${slots.join("/") || "the uncovered slot"}.` });
+  const legal = eligible.find((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players));
+  if (legal) return Object.freeze({ status: "VERIFIED", player: legal, reason: null });
+  return Object.freeze({ status: "BLOCKED", player: null, reason: `The latest ESPN pool has a slot-eligible replacement for ${slots.join("/") || "the uncovered slot"}, but known ESPN roster constraints block a verified acquisition path.` });
+}
+
+function fragilityState({ snapshot, postEntries, preContingency, postContingency, bye, replacement, outgoing, players }) {
+  if (postContingency.status !== "READY") return Object.freeze({ state: "UNKNOWN", reason: "Contingency coverage could not be fully verified from complete supported lineup evidence." });
   const postThin = postContingency.maxUncoveredAfterLoss > 0;
   if (!postThin) return Object.freeze({ state: "COVERED", reason: "Every optimized starter has a complete internal contingency lineup." });
   const newlyThin = preContingency.status === "READY" && preContingency.maxUncoveredAfterLoss === 0;
   const worsenedRows = bye.rows.filter((row) => row.gapDelta > 0);
   if (worsenedRows.length && replacement.status === "READY") {
     const uncoveredSlots = unique(worsenedRows.flatMap((row) => row.postUncoveredSlotCandidates));
-    const replacementPlayer = bestEligibleReplacement(replacement, uncoveredSlots.map((slot) => ({ slot })), players);
-    if (!replacementPlayer || replacement.acquisitionCapacity?.status === "exhausted") return Object.freeze({ state: "DANGEROUS", reason: replacement.acquisitionCapacity?.status === "exhausted" ? replacement.acquisitionCapacity.reason : `A known bye-week lineup gap is created and the latest ESPN pool has no verified eligible replacement for ${uncoveredSlots.join("/") || "the uncovered slot"}.` });
+    const path = replacementPathState(snapshot, postEntries, replacement, uncoveredSlots, players);
+    if (path.status === "NO_ELIGIBLE" || path.status === "BLOCKED") return Object.freeze({ state: "DANGEROUS", reason: `A known bye-week lineup gap is created and ${path.reason}` });
   }
   if (newlyThin) {
     if (replacement.status !== "READY") return Object.freeze({ state: "SCARCE_THIN", reason: "The trade newly removes complete internal contingency coverage, and ESPN replacement quality is unavailable." });
     const outgoingPlayers = outgoing.map((id) => players.get(id)).filter((player) => Number.isFinite(player?.projection));
+    const fullCandidates = replacement.structuralCandidates || replacement.candidates;
     const scarce = outgoingPlayers.some((player) => {
-      const best = replacement.candidates.find((candidate) => candidate.position === player.position && Number.isFinite(candidate.projection));
+      const best = fullCandidates.find((candidate) => candidate.position === player.position && Number.isFinite(candidate.projection));
       return !best || player.projection - best.projection >= WAIVER_MATERIALITY;
     });
     if (scarce) return Object.freeze({ state: "SCARCE_THIN", reason: "The trade newly removes complete internal contingency coverage and the lost internal option is materially above the best verified same-position replacement context." });
@@ -421,7 +454,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const postContingency = contingency(resolvedEntries, primaryCurrentSource?.postAssignments || null, players, config);
   const preListed = listedDepth(roster.entries, players);
   const postListed = listedDepth(resolvedEntries, players);
-  const fragility = fragilityState({ preContingency, postContingency, bye, replacement, outgoing, players });
+  const fragility = fragilityState({ snapshot, postEntries: resolvedEntries, preContingency, postContingency, bye, replacement, outgoing, players });
   const allPositions = unique([...Object.keys(preListed), ...Object.keys(postListed)]);
   const listedChanges = allPositions.map((position) => Object.freeze({ position, before: preListed[position] || 0, after: postListed[position] || 0, delta: (postListed[position] || 0) - (preListed[position] || 0) }));
   const depthCost = listedChanges.some((item) => item.delta < 0) || (preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss > preContingency.maxUncoveredAfterLoss);
@@ -444,6 +477,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   if (future.status !== "READY" && futureWeeks.length) limitations.push(`Future window: ${future.reason}`);
   if (playoffs.status !== "READY" && playoffWeeks.length) limitations.push(`Playoff window: ${playoffs.reason}`);
   if (replacement.status !== "READY") limitations.push(replacement.reason);
+  if (fragility.state === "UNKNOWN") limitations.push(`Depth contingency: ${fragility.reason}`);
   if (bye.status !== "READY") limitations.push("Bye comparison is partial because at least one materially affected bye week is unknown.");
   if (currentResolution.disagreement) limitations.push("Projection sources materially disagree; sources are shown independently and are never averaged.");
   const reasons = [objectiveReason(objective)];
