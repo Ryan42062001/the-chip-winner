@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T17:50:00Z",
+  "updated_at_utc": "2026-09-19T17:57:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -73,7 +73,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Builder remediates accepted F01-F04 only on PR #147 from failed frozen target a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a, produces a fresh FULL exact-head implementation checkpoint that is itself the repaired candidate, passes task-specific audit-readiness, and returns to Manager without merging. Fresh independent re-audit is required before integration.",
+      "next_gate": "Builder remediates accepted F01-F04 only on PR #147 from failed frozen target a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a and returns a fresh FULL exact-head repaired candidate to Manager without merging. Manager then records that exact checkpoint and transitions to MANAGER_REVIEW_READY; task-specific audit-readiness runs against the unchanged repaired head before Manager freeze and fresh independent re-audit.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "fea421a9263e78ff9eeb23c1a339e95b412affe0"
