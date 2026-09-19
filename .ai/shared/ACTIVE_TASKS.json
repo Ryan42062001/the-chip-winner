@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T16:39:00Z",
+  "updated_at_utc": "2026-09-19T16:50:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,7 +26,7 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "MANAGER_REVIEW_READY",
+      "status": "AUDIT_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -73,7 +73,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Builder reruns task-specific workflow:audit-readiness against exact checkpoint a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a using the reconciled Manager machine state; on PASS return to Manager for freeze and fresh independent audit. Do not merge."
+      "next_gate": "Frozen target a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a is mechanically audit-ready. Manager integrates the TCW-044 freeze packet, verifies master, creates the fresh Auditor branch, and activates TCW-044. PR #147 remains draft/unmerged."
     }
   ]
 }
