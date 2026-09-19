@@ -2,19 +2,29 @@
 
 ## PENDING
 
-### TCW-042 — Trade Analyzer Ownership Remediation + Player Input UI Polish
-- Owner: Builder
-- Candidate: NONE yet
-- Expected branch: `builder/tcw-042-trade-ui-audit-remediation`
-- Required: FULL validation, Manager review, deployment/production verification, fresh independent re-audit, renewed real deployed UAT.
+### TCW-043 — re-audit evidence
+- Frozen target: `5362e2bff143a5aef050e160ccb0706a7060fb3d`
+- Source PR: #133
+- No Auditor evidence PR yet
+- Manager-only merge authority
+
+### TCW-042 — closeout gates
+- Integration/deployment COMPLETE at `5362e2bff143a5aef050e160ccb0706a7060fb3d`
+- Master #621 FULL/deploy/production verification PASS
+- Pending TCW-043 accepted verdict
+- Pending deployed product-owner UAT ACCEPT
 
 ### TCW-031
-- State: BLOCKED
-- Previous product target: `79b41042b9f556aa4f1368603bcda81df796a6fa`
-- Blocking audit: TCW-041-F01 HIGH
-- Blocking usability feedback: player-entry UI not accepted
-- Do not close.
+- Remains blocked on TCW-042 acceptance.
 
 ## CONSUMED
 
-TCW-041 audit evidence accepted/integrated at `efdb129e789e0d3d08080bf865578cfe6de909bd`.
+### TCW-042 Builder integration
+- PR #133
+- FULL #619 PASS
+- exact-head #620 PASS
+- integration `5362e2bff143a5aef050e160ccb0706a7060fb3d`
+- master #621 PASS including deployment/production smoke
+
+### TCW-041
+Accepted FAIL verdict consumed; task closed. Its F01 is the remediation target of TCW-042/043.
