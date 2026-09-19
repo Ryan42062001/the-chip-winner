@@ -4,21 +4,12 @@ Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
 ## TCW-031
-- State: BLOCKED
-- Product-owner deployed UAT: **ACCEPTED**
-- Remaining gate: TCW-043 independent re-audit only
+VERIFYING_MASTER — product-owner UAT ACCEPTED; TCW-043 PASS; closeout evidence complete.
 
 ## TCW-042
-- State: VERIFYING_MASTER
-- Exact deployed target: `5362e2bff143a5aef050e160ccb0706a7060fb3d`
-- Product-owner compact Send/Receive UI UAT: **ACCEPTED**
-- Remaining gate: TCW-043
+VERIFYING_MASTER — repaired target `5362e2bff143a5aef050e160ccb0706a7060fb3d`; TCW-043 PASS; UI UAT ACCEPTED; closeout evidence complete.
 
 ## TCW-043
-- Owner: Independent Auditor / QA
-- State: ASSIGNED
-- Branch: `auditor/tcw-043-trade-analyzer-ownership-reaudit`
-- Frozen product target: `5362e2bff143a5aef050e160ccb0706a7060fb3d`
-- Next: evidence-only verdict PR, exact-head CI, no merge
+VERIFYING_MASTER — independent PASS/no findings; evidence integrated at `c12420f9bd0a4c18d9a71e79966b6f14dafddf79`; master #635 PASS.
 
-TCW-032 winner/fairness strategy and TCW-034 winner engine are later roadmap work. No scoring remediation is active yet.
+No worker action is active until the closeout checkpoint is verified.
