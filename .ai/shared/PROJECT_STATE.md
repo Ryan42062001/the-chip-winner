@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-034 Builder active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-034 frozen/audit-ready + TCW-044 fresh Auditor active + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -91,12 +91,27 @@ TCW-033 research is Manager-accepted and integrated:
 - no researched external provider is approved for automated/live package-value authority
 - Manager approved a source-agnostic fail-closed implementation path; production approved-provider set remains empty
 
-Active product task:
-`TCW-034 — Trade Winner Engine`
+TCW-034 Builder implementation is frozen for fresh independent audit:
+- Builder PR: `#147`
+- authorized diff baseline: `872aa79969743dafb3bf062a76b213c687397a6f`
+- FULL implementation checkpoint: `c78a9edba202ae822abd21dabc845e40a35f9b45`
+- exact frozen target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+- task-specific audit-readiness: PASS; blockers `[]`; readyForManagerFreeze `true`
+- freeze master: `a93cd7a22d85f4554922157d290e7b98ef0668b8`
+- freeze master workflow #656: PASS
 
-Primary owner: Implementation Engineer / Builder.
+Active fresh audit task:
+`TCW-044 — Trade Winner Engine Independent Audit`
 
-TCW-034 may implement/test the accepted package-value engine with synthetic approved-source fixtures and source-independent roster consequences. Live production package winner/split must remain WITHHELD until a future Manager-approved provider contract exists.
+Primary owner: Independent Auditor / QA.
+
+Audit branch:
+`auditor/tcw-044-trade-winner-engine-audit`
+
+Immutable audit target:
+`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+
+PR #147 remains draft/unmerged. TCW-035 remains inactive pending Manager consumption of the independent verdict.
 
 GM Action Plan remains paused behind the core Trade Analyzer V2 workflows.
 
@@ -132,7 +147,9 @@ TCW-032 is now **CLOSED — MANAGER ACCEPTED** at integration master `6120dc027d
 
 TCW-033 is now **CLOSED — MANAGER ACCEPTED** at integration master `2124602b0eb884fc9a6db407e4feb3b3f9afbf5a` with master workflow #648 PASS.
 
-Active product lane:
-`TCW-034 — Trade Winner Engine`.
+TCW-034 is now **AUDIT_READY** at frozen Builder target `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
 
-TCW-034 is activated in bounded source-agnostic mode. No live third-party value source is authorized; package-value output remains fail-closed in production.
+Active audit lane:
+`TCW-044 — Trade Winner Engine Independent Audit`.
+
+No live third-party value source is authorized; package-value output remains fail-closed in production.
