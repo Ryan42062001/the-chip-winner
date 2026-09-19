@@ -82,6 +82,23 @@ test("TCW-031 production UI requires a partner and guards stale proposal state",
   assert.match(source, /Trade analysis unavailable/);
 });
 
+test("TCW-042 proposal entry uses dedicated balanced trade-side controls and explicit accessible Add names", async () => {
+  const source = await readFile(new URL("../src/ui/trade-analyzer.js", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+
+  for (const token of ["trade-partner-control", "trade-sides", 'data-trade-side="send"', 'data-trade-side="receive"', "trade-player-entry", "trade-add-button", "trade-objective-control"]) {
+    assert.ok(source.includes(token), `Missing Trade Analyzer UI token: ${token}`);
+  }
+  assert.match(source, /aria-label="Add outgoing"[^>]*>Add</);
+  assert.match(source, /aria-label="Add incoming"[^>]*>Add</);
+  assert.match(source, /isUniquelyOwnedByTeam\(ownerTeams, player\.id, state\.selectedTeamId\)/);
+  assert.match(source, /isUniquelyOwnedByTeam\(owners, id, state\.selectedTeamId\)/);
+
+  assert.match(styles, /\.trade-sides\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(styles, /\.trade-player-entry\{display:grid;grid-template-columns:minmax\(0,1fr\) auto/);
+  assert.match(styles, /\.trade-add-button\{width:auto;min-width:68px;min-height:44px/);
+  assert.match(styles, /@media\(max-width:720px\)[\s\S]*\.trade-sides\{grid-template-columns:1fr/);
+});
 test("Trade Analyzer lock state is visually dominant and explicitly informational", () => {
   const html = renderTradeAnalysisResult(result({ currentWeek: { ...result().currentWeek, actionability: "INFORMATIONAL_ONLY", locks: [{ playerId: "out", playerName: "Outgoing", reason: "ESPN reported this player locked." }] } }), snapshot, escapeHtml);
   assert.match(html, /Locked\/current-game limitation/);
