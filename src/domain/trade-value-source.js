@@ -32,7 +32,10 @@ export function inspectTradeValueSource(source, snapshot, assetIds, { now = Date
   const mode = normalizedText(source?.mode).toUpperCase();
   const league = source?.league && typeof source.league === "object" ? source.league : {};
   const authority = source?.authority && typeof source.authority === "object" ? source.authority : {};
+  const provenance = source?.provenance && typeof source.provenance === "object" ? source.provenance : {};
   const managerApproved = authority.managerApproved === true && authority.trustedConfiguration === true;
+  const independenceGroup = normalizedText(provenance.independenceGroup);
+  const independentEvidenceApproved = authority.independentEvidenceApproved === true;
   const additive = source?.additive === true;
 
   if (!sourceId) reasons.push("SOURCE_ID_MISSING");
@@ -119,7 +122,15 @@ export function inspectTradeValueSource(source, snapshot, assetIds, { now = Date
     unit: unit || null,
     primary: source?.primary === true,
     additive,
-    authority: Object.freeze({ managerApproved, trustedConfiguration: authority.trustedConfiguration === true }),
+    authority: Object.freeze({
+      managerApproved,
+      trustedConfiguration: authority.trustedConfiguration === true,
+      independentEvidenceApproved
+    }),
+    provenance: Object.freeze({
+      independenceGroup: independenceGroup || null,
+      derivativeOf: normalizedText(provenance.derivativeOf) || null
+    }),
     freshness: Object.freeze(freshness),
     compatibility: Object.freeze(compatibility),
     values,
@@ -143,6 +154,9 @@ export function createSyntheticApprovedTradeValueSource({
   maxAgeMs = 7 * 24 * 60 * 60 * 1000,
   values = {},
   primary = true,
+  independenceGroup = sourceId,
+  independentEvidenceApproved = true,
+  provenance = {},
   ...overrides
 } = {}) {
   return Object.freeze({
@@ -152,7 +166,12 @@ export function createSyntheticApprovedTradeValueSource({
     unit,
     mode: "REDRAFT",
     league: Object.freeze({ season, scoringType, ...(teamCount == null ? {} : { teamCount }) }),
-    authority: Object.freeze({ managerApproved: true, trustedConfiguration: true }),
+    authority: Object.freeze({ managerApproved: true, trustedConfiguration: true, independentEvidenceApproved }),
+    provenance: Object.freeze({
+      independenceGroup,
+      derivativeOf: provenance.derivativeOf || null,
+      ...provenance
+    }),
     additive: true,
     maxAgeMs,
     values: Object.freeze({ ...values }),
