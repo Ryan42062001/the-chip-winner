@@ -163,7 +163,11 @@
       "audit_target_pr": 133,
       "audit_target_branch": "master",
       "audit_target_sha": "5362e2bff143a5aef050e160ccb0706a7060fb3d",
-      "next_gate": "Fresh Auditor publishes exact-target verdict on one evidence-only PR; Manager then consumes verdict alongside product-owner UAT."
+      "next_gate": "Fresh Auditor publishes exact-target verdict on one evidence-only PR; Manager then consumes verdict alongside product-owner UAT.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "256a2b412723527ea2c6183669d5df1651fc21ec"
+      }
     }
   ]
 }
