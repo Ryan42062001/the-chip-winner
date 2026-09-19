@@ -3,7 +3,7 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — MANAGER_REVIEW_READY
+## TCW-034 — AUDIT_READY
 
 Owner:
 **Implementation Engineer / Builder**
@@ -38,7 +38,19 @@ Accepted upstream:
 - package winner/split must remain WITHHELD in live production
 - synthetic test fixtures may exercise approved-source package-value math
 
+Readiness:
+- `workflow:audit-readiness -- --task TCW-034`: PASS
+- blockers: `[]`
+- readyForManagerFreeze: `true`
+- readiness packet sha256: `acde4a63777ff196ce3ca37108f457e2866180a6fa5e204d0ed51b8c8a94a758`
+
+Frozen target:
+`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+
+Frozen packet:
+`.ai/audit/TCW-044_TRADE_WINNER_ENGINE_AUDIT_PACKET_a40c8db8.md`
+
 Next gate:
-Builder reruns `npm run workflow:audit-readiness -- --task TCW-034` against exact checkpoint `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a` using the reconciled canonical Manager state. On PASS, return the readiness packet to Manager for freeze and fresh independent audit. Do not merge.
+Manager integrates and verifies the freeze packet, then activates fresh Independent Auditor task TCW-044. PR #147 remains draft/unmerged.
 
 TCW-035 and later Trade Analyzer tasks remain unactivated.
