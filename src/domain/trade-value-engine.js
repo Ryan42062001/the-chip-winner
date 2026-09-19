@@ -206,6 +206,56 @@ export function evaluatePackageValue({
   });
 }
 
+function resolveIndependentPackageRoots(rows) {
+  const sourceById = new Map();
+  const duplicates = new Set();
+  for (const row of rows) {
+    const id = typeof row?.sourceId === "string" ? row.sourceId.trim() : "";
+    if (!id) continue;
+    if (sourceById.has(id)) duplicates.add(id);
+    else sourceById.set(id, row);
+  }
+  let uncertain = duplicates.size > 0;
+  let contradictory = false;
+  const resolvedGroups = new Set();
+
+  const resolve = (row, visiting = new Set()) => {
+    const id = typeof row?.sourceId === "string" ? row.sourceId.trim() : "";
+    const group = typeof row?.provenance?.independenceGroup === "string"
+      ? row.provenance.independenceGroup.trim() : "";
+    if (!id || !group || duplicates.has(id) || visiting.has(id)) {
+      uncertain = true;
+      return null;
+    }
+    const authorized = row?.authority?.managerApproved === true
+      && row.authority.trustedConfiguration === true
+      && row.authority.independentEvidenceApproved === true;
+    if (!authorized) return null;
+    const derivative = typeof row?.provenance?.derivativeOf === "string"
+      ? row.provenance.derivativeOf.trim() : "";
+    if (!derivative) return { sourceId: id, group };
+    const parent = sourceById.get(derivative);
+    if (!parent) {
+      uncertain = true;
+      return null;
+    }
+    const next = new Set(visiting);
+    next.add(id);
+    const root = resolve(parent, next);
+    if (root && group !== root.group) contradictory = true;
+    return root;
+  };
+
+  for (const row of rows) {
+    const root = resolve(row);
+    if (root) resolvedGroups.add(root.group);
+  }
+  return Object.freeze({
+    independentEvidenceGroups: freezeList([...resolvedGroups].sort()),
+    fullyVerified: !uncertain && !contradictory
+  });
+}
+
 export function packageValueConfidence(packageValue) {
   if (!packageValue || packageValue.status !== "READY") {
     return Object.freeze({
@@ -221,15 +271,15 @@ export function packageValueConfidence(packageValue) {
   }
 
   const rows = Array.isArray(packageValue.sourceResults) ? packageValue.sourceResults : [];
-  const units = new Set(rows.map((row) => row.unit).filter(Boolean));
-  const independentGroups = [...new Set(rows
-    .filter((row) => row.authority?.managerApproved === true
-      && row.authority?.trustedConfiguration === true
-      && row.authority?.independentEvidenceApproved === true
-      && row.provenance?.independenceGroup)
-    .map((row) => row.provenance.independenceGroup))]
-    .sort();
-  const genuinelyIndependentAgreement = units.size === 1 && independentGroups.length >= 2;
+  const units = new Set(rows.map((row) => row.unit));
+  const comparableAgreement = rows.length > 0
+    && units.size === 1
+    && units.has(packageValue.unit)
+    && rows.every((row) => row.status === "READY" && row.winner === packageValue.winner);
+  const provenance = resolveIndependentPackageRoots(rows);
+  const genuinelyIndependentAgreement = comparableAgreement
+    && provenance.fullyVerified
+    && provenance.independentEvidenceGroups.length >= 2;
 
   return Object.freeze({
     claimConfidence: genuinelyIndependentAgreement ? "HIGH" : "MODERATE",
@@ -237,12 +287,12 @@ export function packageValueConfidence(packageValue) {
     coverage: "COMPLETE_PACKAGE",
     freshness: "VERIFIED",
     identity: "EXACT_ESPN_PLAYER_ID",
-    comparability: "COMMON_ADDITIVE_ASSET_UNIT",
-    independentEvidenceGroups: freezeList(independentGroups),
+    comparability: comparableAgreement ? "COMMON_ADDITIVE_ASSET_UNIT" : "UNVERIFIED",
+    independentEvidenceGroups: provenance.independentEvidenceGroups,
     limitations: freezeList([
       genuinelyIndependentAgreement
-        ? "At least two explicitly Manager-authorized independent evidence groups agree on the package-value claim."
-        : "Package value is supported, but fewer than two explicitly Manager-authorized independent evidence groups support the same scale; confidence is capped at MODERATE.",
+        ? "At least two verified, Manager-authorized independent source roots agree on the same package claim and unit."
+        : "Package confidence is capped at MODERATE: provenance may be dependent, contradictory or incomplete, or independent same-scale corroboration is insufficient.",
       "Relative package asset value is not win probability, future-performance probability, or acceptance probability."
     ])
   });
