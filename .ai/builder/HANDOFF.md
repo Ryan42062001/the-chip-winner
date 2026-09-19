@@ -1,134 +1,66 @@
-# Builder Handoff — TCW-034 Bounded Audit Remediation
+# Builder Handoff — TCW-034 F02-R1 / F04-R1 bounded remediation
 
-STATUS: FINAL REPAIRED CANDIDATE — FRESH FULL CI REQUIRED ON THIS EXACT HEAD  
-TASK: TCW-034 — Trade Winner Engine  
-ROLE: Implementation Engineer / Builder  
-EXECUTION: STANDARD_CHAT_HIGH  
-REFRESH: BOUNDED_REMEDIATION_REFRESH  
-BRANCH: `builder/tcw-034-trade-winner-engine`  
-PR: #147 — MUST REMAIN DRAFT / UNMERGED  
-FAILED FROZEN TARGET / REMEDIATION PARENT: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`  
-CURRENT CANONICAL MASTER OBSERVED DURING REMEDIATION: `4672d9d12cd844c97d258e664040ed683c0ccb90`  
-CANONICAL ADVANCEMENT: CONTROL_PLANE_ONLY — NOT MERGED INTO BUILDER BRANCH  
-MERGE AUTHORITY: Manager / Architect only
+STATUS: FINAL REPAIRED CANDIDATE — FRESH FULL EXACT-HEAD CI REQUIRED
+TASK: TCW-034 — Trade Winner Engine
+ROLE: Implementation Engineer / Builder
+EXECUTION: STANDARD_CHAT_HIGH
+REFRESH: BOUNDED_REMEDIATION_REFRESH
+BRANCH: `builder/tcw-034-trade-winner-engine`
+PR: #147 — DRAFT / UNMERGED; Builder must not merge
+EXACT REPAIR PARENT: `24be4be45f7fde351c0a6e209353dd2beed8d854`
+VERIFIED CANONICAL MASTER AT REMEDIATION START: `6861f1375878cd1dd2b94b87e583e66e181b8d08`
+CANONICAL MASTER/AUDITOR ADVANCEMENT: CONTROL_PLANE_ONLY; not merged into this Builder branch.
 
-## Accepted findings remediated
+## Accepted authority
+Manager decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`.
+Independent audit: `.ai/audit/TCW-045_TRADE_WINNER_ENGINE_REAUDIT.md`, PR #157, audit workflow #679 / `35476232619`, test job `105985840004` PASS.
+Only accepted TCW-045-F02-R1 (MEDIUM/blocking) and F04-R1 (LOW/same-pass) plus directly necessary regressions are in this repair.
+Prior F01 raw-count and F03 canonical-horizon fixes remain intact.
 
-### F01 — listed-position counts are descriptive
+## F02-R1: complete-rule, tri-state acquisition legality
+- Introduced a conservative, evidence-aware internal roster-path evaluation: `KNOWN_LEGAL`, `KNOWN_BLOCKED` and `UNKNOWN`, with an explicit `requiresExplicitDrop` conditional path.
+- An absent/partial size, omitted/non-array/malformed position-limit evidence, or unknown player position cannot produce a KNOWN_LEGAL result merely because the known violation list is empty.
+- An explicit array of position limits (including an explicit empty array) and a positive finite roster size are necessary for complete applicable roster-rule evidence; existing normalized unlimited -1 values are not treated as finite violations.
+- Proven violations may remain KNOWN_BLOCKED, whereas incompletely verified direct-add/drop alternatives remain UNKNOWN, not BLOCKED.
+- Simulated drops are conditional only. No hypothetical drop becomes an ESPN transaction or authorization. Current-week locked players are excluded from hypothetical drop paths using the analysis timestamp and existing lock predicate.
+- Only a verified direct-add path contributes to `feasibleCandidateIds`, `replacementProjectionOrNull`, and `supportedReplacementQualityCost`. A legal-but-conditional drop cannot silently yield unconditional numeric replacement or material quality cost.
+- Replacement-path/fragility handling distinguishes VERIFIED, CONDITIONAL, UNKNOWN, BLOCKED and NO_ELIGIBLE; an UNKNOWN path cannot be reclassified as proven blocked/dangerous merely from missing roster rules. Supported independent contingency/bye consequences remain separate.
+- F02-R1 integration regressions cover missing rules, missing size, missing position-limit field, malformed limits, unknown direct-add and conditional-drop paths, verified direct addition, verified conditional drop, known position-limit block, numeric withholding, no unsupported replacement quality cost, preserved 2-for-1/1-for-2 and FLEX/OP.
+- Preserved original current-week lock/read-only `transactionActions: []` and explicit-drop gates.
 
-- `depth.listedPositionChanges` remains visible/descriptive.
-- `listedPositionChangesAreDescriptive: true`.
-- Raw RB/WR/etc. count deltas do not directly set material `depthCost` / `depthGain`.
-- Material depth cost/gain can come from verified legal contingency change.
-- Supported bye-gap changes remain independent material evidence.
-- A separately supported slot-aware replacement-quality cost may be material only when:
-  - explicit configured-slot demand exists;
-  - the replacement pool is current/same-snapshot;
-  - the candidate is slot-eligible;
-  - acquisition capacity is verified available;
-  - a known legal roster acquisition path exists;
-  - both outgoing and replacement projections are finite on the same current-week basis.
-- UNKNOWN contingency plus raw count change cannot become WORSENS/IMPROVES/MIXED solely from the count.
-- If raw counts change while contingency is UNKNOWN and no other material evidence resolves the trade, the do-nothing user decision remains WITHHELD.
+## F04-R1: genuinely independent source roots
+- Confidence now resolves `provenance.derivativeOf` chains by exact source ID to their declared root, rather than counting unrelated-looking group labels.
+- Contradictory derivative group labels, duplicate or ambiguous origins, missing origins, or cyclic ancestry cannot elevate confidence to HIGH.
+- A genuinely independent root requires trusted Manager-approved, explicitly independent source authority and a nonblank root independence group.
+- HIGH requires at least two verified distinct independent root groups, a common package-value unit, and agreement with the published winner claim. Any contradictory/ambiguous ancestry caps confidence at MODERATE; package source disagreement remains WITHHELD.
+- Regressions include direct contradictory derivative, shared-root chain, cycle, missing/ambiguous origin, two independent same-scale roots, and a contradictory derivative alongside two independent roots.
 
-Regressions cover neutral bench RB -> bench WR, raw count-only description, UNKNOWN contingency, genuine contingency loss/gain, plus preserved 2-for-1/1-for-2/dangerous-gap behavior.
+## Preserved authority and limitations
+- `PRODUCTION_TRADE_VALUE_SOURCES = Object.freeze([])`; no live value provider is authorized.
+- Live `packageValue.status` / `winner` and winner split remain WITHHELD/null. No named external provider, ranking/projection/SOS/ADP/VORP/waiver/replacement fallback into market value.
+- ESPN remains read-only, `transactionActions: []`. No acceptance probability, ESPN write, TCW-035 or later task.
+- F01 descriptive counts, F03 canonical playoffs/ROS, explicit follow-up drops, optimized FLEX/OP, source/horizon separation, and prior tests remain in place.
+- `config/field-validation.json` and `FV-SEASON-01` remain unchanged/pending. No Level-4 authenticated ESPN field UAT is claimed.
 
-### F02 — replacement numeric is demand/legality/feasibility bounded
+## Exact final candidate and evidence rule
+The exact commit containing this completed handoff ALSO includes the final non-doc F04-R1 provenance-conflict regression, so it requires a fresh FULL workflow on the SAME final head. No later handoff-only commit may replace it.
+The current handoff describes the final immutable candidate by its PR/branch and commit-containing-this-file; the exact resulting SHA, FULL run/job, test count and evidence artifact will be recorded on PR #147 and returned to Manager without changing Builder HEAD after CI.
+Do NOT run task-specific `workflow:audit-readiness -- --task TCW-034` prematurely while canonical Manager state has `status: ASSIGNED` and `worker_checkpoint_sha: null`.
 
-`replacementScarcity` now:
-- derives explicit affected configured-slot demand from supported contingency and known worsened bye-gap evidence;
-- preserves full structural pool separately from presentation shortlist;
-- uses real slot labels and existing `canFillSlot` semantics, including FLEX/OP;
-- exposes `eligibleSlots` and structured `positionalAndFLEXOPDemand`;
-- requires verified acquisition status `available`;
-- requires known legal roster path;
-- requires same captured snapshot/current-week basis;
-- requires finite projection for the feasible slot-eligible candidate;
-- otherwise returns `replacementProjectionOrNull: null`.
-
-Regressions cover:
-- high-projection ineligible QB vs lower eligible RB;
-- no eligible candidate;
-- FLEX;
-- OP;
-- exhausted acquisition;
-- eligible candidate missing projection.
-
-`marginalVorpOrNull` remains null and replacement/scarcity stays separate from package market value.
-
-### F03 — canonical horizon completeness is authoritative
-
-Playoffs:
-- canonical week set comes only from `snapshot.league.playoffWeeks`;
-- caller `playoffWeeks` cannot shrink it;
-- any missing configured week keeps playoff aggregate/mean/direction UNKNOWN/null;
-- explicit `futureWeeks` can still form a named partial FUTURE_WINDOW without becoming canonical playoffs.
-
-ROS:
-- canonical ROS week set comes only from authoritative league-state `snapshot.league.restOfSeasonWeeks`;
-- caller `restOfSeasonComplete:true` is not authority;
-- caller `restOfSeasonWeeks` cannot create or shrink canonical ROS;
-- no authoritative full set => ROS UNKNOWN;
-- complete authoritative set + full coverage => READY.
-
-`FV-SEASON-01` remains pending; no field evidence is manufactured.
-
-### F04 — confidence uses trusted independence provenance
-
-Source contract now carries:
-- trusted `authority.independentEvidenceApproved`;
-- `provenance.independenceGroup`;
-- optional `provenance.derivativeOf`.
-
-Confidence behavior:
-- one approved source => at most MODERATE;
-- duplicate/shared-origin rows => MODERATE;
-- derivative/shared-origin rows => MODERATE;
-- second row lacking explicit independent-evidence approval => MODERATE;
-- HIGH only when at least two explicitly Manager-authorized independent evidence groups agree on one unit/scale;
-- source disagreement remains generic WITHHELD regardless of independence metadata.
-
-## Preserved boundaries
-
-- `PRODUCTION_TRADE_VALUE_SOURCES = Object.freeze([])`;
-- no live FantasyPros/FantasyCalc/RedraftCalc/RotoTrade provider;
-- no scrape/bundle/manual numeric authority;
-- live package winner/split remains WITHHELD;
-- no rank/projection/SOS/ADP/VORP/waiver/replacement fallback into package market value;
-- package-value absence does not suppress supported roster consequence;
-- ESPN remains read-only;
-- `transactionActions: []`;
-- ownership/counterparty/stale-state/explicit-drop/roster-legality/source-separation/FLEX/OP safeguards preserved;
-- `config/field-validation.json` unchanged;
-- no TCW-035 work.
-
-## Validation before final immutable head
-
-A pre-final development checkpoint reached FULL green with the repaired F01-F04 deterministic suite, Trade Analyzer browser smoke, accessibility/readiness/mobile/security, and repository guardrails. That run is development evidence only and is not the Manager freeze target.
-
-The exact commit containing this handoff is the proposed immutable repaired candidate and must receive a NEW FULL run. No Builder commit may follow it.
-
-Task-specific `workflow:audit-readiness -- --task TCW-034` is intentionally deferred. Manager must first record the exact repaired FULL head as `worker_checkpoint_sha` and transition TCW-034 to `MANAGER_REVIEW_READY` without changing Builder HEAD; audit-readiness then runs against this unchanged head.
-
-## Remediation diff relative to failed target
-
-Exactly:
+## Exact changed files relative to repaired parent
 - `.ai/builder/HANDOFF.md`
 - `src/domain/trade-analyzer.js`
 - `src/domain/trade-value-engine.js`
-- `src/domain/trade-value-source.js`
 - `test/trade-winner-engine.test.js`
 - `test/trade-winner-integration.test.js`
-
-`test/trade-analyzer.test.js` is restored byte-for-byte to the failed-parent version and is not part of the remediation diff. No Manager/shared/audit/strategy/R&D/provider/workflow/package/extension/field-validation file is changed.
+No other Builder, Manager, Auditor, Strategy, R&D, provider, workflow, config, or package file changes are authorized.
 
 ## Next Activation
-
-| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
-| ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | RECOMMEND TO MANAGER | Record exact repaired FULL head and readiness state | After exact-head FULL PASS, record that exact SHA as TCW-034 worker_checkpoint_sha and transition to MANAGER_REVIEW_READY without changing Builder HEAD; then run task-specific audit-readiness and, if PASS, freeze that same SHA for fresh independent re-audit. |
-| 2 | Implementation Engineer / Builder | COMPLETE AFTER EXACT-HEAD FULL PASS | TCW-034 bounded F01-F04 remediation | Do not add another commit, merge, or activate TCW-035. Return exact FULL repaired head to Manager. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | No new policy question | No activation. |
-| 4 | Research & Development (R&D) | WAIT | No new source authority | No activation. |
-| 5 | Independent Auditor / QA | WAIT | Fresh re-audit only after Manager freeze | Do not audit until Manager freezes the exact repaired FULL head. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No unresolved convergence blocker | No activation. |
+| Order | Role | Status | Next action |
+| ---: | --- | --- | --- |
+| 1 | Manager / Architect | RECOMMEND TO MANAGER after exact-head FULL PASS | Record the exact FULL repaired head as `worker_checkpoint_sha`, transition to MANAGER_REVIEW_READY without changing Builder HEAD, run task-specific audit-readiness, freeze unchanged SHA only after PASS, and route another fresh Independent Auditor re-audit. |
+| 2 | Builder | COMPLETE after exact-head FULL PASS | No additional branch commit, no merge; respond only to newly accepted bounded findings. |
+| 3 | Strategy | WAIT | No new strategy work. |
+| 4 | R&D | WAIT | No new provider research or approval. |
+| 5 | Independent Auditor | WAIT | Fresh re-audit only of Manager-frozen immutable repaired target. |
+| 6 | Troubleshooting | IDLE | No activation unless Manager routes a genuine blocker. |

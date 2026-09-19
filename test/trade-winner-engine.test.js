@@ -367,3 +367,17 @@ test("TCW-034 F04 source disagreement keeps generic confidence WITHHELD even for
   assert.equal(confidence.claimConfidence, "WITHHELD");
   assert.deepEqual(confidence.independentEvidenceGroups, []);
 });
+
+test("TCW-045-F04-R1 a contradictory derivative cannot add independence even beside two genuine roots", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"root-b",primary:false,independenceGroup:"group-b"}),
+      source({a:38,x:62},{sourceId:"contradictory-derivative",primary:false,independenceGroup:"group-c",provenance:{derivativeOf:"root-a"}})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a","group-b"]);
+});
