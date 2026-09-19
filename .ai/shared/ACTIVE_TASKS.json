@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T17:57:00Z",
+  "updated_at_utc": "2026-09-19T18:38:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,7 +26,7 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "ASSIGNED",
+      "status": "MANAGER_REVIEW_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
@@ -41,7 +41,7 @@
       "assignment_master_sha": "a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a",
       "branch": "builder/tcw-034-trade-winner-engine",
       "pr": 147,
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "24be4be45f7fde351c0a6e209353dd2beed8d854",
       "worker_slot": "builder-trade-winner-engine",
       "allowed_path_prefixes": [
         "src/domain/trade-analyzer.js",
@@ -73,7 +73,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Builder remediates accepted F01-F04 only on PR #147 from failed frozen target a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a and returns a fresh FULL exact-head repaired candidate to Manager without merging. Manager then records that exact checkpoint and transitions to MANAGER_REVIEW_READY; task-specific audit-readiness runs against the unchanged repaired head before Manager freeze and fresh independent re-audit.",
+      "next_gate": "Task-specific workflow:audit-readiness must run against unchanged repaired FULL head 24be4be45f7fde351c0a6e209353dd2beed8d854. On PASS, Manager freezes that exact SHA as the immutable repaired target and routes a fresh Independent Auditor re-audit. PR #147 remains draft/unmerged; TCW-035 remains inactive.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "fea421a9263e78ff9eeb23c1a339e95b412affe0"

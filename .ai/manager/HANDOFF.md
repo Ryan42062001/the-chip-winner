@@ -1,6 +1,6 @@
 # Manager / Architect Handoff
 
-STATUS: INDEPENDENT FAIL CONSUMED — BOUNDED BUILDER REMEDIATION ACTIVE
+STATUS: TCW-034 REPAIRED FULL CANDIDATE — MANAGER_REVIEW_READY
 ROLE: Manager / Architect
 CANONICAL AUDIT-EVIDENCE MASTER: `fea421a9263e78ff9eeb23c1a339e95b412affe0`
 
@@ -135,3 +135,22 @@ TCW-035 and later tasks remain inactive.
 | 4 | Research & Development (R&D) | IDLE | Provider authority remains intentionally empty | No action unless Manager separately reopens provider/data research. |
 | 5 | Independent Auditor / QA | WAIT | Historical audit complete; repaired target not frozen yet | Do not reuse old verdict as repair proof. Activate a fresh re-audit only after Manager freezes repaired FULL target. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No remediation convergence failure yet | Activate only if bounded Builder remediation cannot converge or a reproduced technical blocker requires root-cause work. |
+
+
+## Repaired candidate checkpoint — 2026-09-19
+
+Exact repaired Builder head:
+`24be4be45f7fde351c0a6e209353dd2beed8d854`
+
+PR #147 remains DRAFT / UNMERGED.
+
+Fresh FULL validation:
+- workflow #674 / run `35461527961`: SUCCESS
+- test job `105946146678`: SUCCESS
+
+Manager independently inspected the bounded six-file remediation and confirmed the intended F01-F04 repair mechanisms are present. This is not an audit verdict.
+
+Next gate:
+task-specific audit-readiness against unchanged `24be4be45f7fde351c0a6e209353dd2beed8d854`; on PASS freeze that exact SHA and route a fresh Independent Auditor re-audit.
+
+TCW-035 remains inactive.

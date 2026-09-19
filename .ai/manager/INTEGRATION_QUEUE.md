@@ -20,14 +20,14 @@
 - Decision: `.ai/manager/evidence/TRADE_WINNER_AUDIT_FINDING_DECISION.md`.
 - Production provider set remains EMPTY.
 - Live package winner/split remains WITHHELD.
+- Repaired FULL candidate returned: `24be4be45f7fde351c0a6e209353dd2beed8d854`.
+- Exact-head workflow #674 / run `35461527961`, test job `105946146678`: FULL PASS.
+- Manager checkpoint/status reconciliation: MANAGER_REVIEW_READY at exact unchanged repaired head.
 - Required next evidence:
-  - bounded F01-F04 remediation only;
-  - fresh FULL exact-head implementation checkpoint that already contains the final Builder handoff/evidence;
-  - exact FULL head returned to Manager as proposed repaired target;
-  - Manager checkpoint/status reconciliation to MANAGER_REVIEW_READY without changing that head;
-  - task-specific audit-readiness PASS against the unchanged head;
-  - no later handoff-only target substitution;
-  - fresh Independent Auditor re-audit after Manager freeze.
+  - task-specific audit-readiness PASS against `24be4be45f7fde351c0a6e209353dd2beed8d854`;
+  - Manager freeze of that exact FULL head;
+  - fresh Independent Auditor re-audit;
+  - no later handoff-only target substitution.
 - Manager merge authority only.
 - Do not merge PR #147 before the fresh repaired-target audit is consumed.
 

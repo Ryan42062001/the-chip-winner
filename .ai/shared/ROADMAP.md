@@ -228,12 +228,13 @@ Decision artifact:
 `.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
 #### TCW-034 — Trade Winner Engine
-Status: **ACTIVE — BOUNDED AUDIT REMEDIATION**
+Status: **MANAGER_REVIEW_READY — REPAIRED FULL CANDIDATE**
 Primary owner: Builder
 Builder PR: `#147` — DRAFT / UNMERGED
 Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
 Accepted audit findings: F01 HIGH, F02 MEDIUM, F03 MEDIUM, F04 LOW
-Required next candidate: fresh FULL exact-head repaired checkpoint + audit-readiness PASS + fresh independent re-audit
+Repaired FULL candidate: `24be4be45f7fde351c0a6e209353dd2beed8d854` / workflow #674 PASS
+Required next gate: task-specific audit-readiness PASS on unchanged repaired head + Manager freeze + fresh independent re-audit
 
 Implement:
 - `YOU WIN / FAIR TRADE / THEY WIN`;

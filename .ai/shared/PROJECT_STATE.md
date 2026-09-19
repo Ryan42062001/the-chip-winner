@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-034 bounded remediation active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-034 repaired FULL candidate at Manager readiness gate + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -105,8 +105,11 @@ TCW-034 is active again for bounded remediation:
 - refresh mode: `BOUNDED_REMEDIATION_REFRESH`
 - only accepted F01-F04 plus directly necessary regressions are authorized
 - production approved-provider set remains EMPTY
-- a fresh FULL exact-head repaired checkpoint is required
-- the repaired FULL head itself must become the next immutable audit target
+- fresh repaired FULL checkpoint: `24be4be45f7fde351c0a6e209353dd2beed8d854`
+- workflow #674 / run `35461527961`: PASS
+- task status: MANAGER_REVIEW_READY
+- task-specific audit-readiness must PASS against this unchanged head
+- on PASS this exact FULL head becomes the immutable repaired audit target
 - a fresh Independent Auditor re-audit is required before any integration
 
 TCW-035 remains inactive.
@@ -147,6 +150,6 @@ TCW-033 is now **CLOSED — MANAGER ACCEPTED** at integration master `2124602b0e
 
 TCW-044 is **CLOSED — FAIL CONSUMED** after Manager accepted findings F01-F04.
 
-TCW-034 is now **ACTIVE — BOUNDED AUDIT REMEDIATION** on existing draft PR #147 from remediation parent `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
+TCW-034 is now **MANAGER_REVIEW_READY — REPAIRED FULL CANDIDATE** on existing draft PR #147 at exact head `24be4be45f7fde351c0a6e209353dd2beed8d854`.
 
 No live third-party value source is authorized; package-value output remains fail-closed in production. TCW-035 remains inactive until the repaired target passes fresh independent re-audit.
