@@ -157,7 +157,11 @@ test("V3.2 registry rejects unsafe parallel write overlap", () => {
 
 test("V3.2 registry rejects duplicate branch and worker slot claims", () => {
   const first = taskFixture("TCW-901");
-  const second = taskFixture("TCW-902", { allowed_path_prefixes: ["docs/"] });
+  const second = taskFixture("TCW-902", {
+    branch: first.branch,
+    worker_slot: first.worker_slot,
+    allowed_path_prefixes: ["docs/"]
+  });
   const result = validateRegistryShape(registryFixture([first, second]));
   assert.ok(result.errors.some((item) => item.includes("branch duplicates")));
   assert.ok(result.errors.some((item) => item.includes("worker_slot duplicates")));
