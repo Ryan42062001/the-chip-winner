@@ -1,43 +1,57 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-030 FRESH TRADE ANALYZER REMEDIATION RE-AUDIT ROUTED
+STATUS: TRADE ANALYZER REMEDIATION CLOSED — RELEASE 1.0 SEASON GATE REMAINS
 ROLE: Manager / Architect
-FROZEN PRODUCT AUDIT TARGET: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-ROUTING BASE: `b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f`
 
-## TCW-030 routing
-- New audit task: `TCW-030 — Trade Analyzer Remediation Independent Re-Audit`.
-- Target task: TCW-025.
-- Target Builder PR: #113.
-- Exact Builder final head: `368a601046df1d4de2f477936f4ac5598e5de753`.
-- Exact deployed remediation target: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`.
-- Frozen packet: `.ai/audit/TCW-030_TRADE_ANALYZER_REAUDIT_PACKET_7bb69042.md`.
-- Expected audit branch: `auditor/tcw-030-trade-analyzer-remediation-retest`.
-- Auditor write surface is limited to the TCW-030 report and task-scoped Auditor handoff.
-- TCW-025 is blocked only on this fresh independent product re-audit.
+## Trade Analyzer closeout
 
-## Audit scope
-Retest accepted TCW-024-F01 through F04 only:
-- F01 replacement slot/full-pool structural path;
-- F02 future/playoff lock neutrality while preserving current-week locks;
-- F03 UNKNOWN contingency semantics;
-- F04 direct Trade Analyzer accessibility/mobile audit coverage.
+The TCW-024 → TCW-025 → TCW-030 remediation/audit chain is complete.
 
-Protected TCW-022 Strategy, ESPN-only/read-only semantics, source separation, materiality/coverage rules, field-validation state, and FV-SEASON-01 remain unchanged.
+- Deployed remediation target: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
+- Product master workflow #571: PASS including full CI, Pages deployment, and production smoke
+- Fresh Independent Auditor task: TCW-030
+- Auditor PR #124 exact head: `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35`
+- Auditor exact-head workflow #598: PASS
+- Auditor verdict: **PASS**
+- Findings: none
+- Manager independently accepted the PASS after spot-checking F01-F04
+- Audit evidence integration: `54b5a695a7d8a323b16bb7798b9a1d2ea736842e`
+- Audit evidence master workflow #599: PASS
+- Explicit VERIFYING_MASTER closeout checkpoint PR #125 exact head `4bf1665cbf39e737d6b655fd964220f4d3e75ee9`
+- Closeout checkpoint exact-head workflow #600: PASS
+- Closeout checkpoint integration: `a246ce6ea430533f43a6b979ac44a4c5d07485fd`
+- Closeout checkpoint master workflow #601: PASS
 
-## Target advancement
-Manager compared deployed product target `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0` through routing base `b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f`. The advancement is control-plane-only: no `src/**` or `config/**` product behavior changed.
+TCW-025 and TCW-030 are CLOSED and removed from active-only state.
 
-## Release 1.0
-Field state remains **10 passed / 1 pending**. `FV-SEASON-01` still requires genuine real-season playoff/bye evidence; no simulation or manufactured pass is permitted.
+## Product status
+
+Trade Analyzer v1 remediation is independently audited and closed. TCW-024-F01 through F04 are cleared.
+
+The broader product boundary remains unchanged:
+- ESPN-only
+- read-only
+- no ESPN transaction mutation
+- projection sources remain separate
+- no hidden trade/winner/confidence/acceptance score
+- existing current/future/playoff materiality and coverage gates remain intact
+
+## Release 1.0 field state
+
+Field registry remains **10 passed / 1 pending**.
+
+Sole pending field:
+`FV-SEASON-01 — Real playoff and bye intelligence states`
+
+It remains genuine-season-event gated and must not be simulated or manufactured.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | Await TCW-030 independent product verdict | After TCW-030 returns, independently review its final PR/head/CI/verdict and accept or reject every finding before changing TCW-025 state. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-025 remediation deployed; audit gate active | No action unless Manager accepts a blocking TCW-030 finding and routes bounded remediation. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No Strategy question exists | No action unless the audit reveals a genuine policy ambiguity requiring Strategy ownership. |
-| 4 | Research & Development (R&D) | IDLE | No research dependency exists | No action unless the audit reveals a genuine external/provider unknown requiring R&D. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-030 — fresh TCW-024-F01 through F04 remediation re-audit | Continue The Chip Winner as Independent Auditor / QA. Execute TCW-030 on `auditor/tcw-030-trade-analyzer-remediation-retest` under STANDARD_CHAT_HIGH with Fast Refresh. Audit exact frozen target `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`, publish only the authorized audit report/handoff, open one evidence-only PR, verify exact-head CI, and do not merge. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure exists | Activate only if a later finding creates a genuine cross-layer diagnosis loop. |
+| 1 | Manager / Architect | ACTIVATE NOW | Select and route the next roadmap product task | Review the post-Trade-Analyzer roadmap and choose the next Manager-approved product lane. Current first candidate is GM Action Plan / recommendation synthesis; do not create work merely to exercise a role. |
+| 2 | Implementation Engineer / Builder | WAIT | No active implementation task | Wait for a Manager-approved production task. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No active Strategy assignment | Activate only if the next product lane needs a genuine recommendation-policy contract. |
+| 4 | Research & Development (R&D) | IDLE | No active R&D dependency | Activate only if the next lane has a genuine external/provider/technical unknown. |
+| 5 | Independent Auditor / QA | WAIT | TCW-030 complete | Wait for the next fresh Manager-routed audit target. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure exists | Activate only for a genuine cross-layer diagnosis problem. |
