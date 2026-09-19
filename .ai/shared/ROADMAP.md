@@ -174,9 +174,11 @@ Exit gate:
 - real user acceptance is recorded for that baseline before advancing its product status.
 
 #### TCW-032 — Trade Value + Team Needs Strategy Contract
-Status: **ACTIVE — STRATEGY ASSIGNED**
+Status: **CLOSED — MANAGER ACCEPTED**
 Primary owner: In-Season Strategy & Decision Intelligence
-Assigned branch: `strategy/tcw-032-trade-value-team-needs-contract`
+Strategy head: `a9ee2b8d970bb407fe876841d1f5706054f52f3b`
+Integration master: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+Validation: PR #143 / workflow #643 PASS; integration master workflow #644 PASS
 
 Define:
 - winner/fairness semantics;
@@ -197,8 +199,12 @@ Define:
 
 This contract intentionally supersedes the old blanket prohibition on a trade winner/value result. It does **not** authorize misleading win-probability or acceptance-probability claims.
 
+Manager accepted the inclusive 45–55 package-value fairness band as a transparent v1 policy heuristic. The contract requires package winner/split to remain WITHHELD until Manager approves a comparable additive asset-value source.
+
 #### TCW-033 — Trade Intelligence Data + ESPN Offer Research
+Status: **ACTIVE — R&D ASSIGNED**
 Primary owner: R&D
+Assigned branch: `rnd/tcw-033-trade-intelligence-data-research`
 
 Research:
 - reliable read-only access, if any, to received/pending ESPN trade offers;
@@ -211,6 +217,7 @@ Research:
 Do not assume undocumented ESPN trade-offer access is reliable.
 
 #### TCW-034 — Trade Winner Engine
+Status: **BLOCKED — AWAITING TCW-033 VALUE-SOURCE AUTHORITY**
 Primary owner: Builder
 
 Implement:
@@ -365,7 +372,7 @@ Owner: Independent Auditor / QA
 
 Audit exact deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d` for TCW-041-F01 closure and preserved Trade Analyzer ownership/package/read-only behavior. Product-owner UI/UAT acceptance remains a separate parallel gate.
 
-The TCW-031 baseline gates are cleared. TCW-032 is active. TCW-033 remains queued under smallest-necessary activation; TCW-034 remains blocked until the TCW-032 Strategy contract is accepted.
+The TCW-031 baseline gates are cleared. TCW-032 is closed and Manager-accepted. TCW-033 is active under smallest-necessary activation. TCW-034 remains blocked until Manager consumes TCW-033's package-value source verdict and explicitly authorizes implementation.
 
 
 ### Baseline closeout note — 2026-09-19
@@ -377,4 +384,4 @@ TCW-031, TCW-042, and TCW-043 are closed after:
 - V3.2 VERIFYING_MASTER checkpoint #637 PASS;
 - resulting canonical master #638 PASS.
 
-The active product question is exactly the product owner's scoring concern: define a defensible, explainable trade winner/fairness and team-needs contract under TCW-032 before implementing it in TCW-034.
+The accepted TCW-032 contract now defines the scoring semantics. The active product question is TCW-033's source authority: establish whether a defensible additive package-value basis exists before TCW-034 exposes YOU WIN / FAIR TRADE / THEY WIN and relative-value percentages.
