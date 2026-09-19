@@ -80,8 +80,8 @@ function rosterRuleState(snapshot, entries, players) {
   const violations = [];
   const sizeLimit = Number.isInteger(rules.size) ? rules.size : null;
   if (sizeLimit != null && active.length > sizeLimit) violations.push(Object.freeze({ kind: "ROSTER_SIZE", limit: sizeLimit, count: active.length, excess: active.length - sizeLimit }));
-  for (const rule of rules.positionLimits || []) {
-    if (!Number.isInteger(rule.limit) || rule.limit < 0) continue;
+  for (const rule of Array.isArray(rules.positionLimits) ? rules.positionLimits : []) {
+    if (!rule || !Number.isInteger(rule.limit) || rule.limit < 0) continue;
     const count = positionCounts.get(rule.position) || 0;
     if (count > rule.limit) violations.push(Object.freeze({ kind: "POSITION_LIMIT", position: rule.position, limit: rule.limit, count, excess: count - rule.limit }));
   }
