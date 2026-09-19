@@ -7,33 +7,36 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_2.md`
 ## Active lanes
 
 ### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-- Owner: Implementation Engineer / Builder
+- Product target: `79b41042b9f556aa4f1368603bcda81df796a6fa`
+- Source PR: #129
+- State: WAITING_EXTERNAL_EVIDENCE
+- User action required: true
+- Master #611: test/deploy/production verification PASS
+- Current gate: genuine deployed connected-ESPN product-owner UAT with explicit ACCEPT/REJECT
+- Independent audit remains separately required under TCW-041
+
+### TCW-041 — Trade Analyzer Functional Reset Independent Audit
+- Owner: Independent Auditor / QA
 - State: ASSIGNED
 - Execution: STANDARD_CHAT_HIGH
 - Refresh: FAST_REFRESH
-- Assignment master: `3eee60a38e464dd3406f7a67f287c3d63a5f6a74`
-- Expected branch: `builder/tcw-031-trade-analyzer-functional-reset`
-- Priority: highest current product lane
-- Known baseline defect: incoming trade choices are not bound to one explicit opposing roster; free-agent/unrostered and mixed-opponent pseudo-trades are not structurally excluded.
-- Next gate: Builder final candidate PR/head + exact-head CI.
-- Product closeout additionally requires Manager integration/master verification, fresh independent audit, and real deployed product-owner UAT.
+- Exact frozen target: `79b41042b9f556aa4f1368603bcda81df796a6fa`
+- Source PR: #129
+- Expected branch: `auditor/tcw-041-trade-analyzer-functional-reset-audit`
+- Current gate: fresh independent verdict on evidence-only PR
 
 ## Planned follow-on lanes
-- TCW-032 — Trade Value + Team Needs Strategy Contract
-- TCW-033 — Trade Intelligence Data + ESPN Offer Research
-- TCW-034 through TCW-040 per canonical roadmap
-
-Do not activate them merely to keep roles busy.
+TCW-032/033 and later V2 work remain waiting until Manager resolves the TCW-031 baseline acceptance gates.
 
 ## Release 1.0 field state
 Field registry remains **10 passed / 1 pending**.
 Pending: `FV-SEASON-01 — Real playoff and bye intelligence states`.
-It remains genuine-season-event gated and must not be simulated or manufactured.
+Do not manufacture it.
 
 ## Role state
-- Manager / Architect — WAIT for TCW-031 Builder result.
-- Builder — ACTIVATE NOW on TCW-031.
+- Manager — USER ACTION coordination / audit review.
+- Builder — WAIT.
 - Strategy — WAIT.
 - R&D — WAIT.
-- Independent Auditor — WAIT.
-- Troubleshooting — IDLE / on-demand.
+- Auditor — ACTIVATE NOW on TCW-041.
+- Troubleshooting — IDLE/on-demand.
