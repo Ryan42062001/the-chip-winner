@@ -77,7 +77,7 @@ try {
   await page.getByRole("button", { name: "Analyze proposed trade" }).click();
   await page.locator("#trade-results-title").waitFor();
   await page.getByText("My team", { exact: true }).first().waitFor();
-  await page.getByText(opposing.name, { exact: true }).first().waitFor();
+  await page.locator(".trade-results").getByText(opposing.name, { exact: true }).waitFor();
   await page.locator("#trade-incoming-select").waitFor();
 
   await page.locator("#team-select").selectOption(opposing.id);
