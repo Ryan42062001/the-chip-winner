@@ -228,9 +228,11 @@ Decision artifact:
 `.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
 #### TCW-034 — Trade Winner Engine
-Status: **ACTIVE — BOUNDED SOURCE-AGNOSTIC BUILDER ASSIGNMENT**
+Status: **AUDIT_READY — EXACT BUILDER TARGET FROZEN**
 Primary owner: Builder
-Assigned branch: `builder/tcw-034-trade-winner-engine`
+Builder PR: `#147`
+Frozen target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+Audit-readiness: PASS
 
 Implement:
 - `YOU WIN / FAIR TRADE / THEY WIN`;
@@ -244,6 +246,15 @@ Implement:
 - fairness band;
 - separate evidence confidence;
 - plain-language reasons and limitations.
+
+Fresh task-scoped independent audit:
+- `TCW-044 — Trade Winner Engine Independent Audit`
+- status: **ACTIVE — AUDITOR ASSIGNED**
+- branch: `auditor/tcw-044-trade-winner-engine-audit`
+- frozen target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+- packet: `.ai/audit/TCW-044_TRADE_WINNER_ENGINE_AUDIT_PACKET_a40c8db8.md`
+
+TCW-035 remains inactive until Manager consumes the TCW-044 verdict.
 
 #### TCW-035 — Team Needs + Opportunity Model
 Owner sequence: Strategy → Builder
