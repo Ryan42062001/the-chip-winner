@@ -1,8 +1,8 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-032 ACCEPTED/CLOSED — TCW-033 R&D ACTIVE
+STATUS: TCW-033 ACCEPTED/CLOSED — TCW-034 BOUNDED BUILDER ACTIVE
 ROLE: Manager / Architect
-CANONICAL R&D ASSIGNMENT BASE: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+CANONICAL BUILDER ASSIGNMENT BASE: `2124602b0eb884fc9a6db407e4feb3b3f9afbf5a`
 
 ## Accepted Trade Analyzer baseline
 
@@ -13,32 +13,46 @@ TCW-031 / TCW-042 / TCW-043 remain closed with product-owner deployed UAT **ACCE
 
 Field validation remains **10 passed / 1 pending**. The sole pending condition is `FV-SEASON-01 — Real playoff and bye intelligence states`; do not manufacture it.
 
-## TCW-032 Manager decision
+## TCW-032 accepted Strategy authority
 
-`TCW-032 — Trade Value + Team Needs Strategy Contract` is accepted and closed.
+TCW-032 is closed and Manager-accepted.
+
+- Strategy head: `a9ee2b8d970bb407fe876841d1f5706054f52f3b`
+- integration master: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+- 45–55 inclusive package share is the accepted v1 fairness heuristic
+- package value is relative asset value, never probability
+- package value and roster consequence remain separate
+
+## TCW-033 Manager decision
+
+TCW-033 is accepted and closed.
 
 Evidence:
-- Strategy PR #143 final head: `a9ee2b8d970bb407fe876841d1f5706054f52f3b`
-- PR workflow #643 / run `35451248503`: PASS
-- exact Strategy integration/master SHA: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
-- master workflow #644 / run `35452516850`: PASS
+- R&D PR #145 final head: `1f4d2f8671d60b26a873e7a11d84dc4ff6dc899c`
+- PR workflow #647 / run `35453462402`: PASS
+- R&D integration/master SHA: `2124602b0eb884fc9a6db407e4feb3b3f9afbf5a`
+- master workflow #648 / run `35453637719`: PASS
 
-Manager accepted:
-- package value, user-roster impact, and two-manager plausibility as separate outputs;
-- 57/43-style display as relative package asset value, never probability;
-- inclusive 45–55 package share as the v1 fairness heuristic;
-- the 45–55 band as explicit policy, not statistical calibration;
-- fail-closed winner/value behavior when comparable additive value authority is absent;
-- TCW-022 legality/source/horizon/read-only safeguards preserved by TCW-032.
+Canonical source decision:
+`.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
-Repository verification confirms the current FantasyPros ranking path is ordinal ranking/SOS context and projection paths are projected points; they are not already an approved additive trade-asset value scale. TCW-033 is therefore a real downstream dependency, not speculative busywork.
+Manager decision:
+- no researched external provider is approved for automated/live package-value authority today;
+- FantasyPros weekly trade chart, FantasyCalc, and RedraftCalc remain future candidates only after a separate rights/contract/format decision;
+- no existing rank/projection/VORP field may substitute for market/package value;
+- source-agnostic fail-closed engine implementation is approved;
+- production approved-provider set is EMPTY;
+- live packageValue must therefore remain WITHHELD with no numeric split or winner;
+- synthetic approved-source fixtures may exercise 45–55 winner math and source edge cases;
+- buy-low/sell-high remains OPPORTUNITY_UNVERIFIED;
+- automatic current-football ESPN pending-offer ingestion remains UNKNOWN / NOT ESTABLISHED.
 
 ## Active task
 
-`TCW-033 — Trade Intelligence Data + ESPN Offer Research`
+`TCW-034 — Trade Winner Engine`
 
 Owner:
-**Research & Development**
+**Implementation Engineer / Builder**
 
 Execution:
 `STANDARD_CHAT_HIGH`
@@ -47,23 +61,24 @@ Refresh:
 `FAST_REFRESH`
 
 Expected worker branch:
-`rnd/tcw-033-trade-intelligence-data-research`
+`builder/tcw-034-trade-winner-engine`
 
 Task:
-`.ai/manager/tasks/TCW-033.md`
+`.ai/manager/tasks/TCW-034.md`
 
-Priority:
-resolve package-value source authority first so Manager can decide whether/how TCW-034 may expose winner/split. Complete the bounded roadmap R&D for buy-low/sell-high, league-wide matching prerequisites, and read-only ESPN received/pending-offer feasibility without letting the latter delay the blocking source verdict.
+Builder must implement the accepted source-agnostic engine, preserve current read-only/ownership/stale-state protections, and keep live package-value output fail-closed because no provider is approved.
 
-TCW-034 remains blocked until Manager consumes TCW-033. No Builder activation yet.
+A test fixture is not a production provider.
+
+TCW-035+ remain unactivated.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-033 routed | Await R&D PR/head/CI; independently review source authority and decide TCW-034 routing. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-034 blocked | Do not implement winner/split until Manager consumes TCW-033 and explicitly activates Builder. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 closed | No action; accepted contract is downstream authority. |
-| 4 | Research & Development (R&D) | ACTIVATE NOW | TCW-033 research | Execute TCW-033 on `rnd/tcw-033-trade-intelligence-data-research`; resolve value-source authority first, produce research + handoff, one PR, exact-head CI, no merge. |
-| 5 | Independent Auditor / QA | IDLE | No frozen implementation target | Await later implementation audit routing. |
+| 1 | Manager / Architect | WAIT | TCW-034 routed | Await Builder PR/head/full CI/audit-readiness; independently review before any integration or audit freeze. |
+| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 bounded Trade Winner Engine | Execute TCW-034 on `builder/tcw-034-trade-winner-engine`; preserve empty live provider set, implement/test source-agnostic engine, full CI + audit-readiness, one PR, no merge. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 closed | Re-activate only for a new policy decision. |
+| 4 | Research & Development (R&D) | IDLE | TCW-033 closed | Re-activate only for a bounded provider/ESPN research question. |
+| 5 | Independent Auditor / QA | WAIT | No frozen TCW-034 target yet | Activate only after Manager freezes an implementation candidate. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only on Manager routing. |
