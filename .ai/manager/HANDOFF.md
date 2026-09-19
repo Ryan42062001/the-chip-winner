@@ -1,152 +1,54 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-034 REPAIRED TARGET FROZEN — TCW-045 FRESH AUDITOR ACTIVE
+STATUS: TCW-045 AUDIT FAIL CONSUMED — TCW-034 BOUNDED SECOND REMEDIATION ASSIGNED
 ROLE: Manager / Architect
-CANONICAL AUDIT-EVIDENCE MASTER: `fea421a9263e78ff9eeb23c1a339e95b412affe0`
+CANONICAL AUDIT EVIDENCE MASTER: `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
 
-## Builder product lane
+## Decision and immutable evidence
 
-Existing Builder PR:
-`#147`
+Historical first failed target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
+Historical second failed repaired target: `24be4be45f7fde351c0a6e209353dd2beed8d854`.
 
-Builder branch:
-`builder/tcw-034-trade-winner-engine`
+Independent Auditor TCW-045 report: `.ai/audit/TCW-045_TRADE_WINNER_ENGINE_REAUDIT.md`.
+- Auditor evidence PR #157 exact head `a9ab541f46d571347c22b291534d343477bf37bb`
+- exact-head workflow #679 / run `35476232619`, test `105985840004`: PASS
+- PR #157 merged as evidence-only master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
+- master workflow #680 / run `35476504713`, test `105986552934`: PASS
 
-PR #147 remains:
-**DRAFT / UNMERGED**
+Manager independently reviewed and ACCEPTED:
+- F02-R1 — MEDIUM / BLOCKING: unverified or incomplete roster rules can falsely authorize a legal acquisition, numeric replacement and material depth cost.
+- F04-R1 — LOW / SAME-PASS: explicit derivative source ancestry is ignored when distinct group labels confer HIGH confidence.
 
-Historical authorized Builder diff baseline:
-`872aa79969743dafb3bf062a76b213c687397a6f`
+Canonical decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`.
 
-Historical FULL checkpoint:
-`c78a9edba202ae822abd21dabc845e40a35f9b45`
+Historical F01 raw-count and F03 caller-horizon subset findings are CLOSED within the prior audit's stated limits. The fresh repair must preserve them. TCW-045 is CLOSED and its FAIL consumed; no audit acceptance or Builder merge is implied.
 
-Failed frozen target / remediation parent:
-`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+## Active Builder task
 
-The failed target is immutable historical audit evidence and is not approved for integration.
-
-## Consumed independent audit
-
-Historical audit task:
-`TCW-044 — Trade Winner Engine Independent Audit`
-
-Auditor evidence PR:
-`#151`
-
-Exact Auditor head:
-`b30732e8f170885c309389f44657bddb3923c8b8`
-
-Exact-head CI:
-- workflow #659 / run `35458714753`: PASS
-- test job `105938554753`: PASS
-
-Canonical evidence integration:
-`fea421a9263e78ff9eeb23c1a339e95b412affe0`
-
-Audit verdict:
-**FAIL — REMEDIATION REQUIRED**
-
-Manager independently accepted:
-- F01 — HIGH — BLOCKING
-- F02 — MEDIUM — BLOCKING
-- F03 — MEDIUM — BLOCKING
-- F04 — LOW — accepted for same-pass repair
-
-Canonical decision:
-`.ai/manager/evidence/TRADE_WINNER_AUDIT_FINDING_DECISION.md`
-
-The audit task is CLOSED. A later fresh re-audit must use a new Manager-frozen repaired target.
-
-## Active bounded remediation
-
-Active task:
 `TCW-034 — Trade Winner Engine`
 
-Owner:
-**Implementation Engineer / Builder**
+Owner: Implementation Engineer / Builder
+Execution: `STANDARD_CHAT_HIGH`
+Refresh: `BOUNDED_REMEDIATION_REFRESH`
+Existing branch: `builder/tcw-034-trade-winner-engine`
+Existing PR: #147 — DRAFT / UNMERGED
+Exact remediation parent: `24be4be45f7fde351c0a6e209353dd2beed8d854`
 
-Execution:
-`STANDARD_CHAT_HIGH`
+Only F02-R1 / F04-R1 and directly necessary regression tests, contract changes and final Builder handoff are authorized. Do NOT merge Manager/audit control-plane changes into Builder's product branch.
 
-Refresh:
-`BOUNDED_REMEDIATION_REFRESH`
+For F02-R1, unknown/partial applicable roster settings must stay UNKNOWN, not become VERIFIED merely because known violations are empty. Preserve separately verified direct-add/drop paths, slot/FLEX/OP/source/current-week evidence and conditional-drop semantics. Ensure unsupported replacement numeric and material-quality results are withheld; UNKNOWN is not a proved blocked path.
 
-Existing branch:
-`builder/tcw-034-trade-winner-engine`
+For F04-R1, distinct arbitrary group names must not override declared derivative ancestry/shared origin. Resolve source roots conservatively (including chains/cycles/unknown origin), prove genuinely independent Manager-authorized agreeing same-scale roots for HIGH; otherwise MODERATE or WITHHELD. Production provider set remains EMPTY.
 
-Existing PR:
-`#147`
-
-Remediation parent:
-`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
-
-Control-plane advancement through `fea421a9263e78ff9eeb23c1a339e95b412affe0` is classified `CONTROL_PLANE_ONLY`; Builder must not merge Manager/audit commits into the product branch.
-
-Authorized remediation is only the accepted F01-F04 corrections and directly necessary tests.
-
-### F01
-
-Raw listed-position counts remain descriptive. They may not directly produce material depth gain/cost or change the do-nothing decision. Use verified legal contingency, supported bye-gap, or separately supported slot-aware replacement-quality evidence.
-
-### F02
-
-Do not publish the maximum projection from the full structural pool as a replacement metric. Numeric replacement context must be tied to the actual legal slot/demand, FLEX/OP matching, same source/horizon, and feasible acquisition/roster path; otherwise the numeric field is null.
-
-### F03
-
-Do not let caller subsets redefine canonical ROS/playoff horizons. Canonical playoffs use configured league playoff weeks; canonical ROS needs an authoritative complete remaining-week definition. Partial caller subsets remain partial/future or UNKNOWN.
-
-### F04
-
-HIGH package confidence requires explicitly established genuinely independent agreeing approved sources. Duplicate/derivative/non-independent rows remain at most MODERATE.
-
-## Required repaired-candidate gate
-
-The next acceptable candidate must be a **fresh FULL exact-head implementation checkpoint** after remediation.
-
-That exact FULL-CI head itself becomes the proposed immutable repaired target.
-
-Required before Manager freeze:
-- F01-F04 deterministic regressions PASS;
-- all preserved Trade Winner tests PASS;
-- full repository CI PASS;
-- browser/accessibility/readiness/mobile/security gates PASS as applicable;
-- production approved-provider set remains EMPTY;
-- live package winner/split remains WITHHELD;
-- ESPN read-only and `transactionActions: []` preserved;
-- field validation unchanged; `FV-SEASON-01` remains pending;
-- exact repaired SHA / fresh FULL run / test job / changed files returned to Manager without merge;
-- Manager records that exact head as the worker checkpoint and transitions to MANAGER_REVIEW_READY without changing Builder HEAD;
-- task-specific audit-readiness then PASSes against that unchanged repaired head and bounded remediation diff;
-- no merge.
-
-Only after the readiness PASS may Manager freeze the same exact repaired FULL head. A **fresh Independent Auditor re-audit** is then required before any product integration.
-
-TCW-035 and later tasks remain inactive.
-
-## Repaired-target freeze — 2026-09-19
-
-Immutable repaired Builder target:
-`24be4be45f7fde351c0a6e209353dd2beed8d854`
-
-- Builder PR #147: DRAFT / UNMERGED.
-- Fresh exact-head FULL workflow #674 / run `35461527961`, test `105946146678`: PASS.
-- User-executed task-specific audit-readiness against unchanged exact head: `blockers: []`; `readyForManagerFreeze: true`; packet SHA256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`.
-- Canonical readiness master `0476118169110c7fa10b5fda4c2b7d662fc0b3ad`, workflow #676 / run `35462452563`: PASS.
-- Historical failed target `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a` remains frozen as historical evidence.
-- New audit packet: `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`.
-- TCW-034: AUDIT_READY; TCW-045: ASSIGNED.
-- Production value-source authority remains EMPTY. Live winner/split WITHHELD. No ESPN write actions. `FV-SEASON-01` remains pending.
-- TCW-035 remains inactive. No Builder merge/product acceptance before independent re-audit.
+Required next evidence: NEW fresh FULL exact-head Builder checkpoint INCLUDING final handoff; PR #147 remains draft/unmerged. Manager will reconcile that exact checkpoint in active machine state, run task-specific readiness against its unchanged bounded diff, freeze exact FULL head on PASS, and route a FRESH independent re-audit. Do not manufacture FV-SEASON-01 or activate TCW-035.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-045 fresh re-audit routed | Await exact Auditor PR/head/verdict/CI; independently consume findings before Builder integration. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-034 immutable repaired target frozen | Do not advance PR #147 or merge while TCW-045 audits. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 contract accepted | Re-activate only on a separately routed policy question. |
-| 4 | Research & Development (R&D) | IDLE | TCW-033 evidence accepted | No new provider authority. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-045 fresh repaired-target independent re-audit | Execute `.ai/manager/tasks/TCW-045.md` and frozen packet `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md` against exact target `24be4be45f7fde351c0a6e209353dd2beed8d854`; one evidence PR, no merge. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only on Manager assignment. |
+| 1 | Manager / Architect | WAIT | Independent audit findings consumed / repair routed | Await new exact FULL Builder SHA, independently check it, reconcile machine checkpoint, then readiness/freeze/fresh audit. |
+| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 bounded second-audit repair | Resume existing PR #147 at `24be4be45f7fde351c0a6e209353dd2beed8d854`; repair only F02-R1 and F04-R1 with regressions and final handoff in the exact fresh FULL checkpoint. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No unresolved policy question | Await separate routing. |
+| 4 | Research & Development (R&D) | IDLE | No value-provider authority granted | Await separate routing. |
+| 5 | Independent Auditor / QA | WAIT | TCW-045 CLOSED / FAIL consumed | Do not reuse a historical audit as new-target proof. Await Manager's immutable repaired target and fresh audit branch. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No separate diagnosis escalation | Activate only if bounded repair cannot converge. |
