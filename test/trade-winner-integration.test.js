@@ -392,18 +392,18 @@ test("TCW-045-F02-R1 verified direct add permits numeric replacement; a verified
   assert.deepEqual(conditional.transactionActions,[]);
 });
 
-test("TCW-045-F02-R1 known position-limit block stays BLOCKED, not UNKNOWN or LEGAL", () => {
+test("TCW-045-F02-R1 proven QB position-limit block remains KNOWN_BLOCKED for OP demand", () => {
   const snapshot=snap({
-    players:[player("r","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],
-    mine:[entry("r","RB"),entry("c","BE")],other:[entry("x","BE")],
-    size:3,availablePlayers:["faR"]
+    players:[player("r","RB",20),player("c","RB",9),player("x","DST",6),player("faQ","QB",8)],
+    mine:[entry("r","OP"),entry("c","BE")],other:[entry("x","BE")],
+    size:3,availablePlayers:["faQ"],
+    lineupSlots:[{slot:"OP",count:1},{slot:"BE",count:1}]
   });
-  snapshot.league.rosterRules={size:3,positionLimits:[{position:"RB",limit:1}]};
-  // The existing roster has a proven RB limit violation; acquisition of another RB cannot be affirmed.
+  snapshot.league.rosterRules={size:3,positionLimits:[{position:"QB",limit:0}]};
   const result=analyze(snapshot,proposal(["c"],["x"]));
   assert.equal(result.replacementScarcity.replacementProjectionOrNull,null);
   assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,[]);
-  assert.notEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"KNOWN_LEGAL");
+  assert.equal(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"KNOWN_BLOCKED");
   assert.equal(result.depth.materialDepthEvidence.replacementQualityCost,false);
 });
 
