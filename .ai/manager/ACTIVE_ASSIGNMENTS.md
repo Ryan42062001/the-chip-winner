@@ -3,7 +3,7 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — MANAGER_REVIEW_READY / BOUNDED REMEDIATION
+## TCW-034 — AUDIT_READY / REPAIRED TARGET FROZEN
 
 Owner:
 **Implementation Engineer / Builder**
@@ -56,4 +56,18 @@ Preserved:
 - TCW-035+ inactive.
 
 Next gate:
-Run task-specific `workflow:audit-readiness -- --task TCW-034` against unchanged exact repaired FULL head `24be4be45f7fde351c0a6e209353dd2beed8d854`. On PASS, Manager freezes that same SHA for fresh Independent Auditor re-audit. PR #147 remains draft/unmerged; TCW-035 remains inactive.
+TCW-045 fresh Independent Auditor re-audits immutable repaired target `24be4be45f7fde351c0a6e209353dd2beed8d854`. Builder PR #147 remains draft/unmerged; Manager consumes independent verdict before any merge. TCW-035 inactive.
+
+## TCW-045 — ASSIGNED
+
+Owner: Independent Auditor / QA
+
+Expected branch: `auditor/tcw-045-trade-winner-repaired-reaudit`
+
+Task: `.ai/manager/tasks/TCW-045.md`
+
+Frozen packet: `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`
+
+Immutable target: `24be4be45f7fde351c0a6e209353dd2beed8d854`
+
+Authorized changed files: `.ai/audit/TCW-045_TRADE_WINNER_ENGINE_REAUDIT.md` and `.ai/auditor/TCW-045_HANDOFF.md` only. One Auditor PR, exact-head CI, no merge.
