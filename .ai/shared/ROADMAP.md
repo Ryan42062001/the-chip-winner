@@ -346,3 +346,21 @@ Trade Analyzer V2 is now the primary product lane. The following remain later ca
 5. ESPN write actions — later gated and separately authorized.
 
 Explicit product-owner direction continues to supersede older discovery ordering.
+
+
+#### TCW-042 — Ownership Remediation + Player Input UI Polish
+Status: **INTEGRATED / DEPLOYED — FINAL AUDIT + UAT GATES ACTIVE**
+
+Exact repaired deployed target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
+
+TCW-041-F01 outgoing ownership remediation and the compact balanced Send/Receive UI are deployed. Master workflow #621 passed FULL CI, Pages deployment, and production verification.
+
+#### TCW-043 — Ownership remediation re-audit
+Status: **ASSIGNED — FRESH INDEPENDENT AUDIT**
+
+Owner: Independent Auditor / QA
+
+Audit exact deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d` for TCW-041-F01 closure and preserved Trade Analyzer ownership/package/read-only behavior. Product-owner UI/UAT acceptance remains a separate parallel gate.
+
+TCW-032/033 remain held until both TCW-043 and genuine deployed product-owner UAT clear the TCW-031 baseline.
