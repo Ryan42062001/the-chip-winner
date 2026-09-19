@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T04:43:00Z",
+  "updated_at_utc": "2026-09-19T04:50:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,16 +26,20 @@
       "title": "Trade Analyzer Audit Remediation",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "AUDIT_READY",
+      "status": "BLOCKED",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
       "refresh_reason": "Accepted TCW-024 findings F01-F04 on the same Trade Analyzer remediation lane.",
       "merge_authority": "Manager",
-      "blocker_type": "NONE",
+      "blocker_type": "AUDIT",
       "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on_tasks": [
+        "TCW-030"
+      ],
+      "blocked_on": [
+        "TCW-030 fresh Independent Auditor / QA retest of accepted TCW-024-F01 through F04 against exact deployed remediation 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0."
+      ],
       "task_file": ".ai/manager/tasks/TCW-025.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "c00e4e90b07436c532db5988bebd361026e882b7",
@@ -61,12 +65,62 @@
       "post_merge_canary_required": true,
       "integration_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
       "post_merge_run": 571,
-      "next_gate": "Manager routes a fresh Independent Auditor retest of accepted TCW-024-F01 through F04 against exact deployed remediation master 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0.",
+      "next_gate": "TCW-030 returns an independent PASS, PASS WITH NON-BLOCKING FINDINGS, or FAIL — REMEDIATION REQUIRED against exact deployed remediation 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "2556d56b3ec9ee62b72dc5e7201d5f7a3826baa4",
-        "reason": "Compared deployed Trade Analyzer remediation target 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0 through the verified Workflow V3.2 closeout-evidence checkpoint. Subsequent TCW-026/027/028/029 changes are workflow/control-plane/audit routing/evidence only; no src/** or config/** product behavior changed."
+        "checked_at_sha": "b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f",
+        "reason": "Compared deployed Trade Analyzer remediation target 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0 through current canonical master. All subsequent changes are workflow/control-plane/audit routing/evidence only; no src/** or config/** product behavior changed."
       }
+    },
+    {
+      "task_id": "TCW-030",
+      "title": "Trade Analyzer Remediation Independent Re-Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-030.md",
+      "role_handoff": ".ai/auditor/TCW-030_HANDOFF.md",
+      "assignment_master_sha": "b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f",
+      "branch": "auditor/tcw-030-trade-analyzer-remediation-retest",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-trade-analyzer-remediation-retest",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-030_TRADE_ANALYZER_REMEDIATION_REAUDIT.md",
+        ".ai/auditor/TCW-030_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".github/",
+        "scripts/",
+        "test/",
+        "src/",
+        "config/",
+        ".ai/builder/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/audit/TCW-030_TRADE_ANALYZER_REAUDIT_PACKET_7bb69042.md",
+        ".ai/manager/evidence/TCW-024_TRADE_ANALYZER_AUDIT_ACCEPTANCE.md",
+        ".ai/manager/evidence/TCW-025_TRADE_ANALYZER_REMEDIATION_INTEGRATION.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-025",
+      "audit_target_pr": 113,
+      "audit_target_branch": "master",
+      "audit_target_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
+      "next_gate": "Independently re-test accepted TCW-024-F01 through F04 against the exact frozen deployed TCW-025 remediation target and return one allowed verdict with an evidence-only Auditor PR and exact-head CI."
     }
   ]
 }
