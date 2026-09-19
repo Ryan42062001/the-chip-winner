@@ -48,6 +48,7 @@ function baseSnapshot() {
 test("combined finite position violations expose the determinable minimum explicit removal count", () => {
   const snapshot = baseSnapshot();
   const result = analyzeTrade(snapshot, "mine", {
+    partnerTeamId: "other",
     outgoingPlayerIds: ["w1"],
     incomingPlayerIds: ["q2", "r2"],
     plannedFollowUpDropIds: [],
@@ -67,6 +68,7 @@ test("snapshot, current source, and replacement context preserve capture and fre
   const snapshot = baseSnapshot();
   snapshot.league.rosterRules.positionLimits = [];
   const result = analyzeTrade(snapshot, "mine", {
+    partnerTeamId: "other",
     outgoingPlayerIds: ["w1"],
     incomingPlayerIds: ["q2"],
     plannedFollowUpDropIds: [],
@@ -97,6 +99,7 @@ test("complete future rows retain pre and post optimized starter assignments", (
     projections: ids.map((id) => ({ providerPlayerId: `ext-${id}`, week: 6, points: id === "r2" ? 18 : id === "r1" ? 14 : id === "q1" ? 20 : 8, capturedAt: externalCapturedAt }))
   };
   const result = analyzeTrade(snapshot, "mine", {
+    partnerTeamId: "other",
     outgoingPlayerIds: ["r1"],
     incomingPlayerIds: ["r2"],
     plannedFollowUpDropIds: [],
