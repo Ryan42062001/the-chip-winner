@@ -32,7 +32,7 @@ function configuredSlots(entries, lineupSlots = null) {
   return slots;
 }
 
-function optimizeEntries(playerIndex, entries, now, lineupSlots = null) {
+function optimizeEntries(playerIndex, entries, now, lineupSlots = null, options = {}) {
   const starterEntries = (entries || []).filter((entry) => isStarter(entry.lineupSlot));
   const slots = configuredSlots(entries, lineupSlots);
   if (!slots.length) return { status: "invalid", reason: "No supported starting slots were found." };
@@ -43,7 +43,8 @@ function optimizeEntries(playerIndex, entries, now, lineupSlots = null) {
     .filter((item) => item.player);
   const rosterByPlayerId = new Map(rosterPlayers.map((item) => [item.player.id, item]));
 
-  const locks = rosterPlayers
+  const ignoreLocks = options.ignoreLocks === true;
+  const locks = ignoreLocks ? [] : rosterPlayers
     .map((item) => ({ item, reason: getLineupLockReason(item.entry, item.player, now) }))
     .filter(({ reason }) => reason)
     .map(({ item, reason }) => Object.freeze({ playerId: item.player.id, slot: item.entry.lineupSlot, reason }));
@@ -151,14 +152,15 @@ function optimizeEntries(playerIndex, entries, now, lineupSlots = null) {
   });
 }
 
-export function createLineupOptimizer(players, now = Date.now()) {
+export function createLineupOptimizer(players, now = Date.now(), options = {}) {
   const playerIndex = players instanceof Map
     ? players
     : new Map((players || []).map((player) => [player.id, player]));
+  const optimizerOptions = Object.freeze({ ignoreLocks: options.ignoreLocks === true });
   return Object.freeze({
     playerIndex,
     optimize(entries, lineupSlots = null) {
-      return optimizeEntries(playerIndex, entries, now, lineupSlots);
+      return optimizeEntries(playerIndex, entries, now, lineupSlots, optimizerOptions);
     }
   });
 }

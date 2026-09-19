@@ -111,6 +111,7 @@ async function openMenuIfNeeded(page) {
 const titleBySection = {
   overview: "Weekly command center",
   lineup: "Lineup Lab",
+  trade: "Trade Analyzer",
   waivers: "Waiver Wire",
   alerts: "Player Alerts",
   changes: "What Changed",
@@ -153,7 +154,7 @@ async function auditSyncedPhone(browser, fixture, viewport, label) {
   await page.locator("#page-title").getByText("Lineup Lab", { exact: true }).waitFor();
   if (new URL(page.url()).hash !== fixture.fragment) throw new Error(`${label} in-content navigation discarded the private sync fragment.`);
 
-  for (const section of ["overview", "lineup", "waivers", "alerts", "changes", "season", "league"]) {
+  for (const section of ["overview", "lineup", "trade", "waivers", "alerts", "changes", "season", "league"]) {
     await goToSyncSection(page, section, fixture.fragment, label);
   }
 
@@ -231,7 +232,7 @@ try {
   await auditSyncedPhone(browser, fixture, { width: 844, height: 390 }, "844x390 phone landscape");
   await auditInvalidLinks(browser, fixture);
 
-  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all seven sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only update checks, player detail, touch targets, Escape/ARIA navigation reset, revoked links, and malformed links.");
+  console.log("Synced mobile audit passed at 320x568, 390x844, and 844x390 across all eight sections, selected-team restoration, prior-state changes, private-fragment navigation/reload, read-only update checks, player detail, touch targets, Escape/ARIA navigation reset, revoked links, and malformed links.");
 } finally {
   await browser?.close();
   server.kill();
