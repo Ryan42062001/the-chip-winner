@@ -36,7 +36,7 @@ Important product-status correction:
 - Future Trade Analyzer milestones require real deployed end-to-end user acceptance before being called complete.
 
 ## Trade Analyzer V2 — active product priority
-Status: **ACTIVE — BASELINE UAT ACCEPTED; TCW-043 AUDIT PENDING**
+Status: **ACTIVE — BASELINE ACCEPTED; TCW-032 STRATEGY NEXT**
 
 ### Product objective
 
@@ -160,7 +160,7 @@ All of the following are roadmap requirements, not optional ideas:
 ### Trade Analyzer V2 execution roadmap
 
 #### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-Status: **BLOCKED — PRODUCT-OWNER UAT ACCEPTED; TCW-043 AUDIT PENDING**
+Status: **CLOSED — BASELINE ACCEPTED**
 Owner sequence: Manager → Builder → Auditor / User acceptance
 
 Goals:
@@ -349,7 +349,7 @@ Explicit product-owner direction continues to supersede older discovery ordering
 
 
 #### TCW-042 — Ownership Remediation + Player Input UI Polish
-Status: **INTEGRATED / DEPLOYED — PRODUCT-OWNER UAT ACCEPTED; TCW-043 PENDING**
+Status: **CLOSED — DEPLOYED / AUDITED / UAT ACCEPTED**
 
 Exact repaired deployed target:
 `5362e2bff143a5aef050e160ccb0706a7060fb3d`
@@ -357,10 +357,22 @@ Exact repaired deployed target:
 TCW-041-F01 outgoing ownership remediation and the compact balanced Send/Receive UI are deployed. Master workflow #621 passed FULL CI, Pages deployment, and production verification.
 
 #### TCW-043 — Ownership remediation re-audit
-Status: **ASSIGNED — FRESH INDEPENDENT AUDIT**
+Status: **CLOSED — PASS / NO FINDINGS**
 
 Owner: Independent Auditor / QA
 
 Audit exact deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d` for TCW-041-F01 closure and preserved Trade Analyzer ownership/package/read-only behavior. Product-owner UI/UAT acceptance remains a separate parallel gate.
 
 TCW-032/033 remain held until both TCW-043 and genuine deployed product-owner UAT clear the TCW-031 baseline.
+
+
+### Baseline closeout note — 2026-09-19
+
+TCW-031, TCW-042, and TCW-043 are closed after:
+- exact repaired deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d`;
+- product-owner deployed UAT ACCEPT;
+- TCW-043 PASS with no findings;
+- V3.2 VERIFYING_MASTER checkpoint #637 PASS;
+- resulting canonical master #638 PASS.
+
+The next active product question is now exactly the product owner's scoring concern: define a defensible, explainable trade winner/fairness model under TCW-032 before implementing it in TCW-034.
