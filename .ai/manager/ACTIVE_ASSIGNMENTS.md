@@ -8,28 +8,20 @@ Workflow overlay: `.ai/shared/WORKFLOW_V3_2.md`
 
 None.
 
-TCW-025 and TCW-030 are CLOSED and removed from active-only machine state.
+The prior TCW-025 and TCW-030 remediation/audit tasks remain CLOSED. Their bounded conclusions are preserved, but the Trade Analyzer product itself is no longer considered complete after real user feedback showed the deployed experience is not acceptable.
 
-## Recently closed product-quality chain
+## Planned next lane
 
-### TCW-025 — Trade Analyzer Audit Remediation
-- Deployed remediation: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- Product master workflow #571: full CI + Pages + production smoke PASS
-- Fresh Independent Auditor retest: TCW-030
-- Accepted verdict: PASS
-- Closeout checkpoint master #601: PASS
+### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
+- Status: PLANNED — not yet active in machine state
+- Next owner: Manager / Architect for routing
+- Objective: reproduce the actual deployed failure, restore the baseline evaluate-trade workflow, and establish real deployed end-to-end UAT requirements.
+- Product priority: highest current product lane
+- Product completion rule: no major Trade Analyzer capability is complete without real deployed user acceptance.
 
-### TCW-030 — Trade Analyzer Remediation Independent Re-Audit
-- Auditor PR: #124
-- Exact Auditor head: `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35`
-- Exact-head workflow #598: PASS
-- Verdict: PASS
-- Audit evidence master #599: PASS
-- Closeout checkpoint master #601: PASS
-
-## Closed workflow/control-plane lanes
-- TCW-026, TCW-027, TCW-028, and TCW-029 remain closed.
-- TCW-029-F01 remains accepted LOW/non-blocking workflow debt.
+After TCW-031:
+- TCW-032 Strategy contract and TCW-033 R&D research may be routed as appropriate.
+- Winner, finder, target, shop, incoming-offer, counteroffer, Trade Center UX/history, independent audit, and final real-league UAT follow per the canonical roadmap.
 
 ## Release 1.0 field state
 Field registry remains **10 passed / 1 pending**.
@@ -37,9 +29,9 @@ Pending: `FV-SEASON-01 — Real playoff and bye intelligence states`.
 It remains genuine-season-event gated and must not be simulated or manufactured.
 
 ## Role state
-- Manager / Architect — ACTIVATE NOW for next roadmap task selection/routing.
+- Manager / Architect — ACTIVATE NOW to route TCW-031.
 - Builder — WAIT.
-- Strategy — IDLE.
-- R&D — IDLE.
+- Strategy — WAIT for TCW-032.
+- R&D — WAIT for TCW-033.
 - Independent Auditor — WAIT.
 - Troubleshooting — IDLE / on-demand.

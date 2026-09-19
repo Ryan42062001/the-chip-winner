@@ -1,40 +1,65 @@
 # Manager / Architect Handoff
 
-STATUS: TRADE ANALYZER REMEDIATION CLOSED — RELEASE 1.0 SEASON GATE REMAINS
+STATUS: TRADE ANALYZER V2 ROADMAP PRIORITIZED — NEXT ROUTE TCW-031
 ROLE: Manager / Architect
 
-## Trade Analyzer closeout
+## Product-status correction
 
-The TCW-024 → TCW-025 → TCW-030 remediation/audit chain is complete.
+The prior TCW-024 → TCW-025 → TCW-030 remediation/audit chain remains closed and valid for its bounded F01-F04 scope.
 
-- Deployed remediation target: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- Product master workflow #571: PASS including full CI, Pages deployment, and production smoke
-- Fresh Independent Auditor task: TCW-030
-- Auditor PR #124 exact head: `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35`
-- Auditor exact-head workflow #598: PASS
-- Auditor verdict: **PASS**
-- Findings: none
-- Manager independently accepted the PASS after spot-checking F01-F04
-- Audit evidence integration: `54b5a695a7d8a323b16bb7798b9a1d2ea736842e`
-- Audit evidence master workflow #599: PASS
-- Explicit VERIFYING_MASTER closeout checkpoint PR #125 exact head `4bf1665cbf39e737d6b655fd964220f4d3e75ee9`
-- Closeout checkpoint exact-head workflow #600: PASS
-- Closeout checkpoint integration: `a246ce6ea430533f43a6b979ac44a4c5d07485fd`
-- Closeout checkpoint master workflow #601: PASS
+It did **not** establish that the Trade Analyzer worked end-to-end as a useful product. Real product-owner feedback subsequently established that the deployed Trade Analyzer is not acceptable in actual use.
 
-TCW-025 and TCW-030 are CLOSED and removed from active-only state.
+Do not reopen TCW-025 or invalidate TCW-030. Instead, treat Trade Analyzer V2 as the new product program and use real deployed user acceptance as the final product-completion gate.
 
-## Product status
+## Trade Analyzer V2 product priority
 
-Trade Analyzer v1 remediation is independently audited and closed. TCW-024-F01 through F04 are cleared.
+Canonical roadmap: `.ai/shared/ROADMAP.md`
 
-The broader product boundary remains unchanged:
-- ESPN-only
-- read-only
-- no ESPN transaction mutation
-- projection sources remain separate
-- no hidden trade/winner/confidence/acceptance score
-- existing current/future/playoff materiality and coverage gates remain intact
+Five target workflows:
+- Evaluate Trade
+- Find Me a Trade
+- Target a Player
+- Counter an Offer
+- Shop My Players
+
+The detailed roadmap now protects all requested capabilities, including:
+- explicit trade winner/fairness result;
+- relative value with separate confidence;
+- do-nothing baseline;
+- team-needs diagnosis;
+- lineup/ROS/playoff impact;
+- depth, fragility, consolidation, VORP, positional scarcity, and waiver replacement context;
+- fairness band;
+- manager-to-manager fit and why they may accept;
+- multiple package generation;
+- target explorer;
+- trade finder;
+- shop-my-players / preferences;
+- buy-low / sell-high;
+- playoff/bye fit;
+- incoming-offer analysis;
+- counteroffers;
+- improve-this-trade;
+- negotiation guidance;
+- trade history / What Changed;
+- later league-wide opportunity scanning.
+
+ESPN transaction writes remain out of scope.
+
+## Planned task sequence
+
+1. `TCW-031 — Trade Analyzer Functional Reset + UAT Contract`
+2. `TCW-032 — Trade Value + Team Needs Strategy Contract`
+3. `TCW-033 — Trade Intelligence Data + ESPN Offer Research`
+4. `TCW-034 — Trade Winner Engine`
+5. `TCW-035 — Team Needs + Opportunity Model`
+6. `TCW-036 — Trade Finder + Target Explorer + Shop My Players`
+7. `TCW-037 — Incoming Offer + Counteroffer Engine`
+8. `TCW-038 — Trade Center UX + History`
+9. `TCW-039 — Independent Trade Intelligence Audit`
+10. `TCW-040 — Real-League Trade Center UAT`
+
+TCW-040 product-owner acceptance is required before Trade Analyzer V2 can be called COMPLETE.
 
 ## Release 1.0 field state
 
@@ -43,15 +68,15 @@ Field registry remains **10 passed / 1 pending**.
 Sole pending field:
 `FV-SEASON-01 — Real playoff and bye intelligence states`
 
-It remains genuine-season-event gated and must not be simulated or manufactured.
+This remains a separate genuine-season-event gate and must not be simulated or manufactured.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | ACTIVATE NOW | Select and route the next roadmap product task | Review the post-Trade-Analyzer roadmap and choose the next Manager-approved product lane. Current first candidate is GM Action Plan / recommendation synthesis; do not create work merely to exercise a role. |
-| 2 | Implementation Engineer / Builder | WAIT | No active implementation task | Wait for a Manager-approved production task. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No active Strategy assignment | Activate only if the next product lane needs a genuine recommendation-policy contract. |
-| 4 | Research & Development (R&D) | IDLE | No active R&D dependency | Activate only if the next lane has a genuine external/provider/technical unknown. |
-| 5 | Independent Auditor / QA | WAIT | TCW-030 complete | Wait for the next fresh Manager-routed audit target. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure exists | Activate only for a genuine cross-layer diagnosis problem. |
+| 1 | Manager / Architect | ACTIVATE NOW | Route TCW-031 — Trade Analyzer Functional Reset + UAT Contract | Create the bounded TCW-031 task from current canonical master. Its first responsibility is to reproduce the actual deployed Trade Analyzer failure and establish a real end-to-end baseline/UAT contract before V2 intelligence work expands. |
+| 2 | Implementation Engineer / Builder | WAIT | Await TCW-031 Manager routing | Do not begin V2 feature expansion until Manager routes TCW-031. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 planned after baseline reset | Prepare only when Manager routes the Trade Value + Team Needs Strategy contract. |
+| 4 | Research & Development (R&D) | WAIT | TCW-033 planned after baseline reset | Research ESPN incoming-offer access and trade-intelligence data only when Manager routes TCW-033. |
+| 5 | Independent Auditor / QA | WAIT | No fresh audit target yet | Audit TCW-031 or later V2 targets only when separately routed by Manager. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No assigned convergence failure | Activate only if TCW-031 reproduces a cross-layer failure that cannot be isolated in the normal Builder lane. |
