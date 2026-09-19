@@ -3,10 +3,10 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-032 — ASSIGNED
+## TCW-033 — ASSIGNED
 
 Owner:
-**In-Season Strategy & Decision Intelligence Analyst**
+**Research & Development**
 
 Execution mode:
 `STANDARD_CHAT_HIGH`
@@ -15,16 +15,20 @@ Refresh:
 `FAST_REFRESH`
 
 Canonical assignment master:
-`c729753fe26a7eb074d29ffeef98d4bf591d2351`
+`6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
 
 Expected branch:
-`strategy/tcw-032-trade-value-team-needs-contract`
+`rnd/tcw-033-trade-intelligence-data-research`
 
 Task:
-`.ai/manager/tasks/TCW-032.md`
+`.ai/manager/tasks/TCW-033.md`
+
+Accepted upstream:
+- TCW-032 Manager-accepted Strategy contract at integration master `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+- 45–55 inclusive package-value fairness band accepted as v1 policy heuristic
+- package winner/split fails closed until Manager approves a comparable additive asset-value source
 
 Next gate:
-Strategy produces the deterministic trade-value/team-needs contract, updates `.ai/strategy/HANDOFF.md`, opens one Strategy PR, validates the exact final head, and returns to Manager without merging.
+R&D resolves package-value source authority first, completes bounded TCW-033 research, updates `.ai/rnd/HANDOFF.md`, opens one R&D PR, validates exact final head CI, and returns to Manager without merging.
 
-TCW-033 R&D remains queued rather than parallelized.
-TCW-034 Builder implementation remains blocked until TCW-032 is Manager-accepted.
+TCW-034 remains blocked until Manager consumes TCW-033.

@@ -1,34 +1,44 @@
 # Manager / Architect Handoff
 
-STATUS: TRADE ANALYZER BASELINE CLOSED — TCW-032 STRATEGY ACTIVE
+STATUS: TCW-032 ACCEPTED/CLOSED — TCW-033 R&D ACTIVE
 ROLE: Manager / Architect
-CANONICAL ACTIVATION BASE: `c729753fe26a7eb074d29ffeef98d4bf591d2351`
+CANONICAL R&D ASSIGNMENT BASE: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
 
-## Closed baseline chain
-
-TCW-031, TCW-042, and TCW-043 are canonically closed and removed from active-only state.
+## Accepted Trade Analyzer baseline
 
 Accepted repaired/deployed product target:
 `5362e2bff143a5aef050e160ccb0706a7060fb3d`
 
-Evidence:
-- TCW-042 master #621: FULL test + Pages + production verification PASS.
-- Product-owner deployed UAT: **ACCEPT**.
-- TCW-043 independent verdict: **PASS — no findings**.
-- Audit-evidence master #635: PASS.
-- VERIFYING_MASTER PR #140 exact head `cdbf358ec479678196c86a63e11476d455674fb0`: #637 PASS.
-- Checkpoint integration `a64c90f3c45168adf73d9db0823f18aa8989db6e`: master #638 PASS.
-- Final closeout PR #141 exact head `3aa1591919538bb67497f20a93c8155058354387`: #639 PASS.
-- Canonical final-closeout master `c729753fe26a7eb074d29ffeef98d4bf591d2351`: #640 PASS.
+TCW-031 / TCW-042 / TCW-043 remain closed with product-owner deployed UAT **ACCEPT** and TCW-043 **PASS — no findings**.
 
-Field validation remains **10 passed / 1 pending**. The sole pending condition is `FV-SEASON-01 — Real playoff and bye intelligence states`.
+Field validation remains **10 passed / 1 pending**. The sole pending condition is `FV-SEASON-01 — Real playoff and bye intelligence states`; do not manufacture it.
+
+## TCW-032 Manager decision
+
+`TCW-032 — Trade Value + Team Needs Strategy Contract` is accepted and closed.
+
+Evidence:
+- Strategy PR #143 final head: `a9ee2b8d970bb407fe876841d1f5706054f52f3b`
+- PR workflow #643 / run `35451248503`: PASS
+- exact Strategy integration/master SHA: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+- master workflow #644 / run `35452516850`: PASS
+
+Manager accepted:
+- package value, user-roster impact, and two-manager plausibility as separate outputs;
+- 57/43-style display as relative package asset value, never probability;
+- inclusive 45–55 package share as the v1 fairness heuristic;
+- the 45–55 band as explicit policy, not statistical calibration;
+- fail-closed winner/value behavior when comparable additive value authority is absent;
+- TCW-022 legality/source/horizon/read-only safeguards preserved by TCW-032.
+
+Repository verification confirms the current FantasyPros ranking path is ordinal ranking/SOS context and projection paths are projected points; they are not already an approved additive trade-asset value scale. TCW-033 is therefore a real downstream dependency, not speculative busywork.
 
 ## Active task
 
-`TCW-032 — Trade Value + Team Needs Strategy Contract`
+`TCW-033 — Trade Intelligence Data + ESPN Offer Research`
 
 Owner:
-**In-Season Strategy & Decision Intelligence Analyst**
+**Research & Development**
 
 Execution:
 `STANDARD_CHAT_HIGH`
@@ -37,23 +47,23 @@ Refresh:
 `FAST_REFRESH`
 
 Expected worker branch:
-`strategy/tcw-032-trade-value-team-needs-contract`
+`rnd/tcw-033-trade-intelligence-data-research`
 
 Task:
-`.ai/manager/tasks/TCW-032.md`
+`.ai/manager/tasks/TCW-033.md`
 
-TCW-032 defines the winner/fairness/value/team-needs policy before Builder implementation.
+Priority:
+resolve package-value source authority first so Manager can decide whether/how TCW-034 may expose winner/split. Complete the bounded roadmap R&D for buy-low/sell-high, league-wide matching prerequisites, and read-only ESPN received/pending-offer feasibility without letting the latter delay the blocking source verdict.
 
-TCW-033 R&D remains queued under smallest-necessary activation.
-TCW-034 Trade Winner Engine remains blocked until Manager accepts TCW-032.
+TCW-034 remains blocked until Manager consumes TCW-033. No Builder activation yet.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-032 routed | Await Strategy PR/head/CI and independently review the contract. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-034 blocked | Do not implement winner scoring before Manager accepts TCW-032. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | ACTIVATE NOW | TCW-032 Strategy contract | Execute TCW-032 on `strategy/tcw-032-trade-value-team-needs-contract`; produce the deterministic contract + handoff, one PR, exact-head CI, no merge. |
-| 4 | Research & Development (R&D) | WAIT | TCW-033 queued | Remain queued; no parallel activation yet. |
-| 5 | Independent Auditor / QA | IDLE | Baseline audit closed | No action. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No blocker | Activate only on Manager routing. |
+| 1 | Manager / Architect | WAIT | TCW-033 routed | Await R&D PR/head/CI; independently review source authority and decide TCW-034 routing. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-034 blocked | Do not implement winner/split until Manager consumes TCW-033 and explicitly activates Builder. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 closed | No action; accepted contract is downstream authority. |
+| 4 | Research & Development (R&D) | ACTIVATE NOW | TCW-033 research | Execute TCW-033 on `rnd/tcw-033-trade-intelligence-data-research`; resolve value-source authority first, produce research + handoff, one PR, exact-head CI, no merge. |
+| 5 | Independent Auditor / QA | IDLE | No frozen implementation target | Await later implementation audit routing. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only on Manager routing. |

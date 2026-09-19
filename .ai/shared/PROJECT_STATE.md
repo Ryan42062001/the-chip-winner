@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 R&D active + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -75,12 +75,20 @@ Acceptance evidence:
 - final closeout PR #141 exact-head workflow #639: PASS;
 - canonical final-closeout master `c729753fe26a7eb074d29ffeef98d4bf591d2351` / workflow #640: PASS.
 
+TCW-032 Strategy contract is Manager-accepted and integrated:
+- Strategy head: `a9ee2b8d970bb407fe876841d1f5706054f52f3b`
+- PR #143 exact-head workflow #643 / run `35451248503`: PASS
+- integration master: `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc`
+- integration workflow #644 / run `35452516850`: PASS
+- inclusive 45–55 package-value fairness band accepted as a transparent v1 policy heuristic, not statistical calibration
+- package winner/split remains fail-closed until an approved comparable additive asset-value source exists
+
 Active product task:
-`TCW-032 — Trade Value + Team Needs Strategy Contract`
+`TCW-033 — Trade Intelligence Data + ESPN Offer Research`
 
-Primary owner: In-Season Strategy & Decision Intelligence Analyst.
+Primary owner: Research & Development.
 
-TCW-033 R&D remains queued under smallest-necessary activation. TCW-034 Builder implementation remains blocked until Manager accepts the TCW-032 Strategy contract.
+TCW-033 must resolve package-value source authority first. TCW-034 Builder implementation remains blocked until Manager consumes that source verdict and explicitly authorizes implementation.
 
 GM Action Plan remains paused behind the core Trade Analyzer V2 workflows.
 
@@ -110,9 +118,11 @@ Acceptance evidence:
 - VERIFYING_MASTER checkpoint #637 PASS;
 - resulting canonical master #638 PASS.
 
-The accepted baseline is the read-only evaluate-a-trade workflow. It does not yet claim winner/fairness scoring.
+The accepted baseline is the read-only evaluate-a-trade workflow. It does not yet claim production winner/fairness scoring.
+
+TCW-032 is now **CLOSED — MANAGER ACCEPTED** at integration master `6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc` with master workflow #644 PASS.
 
 Active product lane:
-`TCW-032 — Trade Value + Team Needs Strategy Contract`.
+`TCW-033 — Trade Intelligence Data + ESPN Offer Research`.
 
-TCW-033 remains queued. TCW-034 remains blocked until the TCW-032 contract is Manager-accepted.
+TCW-034 remains blocked until Manager reviews TCW-033's package-value source authority.
