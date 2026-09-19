@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T13:14:00Z",
+  "updated_at_utc": "2026-09-19T13:28:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,20 +26,19 @@
       "title": "Trade Analyzer Functional Reset + UAT Contract",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "WAITING_EXTERNAL_EVIDENCE",
-      "dependency": "INDEPENDENT",
+      "status": "BLOCKED",
+      "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "USER_ACTION",
-      "user_action_required": true,
+      "blocker_type": "AUDIT",
+      "user_action_required": false,
       "blocked_on_tasks": [
         "TCW-043"
       ],
       "blocked_on": [
-        "Fresh TCW-043 Independent Auditor re-audit of repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d",
-        "Genuine deployed product-owner UAT of compact Send/Receive layout and baseline trade flow"
+        "Fresh TCW-043 Independent Auditor re-audit of repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d"
       ],
       "task_file": ".ai/manager/tasks/TCW-031.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -66,7 +65,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "TCW-043 independent re-audit and privacy-safe genuine deployed product-owner UAT run in parallel against exact repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d; TCW-031 closes only if both clear."
+      "next_gate": "Product-owner deployed UAT is ACCEPTED for the repaired baseline/input layout. TCW-031 now waits only for TCW-043 independent audit acceptance before Manager closeout/next-roadmap activation."
     },
     {
       "task_id": "TCW-042",
@@ -114,7 +113,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Manager has integrated/deployed exact repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d with master #621 PASS. Await fresh TCW-043 independent audit; Builder remains stopped."
+      "next_gate": "Product-owner deployed UAT ACCEPTED for compact Send/Receive layout; await TCW-043 independent re-audit of exact frozen target 5362e2bff143a5aef050e160ccb0706a7060fb3d."
     },
     {
       "task_id": "TCW-043",
