@@ -202,9 +202,11 @@ This contract intentionally supersedes the old blanket prohibition on a trade wi
 Manager accepted the inclusive 45–55 package-value fairness band as a transparent v1 policy heuristic. The contract requires package winner/split to remain WITHHELD until Manager approves a comparable additive asset-value source.
 
 #### TCW-033 — Trade Intelligence Data + ESPN Offer Research
-Status: **ACTIVE — R&D ASSIGNED**
+Status: **CLOSED — MANAGER ACCEPTED**
 Primary owner: R&D
-Assigned branch: `rnd/tcw-033-trade-intelligence-data-research`
+R&D head: `1f4d2f8671d60b26a873e7a11d84dc4ff6dc899c`
+Integration master: `2124602b0eb884fc9a6db407e4feb3b3f9afbf5a`
+Validation: PR #145 / workflow #647 PASS; integration master workflow #648 PASS
 
 Research:
 - reliable read-only access, if any, to received/pending ESPN trade offers;
@@ -216,9 +218,19 @@ Research:
 
 Do not assume undocumented ESPN trade-offer access is reliable.
 
+Manager source decision after TCW-033:
+- no external provider is approved for automated/live authority yet;
+- FantasyPros/FantasyCalc/RedraftCalc remain future candidates only under a separately approved source contract;
+- source-agnostic fail-closed package-value engine implementation is approved;
+- production approved-provider set is empty, so live winner/split must remain WITHHELD.
+
+Decision artifact:
+`.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
+
 #### TCW-034 — Trade Winner Engine
-Status: **BLOCKED — AWAITING TCW-033 VALUE-SOURCE AUTHORITY**
+Status: **ACTIVE — BOUNDED SOURCE-AGNOSTIC BUILDER ASSIGNMENT**
 Primary owner: Builder
+Assigned branch: `builder/tcw-034-trade-winner-engine`
 
 Implement:
 - `YOU WIN / FAIR TRADE / THEY WIN`;
@@ -372,7 +384,7 @@ Owner: Independent Auditor / QA
 
 Audit exact deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d` for TCW-041-F01 closure and preserved Trade Analyzer ownership/package/read-only behavior. Product-owner UI/UAT acceptance remains a separate parallel gate.
 
-The TCW-031 baseline gates are cleared. TCW-032 is closed and Manager-accepted. TCW-033 is active under smallest-necessary activation. TCW-034 remains blocked until Manager consumes TCW-033's package-value source verdict and explicitly authorizes implementation.
+The TCW-031 baseline gates are cleared. TCW-032 and TCW-033 are closed and Manager-accepted. TCW-034 is active in bounded source-agnostic mode. Live package-value winner/split remains disabled until Manager separately approves a provider contract.
 
 
 ### Baseline closeout note — 2026-09-19
@@ -384,4 +396,4 @@ TCW-031, TCW-042, and TCW-043 are closed after:
 - V3.2 VERIFYING_MASTER checkpoint #637 PASS;
 - resulting canonical master #638 PASS.
 
-The accepted TCW-032 contract now defines the scoring semantics. The active product question is TCW-033's source authority: establish whether a defensible additive package-value basis exists before TCW-034 exposes YOU WIN / FAIR TRADE / THEY WIN and relative-value percentages.
+The accepted TCW-032 contract defines scoring semantics and TCW-033 established that no researched provider currently has sufficient authority for automated live use. Manager therefore activated TCW-034 only for source-agnostic fail-closed implementation: synthetic fixtures may prove the winner math, but live YOU WIN / FAIR TRADE / THEY WIN and relative-value percentages remain WITHHELD until a provider is separately approved.
