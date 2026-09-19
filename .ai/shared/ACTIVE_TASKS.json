@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T12:16:00Z",
+  "updated_at_utc": "2026-09-19T12:40:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,16 +26,21 @@
       "title": "Trade Analyzer Functional Reset + UAT Contract",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "WAITING_EXTERNAL_EVIDENCE",
-      "dependency": "INDEPENDENT",
+      "status": "BLOCKED",
+      "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "USER_ACTION",
-      "user_action_required": true,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocker_type": "AUDIT",
+      "user_action_required": false,
+      "blocked_on_tasks": [
+        "TCW-042"
+      ],
+      "blocked_on": [
+        "TCW-041-F01 accepted HIGH finding",
+        "Product-owner player-input UI usability remediation"
+      ],
       "task_file": ".ai/manager/tasks/TCW-031.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "3eee60a38e464dd3406f7a67f287c3d63a5f6a74",
@@ -61,14 +66,14 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Run privacy-safe real deployed product-owner UAT against 79b41042b9f556aa4f1368603bcda81df796a6fa while TCW-041 independently audits the same exact target. TCW-031 cannot close until both UAT ACCEPT and accepted audit verdict exist."
+      "next_gate": "TCW-042 must remediate outgoing ownership ambiguity and the rejected player-input UI, then Manager integrates/deploys a repaired target for fresh re-audit and renewed product-owner UAT."
     },
     {
       "task_id": "TCW-041",
       "title": "Trade Analyzer Functional Reset Independent Audit",
       "owner": "Auditor",
       "role_label": "Independent Auditor / QA",
-      "status": "ASSIGNED",
+      "status": "VERIFYING_MASTER",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -82,8 +87,8 @@
       "role_handoff": ".ai/auditor/TCW-041_HANDOFF.md",
       "assignment_master_sha": "79b41042b9f556aa4f1368603bcda81df796a6fa",
       "branch": "auditor/tcw-041-trade-analyzer-functional-reset-audit",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 131,
+      "worker_checkpoint_sha": "d6d22a049da88036a9872f1db089f38226ea5834",
       "worker_slot": "auditor-trade-analyzer-functional-reset",
       "allowed_path_prefixes": [
         ".ai/audit/TCW-041_TRADE_ANALYZER_FUNCTIONAL_RESET_AUDIT.md",
@@ -109,7 +114,58 @@
       "audit_target_pr": 129,
       "audit_target_branch": "master",
       "audit_target_sha": "79b41042b9f556aa4f1368603bcda81df796a6fa",
-      "next_gate": "Fresh Auditor independently reviews exact deployed TCW-031 target and publishes one allowed verdict on an evidence-only PR without merging."
+      "next_gate": "Manager accepted FAIL verdict; audit evidence integrated at efdb129e789e0d3d08080bf865578cfe6de909bd and master #616 passed. TCW-041 awaits final audit-task closeout bookkeeping while TCW-042 remediates F01.",
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "NOT_APPLICABLE",
+        "canary_verification": "NOT_APPLICABLE"
+      }
+    },
+    {
+      "task_id": "TCW-042",
+      "title": "Trade Analyzer Ownership Remediation + Player Input UI Polish",
+      "owner": "Builder",
+      "role_label": "Implementation Engineer / Builder",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
+      "refresh_reason": "Fresh TCW-041 blocking ownership finding plus deployed product-owner input-layout usability feedback.",
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-042.md",
+      "role_handoff": ".ai/builder/TCW-042_HANDOFF.md",
+      "assignment_master_sha": "efdb129e789e0d3d08080bf865578cfe6de909bd",
+      "branch": "builder/tcw-042-trade-ui-audit-remediation",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "builder-trade-ui-audit-remediation",
+      "allowed_path_prefixes": [
+        ".ai/builder/TCW-042_HANDOFF.md",
+        "src/domain/trade-analyzer.js",
+        "src/ui/trade-analyzer.js",
+        "src/styles.css",
+        "test/trade-analyzer",
+        "scripts/smoke-trade-analyzer.js"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".github/",
+        "config/field-validation.json"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": true,
+      "next_gate": "Builder closes TCW-041-F01 and implements compact balanced Send/Receive player-entry UI, then returns one validated PR/head to Manager."
     }
   ]
 }
