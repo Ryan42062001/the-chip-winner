@@ -440,11 +440,15 @@ function deriveDoNothing({ preEntries, postEntries, currentWeek, future, restOfS
   const severeGap = depth?.fragility?.state === "DANGEROUS";
   if (severeGap && !costs.includes("DANGEROUS_POSITIONAL_FRAGILITY")) costs.unshift("DANGEROUS_POSITIONAL_FRAGILITY");
 
+  const listedCountChanged = (depth?.listedPositionChanges || []).some((item) => item.delta !== 0);
+  const contingencyUnknown = depth?.contingency?.pre?.status !== "READY" || depth?.contingency?.post?.status !== "READY";
+
   let userDecision;
   if (severeGap) userDecision = "WORSENS";
   else if (benefits.length && costs.length) userDecision = "MIXED";
   else if (benefits.length) userDecision = "IMPROVES";
   else if (costs.length) userDecision = "WORSENS";
+  else if (listedCountChanged && contingencyUnknown) userDecision = "WITHHELD";
   else if (supported.length || depth?.fragility?.state === "COVERED" || depth?.fragility?.state === "THIN") userDecision = "NO_MATERIAL_CHANGE";
   else userDecision = "WITHHELD";
 
@@ -464,6 +468,7 @@ function deriveDoNothing({ preEntries, postEntries, currentWeek, future, restOfS
     materialCosts: freezeList(costs),
     reasons: freezeList([
       severeGap ? "A supported dangerous roster gap overrides apparent starter benefit." : null,
+      listedCountChanged && contingencyUnknown ? "Listed-position count changes remain descriptive because legal contingency evidence is incomplete." : null,
       currentWeek?.actionability === "INFORMATIONAL_ONLY" ? "Current-week locked evidence is counterfactual and does not drive an executable recommendation." : null
     ].filter(Boolean))
   });
@@ -520,23 +525,62 @@ function mappedLineupSources(currentWeek, future, restOfSeason, playoffs) {
   return freezeList([...current, ...horizons]);
 }
 
-function replacementScarcityContract(replacement, depth) {
+function replacementDemandSlots(depth, bye) {
+  const contingencySlots = depth?.contingency?.post?.status === "READY"
+    ? (depth.contingency.post.items || []).filter((item) => item.uncoveredAfterLoss > 0).map((item) => item.slot)
+    : [];
+  const byeSlots = (bye?.rows || [])
+    .filter((row) => row.gapDelta > 0)
+    .flatMap((row) => row.postUncoveredSlotCandidates || []);
+  return unique([...contingencySlots, ...byeSlots]).sort();
+}
+
+function replacementScarcityContract({ snapshot, postEntries, replacement, depth, bye, players }) {
   const ready = replacement?.status === "READY";
   const structural = ready ? (replacement.structuralCandidates || []) : [];
-  const projections = structural.map((item) => item.projection).filter(Number.isFinite);
+  const demandSlots = replacementDemandSlots(depth, bye);
+  const candidateObjects = structuralReplacementPlayers(replacement, players);
+  const eligibleSlots = demandSlots.filter((slot) => candidateObjects.some((player) => canFillSlot(player, slot)));
+  const demand = demandSlots.map((slot) => {
+    const eligible = candidateObjects.filter((player) => canFillSlot(player, slot));
+    const feasible = replacement?.acquisitionCapacity?.status === "available"
+      ? eligible.filter((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+      : [];
+    return Object.freeze({
+      slot,
+      eligibleCandidateIds: freezeList(eligible.map((player) => player.id).sort()),
+      feasibleCandidateIds: freezeList(feasible.map((player) => player.id).sort())
+    });
+  });
+  const feasibleProjected = candidateObjects
+    .filter((player) => demandSlots.some((slot) => canFillSlot(player, slot)))
+    .filter((player) => replacement?.acquisitionCapacity?.status === "available" && hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+    .filter((player) => Number.isFinite(player.projection))
+    .sort((left, right) => right.projection - left.projection || String(left.id).localeCompare(String(right.id)));
+  const sameSourceWeek = Boolean(ready && snapshot?.meta?.capturedAt && replacement?.capturedAt === snapshot.meta.capturedAt && Number.isInteger(snapshot?.currentWeek));
+  const numericReady = sameSourceWeek
+    && demandSlots.length > 0
+    && replacement?.acquisitionCapacity?.status === "available"
+    && feasibleProjected.length > 0;
+  const reason = !ready ? replacement?.reason || "Replacement basis unavailable."
+    : !demandSlots.length ? "No explicit affected configured-slot demand is established, so numeric replacement projection is withheld."
+      : replacement?.acquisitionCapacity?.status !== "available" ? "A known feasible acquisition path is not established, so numeric replacement projection is withheld."
+        : !eligibleSlots.length ? "The structural pool has no candidate eligible for the supported configured-slot demand."
+          : !feasibleProjected.length ? "No slot-eligible candidate has both a known feasible roster path and a same-horizon numeric projection."
+            : "Numeric replacement projection uses the best verified feasible candidate for the explicit configured-slot demand; it remains separate from package market value.";
   return Object.freeze({
     poolSnapshotAt: replacement?.capturedAt || null,
     fullStructuralPoolUsed: ready,
     acquisitionPathStatus: replacement?.acquisitionCapacity?.status || "UNKNOWN",
-    eligibleSlots: freezeList([]),
+    eligibleSlots: freezeList(eligibleSlots),
     candidateIds: freezeList(structural.map((item) => item.playerId)),
-    sameSourceWeek: true,
-    positionalAndFLEXOPDemand: freezeList([]),
-    replacementProjectionOrNull: ready && projections.length ? Math.max(...projections) : null,
+    sameSourceWeek,
+    positionalAndFLEXOPDemand: freezeList(demand),
+    replacementProjectionOrNull: numericReady ? feasibleProjected[0].projection : null,
     marginalVorpOrNull: null,
     scarcityState: depth?.fragility?.state || "UNKNOWN",
     noDoubleCountAttestation: true,
-    reason: ready ? "Replacement projections remain structural waiver context and are not package market value." : replacement?.reason || "Replacement basis unavailable."
+    reason
   });
 }
 
@@ -637,14 +681,23 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   });
 
   const importedWeeks = futureSet ? unique(futureSet.projections.map((item) => item.week)).sort((a, b) => a - b) : [];
-  const futureWeeks = Array.isArray(options.futureWeeks) ? options.futureWeeks : importedWeeks.filter((week) => week > snapshot.currentWeek && !(snapshot.league?.playoffWeeks || []).includes(week));
-  const playoffWeeks = Array.isArray(options.playoffWeeks) ? options.playoffWeeks : (Array.isArray(snapshot.league?.playoffWeeks) ? snapshot.league.playoffWeeks : []);
-  const future = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, futureWeeks, futureWeeks.length ? `Weeks ${unique(futureWeeks).sort((a, b) => a - b).join(", ")}` : "Selected future weeks", now);
-  const playoffs = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, playoffWeeks, playoffWeeks.length ? `Playoff weeks ${unique(playoffWeeks).sort((a, b) => a - b).join(", ")}` : "Playoff window", now);
-  const requestedRosWeeks = Array.isArray(options.restOfSeasonWeeks) ? unique(options.restOfSeasonWeeks).sort((a, b) => a - b) : [];
-  const restOfSeason = options.restOfSeasonComplete === true && requestedRosWeeks.length
-    ? evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, requestedRosWeeks, `Rest of season: Weeks ${requestedRosWeeks.join(", ")}`, now)
-    : Object.freeze({ label: "Rest of season", status: "UNKNOWN", weeks: freezeList(requestedRosWeeks), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: requestedRosWeeks.length ? "The supplied ROS window is not explicitly certified complete." : "No explicitly defined complete rest-of-season window is configured." });
+  const canonicalPlayoffWeeks = unique(Array.isArray(snapshot.league?.playoffWeeks) ? snapshot.league.playoffWeeks : [])
+    .filter((week) => Number.isInteger(week) && week >= 1 && week <= 18)
+    .sort((a, b) => a - b);
+  const futureWeeks = unique(Array.isArray(options.futureWeeks)
+    ? options.futureWeeks
+    : importedWeeks.filter((week) => week > snapshot.currentWeek && !canonicalPlayoffWeeks.includes(week)))
+    .filter((week) => Number.isInteger(week) && week >= 1 && week <= 18)
+    .sort((a, b) => a - b);
+  const future = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, futureWeeks, futureWeeks.length ? `Weeks ${futureWeeks.join(", ")}` : "Selected future weeks", now);
+  const playoffs = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, canonicalPlayoffWeeks, canonicalPlayoffWeeks.length ? `Playoff weeks ${canonicalPlayoffWeeks.join(", ")}` : "Playoff window", now);
+
+  const canonicalRosWeeks = unique(Array.isArray(snapshot.league?.restOfSeasonWeeks) ? snapshot.league.restOfSeasonWeeks : [])
+    .filter((week) => Number.isInteger(week) && week > snapshot.currentWeek && week >= 1 && week <= 18)
+    .sort((a, b) => a - b);
+  const restOfSeason = canonicalRosWeeks.length
+    ? evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, canonicalRosWeeks, `Rest of season: Weeks ${canonicalRosWeeks.join(", ")}`, now)
+    : Object.freeze({ label: "Rest of season", status: "UNKNOWN", weeks: freezeList([]), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: "No authoritative complete remaining-season week definition is configured in league state." });
 
   const bye = byeEffects(snapshot, teamId, roster.entries, resolvedEntries, unique([...outgoing, ...incoming, ...drops]));
   const replacement = replacementContext(snapshot, teamId, players, now);
@@ -656,15 +709,22 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const fragility = fragilityState({ snapshot, postEntries: resolvedEntries, preContingency, postContingency, bye, replacement, outgoing, players });
   const allPositions = unique([...Object.keys(preListed), ...Object.keys(postListed)]);
   const listedChanges = allPositions.map((position) => Object.freeze({ position, before: preListed[position] || 0, after: postListed[position] || 0, delta: (postListed[position] || 0) - (preListed[position] || 0) }));
-  const depthCost = listedChanges.some((item) => item.delta < 0) || (preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss > preContingency.maxUncoveredAfterLoss);
-  const depthGain = listedChanges.some((item) => item.delta > 0) || (preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss < preContingency.maxUncoveredAfterLoss);
-  const depth = Object.freeze({ listedPositionChanges: freezeList(listedChanges), contingency: Object.freeze({ pre: preContingency, post: postContingency }), fragility, depthCost, depthGain });
+  const depthCost = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss > preContingency.maxUncoveredAfterLoss;
+  const depthGain = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss < preContingency.maxUncoveredAfterLoss;
+  const depth = Object.freeze({
+    listedPositionChanges: freezeList(listedChanges),
+    listedPositionChangesAreDescriptive: true,
+    contingency: Object.freeze({ pre: preContingency, post: postContingency }),
+    fragility,
+    depthCost,
+    depthGain
+  });
 
   const longDirection = longTermDirection(future, restOfSeason, playoffs);
   const anyUpgrade = currentResolution.direction === "UPGRADE" || longDirection === "UPGRADE";
   const numericEvidence = currentSources.some((item) => item.status === "READY") || future.status === "READY" || restOfSeason.status === "READY" || playoffs.status === "READY";
   const conclusion = chooseConclusion({ currentDirection: currentResolution.direction, longDirection, sourceDisagreement: currentResolution.disagreement, fragility, depthCost, depthGain, bye, anyUpgrade, numericEvidence });
-  const incomplete = currentSources.some((item) => item.status !== "READY") || (futureWeeks.length && future.status !== "READY") || (requestedRosWeeks.length && restOfSeason.status !== "READY") || (playoffWeeks.length && playoffs.status !== "READY");
+  const incomplete = currentSources.some((item) => item.status !== "READY") || (futureWeeks.length && future.status !== "READY") || (canonicalRosWeeks.length && restOfSeason.status !== "READY") || (canonicalPlayoffWeeks.length && playoffs.status !== "READY");
   const evidenceState = currentResolution.disagreement ? "SOURCE_DISAGREEMENT"
     : incomplete ? "PARTIAL_COVERAGE"
       : currentResolution.readySources >= 2 ? "COMPLETE_MULTI_SOURCE_AGREEMENT"
@@ -674,8 +734,8 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   if (config.status !== "ready") limitations.push(config.reason);
   if (currentWeek.limitation) limitations.push(currentWeek.limitation);
   if (future.status !== "READY" && futureWeeks.length) limitations.push(`Future window: ${future.reason}`);
-  if (restOfSeason.status !== "READY" && requestedRosWeeks.length) limitations.push(`Rest of season: ${restOfSeason.reason}`);
-  if (playoffs.status !== "READY" && playoffWeeks.length) limitations.push(`Playoff window: ${playoffs.reason}`);
+  if (restOfSeason.status !== "READY") limitations.push(`Rest of season: ${restOfSeason.reason}`);
+  if (playoffs.status !== "READY" && canonicalPlayoffWeeks.length) limitations.push(`Playoff window: ${playoffs.reason}`);
   if (replacement.status !== "READY") limitations.push(replacement.reason);
   if (fragility.state === "UNKNOWN") limitations.push(`Depth contingency: ${fragility.reason}`);
   if (bye.status !== "READY") limitations.push("Bye comparison is partial because at least one materially affected bye week is unknown.");
@@ -714,7 +774,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
     opponent: Object.freeze({ status: "UNKNOWN", reason: "Opponent reciprocal roster consequence is deferred to the TCW-035 opportunity model boundary." }),
     conditionalFollowUpAddsExcluded: true
   });
-  const replacementScarcity = replacementScarcityContract(replacement, depth);
+  const replacementScarcity = replacementScarcityContract({ snapshot, postEntries: resolvedEntries, replacement, depth, bye, players });
   const horizons = Object.freeze({
     currentWeek,
     futureWindow: future,
