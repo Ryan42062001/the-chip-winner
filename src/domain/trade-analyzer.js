@@ -81,7 +81,7 @@ function rosterRuleState(snapshot, entries, players) {
 
 function validateProposal(snapshot, teamId, proposal) {
   const roster = snapshot?.rosters?.find((item) => item.teamId === teamId);
-  if (!roster) return { error: "The connected user's roster is unavailable." };
+  if (!roster || !Array.isArray(roster.entries)) return { error: "The connected user's roster is unavailable." };
   const players = new Map((snapshot.players || []).map((player) => [player.id, player]));
   const rosterIds = new Set(roster.entries.map((entry) => entry.playerId));
   const outgoing = unique(proposal?.outgoingPlayerIds);
@@ -92,11 +92,26 @@ function validateProposal(snapshot, teamId, proposal) {
   if (!Array.isArray(proposal?.incomingPlayerIds) || incoming.length !== proposal.incomingPlayerIds.length) return { error: "Incoming player IDs must be unique." };
   if (Array.isArray(proposal?.plannedFollowUpDropIds) && drops.length !== proposal.plannedFollowUpDropIds.length) return { error: "Follow-up drop IDs must be unique." };
   if (!outgoing.length || !incoming.length) return { error: "Choose at least one outgoing and one incoming player." };
+  if (outgoing.some((id) => incoming.includes(id))) return { error: "A player cannot appear on both sides of the proposal." };
   if (outgoing.some((id) => !rosterIds.has(id))) return { error: "Every outgoing player must be on the connected user's current roster." };
+  const partnerId = proposal?.partnerTeamId;
+  if (partnerId == null || partnerId === "") return { error: "Select one opposing ESPN team before analyzing a trade." };
+  if (partnerId === teamId) return { error: "The connected user's team cannot be its own trade partner." };
+  const partnerTeam = (snapshot.teams || []).find((team) => team.id === partnerId);
+  const partnerRosters = (snapshot.rosters || []).filter((item) => item.teamId === partnerId);
+  if (!partnerTeam || partnerRosters.length !== 1 || !Array.isArray(partnerRosters[0].entries)) return { error: "The selected opposing team's roster is unavailable in the current ESPN snapshot." };
   if (incoming.some((id) => !players.has(id))) return { error: "Every incoming player must exist in the current ESPN snapshot." };
   if (incoming.some((id) => rosterIds.has(id))) return { error: "Incoming players cannot already be on the connected user's roster." };
-  if (outgoing.some((id) => incoming.includes(id))) return { error: "A player cannot appear on both sides of the proposal." };
-  return { roster, players, rosterIds, outgoing, incoming, drops, objective };
+  const owners = new Map();
+  for (const item of snapshot.rosters || []) {
+    for (const entry of item.entries || []) {
+      const ids = owners.get(entry.playerId) || new Set();
+      ids.add(item.teamId);
+      owners.set(entry.playerId, ids);
+    }
+  }
+  if (incoming.some((id) => (owners.get(id)?.size || 0) !== 1 || !owners.get(id).has(partnerId))) return { error: "Every incoming player must belong exclusively to the selected opposing team's current roster; free agents and mixed-opponent packages are not trades." };
+  return { roster, partnerTeam, players, rosterIds, outgoing, incoming, drops, objective };
 }
 
 function originalEntryByPlayer(snapshot) {
@@ -373,11 +388,13 @@ function chooseConclusion({ currentDirection, longDirection, sourceDisagreement,
   return "INSUFFICIENT_EVIDENCE";
 }
 
-function resultBase(snapshot, objective, outgoing, incoming, drops, now) {
+function resultBase(snapshot, teamId, partnerTeamId, objective, outgoing, incoming, drops, now) {
   const playerMap = new Map((snapshot.players || []).map((player) => [player.id, player]));
-  const describe = (ids) => freezeList(ids.map((id) => Object.freeze({ id, name: playerMap.get(id)?.name || "Unknown player", position: playerMap.get(id)?.position || null })));
+  const teams = new Map((snapshot.teams || []).map((team) => [team.id, team]));
+  const describe = (ids) => freezeList((Array.isArray(ids) ? ids : []).map((id) => Object.freeze({ id, name: playerMap.get(id)?.name || "Unknown player", position: playerMap.get(id)?.position || null })));
+  const describeTeam = (id) => Object.freeze({ id: id ?? null, name: teams.get(id)?.name || "Unavailable" });
   return {
-    proposal: Object.freeze({ outgoing: describe(outgoing), incoming: describe(incoming), plannedFollowUpDrops: describe(drops), teamObjective: objective }),
+    proposal: Object.freeze({ userTeam: describeTeam(teamId), partnerTeam: describeTeam(partnerTeamId), outgoing: describe(outgoing), incoming: describe(incoming), plannedFollowUpDrops: describe(drops), teamObjective: objective }),
     snapshot: Object.freeze({ provider: snapshot.provider || "espn", projectionsSource: snapshot.meta?.projectionsSource || null, capturedAt: snapshot.meta?.capturedAt || null, freshness: freshnessFor(snapshot.meta?.capturedAt, now), kind: snapshot.meta?.kind || null, currentWeek: snapshot.currentWeek ?? null }),
     readOnly: true,
     transactionActions: freezeList([])
@@ -388,12 +405,12 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const now = options.now ?? Date.now();
   const checked = validateProposal(snapshot, teamId, proposal);
   const fallbackObjective = OBJECTIVES.has(proposal?.teamObjective) ? proposal.teamObjective : "BALANCED";
-  if (checked.error) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot || { players: [] }, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || [], now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList([checked.error]), limitations: freezeList([checked.error]) });
+  if (checked.error) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot || { players: [], teams: [] }, teamId, proposal?.partnerTeamId, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || [], now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList([checked.error]), limitations: freezeList([checked.error]) });
   const { roster, players, outgoing, incoming, drops, objective } = checked;
   const directEntries = buildDirectEntries(snapshot, roster, outgoing, incoming);
   const directRules = rosterRuleState(snapshot, directEntries, players);
-  if (!directRules.violations.length && drops.length) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
-  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
+  if (!directRules.violations.length && drops.length) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
+  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
   const resolvedEntries = directRules.violations.length && drops.length ? directEntries.filter((entry) => !drops.includes(entry.playerId)) : directEntries;
   const resolvedRules = rosterRuleState(snapshot, resolvedEntries, players);
   const rosterConsequences = Object.freeze({
@@ -408,7 +425,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
     const reasons = directRules.violations.map((item) => item.kind === "ROSTER_SIZE" ? `Known ESPN roster size requires at least ${item.excess} explicit follow-up removal${item.excess === 1 ? "" : "s"}.` : `Known ESPN ${item.position} limit ${item.limit} is exceeded by ${item.excess}.`);
     if (rosterConsequences.requiredFollowUpRemovals > 1) reasons.unshift(`At least ${rosterConsequences.requiredFollowUpRemovals} explicit follow-up removals are required to resolve the known combined roster constraints.`);
     if (drops.length && resolvedRules.violations.length) reasons.push("The selected follow-up drop set does not yet resolve every known roster constraint.");
-    return Object.freeze({ analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, objective, outgoing, incoming, drops, now), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
+    return Object.freeze({ analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
   }
 
   const config = lineupConfiguration(snapshot, roster);
@@ -493,7 +510,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
 
   return Object.freeze({
     analysisState,
-    ...resultBase(snapshot, objective, outgoing, incoming, drops, now),
+    ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now),
     roster: rosterConsequences,
     directPostTradeEntries: freezeList(directEntries),
     resolvedPostTradeEntries: freezeList(resolvedEntries),

@@ -54,7 +54,7 @@ function snapshot({ players, mine, other = [], size = mine.filter((item) => item
 }
 
 function proposal(outgoingPlayerIds, incomingPlayerIds, extra = {}) {
-  return { outgoingPlayerIds, incomingPlayerIds, plannedFollowUpDropIds: [], teamObjective: "BALANCED", ...extra };
+  return { partnerTeamId: "other", outgoingPlayerIds, incomingPlayerIds, plannedFollowUpDropIds: [], teamObjective: "BALANCED", ...extra };
 }
 
 function analyze(snap, trade, options = {}) {

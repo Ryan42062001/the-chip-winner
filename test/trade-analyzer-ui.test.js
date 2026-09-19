@@ -49,6 +49,39 @@ test("Trade Analyzer result keeps proposal, evidence, roster, source, horizons, 
   assert.match(html, /There is no trade score, winner percentage, confidence percentage, acceptance probability, or ESPN transaction action/);
 });
 
+test("TCW-031 result identifies both ESPN teams and the exact hypothetical package in all analysis states", () => {
+  const identified = result({
+    proposal: {
+      userTeam: { id: "mine", name: "My real team" },
+      partnerTeam: { id: "other", name: "Partner Alpha" },
+      outgoing: [{ id: "out", name: "Outgoing", position: "RB" }],
+      incoming: [{ id: "in", name: "Incoming", position: "RB" }],
+      plannedFollowUpDrops: [{ id: "drop", name: "Explicit Drop", position: "WR" }],
+      teamObjective: "BALANCED"
+    }
+  });
+  for (const state of ["READY", "INVALID_PROPOSAL", "ROSTER_ACTION_REQUIRED"]) {
+    const html = renderTradeAnalysisResult({
+      ...identified, analysisState: state,
+      reasons: state === "INVALID_PROPOSAL" ? ["Selected partner roster unavailable."] : identified.reasons
+    }, snapshot, escapeHtml);
+    for (const name of ["My real team", "Partner Alpha", "Outgoing", "Incoming", "Explicit Drop"]) assert.match(html, new RegExp(name));
+    assert.match(html, /EVALUATED PARTIES/);
+  }
+});
+
+test("TCW-031 production UI requires a partner and guards stale proposal state", async () => {
+  const source = await readFile(new URL("../src/ui/trade-analyzer.js", import.meta.url), "utf8");
+  assert.match(source, /id="trade-partner-select"/);
+  assert.match(source, /Select opposing team/);
+  assert.match(source, /partnerRoster\?\.entries/);
+  assert.match(source, /proposal\.incomingPlayerIds = \[\]/);
+  assert.match(source, /boundSnapshot !== state\.snapshot/);
+  assert.match(source, /boundTeamId !== state\.selectedTeamId/);
+  assert.match(source, /result = null/);
+  assert.match(source, /Trade analysis unavailable/);
+});
+
 test("Trade Analyzer lock state is visually dominant and explicitly informational", () => {
   const html = renderTradeAnalysisResult(result({ currentWeek: { ...result().currentWeek, actionability: "INFORMATIONAL_ONLY", locks: [{ playerId: "out", playerName: "Outgoing", reason: "ESPN reported this player locked." }] } }), snapshot, escapeHtml);
   assert.match(html, /Locked\/current-game limitation/);

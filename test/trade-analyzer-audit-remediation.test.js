@@ -62,7 +62,7 @@ function snapshot({
 }
 
 function proposal(outgoingPlayerIds, incomingPlayerIds) {
-  return { outgoingPlayerIds, incomingPlayerIds, plannedFollowUpDropIds: [], teamObjective: "BALANCED" };
+  return { partnerTeamId: "other", outgoingPlayerIds, incomingPlayerIds, plannedFollowUpDropIds: [], teamObjective: "BALANCED" };
 }
 
 function analyze(snap, trade, options = {}) {
