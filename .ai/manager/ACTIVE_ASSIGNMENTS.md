@@ -3,59 +3,55 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — AUDIT_READY
+## TCW-034 — ASSIGNED / BOUNDED REMEDIATION
 
 Owner:
 **Implementation Engineer / Builder**
-
-PR:
-`#147`
-
-Builder branch:
-`builder/tcw-034-trade-winner-engine`
-
-Authorized diff baseline:
-`872aa79969743dafb3bf062a76b213c687397a6f`
-
-Frozen worker checkpoint:
-`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
-
-Audit-readiness:
-PASS — blockers `[]`, readyForManagerFreeze `true`.
-
-Next gate:
-Await TCW-044 fresh independent verdict. Do not merge or advance PR #147.
-
-## TCW-044 — ASSIGNED
-
-Owner:
-**Independent Auditor / QA**
 
 Execution mode:
 `STANDARD_CHAT_HIGH`
 
 Refresh:
-`FAST_REFRESH`
+`BOUNDED_REMEDIATION_REFRESH`
 
-Assignment master:
-`a93cd7a22d85f4554922157d290e7b98ef0668b8`
+Existing branch:
+`builder/tcw-034-trade-winner-engine`
 
-Branch:
-`auditor/tcw-044-trade-winner-engine-audit`
+Existing PR:
+`#147` — DRAFT / UNMERGED
 
-Frozen target task:
-`TCW-034`
-
-Frozen target PR:
-`#147`
-
-Frozen target SHA:
+Remediation parent:
 `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
 
-Packet:
-`.ai/audit/TCW-044_TRADE_WINNER_ENGINE_AUDIT_PACKET_a40c8db8.md`
+Control-plane/audit advancement checked through:
+`fea421a9263e78ff9eeb23c1a339e95b412affe0`
+
+Advancement classification:
+`CONTROL_PLANE_ONLY`
+
+Accepted independent audit findings:
+- F01 HIGH — raw listed-position count changes must not become material decision evidence;
+- F02 MEDIUM — replacement numeric context must be legal slot/FLEX/OP/acquisition-path specific or null;
+- F03 MEDIUM — caller subsets cannot redefine canonical ROS/playoff completeness;
+- F04 LOW — HIGH confidence requires genuinely independent agreeing approved sources.
+
+Canonical Manager decision:
+`.ai/manager/evidence/TRADE_WINNER_AUDIT_FINDING_DECISION.md`
+
+Required next candidate:
+- accepted F01-F04 only;
+- fresh FULL implementation checkpoint;
+- exact FULL head is the proposed immutable repaired target;
+- task-specific audit-readiness PASS;
+- no later handoff-only target substitution;
+- no merge.
+
+Preserved:
+- production provider set EMPTY;
+- live package winner/split WITHHELD;
+- ESPN read-only;
+- field registry unchanged / FV-SEASON-01 pending;
+- TCW-035+ inactive.
 
 Next gate:
-Fresh Auditor publishes exactly the authorized report and task-scoped handoff, opens one Auditor PR, validates exact final head, and returns verdict to Manager without merging.
-
-TCW-035 and later Trade Analyzer tasks remain unactivated.
+Builder returns the exact repaired SHA, fresh FULL run/test job, bounded changed files, deterministic finding regressions, preserved-boundary evidence, and task-specific audit-readiness PASS. Manager then independently reviews/freezes and routes a fresh re-audit.
