@@ -1,6 +1,6 @@
 # The Chip Winner — Canonical Roadmap
 
-Last reconciled: 2026-09-18
+Last reconciled: 2026-09-19
 
 ## M1 — Release 1.0 trustworthy read-only companion
 Status: ACTIVE — FIELD VALIDATION EVENT-GATED
@@ -29,22 +29,21 @@ Next product-quality gate:
 - TCW-025 is not CLOSED before that verdict is integrated.
 
 ## Workflow / operating-system maturity
-Status: TCW-026 IN PROGRESS
+Status: COMPLETE — WORKFLOW V3.2 CANONICAL
 
-The product owner directed The Chip Winner to adopt all applicable workflow improvements already proven useful in The War Room and Family Finance Hub.
+TCW-026 implemented the applicable cross-project workflow improvements. TCW-027 independently audited the original integration and found F01/F02/F03. TCW-028 remediated those findings at `216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9`. TCW-029 then returned **PASS WITH NON-BLOCKING FINDINGS** on the exact repaired target.
 
-TCW-026 scope includes execution/refresh efficiency, active-state determinism, collision safety, Manager integration/audit tooling, full-team routing visibility, and fail-closed documentation-only CI efficiency.
+Manager independently accepted TCW-029-F01 as LOW/non-blocking workflow debt: Markdown formatting can bypass the human-facing worker `ACTIVATE NOW` lint, but the bypass cannot mutate machine state or grant merge authority. It does not keep the V3.2 program open.
 
-TCW-026 excludes project-specific draft protected-execution machinery and Family Finance Hub financial/Supabase controls.
+The canonical closeout sequence passed:
+- repaired master #586 — full CI + Pages + production smoke;
+- audit evidence master #590 — FULL PASS;
+- explicit VERIFYING_MASTER closeout checkpoint #592 — FULL PASS.
 
-Exit gate:
-- exact-head full CI;
-- Manager integration;
-- post-merge master CI/deploy/production verification;
-- fresh independent workflow/control-plane audit.
+TCW-026, TCW-028, and TCW-029 are closed and removed from active-only state.
 
 ## Later product discovery candidates
-After current quality/control-plane gates:
+After the remaining Trade Analyzer quality gate and while the real-season field gate remains event-dependent:
 1. GM Action Plan / recommendation synthesis
 2. recommendation confidence + league-market intelligence
 3. decision-impacting injury/news intelligence and notifications, only after trustworthy-source feasibility
