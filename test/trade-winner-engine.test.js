@@ -274,3 +274,23 @@ test("TCW-034 ranking projection ROS ADP waiver-style numeric fields never becom
   assert.equal(result.incomingTotal, null);
   assert.equal(result.winner, "WITHHELD");
 });
+
+
+test("TCW-034 F04 source disagreement keeps generic confidence WITHHELD even for independent groups", () => {
+  const result = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:56, x:44 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:43, x:57 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b" })
+    ],
+    now: NOW
+  });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "SOURCE_DISAGREEMENT");
+  assert.equal(result.winner, "WITHHELD");
+  assert.equal(result.incomingShare, null);
+  assert.equal(confidence.claimConfidence, "WITHHELD");
+  assert.deepEqual(confidence.independentEvidenceGroups, []);
+});
