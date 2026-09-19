@@ -116,11 +116,12 @@ Required before Manager freeze:
 - live package winner/split remains WITHHELD;
 - ESPN read-only and `transactionActions: []` preserved;
 - field validation unchanged; `FV-SEASON-01` remains pending;
-- task-specific audit-readiness PASS against the bounded remediation diff;
-- exact repaired SHA / FULL run / test job / changed files returned to Manager;
+- exact repaired SHA / fresh FULL run / test job / changed files returned to Manager without merge;
+- Manager records that exact head as the worker checkpoint and transitions to MANAGER_REVIEW_READY without changing Builder HEAD;
+- task-specific audit-readiness then PASSes against that unchanged repaired head and bounded remediation diff;
 - no merge.
 
-After Manager review/freeze, a **fresh Independent Auditor re-audit** is required before any product integration.
+Only after the readiness PASS may Manager freeze the same exact repaired FULL head. A **fresh Independent Auditor re-audit** is then required before any product integration.
 
 TCW-035 and later tasks remain inactive.
 
@@ -128,8 +129,8 @@ TCW-035 and later tasks remain inactive.
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | Bounded remediation routed | Await exact repaired Builder head / fresh FULL CI / audit-readiness. Do not merge PR #147. |
-| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 accepted audit remediation | Resume existing branch/PR from failed target `a40c8db8...`; repair accepted F01-F04 only, produce fresh FULL exact-head candidate, run readiness, return without merging. |
+| 1 | Manager / Architect | WAIT | Bounded remediation routed | Await exact repaired Builder head + fresh FULL CI. Then reconcile checkpoint/status to MANAGER_REVIEW_READY so readiness can run against the unchanged head. Do not merge PR #147. |
+| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 accepted audit remediation | Resume existing branch/PR from failed target `a40c8db8...`; repair accepted F01-F04 only, include final handoff in the fresh FULL exact-head candidate, then return that exact candidate to Manager without merging. |
 | 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | Strategy contract already resolves audited semantics | No action unless Builder finds a genuine unresolved policy ambiguity. |
 | 4 | Research & Development (R&D) | IDLE | Provider authority remains intentionally empty | No action unless Manager separately reopens provider/data research. |
 | 5 | Independent Auditor / QA | WAIT | Historical audit complete; repaired target not frozen yet | Do not reuse old verdict as repair proof. Activate a fresh re-audit only after Manager freezes repaired FULL target. |
