@@ -249,7 +249,7 @@ test("TCW-034 F02 replacement numeric uses explicit eligible RB demand instead o
     mine: [entry("a","RB"), entry("c","BE")],
     other: [entry("x","BE")],
     availablePlayers: ["faQ","faR"],
-    size: 2
+    size: 3
   });
   const result = analyze(snapshot, proposal(["c"], ["x"]));
 
@@ -282,7 +282,7 @@ test("TCW-034 F02 replacement demand honors ordinary FLEX and OP slot eligibilit
     mine: [entry("w","FLEX"), entry("b","BE")],
     other: [entry("q","BE")],
     availablePlayers: ["faQ","faR"],
-    size: 2,
+    size: 3,
     lineupSlots: [{slot:"FLEX",count:1},{slot:"BE",count:1}]
   });
   const flex = analyze(flexSnapshot, proposal(["b"], ["q"]));
@@ -297,7 +297,7 @@ test("TCW-034 F02 replacement demand honors ordinary FLEX and OP slot eligibilit
     mine: [entry("q","OP"), entry("q2","BE")],
     other: [entry("d","BE")],
     availablePlayers: ["faD","faQ"],
-    size: 2,
+    size: 3,
     lineupSlots: [{slot:"OP",count:1},{slot:"BE",count:1}]
   });
   const op = analyze(opSnapshot, proposal(["q2"], ["d"]));
@@ -328,6 +328,83 @@ test("TCW-034 F02 replacement numeric withholds without a feasible acquisition p
   const missingProjection = analyze(missingProjectionSnapshot, proposal(["c"], ["x"]));
   assert.deepEqual(missingProjection.replacementScarcity.eligibleSlots, ["RB"]);
   assert.equal(missingProjection.replacementScarcity.replacementProjectionOrNull, null);
+});
+
+test("TCW-045-F02-R1 missing and partial roster settings never authorize numeric direct-add replacement or material quality cost", () => {
+  const make = () => snap({
+    players: [player("a","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],
+    mine:[entry("a","RB"),entry("c","BE")], other:[entry("x","BE")],
+    size:3, availablePlayers:["faR"]
+  });
+  for (const [name, rules] of [
+    ["absent", undefined],
+    ["partial size", { positionLimits:[] }],
+    ["partial position rules", { size:3 }],
+    ["malformed position rule", { size:3, positionLimits:[{ position:"RB",limit:null }] }]
+  ]) {
+    const snapshot = make();
+    if (rules === undefined) delete snapshot.league.rosterRules;
+    else snapshot.league.rosterRules = rules;
+    const result = analyze(snapshot, proposal(["c"],["x"]));
+    assert.equal(result.replacementScarcity.replacementProjectionOrNull, null, name);
+    assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds, [], name);
+    assert.equal(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus, "UNKNOWN", name);
+    assert.equal(result.depth.materialDepthEvidence.replacementQualityCost, false, name);
+    assert.notEqual(result.depth.fragility.state, "DANGEROUS", name);
+  }
+});
+
+test("TCW-045-F02-R1 unknown rules also fail closed after a simulated conditional drop", () => {
+  const make = () => snap({
+    players: [player("a","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],
+    mine:[entry("a","RB"),entry("c","BE")], other:[entry("x","BE")],
+    size:2, availablePlayers:["faR"]
+  });
+  for (const rules of [undefined, {size:2}, {positionLimits:[]}, {size:2,positionLimits:[{position:"RB",limit:"unknown"}]}]) {
+    const snapshot=make();
+    if (rules === undefined) delete snapshot.league.rosterRules;
+    else snapshot.league.rosterRules=rules;
+    const result=analyze(snapshot,proposal(["c"],["x"]));
+    assert.equal(result.replacementScarcity.replacementProjectionOrNull,null);
+    assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,[]);
+    assert.equal(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"UNKNOWN");
+    assert.equal(result.depth.materialDepthEvidence.replacementQualityCost,false);
+    assert.notEqual(result.depth.fragility.state,"DANGEROUS");
+  }
+});
+
+test("TCW-045-F02-R1 verified direct add permits numeric replacement; a verified but conditional drop does not authorize one", () => {
+  const fixture=(size)=>snap({
+    players:[player("a","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],
+    mine:[entry("a","RB"),entry("c","BE")],other:[entry("x","BE")],
+    size,availablePlayers:["faR"]
+  });
+  const direct=analyze(fixture(3),proposal(["c"],["x"]));
+  assert.equal(direct.replacementScarcity.replacementProjectionOrNull,8);
+  assert.deepEqual(direct.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,["faR"]);
+  assert.equal(direct.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"KNOWN_LEGAL");
+  const conditional=analyze(fixture(2),proposal(["c"],["x"]));
+  assert.equal(conditional.replacementScarcity.replacementProjectionOrNull,null);
+  assert.deepEqual(conditional.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,[]);
+  assert.equal(conditional.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"CONDITIONAL");
+  assert.equal(conditional.depth.materialDepthEvidence.replacementQualityCost,false);
+  assert.notEqual(conditional.depth.fragility.state,"DANGEROUS");
+  assert.deepEqual(conditional.transactionActions,[]);
+});
+
+test("TCW-045-F02-R1 known position-limit block stays BLOCKED, not UNKNOWN or LEGAL", () => {
+  const snapshot=snap({
+    players:[player("r","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],
+    mine:[entry("r","RB"),entry("c","BE")],other:[entry("x","BE")],
+    size:3,availablePlayers:["faR"]
+  });
+  snapshot.league.rosterRules={size:3,positionLimits:[{position:"RB",limit:1}]};
+  // The existing roster has a proven RB limit violation; acquisition of another RB cannot be affirmed.
+  const result=analyze(snapshot,proposal(["c"],["x"]));
+  assert.equal(result.replacementScarcity.replacementProjectionOrNull,null);
+  assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,[]);
+  assert.notEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,"KNOWN_LEGAL");
+  assert.equal(result.depth.materialDepthEvidence.replacementQualityCost,false);
 });
 
 test("TCW-034 F03 canonical playoffs cannot be shrunk by caller subset", () => {
@@ -398,7 +475,7 @@ test("TCW-034 replacement/scarcity keeps structural pool separate and withholds 
     players: [player("a","RB",20,{byeWeek:8}), player("c","RB",5,{byeWeek:9}), player("x","WR",5,{byeWeek:10}), player("fa","RB",10,{byeWeek:11})],
     mine: [entry("a","RB"), entry("c","BE")], other: [entry("x","WR")]
   };
-  const strong = analyze(snap({ ...common, availablePlayers:["fa"] }), proposal(["c"], ["x"]));
+  const strong = analyze(snap({ ...common, availablePlayers:["fa"], size:3 }), proposal(["c"], ["x"]));
   assert.equal(strong.replacementScarcity.fullStructuralPoolUsed, true);
   assert.equal(strong.replacementScarcity.replacementProjectionOrNull, 10);
   assert.equal(strong.replacementScarcity.marginalVorpOrNull, null);
