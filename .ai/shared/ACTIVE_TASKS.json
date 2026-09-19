@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T03:05:00Z",
+  "updated_at_utc": "2026-09-19T03:14:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -82,7 +82,7 @@
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
       "branch": "manager/tcw-026-workflow-v32-parity-upgrade",
-      "pr": null,
+      "pr": 114,
       "worker_checkpoint_sha": null,
       "worker_slot": "manager-workflow-v32",
       "allowed_path_prefixes": [
@@ -97,7 +97,8 @@
         "scripts/workflow-audit-readiness.js",
         "scripts/ci-change-mode.js",
         "test/ci-change-mode.test.js",
-        "package.json"
+        "package.json",
+        "test/workflow-audit.test.js"
       ],
       "forbidden_path_prefixes": [
         "src/",
