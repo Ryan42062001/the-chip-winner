@@ -3,7 +3,7 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — ASSIGNED / BOUNDED REMEDIATION
+## TCW-034 — MANAGER_REVIEW_READY / BOUNDED REMEDIATION
 
 Owner:
 **Implementation Engineer / Builder**
@@ -56,4 +56,4 @@ Preserved:
 - TCW-035+ inactive.
 
 Next gate:
-Builder returns the exact repaired SHA, fresh FULL run/test job, bounded changed files, deterministic finding regressions, and preserved-boundary evidence. Manager then records that exact checkpoint / MANAGER_REVIEW_READY state, runs the task-specific readiness gate against the unchanged head, and only on PASS freezes it for a fresh re-audit.
+Run task-specific `workflow:audit-readiness -- --task TCW-034` against unchanged exact repaired FULL head `24be4be45f7fde351c0a6e209353dd2beed8d854`. On PASS, Manager freezes that same SHA for fresh Independent Auditor re-audit. PR #147 remains draft/unmerged; TCW-035 remains inactive.
