@@ -51,5 +51,5 @@ Open one evidence-only Auditor PR, verify exact-head CI, return verdict/head/PR/
 | 2 | Implementation Engineer / Builder | WAIT | Integrated TCW-031 target frozen | No action unless Manager routes accepted audit/UAT remediation. |
 | 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 not yet activated | Wait for Manager routing after baseline acceptance gates. |
 | 4 | Research & Development (R&D) | WAIT | TCW-033 not yet activated | Wait for Manager routing after baseline acceptance gates. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-041 exact-target independent audit | Freshly audit exact deployed target `79b41042b9f556aa4f1368603bcda81df796a6fa` from the prepared audit branch; publish an evidence-only verdict PR and do not merge. |
+| 5 | Independent Auditor / QA | ACTIVE | TCW-041 exact-target independent audit | Freshly audit exact deployed target `79b41042b9f556aa4f1368603bcda81df796a6fa` from the prepared audit branch; publish an evidence-only verdict PR and do not merge. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure | Activate only if Manager routes a genuine unresolved cross-layer defect. |
