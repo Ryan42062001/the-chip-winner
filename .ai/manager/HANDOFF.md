@@ -1,50 +1,53 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-042 REMEDIATION ROUTED — TCW-031 BLOCKED
+STATUS: TCW-042 DEPLOYED — TCW-043 RE-AUDIT + PRODUCT-OWNER UAT ACTIVE
 ROLE: Manager / Architect
-CANONICAL ROUTING BASE: `efdb129e789e0d3d08080bf865578cfe6de909bd`
 
-## Accepted audit result
+## Repaired product target
 
-TCW-041 on exact target `79b41042b9f556aa4f1368603bcda81df796a6fa`:
-**FAIL — REMEDIATION REQUIRED**
+PR #133 exact Builder head:
+`0d7857bb840b692f1c4cb964ea6cc700aab7fa93`
 
-Accepted finding:
-- TCW-041-F01 HIGH — ambiguous outgoing ownership is not rejected at both domain and UI boundaries.
+Manager integration:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
 
-Auditor PR #131 exact head `d6d22a049da88036a9872f1db089f38226ea5834`, workflow #615 PASS.
-Audit evidence integrated at `efdb129e789e0d3d08080bf865578cfe6de909bd`; master #616 PASS.
+Master FULL workflow #621 / run `35444515341`:
+- test `105901030172` — PASS
+- Pages deploy `105901227088` — PASS
+- production verification `105901265609` — PASS
 
-## Product-owner UAT usability feedback
+This exact SHA is the frozen repaired product target.
 
-Functional baseline "seems like it worked," but final acceptance is withheld pending input UI polish.
+## Audit routing
 
-Requested:
-- smaller Add outgoing action;
-- Add outgoing and Add incoming visually paired with their own selectors;
-- balanced Send/Receive layout;
-- clean responsive/mobile stack.
+TCW-041 is closed after its accepted FAIL verdict was consumed.
 
-## Active remediation
+Fresh task:
+`TCW-043 — Trade Analyzer Ownership/UI Remediation Independent Re-audit`
 
-`TCW-042 — Trade Analyzer Ownership Remediation + Player Input UI Polish`
+Target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
 
-Expected branch:
-`builder/tcw-042-trade-ui-audit-remediation`
+Expected audit branch:
+`auditor/tcw-043-trade-ui-remediation-reaudit`
 
-Scope is only:
-1. TCW-041-F01 outgoing ownership exclusivity.
-2. Player-entry UI polish described above.
+## Product-owner UAT follow-up
 
-After integration/deployment, Manager must freeze a fresh independent re-audit target and renew real deployed UAT.
+Use `.ai/manager/evidence/TCW-042_DEPLOYED_UI_UAT_FOLLOWUP.md`.
+
+The product owner should confirm the compact Send/Receive layout now resolves the original UI complaint and that real hypothetical trade entry still works.
+
+Do not close TCW-042 or TCW-031 until both:
+- TCW-043 accepted verdict; and
+- explicit deployed UAT ACCEPT.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-042 routed | Await Builder PR/head/CI; do not close TCW-031. |
-| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-042 ownership + input UI remediation | Execute TCW-042 from the prepared branch. Close outgoing ambiguous ownership at domain/UI boundaries and redesign Send/Receive player inputs into balanced sections with compact adjacent Add actions and responsive mobile stacking. Open one PR, verify exact-head CI, do not merge. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 held | No action. |
-| 4 | Research & Development (R&D) | WAIT | TCW-033 held | No action. |
-| 5 | Independent Auditor / QA | WAIT | Fresh re-audit after TCW-042 integration | No action until exact repaired target is frozen. |
+| 1 | Manager / Architect | USER ACTION | Coordinate deployed TCW-042 UI/UAT while audit runs | Keep `5362e2bff143a5aef050e160ccb0706a7060fb3d` frozen; collect privacy-safe UAT ACCEPT/REJECT and await TCW-043. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-042 integrated/deployed | No action unless audit/UAT remediation is routed. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 held | No action until baseline accepted. |
+| 4 | Research & Development (R&D) | WAIT | TCW-033 held | No action until baseline accepted. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-043 fresh re-audit | Independently audit exact target `5362e2bff143a5aef050e160ccb0706a7060fb3d`, publish evidence-only verdict PR, do not merge. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure | Activate only if Manager routes it. |
