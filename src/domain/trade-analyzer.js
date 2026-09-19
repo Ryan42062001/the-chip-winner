@@ -353,7 +353,7 @@ function hasKnownLegalAcquisitionPath(snapshot, postEntries, candidate, players)
   let conditionalDropPlayerId = null;
   for (const entry of activeEntries(postEntries)) {
     // A locked entry cannot be assumed droppable for a current-week counterfactual.
-    if (entry.locked === true || getLineupLockReason(snapshot, entry, players.get(entry.playerId))) continue;
+    if (entry.locked === true || getLineupLockReason(entry, players.get(entry.playerId), Date.parse(snapshot?.meta?.capturedAt) || Date.now())) continue;
     const simulated = [...postEntries.filter((item) => item !== entry), candidateEntry];
     const assessed = verifiedAcquisitionRosterState(snapshot, simulated, players);
     if (assessed.status === "KNOWN_LEGAL" && conditionalDropPlayerId === null) conditionalDropPlayerId = entry.playerId;
