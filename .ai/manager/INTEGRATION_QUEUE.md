@@ -23,11 +23,10 @@
 - Repaired FULL candidate returned: `24be4be45f7fde351c0a6e209353dd2beed8d854`.
 - Exact-head workflow #674 / run `35461527961`, test job `105946146678`: FULL PASS.
 - Manager checkpoint/status reconciliation: MANAGER_REVIEW_READY at exact unchanged repaired head.
-- Required next evidence:
-  - task-specific audit-readiness PASS against `24be4be45f7fde351c0a6e209353dd2beed8d854`;
-  - Manager freeze of that exact FULL head;
-  - fresh Independent Auditor re-audit;
-  - no later handoff-only target substitution.
+- Task-specific audit-readiness PASS on exact repaired head: blockers [], readyForManagerFreeze true, packet sha256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`.
+- Exact repaired FULL head `24be4be45f7fde351c0a6e209353dd2beed8d854` is now IMMUTABLY FROZEN by Manager.
+- Fresh re-audit task TCW-045 is ASSIGNED, frozen packet `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`.
+- Required next evidence: one exact-target independent Auditor PR/verdict/CI; Manager consumption before Builder integration. No later head substitution.
 - Manager merge authority only.
 - Do not merge PR #147 before the fresh repaired-target audit is consumed.
 
