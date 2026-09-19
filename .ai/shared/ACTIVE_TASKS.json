@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T05:15:00Z",
+  "updated_at_utc": "2026-09-19T05:40:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -20,5 +20,48 @@
     "VERIFYING_MASTER",
     "CLOSED"
   ],
-  "tasks": []
+  "tasks": [
+    {
+      "task_id": "TCW-031",
+      "title": "Trade Analyzer Functional Reset + UAT Contract",
+      "owner": "Builder",
+      "role_label": "Implementation Engineer / Builder",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-031.md",
+      "role_handoff": ".ai/builder/HANDOFF.md",
+      "assignment_master_sha": "3eee60a38e464dd3406f7a67f287c3d63a5f6a74",
+      "branch": "builder/tcw-031-trade-analyzer-functional-reset",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "builder-trade-analyzer-functional-reset",
+      "allowed_path_prefixes": [
+        ".ai/builder/HANDOFF.md",
+        "src/ui/trade-analyzer.js",
+        "src/domain/trade-analyzer.js",
+        "test/trade-analyzer",
+        "scripts/smoke-trade-analyzer.js"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/audit/",
+        ".github/",
+        "config/field-validation.json"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": true,
+      "next_gate": "Builder reproduces and repairs the baseline Trade Analyzer evaluate-trade workflow, publishes a final candidate PR/head with exact-head CI, then returns to Manager. Product closure later requires independent audit plus real deployed product-owner UAT."
+    }
+  ]
 }
