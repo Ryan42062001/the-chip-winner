@@ -223,7 +223,7 @@ function resolveIndependentPackageRoots(rows) {
     const id = typeof row?.sourceId === "string" ? row.sourceId.trim() : "";
     const group = typeof row?.provenance?.independenceGroup === "string"
       ? row.provenance.independenceGroup.trim() : "";
-    if (!id || !group || duplicates.has(id) || visiting.has(id)) {
+    if (!id || !group || visiting.has(id)) {
       uncertain = true;
       return null;
     }
