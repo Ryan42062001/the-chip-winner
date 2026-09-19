@@ -258,6 +258,79 @@ test("TCW-034 F04 HIGH requires two Manager-authorized genuinely independent agr
   assert.equal(packageValueConfidence(notManagerApprovedAsIndependent).claimConfidence, "MODERATE");
 });
 
+test("TCW-045-F04-R1 derivative with a conflicting declared group cannot raise independent package confidence", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"origin-a",primary:true,independenceGroup:"group-a"}),
+      source({a:38,x:62},{sourceId:"derivative-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"origin-a"}})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a"]);
+});
+
+test("TCW-045-F04-R1 derivative chains and cycles never manufacture extra independent roots", () => {
+  const chain=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"root-group"}),
+      source({a:39,x:61},{sourceId:"child-b",primary:false,independenceGroup:"root-group",provenance:{derivativeOf:"root-a"}}),
+      source({a:38,x:62},{sourceId:"grandchild-c",primary:false,independenceGroup:"root-group",provenance:{derivativeOf:"child-b"}})
+    ]
+  });
+  assert.equal(chain.status,"READY");
+  assert.equal(packageValueConfidence(chain).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(chain).independentEvidenceGroups,["root-group"]);
+
+  const cycle=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"cycle-a",primary:true,independenceGroup:"group-a",provenance:{derivativeOf:"cycle-b"}}),
+      source({a:39,x:61},{sourceId:"cycle-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"cycle-a"}})
+    ]
+  });
+  assert.equal(cycle.status,"READY");
+  assert.equal(packageValueConfidence(cycle).claimConfidence,"MODERATE");
+});
+
+test("TCW-045-F04-R1 missing or ambiguous origin must not confer HIGH confidence", () => {
+  const missing=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"orphan-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"not-present"}})
+    ]
+  });
+  assert.equal(missing.status,"READY");
+  assert.equal(packageValueConfidence(missing).claimConfidence,"MODERATE");
+
+  const ambiguous=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"same",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"same",primary:false,independenceGroup:"group-b"}),
+      source({a:38,x:62},{sourceId:"child",primary:false,independenceGroup:"group-c",provenance:{derivativeOf:"same"}})
+    ]
+  });
+  assert.equal(ambiguous.status,"READY");
+  assert.equal(packageValueConfidence(ambiguous).claimConfidence,"MODERATE");
+});
+
+test("TCW-045-F04-R1 two truly independent Manager-approved roots still support HIGH", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"first-root",primary:true,independenceGroup:"group-a"}),
+      source({a:38,x:62},{sourceId:"second-root",primary:false,independenceGroup:"group-b"})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"HIGH");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a","group-b"]);
+});
+
 test("TCW-034 ranking projection ROS ADP waiver-style numeric fields never become package value", () => {
   const enriched = {
     ...snapshot,
