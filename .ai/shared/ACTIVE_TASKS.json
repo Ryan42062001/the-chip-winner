@@ -166,7 +166,7 @@
       "next_gate": "Fresh Auditor publishes exact-target verdict on one evidence-only PR; Manager then consumes verdict alongside product-owner UAT.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "256a2b412723527ea2c6183669d5df1651fc21ec"
+        "checked_at_sha": "ddcb56a42cffa0dd96cb2fda0c9f5b251a172954"
       }
     }
   ]
