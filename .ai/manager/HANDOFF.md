@@ -1,82 +1,72 @@
 # Manager / Architect Handoff
 
-STATUS: TRADE ANALYZER V2 ROADMAP PRIORITIZED — NEXT ROUTE TCW-031
+STATUS: TCW-031 TRADE ANALYZER FUNCTIONAL RESET ROUTED
 ROLE: Manager / Architect
+ASSIGNMENT BASE: `3eee60a38e464dd3406f7a67f287c3d63a5f6a74`
 
-## Product-status correction
+## Active task
 
-The prior TCW-024 → TCW-025 → TCW-030 remediation/audit chain remains closed and valid for its bounded F01-F04 scope.
+`TCW-031 — Trade Analyzer Functional Reset + UAT Contract`
 
-It did **not** establish that the Trade Analyzer worked end-to-end as a useful product. Real product-owner feedback subsequently established that the deployed Trade Analyzer is not acceptable in actual use.
+Owner: Implementation Engineer / Builder  
+Execution: STANDARD_CHAT_HIGH  
+Refresh: FAST_REFRESH  
+Expected branch: `builder/tcw-031-trade-analyzer-functional-reset`
 
-Do not reopen TCW-025 or invalidate TCW-030. Instead, treat Trade Analyzer V2 as the new product program and use real deployed user acceptance as the final product-completion gate.
+## Why this task exists
 
-## Trade Analyzer V2 product priority
+The prior TCW-025/030 chain correctly closed four bounded audit findings, but real product-owner feedback established that the Trade Analyzer still does not work acceptably end-to-end.
 
-Canonical roadmap: `.ai/shared/ROADMAP.md`
+Manager also confirmed a concrete baseline integrity defect in current code:
+- the UI offers every non-user snapshot player as an incoming trade asset;
+- there is no explicit opposing-team selector;
+- domain validation does not require incoming players to belong to one selected counterparty;
+- unrostered/free-agent and mixed-opponent pseudo-trades can therefore be constructed.
 
-Five target workflows:
-- Evaluate Trade
-- Find Me a Trade
-- Target a Player
-- Counter an Offer
-- Shop My Players
+TCW-031 fixes the baseline product workflow before V2 winner/finder/counter intelligence expands.
 
-The detailed roadmap now protects all requested capabilities, including:
-- explicit trade winner/fairness result;
-- relative value with separate confidence;
-- do-nothing baseline;
-- team-needs diagnosis;
-- lineup/ROS/playoff impact;
-- depth, fragility, consolidation, VORP, positional scarcity, and waiver replacement context;
-- fairness band;
-- manager-to-manager fit and why they may accept;
-- multiple package generation;
-- target explorer;
-- trade finder;
-- shop-my-players / preferences;
-- buy-low / sell-high;
-- playoff/bye fit;
-- incoming-offer analysis;
-- counteroffers;
-- improve-this-trade;
-- negotiation guidance;
-- trade history / What Changed;
-- later league-wide opportunity scanning.
+## Scope
 
-ESPN transaction writes remain out of scope.
+Builder must:
+- reproduce the current evaluate-trade workflow;
+- introduce explicit counterparty selection;
+- restrict incoming players to that partner's roster;
+- enforce ownership in domain validation;
+- prevent free-agent/unrostered and mixed-opponent trade packages;
+- preserve multi-player editing, roster legality, source separation, lock semantics, and read-only behavior;
+- prevent stale analysis after partner/package edits;
+- strengthen deterministic/browser coverage;
+- define the real deployed UAT checklist.
 
-## Planned task sequence
+TCW-031 does **not** add winner scoring, suggested trades, counteroffers, or new external data. Those remain TCW-032+.
 
-1. `TCW-031 — Trade Analyzer Functional Reset + UAT Contract`
-2. `TCW-032 — Trade Value + Team Needs Strategy Contract`
-3. `TCW-033 — Trade Intelligence Data + ESPN Offer Research`
-4. `TCW-034 — Trade Winner Engine`
-5. `TCW-035 — Team Needs + Opportunity Model`
-6. `TCW-036 — Trade Finder + Target Explorer + Shop My Players`
-7. `TCW-037 — Incoming Offer + Counteroffer Engine`
-8. `TCW-038 — Trade Center UX + History`
-9. `TCW-039 — Independent Trade Intelligence Audit`
-10. `TCW-040 — Real-League Trade Center UAT`
+## Completion boundary
 
-TCW-040 product-owner acceptance is required before Trade Analyzer V2 can be called COMPLETE.
+Builder completion is not product completion.
 
-## Release 1.0 field state
+After Manager integrates a valid implementation:
+1. post-merge/full master verification is required;
+2. a fresh independent audit is required;
+3. genuine deployed user acceptance is required.
 
-Field registry remains **10 passed / 1 pending**.
+The user acceptance gate cannot be satisfied by CI or simulation.
 
-Sole pending field:
+## Release boundary
+
+`config/field-validation.json` remains unchanged.
+
+Field state remains **10 passed / 1 pending**:
 `FV-SEASON-01 — Real playoff and bye intelligence states`
 
-This remains a separate genuine-season-event gate and must not be simulated or manufactured.
+Do not manufacture that condition.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | ACTIVATE NOW | Route TCW-031 — Trade Analyzer Functional Reset + UAT Contract | Create the bounded TCW-031 task from current canonical master. Its first responsibility is to reproduce the actual deployed Trade Analyzer failure and establish a real end-to-end baseline/UAT contract before V2 intelligence work expands. |
-| 2 | Implementation Engineer / Builder | WAIT | Await TCW-031 Manager routing | Do not begin V2 feature expansion until Manager routes TCW-031. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 planned after baseline reset | Prepare only when Manager routes the Trade Value + Team Needs Strategy contract. |
-| 4 | Research & Development (R&D) | WAIT | TCW-033 planned after baseline reset | Research ESPN incoming-offer access and trade-intelligence data only when Manager routes TCW-033. |
-| 5 | Independent Auditor / QA | WAIT | No fresh audit target yet | Audit TCW-031 or later V2 targets only when separately routed by Manager. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No assigned convergence failure | Activate only if TCW-031 reproduces a cross-layer failure that cannot be isolated in the normal Builder lane. |
+| 1 | Manager / Architect | WAIT | TCW-031 routed; await Builder candidate | Review Builder PR/head/CI and independently inspect the baseline reset before any integration. |
+| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-031 — Trade Analyzer Functional Reset + UAT Contract | Continue The Chip Winner as Implementation Engineer / Builder. Execute TCW-031 from the prepared branch using STANDARD_CHAT_HIGH + FAST_REFRESH. Reproduce the baseline Trade Analyzer failure, fix explicit counterparty/ownership integrity and any directly blocking baseline workflow defect, add focused/browser regression coverage, preserve read-only and field state, open one PR, verify exact-head CI, and do not merge. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 planned after baseline reset | Do not define V2 winner/value policy until Manager routes TCW-032. |
+| 4 | Research & Development (R&D) | WAIT | TCW-033 planned after baseline reset | Do not research ESPN incoming-offer access until Manager routes TCW-033. |
+| 5 | Independent Auditor / QA | WAIT | Fresh TCW-031 audit follows integrated candidate | Do not audit before Manager freezes the integrated target. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure yet | Activate only if Builder returns a genuine cross-layer diagnosis stall. |
