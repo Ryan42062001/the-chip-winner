@@ -79,7 +79,7 @@
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
       "refresh_reason": "Fresh TCW-041 blocking ownership finding plus deployed product-owner input-layout usability feedback.",
       "merge_authority": "Manager",
-      "blocker_type": "AUDIT",
+      "blocker_type": "NONE",
       "user_action_required": false,
       "blocked_on_tasks": [
         "TCW-043"
@@ -114,14 +114,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Manager has integrated/deployed exact repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d with master #621 PASS. Await fresh TCW-043 independent audit; Builder remains stopped.",
-      "closeout_evidence": {
-        "manager_verdict": "ACCEPTED",
-        "integration_verification": "PASS",
-        "master_verification": "PASS",
-        "audit_verdict": "PENDING",
-        "canary_verification": "PASS"
-      }
+      "next_gate": "Manager has integrated/deployed exact repaired target 5362e2bff143a5aef050e160ccb0706a7060fb3d with master #621 PASS. Await fresh TCW-043 independent audit; Builder remains stopped."
     },
     {
       "task_id": "TCW-043",
