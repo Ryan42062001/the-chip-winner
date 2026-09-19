@@ -11,7 +11,7 @@ const player = (id, position, projection, extra = {}) => ({
 });
 
 function snap({ players, mine, other, size = mine.filter((item) => item.lineupSlot !== "IR").length,
-  lineupSlots = [{ slot: "RB", count: 1 }, { slot: "BE", count: Math.max(0, mine.filter((item) => item.lineupSlot === "BE").length) ],
+  lineupSlots = [{ slot: "RB", count: 1 }, { slot: "BE", count: Math.max(0, mine.filter((item) => item.lineupSlot === "BE").length) }],
   availablePlayers, playoffWeeks = [] }) {
   const value = {
     schemaVersion: 1, provider: "espn", currentWeek: 5,
