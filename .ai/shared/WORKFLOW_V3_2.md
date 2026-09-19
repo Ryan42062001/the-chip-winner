@@ -145,13 +145,16 @@ Independent Auditor chats remain fresh even when same-role chat reuse is otherwi
 
 `npm run workflow:transition` is a dry-run-by-default helper for Manager-owned registry changes.
 
-It may prepare/apply bounded state metadata changes and remove completed tasks from the active-only registry, but it:
+It may prepare/apply bounded state metadata changes and remove completed tasks from the active-only registry, but removal is fail-closed. A task may be removed only from the final `VERIFYING_MASTER` lifecycle point after machine state records explicit closeout evidence: Manager acceptance, an exact integration SHA, successful post-merge/master verification with a run ID, an accepted independent audit verdict when `audit_required` is true (or explicit `NOT_APPLICABLE` otherwise), and successful canary verification when `post_merge_canary_required` is true (or explicit `NOT_APPLICABLE` otherwise).
+
+The helper:
 - never merges a PR;
 - never issues an Auditor verdict;
 - never bypasses validation;
-- rolls back an applied registry write if static workflow validation fails.
+- remains dry-run by default;
+- rolls back an applied registry write byte-for-byte if static workflow validation fails.
 
-Manager remains the authority for transitions.
+Manager remains the authority for transitions and for recording the closeout evidence consumed by the helper.
 
 ## 9. User-action queue
 
