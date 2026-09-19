@@ -1,31 +1,43 @@
 # Manager / Architect Handoff
 
-STATUS: WORKFLOW V3.2 CLOSED — TCW-025 PRODUCT AUDIT REMAINS
+STATUS: TCW-030 FRESH TRADE ANALYZER REMEDIATION RE-AUDIT ROUTED
 ROLE: Manager / Architect
-FINAL REPAIRED WORKFLOW TARGET: `216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9`
+FROZEN PRODUCT AUDIT TARGET: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
+ROUTING BASE: `b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f`
 
-## Workflow V3.2 closeout
-- TCW-029 Auditor PR #120 exact head `4ffcab91922e2e4d371458936adcfac782cd7cdc`.
-- Exact-head workflow #589 / `35421649457`: PASS.
-- Auditor verdict: **PASS WITH NON-BLOCKING FINDINGS**.
-- Manager independently accepted TCW-029-F01 as **LOW / non-blocking**. The raw Markdown-cell check can miss visually formatted `ACTIVATE NOW`, but the bypass cannot mutate `ACTIVE_TASKS.json`, grant merge authority, or bypass Manager integration/closeout controls.
-- Audit evidence integrated at `4251cae86116522855246a3f6517070ab62de7de`; master FULL #590 / `35421773303` PASS.
-- Explicit VERIFYING_MASTER closeout evidence was recorded and integrated at `2556d56b3ec9ee62b72dc5e7201d5f7a3826baa4`; master FULL #592 / `35421953924` PASS.
-- TCW-026, TCW-028, and TCW-029 are now CLOSED and removed from active-only state.
-- TCW-029-F01 remains durable non-blocking workflow debt for a future bounded hygiene improvement; no active remediation task is created by this closeout.
+## TCW-030 routing
+- New audit task: `TCW-030 — Trade Analyzer Remediation Independent Re-Audit`.
+- Target task: TCW-025.
+- Target Builder PR: #113.
+- Exact Builder final head: `368a601046df1d4de2f477936f4ac5598e5de753`.
+- Exact deployed remediation target: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`.
+- Frozen packet: `.ai/audit/TCW-030_TRADE_ANALYZER_REAUDIT_PACKET_7bb69042.md`.
+- Expected audit branch: `auditor/tcw-030-trade-analyzer-remediation-retest`.
+- Auditor write surface is limited to the TCW-030 report and task-scoped Auditor handoff.
+- TCW-025 is blocked only on this fresh independent product re-audit.
 
-## Preserved product gates
-TCW-025 remains separately `AUDIT_READY` against deployed remediation `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`. Workflow closeout does not satisfy the required fresh TCW-024-F01 through F04 retest.
+## Audit scope
+Retest accepted TCW-024-F01 through F04 only:
+- F01 replacement slot/full-pool structural path;
+- F02 future/playoff lock neutrality while preserving current-week locks;
+- F03 UNKNOWN contingency semantics;
+- F04 direct Trade Analyzer accessibility/mobile audit coverage.
 
-Release 1.0 field state remains **10 passed / 1 pending**. `FV-SEASON-01` still requires genuine real-season playoff/bye evidence and must not be simulated or manufactured.
+Protected TCW-022 Strategy, ESPN-only/read-only semantics, source separation, materiality/coverage rules, field-validation state, and FV-SEASON-01 remain unchanged.
+
+## Target advancement
+Manager compared deployed product target `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0` through routing base `b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f`. The advancement is control-plane-only: no `src/**` or `config/**` product behavior changed.
+
+## Release 1.0
+Field state remains **10 passed / 1 pending**. `FV-SEASON-01` still requires genuine real-season playoff/bye evidence; no simulation or manufactured pass is permitted.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | ACTIVATE NOW | TCW-025 independent product-audit routing | Route a fresh Independent Auditor task for TCW-025 against exact deployed remediation `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`, preserving the separate field gate. |
-| 2 | Implementation Engineer / Builder | WAIT | No active Builder remediation | Wait unless the TCW-025 retest returns a Manager-accepted blocking finding. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No Strategy question exists | No action unless Manager identifies a genuine in-season recommendation-policy question. |
-| 4 | Research & Development (R&D) | IDLE | No research dependency exists | No action unless Manager identifies a genuine external/technical unknown. |
-| 5 | Independent Auditor / QA | WAIT | Fresh TCW-025 audit not yet separately routed | Wait for the Manager-issued task/branch/frozen target; do not reuse TCW-029 as product-audit authority. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure exists | Activate only if a later remediation develops a genuine cross-layer diagnosis problem. |
+| 1 | Manager / Architect | WAIT | Await TCW-030 independent product verdict | After TCW-030 returns, independently review its final PR/head/CI/verdict and accept or reject every finding before changing TCW-025 state. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-025 remediation deployed; audit gate active | No action unless Manager accepts a blocking TCW-030 finding and routes bounded remediation. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No Strategy question exists | No action unless the audit reveals a genuine policy ambiguity requiring Strategy ownership. |
+| 4 | Research & Development (R&D) | IDLE | No research dependency exists | No action unless the audit reveals a genuine external/provider unknown requiring R&D. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-030 — fresh TCW-024-F01 through F04 remediation re-audit | Continue The Chip Winner as Independent Auditor / QA. Execute TCW-030 on `auditor/tcw-030-trade-analyzer-remediation-retest` under STANDARD_CHAT_HIGH with Fast Refresh. Audit exact frozen target `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`, publish only the authorized audit report/handoff, open one evidence-only PR, verify exact-head CI, and do not merge. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure exists | Activate only if a later finding creates a genuine cross-layer diagnosis loop. |
