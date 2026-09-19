@@ -89,3 +89,25 @@ It requires genuine qualifying season state and must not be manufactured.
 Removed from Release 1.0 rather than falsely passed:
 - FV-A11Y-02 under TCW-D012
 - custom FLEX/OP/Superflex field certification under TCW-D013
+
+
+## TCW-042 repaired target freeze — 2026-09-19
+
+TCW-042 remediation is integrated and deployed.
+
+Exact repaired deployed product target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
+
+Evidence:
+- PR #133 final head `0d7857bb840b692f1c4cb964ea6cc700aab7fa93`;
+- PR #619 FULL PASS;
+- #620 final-head continuity PASS;
+- master #621 PASS with FULL test, Pages deploy, and production verification.
+
+TCW-041-F01 is remediated in the deployed candidate but not yet independently re-audited.
+
+Active gates:
+- TCW-043 fresh Independent Auditor re-audit of exact target `5362e2bf...`;
+- genuine connected-ESPN product-owner deployed UAT of the compact Send/Receive layout and baseline trade flow.
+
+TCW-031 remains unaccepted until both gates clear. TCW-032 Strategy and TCW-033 R&D remain waiting.

@@ -26,3 +26,24 @@ Use two balanced trade-side sections:
 - responsive vertical stacking on mobile.
 
 This is a product-owner usability requirement for the next repaired target.
+
+
+## Renewed deployed UAT gate — repaired target
+
+Exact target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
+
+Automated deployment/production verification is complete, but it does not replace product-owner judgment.
+
+The product owner must re-open the deployed app with the genuine connected ESPN league and return privacy-safe observations only.
+
+Required checks:
+- compact Add controls are immediately associated with SEND/RECEIVE selectors;
+- two sides read as balanced halves on desktop;
+- selected chips remain under the correct side;
+- Team Objective is separate and understandable;
+- mobile/narrow view stacks cleanly without clipping/overflow;
+- a real 1-for-1 proposal can still be built and analyzed;
+- explicit final `ACCEPT` or `REJECT`.
+
+Do not record private league/member IDs, cookies, tokens, authenticated URLs, or raw ESPN snapshots.
