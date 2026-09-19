@@ -26,7 +26,10 @@
 - Task-specific audit-readiness: PASS; blockers []; readyForManagerFreeze true.
 - Frozen Builder target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
 - Frozen audit packet: `.ai/audit/TCW-044_TRADE_WINNER_ENGINE_AUDIT_PACKET_a40c8db8.md`.
-- Fresh independent audit TCW-044 is required before any Manager integration of PR #147.
+- Fresh independent audit TCW-044 is ACTIVE on `auditor/tcw-044-trade-winner-engine-audit`.
+- Auditor assignment base: `a93cd7a22d85f4554922157d290e7b98ef0668b8`.
+- Immutable audit target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
+- No Manager integration of PR #147 until the exact audit verdict is consumed.
 
 ## CLOSED / CONSUMED
 
