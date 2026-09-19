@@ -22,9 +22,10 @@
 - Live package winner/split remains WITHHELD.
 - Required next evidence:
   - bounded F01-F04 remediation only;
-  - fresh FULL exact-head implementation checkpoint;
-  - exact FULL head proposed as immutable repaired target;
-  - task-specific audit-readiness PASS;
+  - fresh FULL exact-head implementation checkpoint that already contains the final Builder handoff/evidence;
+  - exact FULL head returned to Manager as proposed repaired target;
+  - Manager checkpoint/status reconciliation to MANAGER_REVIEW_READY without changing that head;
+  - task-specific audit-readiness PASS against the unchanged head;
   - no later handoff-only target substitution;
   - fresh Independent Auditor re-audit after Manager freeze.
 - Manager merge authority only.
