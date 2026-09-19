@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer remediation deployed / independent retest pending + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer remediation independently audited/closed + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -28,7 +28,13 @@ V3.2 includes credit-efficient execution/refresh routing, active-only state dete
 The Chip Winner remains an ESPN-only, read-only, in-season fantasy-football decision companion. ESPN owns connected-league state. External rankings/projections remain separate overlays. Derived recommendations do not mutate source snapshots. ESPN write actions remain out of scope.
 
 ## Trade Analyzer v1
-TCW-025 remediation is integrated/deployed at `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; master #571 passed full CI/Pages/production. It remains `AUDIT_READY` for a separate fresh F01-F04 retest. The Workflow V3.2 closeout does not satisfy or modify that gate.
+Status: **COMPLETE — REMEDIATION INDEPENDENTLY AUDITED**
+
+TCW-025 remediation is integrated/deployed at `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; product master #571 passed full CI, Pages deployment, and production smoke.
+
+TCW-030 independently re-audited the accepted TCW-024-F01 through F04 remediation against that exact deployed target. Auditor PR #124 exact head `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35` passed #598 and returned **PASS** with no findings. Manager independently accepted the PASS; audit evidence master #599 passed. Explicit closeout checkpoint master #601 also passed.
+
+TCW-025 and TCW-030 are CLOSED and removed from active-only state.
 
 ## Release 1.0
 Field registry remains **10 passed / 1 pending**.
