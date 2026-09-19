@@ -1,6 +1,6 @@
 # The Chip Winner — Durable Decisions
 
-Last reconciled: 2026-09-14
+Last reconciled: 2026-09-18
 
 These entries codify durable decisions established by repository evidence. They do not create unapproved product scope.
 
@@ -68,3 +68,25 @@ At the product owner's explicit direction, the pending manual screen-reader fiel
 Status: ACTIVE
 
 At the product owner's explicit direction, the pending field item `FV-ESPN-02` is removed from the Release 1.0 field registry rather than marked passed without evidence. This scope decision removes only the dedicated requirement to certify a materially custom FLEX/OP/Superflex-style ESPN league in the field. It does not remove ordinary FLEX support, lineup-slot normalization, eligibility enforcement, fail-closed handling, or existing automated regression coverage. Previously observed standard-league FLEX behavior remains preserved as evidence, but no unobserved custom OP/Superflex behavior is claimed as field-validated.
+
+
+## TCW-D014 — Workflow V3.2 cross-project parity and credit-efficient execution
+Status: ACTIVE CANDIDATE — material control-plane audit required before TCW-026 closure
+
+At the product owner's explicit direction, The Chip Winner adopts the mature workflow/control-plane improvements from The War Room and Family Finance Hub that materially apply to this repository.
+
+The adopted direction includes:
+- `STANDARD_CHAT_HIGH` as the default and `WORK_MODE` only for substantial autonomous execution leverage;
+- Fast Refresh by default, bounded remediation refresh for accepted same-task defects, and reason-gated Full Refresh;
+- active-only machine task state with blocker/user-action/write-scope metadata and collision safety;
+- Manager execution packets, integration records, audit-readiness/frozen-target controls, transition/user-action helpers, CI-debt/integration queues, compact handoffs, and a full-workforce routing dashboard;
+- a fail-closed documentation-only PR CI fast path that preserves the always-present test job, requires predecessor continuity for synchronize shortcuts, and emits durable run evidence;
+- fresh independent audit for material workflow/control-plane changes;
+- standing Manager authority to make future bounded workflow/control-plane improvements when protected product/security/data/release boundaries are unchanged.
+
+Not adopted because they do not apply:
+- War Room protected historical-scoring execution-authority/receipt machinery;
+- draft-specific custody/model controls;
+- Family Finance Hub financial reconciliation/policy controls or Supabase-specific rules.
+
+This decision does not change fantasy-football recommendation policy, ESPN source authority, read-only product behavior, `config/field-validation.json`, or the genuine-season requirement for `FV-SEASON-01`.

@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: pages-${{ github.event_name }}-${{ github.ref }}
@@ -20,14 +21,20 @@ jobs:
     outputs:
       deployment_required: ${{ steps.deployment-scope.outputs.required }}
       deployment_reason: ${{ steps.deployment-scope.outputs.reason }}
+      ci_mode: ${{ steps.effective-mode.outputs.mode }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
+
+      - name: Prepare CI evidence directory
+        run: mkdir -p ci-evidence
+
       - name: Classify production deployment scope
         id: deployment-scope
         env:
@@ -35,18 +42,236 @@ jobs:
         run: |
           node scripts/deployment-scope.js --github-output >> "$GITHUB_OUTPUT"
           node scripts/deployment-scope.js
-      - run: npm ci
-      - run: npm audit --audit-level=high
-      - run: npm test
-      - run: npm run eval:model
-      - run: npm run smoke
-      - run: npm run smoke:browser
-      - run: npm run audit:a11y
-      - run: npm run audit:readiness
-      - run: npm run audit:mobile
-      - run: npm run audit:extension
-      - run: npm run audit:performance
-      - run: npm run security
+
+      - name: Test CI change classifier
+        id: classifier-tests
+        run: |
+          set -o pipefail
+          node --test test/ci-change-mode.test.js 2>&1 | tee ci-evidence/classifier-tests.log
+
+      - name: Classify CI validation scope
+        id: classify
+        env:
+          CI_EVIDENCE_DIR: ci-evidence
+          CI_PR_ACTION: ${{ github.event.action }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CI_EVENT_BEFORE: ${{ github.event.before }}
+          CI_EVENT_AFTER: ${{ github.event.after }}
+          CI_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node scripts/ci-change-mode.js
+
+      - name: Verify docs-only predecessor continuity
+        id: predecessor
+        if: ${{ steps.classify.outputs.requires_predecessor == 'true' }}
+        continue-on-error: true
+        env:
+          CI_EVIDENCE_DIR: ci-evidence
+          CI_PREDECESSOR_SHA: ${{ steps.classify.outputs.predecessor_sha }}
+          CI_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci-change-mode.js --verify-predecessor
+
+      - name: Resolve effective CI mode
+        id: effective-mode
+        env:
+          CLASSIFIED_MODE: ${{ steps.classify.outputs.mode }}
+          CLASSIFIED_REASON: ${{ steps.classify.outputs.reason }}
+          REQUIRES_PREDECESSOR: ${{ steps.classify.outputs.requires_predecessor }}
+          PREDECESSOR_OUTCOME: ${{ steps.predecessor.outcome }}
+        run: |
+          mode="$CLASSIFIED_MODE"
+          reason="$CLASSIFIED_REASON"
+          if [ "$REQUIRES_PREDECESSOR" = "true" ] && [ "$PREDECESSOR_OUTCOME" != "success" ]; then
+            mode="FULL"
+            reason="predecessor-continuity-unavailable-fallback-full"
+          fi
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          printf 'effective_mode=%s\neffective_reason=%s\n' "$mode" "$reason" > ci-evidence/effective-mode.txt
+          {
+            echo ""
+            echo "## Effective CI mode"
+            echo ""
+            echo "- Mode: **$mode**"
+            echo "- Reason: \`$reason\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Workflow V3.2 state audit
+        id: workflow-audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          node scripts/audit-workflow.js --ci 2>&1 | tee ci-evidence/workflow-audit.log
+
+      - name: Install dependencies
+        id: install
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm ci 2>&1 | tee ci-evidence/npm-ci.log
+
+      - name: Dependency audit
+        id: dependency-audit
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm audit --audit-level=high 2>&1 | tee ci-evidence/npm-audit.log
+
+      - name: Full unit and contract tests
+        id: tests
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee ci-evidence/npm-test.log
+
+      - name: Model evaluation
+        id: model
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run eval:model 2>&1 | tee ci-evidence/model-eval.log
+
+      - name: Static smoke
+        id: static-smoke
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee ci-evidence/static-smoke.log
+
+      - name: Browser smoke
+        id: browser-smoke
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run smoke:browser 2>&1 | tee ci-evidence/browser-smoke.log
+
+      - name: Accessibility audit
+        id: a11y
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run audit:a11y 2>&1 | tee ci-evidence/a11y.log
+
+      - name: Readiness audit
+        id: readiness
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run audit:readiness 2>&1 | tee ci-evidence/readiness.log
+
+      - name: Mobile audit
+        id: mobile
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run audit:mobile 2>&1 | tee ci-evidence/mobile.log
+
+      - name: Extension audit
+        id: extension
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run audit:extension 2>&1 | tee ci-evidence/extension.log
+
+      - name: Performance audit
+        id: performance
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run audit:performance 2>&1 | tee ci-evidence/performance.log
+
+      - name: Security scan
+        id: security
+        if: ${{ steps.effective-mode.outputs.mode == 'FULL' }}
+        run: |
+          set -o pipefail
+          npm run security 2>&1 | tee ci-evidence/security.log
+
+      - name: Record validation outcomes
+        if: always()
+        env:
+          EFFECTIVE_MODE: ${{ steps.effective-mode.outputs.mode }}
+          EFFECTIVE_REASON: ${{ steps.effective-mode.outputs.reason }}
+          CLASSIFIER_TESTS: ${{ steps.classifier-tests.outcome }}
+          CLASSIFY: ${{ steps.classify.outcome }}
+          PREDECESSOR: ${{ steps.predecessor.outcome }}
+          WORKFLOW_AUDIT: ${{ steps.workflow-audit.outcome }}
+          INSTALL: ${{ steps.install.outcome }}
+          DEPENDENCY_AUDIT: ${{ steps.dependency-audit.outcome }}
+          TESTS: ${{ steps.tests.outcome }}
+          MODEL: ${{ steps.model.outcome }}
+          STATIC_SMOKE: ${{ steps.static-smoke.outcome }}
+          BROWSER_SMOKE: ${{ steps.browser-smoke.outcome }}
+          A11Y: ${{ steps.a11y.outcome }}
+          READINESS: ${{ steps.readiness.outcome }}
+          MOBILE: ${{ steps.mobile.outcome }}
+          EXTENSION: ${{ steps.extension.outcome }}
+          PERFORMANCE: ${{ steps.performance.outcome }}
+          SECURITY: ${{ steps.security.outcome }}
+        run: |
+          {
+            printf 'stage\toutcome\n'
+            printf 'classifier-tests\t%s\n' "$CLASSIFIER_TESTS"
+            printf 'classification\t%s\n' "$CLASSIFY"
+            printf 'predecessor-continuity\t%s\n' "$PREDECESSOR"
+            printf 'workflow-audit\t%s\n' "$WORKFLOW_AUDIT"
+            printf 'install\t%s\n' "$INSTALL"
+            printf 'dependency-audit\t%s\n' "$DEPENDENCY_AUDIT"
+            printf 'tests\t%s\n' "$TESTS"
+            printf 'model\t%s\n' "$MODEL"
+            printf 'static-smoke\t%s\n' "$STATIC_SMOKE"
+            printf 'browser-smoke\t%s\n' "$BROWSER_SMOKE"
+            printf 'accessibility\t%s\n' "$A11Y"
+            printf 'readiness\t%s\n' "$READINESS"
+            printf 'mobile\t%s\n' "$MOBILE"
+            printf 'extension\t%s\n' "$EXTENSION"
+            printf 'performance\t%s\n' "$PERFORMANCE"
+            printf 'security\t%s\n' "$SECURITY"
+          } > ci-evidence/stage-outcomes.tsv
+          {
+            echo ""
+            echo "## CI validation outcomes"
+            echo ""
+            echo "- Effective mode: **${EFFECTIVE_MODE:-FAILED_CLOSED}**"
+            echo "- Reason: \`${EFFECTIVE_REASON:-classification-unavailable}\`"
+            echo ""
+            echo "| Stage | Outcome |"
+            echo "|---|---|"
+            while IFS=$'\t' read -r stage outcome; do
+              [ "$stage" = "stage" ] && continue
+              echo "| $stage | $outcome |"
+            done < ci-evidence/stage-outcomes.tsv
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload CI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcw-ci-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ci-evidence
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Enforce CI classifier guardrails
+        if: always()
+        env:
+          CLASSIFIER_TESTS: ${{ steps.classifier-tests.outcome }}
+          CLASSIFY: ${{ steps.classify.outcome }}
+          WORKFLOW_AUDIT: ${{ steps.workflow-audit.outcome }}
+          EFFECTIVE_MODE: ${{ steps.effective-mode.outputs.mode }}
+        run: |
+          failures=()
+          [ "$CLASSIFIER_TESTS" = "success" ] || failures+=("classifier-tests=$CLASSIFIER_TESTS")
+          [ "$CLASSIFY" = "success" ] || failures+=("classification=$CLASSIFY")
+          [ "$WORKFLOW_AUDIT" = "success" ] || failures+=("workflow-audit=$WORKFLOW_AUDIT")
+          [ -n "$EFFECTIVE_MODE" ] || failures+=("effective-mode=missing")
+          if [ "${#failures[@]}" -gt 0 ]; then
+            printf 'CI guardrail failure: %s\n' "${failures[*]}" >&2
+            exit 1
+          fi
+          echo "CI classifier guardrails passed."
 
   deploy:
     if: github.event_name != 'pull_request' && needs.test.outputs.deployment_required == 'true'

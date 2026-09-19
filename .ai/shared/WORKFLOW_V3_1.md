@@ -1,10 +1,10 @@
 # Workflow V3.1 — Coordination Hardening Overlay
 
-Status: ACTIVE OVERLAY
+Status: SUPERSEDED BY WORKFLOW V3.2 AFTER TCW-026 INTEGRATION / PRESERVED BASELINE
 Owner: Manager / Architect
 Effective after TCW-010 merges and passes post-merge verification.
 
-This file is a binding overlay on `.ai/shared/WORKFLOW.md`. The V3 base workflow remains in force except where this overlay adds or narrows a rule. If the two conflict, this V3.1 overlay controls.
+This file is the preserved V3.1 predecessor. After TCW-026 integration, `.ai/shared/WORKFLOW_V3_2.md` controls where it narrows or supersedes V3.1. Historical V3.1 evidence remains valid for work performed under it.
 
 ## 1. Single operational authority
 
