@@ -51,3 +51,26 @@ main { min-width:0; }.topbar { min-height:90px; background:rgba(255,255,255,.82)
 .comparison-confidence{display:grid;gap:4px;margin:12px 0 0;padding:11px;border-radius:8px;background:#f3f7e8}.comparison-confidence strong{font-size:10px;color:#4d6810}.comparison-confidence span,.comparison-confidence small{font-size:9px;color:var(--muted);line-height:1.45}
 .external-comparison{display:grid;gap:4px;margin:8px 0 0;padding:11px;border:1px solid var(--line);border-radius:8px;background:#f8f9f6}.external-comparison strong{font-size:10px;color:var(--green)}.external-comparison span{font-size:9px;color:var(--muted);line-height:1.45}
 .coverage-details{margin:-2px 0 8px;padding:8px 10px;border-radius:7px;background:#fffaf0;color:var(--muted);font-size:10px}.coverage-details summary{cursor:pointer;color:var(--amber);font-weight:800}.coverage-details span{display:block;margin-top:5px;line-height:1.4}
+
+
+/* Trade Analyzer proposal entry: keep trade-side controls balanced without changing shared connection forms. */
+.trade-partner-control,.trade-objective-control{display:grid;grid-template-columns:minmax(0,520px);gap:6px;margin-bottom:16px}
+.trade-partner-control label,.trade-objective-control label,.trade-player-entry label{display:grid;gap:5px;min-width:0;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}
+.trade-partner-control select,.trade-objective-control select,.trade-player-entry select{width:100%;min-width:0;max-width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:#f8f9f6;color:var(--ink);font-weight:700}
+.trade-partner-control .data-note{margin:0}
+.trade-sides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0}
+.trade-side{min-width:0;padding:16px;border:1px solid var(--line);border-radius:11px;background:#fafbf8}
+.trade-side-head{margin-bottom:11px}
+.trade-side-head h4{margin:4px 0 0;font:700 14px Manrope}
+.trade-player-entry{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;min-width:0}
+.trade-add-button{width:auto;min-width:68px;min-height:44px;padding:10px 16px;white-space:nowrap;align-self:end}
+.trade-selected{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:34px;margin-top:12px}
+.trade-selected .button{max-width:100%}
+.trade-objective-control{grid-template-columns:minmax(0,420px);margin-top:2px}
+@media(max-width:720px){
+  .trade-sides{grid-template-columns:1fr;gap:12px}
+  .trade-side{padding:14px}
+  .trade-player-entry{grid-template-columns:minmax(0,1fr) auto}
+  .trade-add-button{min-width:64px;min-height:44px}
+  .trade-partner-control,.trade-objective-control{grid-template-columns:minmax(0,1fr)}
+}
