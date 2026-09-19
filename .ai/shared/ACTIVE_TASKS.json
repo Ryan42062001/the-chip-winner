@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T16:04:00Z",
+  "updated_at_utc": "2026-09-19T16:39:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,7 +26,7 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "ASSIGNED",
+      "status": "MANAGER_REVIEW_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -38,19 +38,20 @@
       "blocked_on": [],
       "task_file": ".ai/manager/tasks/TCW-034.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "2124602b0eb884fc9a6db407e4feb3b3f9afbf5a",
+      "assignment_master_sha": "872aa79969743dafb3bf062a76b213c687397a6f",
       "branch": "builder/tcw-034-trade-winner-engine",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 147,
+      "worker_checkpoint_sha": "a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a",
       "worker_slot": "builder-trade-winner-engine",
       "allowed_path_prefixes": [
         "src/domain/trade-analyzer.js",
         "src/domain/trade-value-engine.js",
         "src/domain/trade-value-source.js",
         "src/ui/trade-analyzer.js",
-        "test/trade-analyzer",
-        "test/trade-winner",
         "scripts/smoke-trade-analyzer.js",
+        "test/trade-analyzer-ui.test.js",
+        "test/trade-winner-engine.test.js",
+        "test/trade-winner-integration.test.js",
         ".ai/builder/HANDOFF.md"
       ],
       "forbidden_path_prefixes": [
@@ -72,7 +73,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Builder implements bounded source-agnostic TCW-034 with live packageValue fail-closed, opens one PR, runs full validation and audit-readiness on the exact final head, and returns to Manager without merging."
+      "next_gate": "Builder reruns task-specific workflow:audit-readiness against exact checkpoint a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a using the reconciled Manager machine state; on PASS return to Manager for freeze and fresh independent audit. Do not merge."
     }
   ]
 }
