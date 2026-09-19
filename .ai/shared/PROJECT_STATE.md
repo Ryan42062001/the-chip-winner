@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-034 repaired FULL target frozen + TCW-045 independent re-audit assigned + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-045 FAIL consumed + TCW-034 bounded F02-R1/F04-R1 Builder remediation active + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -158,3 +158,8 @@ No live third-party value source is authorized; package-value output remains fai
 ## Repaired freeze and independent re-audit — 2026-09-19
 
 Actual task-specific audit-readiness on exact Builder head `24be4be45f7fde351c0a6e209353dd2beed8d854`: blockers [], readyForManagerFreeze true, sha256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`. Manager freezes that FULL head as immutable repaired audit target. TCW-045 fresh Independent Auditor re-audit ASSIGNED; historical TCW-044 failed target remains unchanged. Builder PR #147 DRAFT / UNMERGED. TCW-035 inactive. Live package-value provider authority remains EMPTY and winner/split WITHHELD.
+
+
+## Second independent audit disposition — 2026-09-19
+
+TCW-045 is CLOSED after exact-target FAIL on `24be4be45f7fde351c0a6e209353dd2beed8d854`. Auditor evidence PR #157 / #679 PASS merged as master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc` / #680 PASS. Manager independently accepted F02-R1 MEDIUM/BLOCKING (unknown roster rules mistaken for verified acquisition legality and numeric replacement) and F04-R1 LOW/SAME-PASS (explicit derivative ancestry ignored by independently named group labels). Canonical decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`. TCW-034 returns to ASSIGNED on existing Builder PR #147, from exact remediation parent `24be4be45f7fde351c0a6e209353dd2beed8d854`; next requires fresh FULL final handoff-inclusive checkpoint, Manager readiness/freeze, and new independent audit. No merge or TCW-035 activation. Provider authority remains EMPTY, live package winner/split WITHHELD, FV-SEASON-01 pending.

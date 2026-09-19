@@ -228,7 +228,7 @@ Decision artifact:
 `.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
 #### TCW-034 — Trade Winner Engine
-Status: **AUDIT_READY — REPAIRED FULL TARGET FROZEN; TCW-045 RE-AUDIT ACTIVE**
+Status: **ACTIVE — BOUNDED SECOND-AUDIT F02-R1 / F04-R1 BUILDER REMEDIATION**
 Primary owner: Builder
 Builder PR: `#147` — DRAFT / UNMERGED
 Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
@@ -411,3 +411,8 @@ TCW-031, TCW-042, and TCW-043 are closed after:
 - resulting canonical master #638 PASS.
 
 The accepted TCW-032 contract defines scoring semantics and TCW-033 established that no researched provider currently has sufficient authority for automated live use. Manager therefore activated TCW-034 only for source-agnostic fail-closed implementation: synthetic fixtures may prove the winner math, but live YOU WIN / FAIR TRADE / THEY WIN and relative-value percentages remain WITHHELD until a provider is separately approved.
+
+
+### Second Trade Winner audit disposition — 2026-09-19
+
+TCW-045 concluded FAIL on exact frozen `24be4be45f7fde351c0a6e209353dd2beed8d854`. Evidence PR #157 / workflow #679 PASS was integrated on master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc` / workflow #680 PASS. Manager accepted F02-R1 (BLOCKING) and F04-R1 (same-pass) and returned only TCW-034 to Builder on existing draft/unmerged PR #147. A fresh FULL final handoff-inclusive repaired head, readiness, immutable freeze and new independent audit are still required; TCW-035 and later tasks remain inactive.

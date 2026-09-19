@@ -3,71 +3,28 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — AUDIT_READY / REPAIRED TARGET FROZEN
+## TCW-034 — ASSIGNED / BOUNDED SECOND-AUDIT REMEDIATION
 
-Owner:
-**Implementation Engineer / Builder**
+Owner: Implementation Engineer / Builder
 
-Execution mode:
-`STANDARD_CHAT_HIGH`
+Execution mode: `STANDARD_CHAT_HIGH`
+Refresh mode: `BOUNDED_REMEDIATION_REFRESH`
 
-Refresh:
-`BOUNDED_REMEDIATION_REFRESH`
+Existing Builder branch: `builder/tcw-034-trade-winner-engine`
+Existing Builder PR: #147 — DRAFT / UNMERGED
+Exact failed repaired target / new remediation parent: `24be4be45f7fde351c0a6e209353dd2beed8d854`
 
-Existing branch:
-`builder/tcw-034-trade-winner-engine`
+Independent audit TCW-045:
+- PR #157 exact head `a9ab541f46d571347c22b291534d343477bf37bb`
+- exact-head workflow #679 / run `35476232619`: PASS
+- evidence integration master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
+- master workflow #680 / run `35476504713`: PASS
+- verdict FAIL — REMEDIATION REQUIRED
+- F02-R1 MEDIUM/BLOCKING — ACCEPTED
+- F04-R1 LOW/SAME-PASS — ACCEPTED
 
-Existing PR:
-`#147` — DRAFT / UNMERGED
+Decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`.
 
-Remediation parent:
-`a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+Builder may repair only missing/incomplete roster-rule acquisition legality and false derivative-source independence, including necessary regressions and final Builder handoff. Historical F01/F03 repairs must remain intact. Do not merge Manager/audit evidence into Builder product branch.
 
-Control-plane/audit advancement checked through:
-`fea421a9263e78ff9eeb23c1a339e95b412affe0`
-
-Advancement classification:
-`CONTROL_PLANE_ONLY`
-
-Accepted independent audit findings:
-- F01 HIGH — raw listed-position count changes must not become material decision evidence;
-- F02 MEDIUM — replacement numeric context must be legal slot/FLEX/OP/acquisition-path specific or null;
-- F03 MEDIUM — caller subsets cannot redefine canonical ROS/playoff completeness;
-- F04 LOW — HIGH confidence requires genuinely independent agreeing approved sources.
-
-Canonical Manager decision:
-`.ai/manager/evidence/TRADE_WINNER_AUDIT_FINDING_DECISION.md`
-
-Required next candidate:
-- accepted F01-F04 only;
-- fresh FULL implementation checkpoint;
-- exact FULL head already includes final Builder handoff/evidence and is the proposed immutable repaired target;
-- Builder returns that exact head to Manager without merge;
-- Manager records the checkpoint and transitions to MANAGER_REVIEW_READY;
-- task-specific audit-readiness then PASSes against the unchanged exact head;
-- no later handoff-only target substitution;
-- no merge.
-
-Preserved:
-- production provider set EMPTY;
-- live package winner/split WITHHELD;
-- ESPN read-only;
-- field registry unchanged / FV-SEASON-01 pending;
-- TCW-035+ inactive.
-
-Next gate:
-TCW-045 fresh Independent Auditor re-audits immutable repaired target `24be4be45f7fde351c0a6e209353dd2beed8d854`. Builder PR #147 remains draft/unmerged; Manager consumes independent verdict before any merge. TCW-035 inactive.
-
-## TCW-045 — ASSIGNED
-
-Owner: Independent Auditor / QA
-
-Expected branch: `auditor/tcw-045-trade-winner-repaired-reaudit`
-
-Task: `.ai/manager/tasks/TCW-045.md`
-
-Frozen packet: `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`
-
-Immutable target: `24be4be45f7fde351c0a6e209353dd2beed8d854`
-
-Authorized changed files: `.ai/audit/TCW-045_TRADE_WINNER_ENGINE_REAUDIT.md` and `.ai/auditor/TCW-045_HANDOFF.md` only. One Auditor PR, exact-head CI, no merge.
+Next gate: Builder returns a NEW fresh FULL exact-head implementation checkpoint that already contains final Builder handoff. Then Manager reconciles checkpoint/status, runs task-specific audit-readiness against unchanged bounded diff, freezes exact FULL head on PASS, and routes a FRESH independent re-audit. No merge of #147, no live provider authorization, no TCW-035 activation.

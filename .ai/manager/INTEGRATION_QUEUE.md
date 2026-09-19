@@ -2,7 +2,7 @@
 
 ## PENDING
 
-### Trade Winner Engine — bounded audit remediation
+### Trade Winner Engine — bounded SECOND audit remediation
 - Source Builder PR: `#147` — DRAFT / UNMERGED.
 - Existing Builder branch: `builder/tcw-034-trade-winner-engine`.
 - Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
@@ -26,7 +26,7 @@
 - Task-specific audit-readiness PASS on exact repaired head: blockers [], readyForManagerFreeze true, packet sha256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`.
 - Exact repaired FULL head `24be4be45f7fde351c0a6e209353dd2beed8d854` is now IMMUTABLY FROZEN by Manager.
 - Fresh re-audit task TCW-045 is ASSIGNED, frozen packet `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`.
-- Required next evidence: one exact-target independent Auditor PR/verdict/CI; Manager consumption before Builder integration. No later head substitution.
+- TCW-045 fresh re-audit PR #157 at exact head `a9ab541f46d571347c22b291534d343477bf37bb` PASS workflow #679; evidence merged at `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc` / master #680 PASS; audit verdict FAIL. Manager accepted F02-R1 MEDIUM/BLOCKING and F04-R1 LOW/SAME-PASS independently.\n- New immutable historical failed target / bounded remediation parent: `24be4be45f7fde351c0a6e209353dd2beed8d854`.\n- Next: Builder repairs F02-R1/F04-R1 only on existing branch/PR #147, returns a NEW exact FULL final implementation+handoff head; Manager readiness/freeze and another fresh independent audit before any merge.
 - Manager merge authority only.
 - Do not merge PR #147 before the fresh repaired-target audit is consumed.
 
