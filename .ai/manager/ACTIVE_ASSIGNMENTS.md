@@ -41,8 +41,10 @@ Canonical Manager decision:
 Required next candidate:
 - accepted F01-F04 only;
 - fresh FULL implementation checkpoint;
-- exact FULL head is the proposed immutable repaired target;
-- task-specific audit-readiness PASS;
+- exact FULL head already includes final Builder handoff/evidence and is the proposed immutable repaired target;
+- Builder returns that exact head to Manager without merge;
+- Manager records the checkpoint and transitions to MANAGER_REVIEW_READY;
+- task-specific audit-readiness then PASSes against the unchanged exact head;
 - no later handoff-only target substitution;
 - no merge.
 
@@ -54,4 +56,4 @@ Preserved:
 - TCW-035+ inactive.
 
 Next gate:
-Builder returns the exact repaired SHA, fresh FULL run/test job, bounded changed files, deterministic finding regressions, preserved-boundary evidence, and task-specific audit-readiness PASS. Manager then independently reviews/freezes and routes a fresh re-audit.
+Builder returns the exact repaired SHA, fresh FULL run/test job, bounded changed files, deterministic finding regressions, and preserved-boundary evidence. Manager then records that exact checkpoint / MANAGER_REVIEW_READY state, runs the task-specific readiness gate against the unchanged head, and only on PASS freezes it for a fresh re-audit.
