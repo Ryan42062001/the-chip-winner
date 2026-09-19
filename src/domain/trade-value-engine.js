@@ -117,6 +117,7 @@ export function evaluatePackageValue({
           freshness: inspected.freshness,
           compatibility: inspected.compatibility,
           authority: inspected.authority,
+          provenance: inspected.provenance,
           missingPlayerIds: inspected.missingPlayerIds,
           ambiguousPlayerIds: inspected.ambiguousPlayerIds,
           errorPlayerIds: inspected.errorPlayerIds,
@@ -131,6 +132,7 @@ export function evaluatePackageValue({
         freshness: inspected.freshness,
         compatibility: inspected.compatibility,
         authority: inspected.authority,
+        provenance: inspected.provenance,
         missingPlayerIds: freezeList([]),
         ambiguousPlayerIds: freezeList([]),
         errorPlayerIds: freezeList([]),
@@ -213,18 +215,36 @@ export function packageValueConfidence(packageValue) {
       freshness: "UNVERIFIED",
       identity: "UNVERIFIED",
       comparability: "UNVERIFIED",
+      independentEvidenceGroups: freezeList([]),
       limitations: freezeList(packageValue?.reasons || ["NO_APPROVED_COMPARABLE_VALUE_SOURCE"])
     });
   }
-  const sourceCount = packageValue.sourceResults?.length || 1;
+
+  const rows = Array.isArray(packageValue.sourceResults) ? packageValue.sourceResults : [];
+  const units = new Set(rows.map((row) => row.unit).filter(Boolean));
+  const independentGroups = [...new Set(rows
+    .filter((row) => row.authority?.managerApproved === true
+      && row.authority?.trustedConfiguration === true
+      && row.authority?.independentEvidenceApproved === true
+      && row.provenance?.independenceGroup)
+    .map((row) => row.provenance.independenceGroup))]
+    .sort();
+  const genuinelyIndependentAgreement = units.size === 1 && independentGroups.length >= 2;
+
   return Object.freeze({
-    claimConfidence: sourceCount >= 2 ? "HIGH" : "MODERATE",
+    claimConfidence: genuinelyIndependentAgreement ? "HIGH" : "MODERATE",
     evidenceState: "COMPLETE",
     coverage: "COMPLETE_PACKAGE",
     freshness: "VERIFIED",
     identity: "EXACT_ESPN_PLAYER_ID",
     comparability: "COMMON_ADDITIVE_ASSET_UNIT",
-    limitations: freezeList(["Relative package asset value is not win probability, future-performance probability, or acceptance probability."])
+    independentEvidenceGroups: freezeList(independentGroups),
+    limitations: freezeList([
+      genuinelyIndependentAgreement
+        ? "At least two explicitly Manager-authorized independent evidence groups agree on the package-value claim."
+        : "Package value is supported, but fewer than two explicitly Manager-authorized independent evidence groups support the same scale; confidence is capped at MODERATE.",
+      "Relative package asset value is not win probability, future-performance probability, or acceptance probability."
+    ])
   });
 }
 
