@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer V2 product rebuild prioritized + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + TCW-031 Trade Analyzer functional reset assigned + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -62,12 +62,12 @@ Canonical detailed roadmap: `.ai/shared/ROADMAP.md`.
 
 ## Next product lane
 
-No worker task is active yet.
-
-Manager should next route:
+Active worker task:
 `TCW-031 — Trade Analyzer Functional Reset + UAT Contract`
 
-After the existing baseline workflow is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
+Owner: Implementation Engineer / Builder.
+
+TCW-031 must first restore a real counterparty-aware baseline evaluate-trade workflow and establish the deployed UAT gate. After that baseline is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
 
 GM Action Plan is paused behind the core Trade Analyzer V2 workflows.
 
