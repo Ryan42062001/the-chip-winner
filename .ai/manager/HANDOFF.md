@@ -1,6 +1,6 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-034 REPAIRED FULL CANDIDATE — MANAGER_REVIEW_READY
+STATUS: TCW-034 REPAIRED TARGET FROZEN — TCW-045 FRESH AUDITOR ACTIVE
 ROLE: Manager / Architect
 CANONICAL AUDIT-EVIDENCE MASTER: `fea421a9263e78ff9eeb23c1a339e95b412affe0`
 
@@ -125,32 +125,28 @@ Only after the readiness PASS may Manager freeze the same exact repaired FULL he
 
 TCW-035 and later tasks remain inactive.
 
+## Repaired-target freeze — 2026-09-19
+
+Immutable repaired Builder target:
+`24be4be45f7fde351c0a6e209353dd2beed8d854`
+
+- Builder PR #147: DRAFT / UNMERGED.
+- Fresh exact-head FULL workflow #674 / run `35461527961`, test `105946146678`: PASS.
+- User-executed task-specific audit-readiness against unchanged exact head: `blockers: []`; `readyForManagerFreeze: true`; packet SHA256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`.
+- Canonical readiness master `0476118169110c7fa10b5fda4c2b7d662fc0b3ad`, workflow #676 / run `35462452563`: PASS.
+- Historical failed target `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a` remains frozen as historical evidence.
+- New audit packet: `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md`.
+- TCW-034: AUDIT_READY; TCW-045: ASSIGNED.
+- Production value-source authority remains EMPTY. Live winner/split WITHHELD. No ESPN write actions. `FV-SEASON-01` remains pending.
+- TCW-035 remains inactive. No Builder merge/product acceptance before independent re-audit.
+
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | Bounded remediation routed | Await exact repaired Builder head + fresh FULL CI. Then reconcile checkpoint/status to MANAGER_REVIEW_READY so readiness can run against the unchanged head. Do not merge PR #147. |
-| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 accepted audit remediation | Resume existing branch/PR from failed target `a40c8db8...`; repair accepted F01-F04 only, include final handoff in the fresh FULL exact-head candidate, then return that exact candidate to Manager without merging. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | Strategy contract already resolves audited semantics | No action unless Builder finds a genuine unresolved policy ambiguity. |
-| 4 | Research & Development (R&D) | IDLE | Provider authority remains intentionally empty | No action unless Manager separately reopens provider/data research. |
-| 5 | Independent Auditor / QA | WAIT | Historical audit complete; repaired target not frozen yet | Do not reuse old verdict as repair proof. Activate a fresh re-audit only after Manager freezes repaired FULL target. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No remediation convergence failure yet | Activate only if bounded Builder remediation cannot converge or a reproduced technical blocker requires root-cause work. |
-
-
-## Repaired candidate checkpoint — 2026-09-19
-
-Exact repaired Builder head:
-`24be4be45f7fde351c0a6e209353dd2beed8d854`
-
-PR #147 remains DRAFT / UNMERGED.
-
-Fresh FULL validation:
-- workflow #674 / run `35461527961`: SUCCESS
-- test job `105946146678`: SUCCESS
-
-Manager independently inspected the bounded six-file remediation and confirmed the intended F01-F04 repair mechanisms are present. This is not an audit verdict.
-
-Next gate:
-task-specific audit-readiness against unchanged `24be4be45f7fde351c0a6e209353dd2beed8d854`; on PASS freeze that exact SHA and route a fresh Independent Auditor re-audit.
-
-TCW-035 remains inactive.
+| 1 | Manager / Architect | WAIT | TCW-045 fresh re-audit routed | Await exact Auditor PR/head/verdict/CI; independently consume findings before Builder integration. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-034 immutable repaired target frozen | Do not advance PR #147 or merge while TCW-045 audits. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 contract accepted | Re-activate only on a separately routed policy question. |
+| 4 | Research & Development (R&D) | IDLE | TCW-033 evidence accepted | No new provider authority. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-045 fresh repaired-target independent re-audit | Execute `.ai/manager/tasks/TCW-045.md` and frozen packet `.ai/audit/TCW-045_TRADE_WINNER_REAUDIT_PACKET_24be4be4.md` against exact target `24be4be45f7fde351c0a6e209353dd2beed8d854`; one evidence PR, no merge. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only on Manager assignment. |
