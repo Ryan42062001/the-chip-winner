@@ -36,7 +36,7 @@ Important product-status correction:
 - Future Trade Analyzer milestones require real deployed end-to-end user acceptance before being called complete.
 
 ## Trade Analyzer V2 — active product priority
-Status: **ACTIVE — TCW-031 FUNCTIONAL RESET ASSIGNED**
+Status: **ACTIVE — TCW-042 OWNERSHIP + INPUT UI REMEDIATION**
 
 ### Product objective
 
@@ -160,7 +160,7 @@ All of the following are roadmap requirements, not optional ideas:
 ### Trade Analyzer V2 execution roadmap
 
 #### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-Status: **INTEGRATED/DEPLOYED — INDEPENDENT AUDIT + REAL UAT ACTIVE**
+Status: **BLOCKED — TCW-041 FAIL + PRODUCT-OWNER UI POLISH REQUIRED**
 Owner sequence: Manager → Builder → Auditor / User acceptance
 
 Goals:
