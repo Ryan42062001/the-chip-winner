@@ -15,7 +15,7 @@ Manager-owned queue. Repository/PR state remains authoritative.
 - Owner: Manager / Architect
 - Branch: `manager/tcw-026-workflow-v32-parity-upgrade`
 - Base: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- Current gate: exact-head CI -> Manager integration -> master verification -> fresh independent workflow/control-plane audit.
+- PR: #114\n- Validated executable checkpoint: `00516fa9001bc97cfcc241357333d77fad9eb217`\n- FULL workflow #574 / run 35417946775: PASS\n- Current gate: final exact-head CI -> Manager integration -> master verification -> fresh independent workflow/control-plane audit.
 
 ## Ordering
 TCW-025 production remediation was integrated first to avoid making the already-green production PR stale. TCW-026 is intentionally control-plane/CI tooling only and does not alter Trade Analyzer product semantics.

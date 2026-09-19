@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T03:14:00Z",
+  "updated_at_utc": "2026-09-19T03:18:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -68,7 +68,7 @@
       "title": "Workflow V3.2 Cross-Project Parity Upgrade",
       "owner": "Manager",
       "role_label": "Manager / Architect",
-      "status": "IN_PROGRESS",
+      "status": "MERGE_READY",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FULL_REFRESH",
@@ -83,7 +83,7 @@
       "assignment_master_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
       "branch": "manager/tcw-026-workflow-v32-parity-upgrade",
       "pr": 114,
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "00516fa9001bc97cfcc241357333d77fad9eb217",
       "worker_slot": "manager-workflow-v32",
       "allowed_path_prefixes": [
         ".ai/shared/",
@@ -112,7 +112,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Finish the bounded V3.2 parity implementation, exact-head full CI, Manager integration/master verification, then route one fresh independent workflow/control-plane audit before TCW-026 can close."
+      "next_gate": "Manager exact-head merge gate after final FULL validation; then verify master CI/Pages/production and route fresh independent workflow/control-plane audit."
     }
   ]
-}
+}\n

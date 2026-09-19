@@ -1,11 +1,11 @@
 # Manager / Architect Handoff
 
-STATUS: ACTIVE
+STATUS: MERGE_READY
 TASK: TCW-026 — Workflow V3.2 Cross-Project Parity Upgrade
 ROLE: Manager / Architect
 BRANCH: `manager/tcw-026-workflow-v32-parity-upgrade`
 BASE: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-PR: pending until implementation commit
+PR: #114
 
 ## DONE
 - Compared current The Chip Winner workflow with current mature War Room and Family Finance Hub workflow/control-plane patterns.
