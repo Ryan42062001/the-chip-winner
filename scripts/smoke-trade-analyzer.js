@@ -30,6 +30,40 @@ async function waitForServer() {
   throw new Error("Trade Analyzer smoke server did not become ready.");
 }
 
+async function assertTradeEntryGeometry(page, { mobile = false } = {}) {
+  const send = page.locator('[data-trade-side="send"]');
+  const receive = page.locator('[data-trade-side="receive"]');
+  const outgoingSelect = send.locator("#trade-outgoing-select");
+  const incomingSelect = receive.locator("#trade-incoming-select");
+  const outgoingAdd = send.getByRole("button", { name: "Add outgoing" });
+  const incomingAdd = receive.getByRole("button", { name: "Add incoming" });
+  const [sendBox, receiveBox, outgoingSelectBox, incomingSelectBox, outgoingAddBox, incomingAddBox] = await Promise.all([
+    send.boundingBox(), receive.boundingBox(), outgoingSelect.boundingBox(), incomingSelect.boundingBox(), outgoingAdd.boundingBox(), incomingAdd.boundingBox()
+  ]);
+  if (![sendBox, receiveBox, outgoingSelectBox, incomingSelectBox, outgoingAddBox, incomingAddBox].every(Boolean)) throw new Error("Trade Analyzer input geometry could not be measured.");
+
+  if (mobile) {
+    if (receiveBox.y < sendBox.y + sendBox.height - 2) throw new Error("Trade Analyzer Send/Receive sides did not stack vertically on mobile.");
+  } else {
+    if (Math.abs(sendBox.y - receiveBox.y) > 4) throw new Error("Trade Analyzer Send/Receive sides are not aligned on desktop.");
+    if (Math.abs(sendBox.width - receiveBox.width) > 12) throw new Error("Trade Analyzer Send/Receive sides are not balanced on desktop.");
+  }
+
+  for (const [selectBox, buttonBox, label] of [
+    [outgoingSelectBox, outgoingAddBox, "outgoing"],
+    [incomingSelectBox, incomingAddBox, "incoming"]
+  ]) {
+    const gap = buttonBox.x - (selectBox.x + selectBox.width);
+    if (gap < -1 || gap > 18) throw new Error(`Trade Analyzer ${label} Add action is not adjacent to its selector (gap ${gap}).`);
+    if (buttonBox.width > 110) throw new Error(`Trade Analyzer ${label} Add action is oversized (${buttonBox.width}px).`);
+    if (buttonBox.height < 40) throw new Error(`Trade Analyzer ${label} Add action is below the minimum touch target height.`);
+  }
+  if (Math.abs(outgoingAddBox.width - incomingAddBox.width) > 3) throw new Error("Trade Analyzer outgoing/incoming Add controls do not use matched compact sizing.");
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 1) throw new Error(`Trade Analyzer layout has horizontal overflow of ${overflow}px.`);
+}
+
 let browser;
 try {
   await waitForServer();
@@ -58,10 +92,16 @@ try {
   const freeAgentIds = fixture.players.map((player) => player.id).filter((id) => !fixture.rosters.some((roster) => roster.entries.some((entry) => entry.playerId === id)));
   if (actualIncoming.some((id) => freeAgentIds.includes(id))) throw new Error("Unrostered player appeared as incoming trade asset.");
 
+  await assertTradeEntryGeometry(page);
+  if (await page.getByRole("button", { name: "Add outgoing" }).textContent() !== "Add") throw new Error("Trade Analyzer outgoing Add copy is not compact.");
+  if (await page.getByRole("button", { name: "Add incoming" }).textContent() !== "Add") throw new Error("Trade Analyzer incoming Add copy is not compact.");
+
   await page.getByRole("button", { name: "Add outgoing" }).click();
   await page.getByRole("button", { name: "Add incoming" }).click();
   if (await page.locator('[data-trade-remove="outgoingPlayerIds"]').count() !== 1) throw new Error("Trade Analyzer did not add an outgoing player.");
   if (await page.locator('[data-trade-remove="incomingPlayerIds"]').count() !== 1) throw new Error("Trade Analyzer did not add an incoming player.");
+  if (await page.locator('[data-trade-side="send"] [data-trade-remove="outgoingPlayerIds"]').count() !== 1) throw new Error("Outgoing selected-player chip is not directly under the Send side.");
+  if (await page.locator('[data-trade-side="receive"] [data-trade-remove="incomingPlayerIds"]').count() !== 1) throw new Error("Incoming selected-player chip is not directly under the Receive side.");
 
   await page.locator("#trade-objective").selectOption("FUTURE_UPSIDE");
   if (await page.locator("#trade-objective").inputValue() !== "FUTURE_UPSIDE") throw new Error("Trade Analyzer objective selection did not persist.");
@@ -94,8 +134,50 @@ try {
     throw new Error("Trade Analyzer reset did not clear partner, incoming selections, and previous result.");
   }
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("#trade-partner-select").selectOption(myTeamId);
+  await assertTradeEntryGeometry(page, { mobile: true });
+
   if (pageErrors.length) throw new Error(`Trade Analyzer browser page errors: ${pageErrors.join(" | ")}`);
   await context.close();
+
+  const ambiguousFixture = JSON.parse(readFileSync("src/data/sample-espn-snapshot.json", "utf8"));
+  const ambiguousUserTeamId = ambiguousFixture.teams[0].id;
+  const ambiguousUserRoster = ambiguousFixture.rosters.find((item) => item.teamId === ambiguousUserTeamId);
+  const duplicateTargetRoster = ambiguousFixture.rosters.find((item) => item.teamId !== ambiguousUserTeamId);
+  const ambiguousOutgoingId = ambiguousUserRoster.entries[0].playerId;
+  const duplicateEntry = { ...ambiguousUserRoster.entries[0], lineupSlot: "BE" };
+  duplicateTargetRoster.entries.push(duplicateEntry);
+
+  const ambiguousContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ambiguousPage = await ambiguousContext.newPage();
+  const ambiguousErrors = [];
+  ambiguousPage.on("pageerror", (error) => ambiguousErrors.push(error.message));
+  await ambiguousPage.route("**/src/data/sample-espn-snapshot.json", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(ambiguousFixture) });
+  });
+  await ambiguousPage.goto(origin, { waitUntil: "networkidle" });
+  await ambiguousPage.locator("#onboarding-dialog").waitFor();
+  await ambiguousPage.getByRole("button", { name: "Explore sample" }).click();
+  await ambiguousPage.locator('a[data-section="trade"]').click();
+  await ambiguousPage.getByRole("heading", { name: "Trade Analyzer", level: 2 }).waitFor();
+
+  const outgoingIds = await ambiguousPage.locator("#trade-outgoing-select option").evaluateAll((options) => options.map((option) => option.value));
+  if (outgoingIds.includes(ambiguousOutgoingId)) throw new Error("Ambiguously owned outgoing player remained visible in the outgoing selector.");
+
+  await ambiguousPage.locator("#trade-outgoing-select").evaluate((select, playerId) => {
+    const option = document.createElement("option");
+    option.value = playerId;
+    option.textContent = "Tampered ambiguous outgoing";
+    select.append(option);
+    select.value = playerId;
+  }, ambiguousOutgoingId);
+  await ambiguousPage.getByRole("button", { name: "Add outgoing" }).click();
+  if (await ambiguousPage.locator('[data-trade-remove="outgoingPlayerIds"]').count()) throw new Error("Tampered ambiguous outgoing player was added through the UI.");
+  await ambiguousPage.getByRole("alert").getByText(/not eligible for the currently selected trade side and team/i).waitFor();
+  if (ambiguousErrors.length) throw new Error(`Trade Analyzer ambiguous-ownership page errors: ${ambiguousErrors.join(" | ")}`);
+  await ambiguousContext.close();
+
   console.log("Trade Analyzer browser smoke passed.");
 } finally {
   await browser?.close();
