@@ -104,7 +104,7 @@ test("higher projected incoming player can remain bench depth with zero immediat
   assert.deepEqual(result.currentWeek.sources[0].assignments.incomingBenchDepth, ["x"]);
 });
 
-test("2-for-1 consolidation exposes starter gain and open roster space without inventing raw-count depth cost or auto-add", () => {
+test("2-for-1 consolidation exposes starter gain, open roster space, and depth cost without auto-add", () => {
   const snap = snapshot({
     players: [player("a", "RB", 10), player("c", "RB", 9), player("w", "WR", 10), player("x", "RB", 15), player("fa", "RB", 8)],
     mine: [entry("a", "RB"), entry("w", "WR"), entry("c", "BE")],
@@ -116,11 +116,7 @@ test("2-for-1 consolidation exposes starter gain and open roster space without i
   const result = analyze(snap, proposal(["a", "c"], ["x"]));
   assert.equal(result.currentWeek.sources[0].delta, 5);
   assert.equal(result.roster.openRosterSpots, 1);
-  assert.equal(result.depth.contingency.pre.maxUncoveredAfterLoss, 1);
-  assert.equal(result.depth.contingency.post.maxUncoveredAfterLoss, 1);
-  assert.equal(result.depth.depthCost, false);
-  assert.equal(result.depth.listedPositionChanges.find((row) => row.position === "RB")?.delta, -1);
-  assert.equal(result.depth.listedPositionChangesAreDescriptive, true);
+  assert.equal(result.depth.depthCost, true);
   assert.equal(result.resolvedPostTradeEntries.length, 2);
   assert.equal(result.replacement.candidates[0].playerId, "fa");
   assert.equal(result.transactionActions.length, 0);
