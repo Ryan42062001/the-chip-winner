@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + TCW-042 Trade Analyzer remediation active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 scoring strategy next + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -111,3 +111,22 @@ Active gates:
 - genuine connected-ESPN product-owner deployed UAT of the compact Send/Receive layout and baseline trade flow.
 
 TCW-031 remains unaccepted until both gates clear. TCW-032 Strategy and TCW-033 R&D remain waiting.
+
+
+## Trade Analyzer baseline acceptance — 2026-09-19
+
+The functional-reset/remediation chain TCW-031 / TCW-042 / TCW-043 is CLOSED.
+
+Accepted deployed product target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
+
+Acceptance evidence:
+- product-owner deployed UAT: **ACCEPT**;
+- fresh TCW-043 independent audit: **PASS — no findings**;
+- VERIFYING_MASTER checkpoint #637 PASS;
+- resulting canonical master #638 PASS.
+
+The accepted baseline is the read-only evaluate-a-trade workflow. It does not yet claim winner/fairness scoring.
+
+Next product lane:
+`TCW-032 — Trade Value + Team Needs Strategy Contract`, followed by TCW-034 Trade Winner Engine implementation.
