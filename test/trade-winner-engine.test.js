@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   classifyTradeValueShare,
   evaluatePackageValue,
+  packageValueConfidence,
   TRADE_VALUE_FAIRNESS
 } from "../src/domain/trade-value-engine.js";
 import {
@@ -182,6 +183,79 @@ test("TCW-034 agreeing sources require one designated primary and are never aver
   });
   assert.equal(noPrimary.status, "WITHHELD");
   assert.match(noPrimary.reasons.join(" "), /DESIGNATED_PRIMARY_SOURCE_REQUIRED/);
+});
+
+test("TCW-034 F04 one approved source is capped at MODERATE package confidence", () => {
+  const result = evaluate({ a: 40, x: 60 });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "READY");
+  assert.equal(confidence.claimConfidence, "MODERATE");
+  assert.deepEqual(confidence.independentEvidenceGroups, ["synthetic-approved-fixture"]);
+});
+
+test("TCW-034 F04 duplicate or derivative source rows do not manufacture HIGH confidence", () => {
+  const duplicate = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"same-source", primary:true, independenceGroup:"shared-origin" }),
+      source({ a:40, x:60 }, { sourceId:"same-source", primary:false, independenceGroup:"shared-origin" })
+    ],
+    now: NOW
+  });
+  assert.equal(duplicate.status, "READY");
+  assert.equal(packageValueConfidence(duplicate).claimConfidence, "MODERATE");
+  assert.deepEqual(packageValueConfidence(duplicate).independentEvidenceGroups, ["shared-origin"]);
+
+  const derivative = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"source-a", primary:true, independenceGroup:"shared-origin" }),
+      source({ a:38, x:62 }, {
+        sourceId:"source-a-derivative",
+        primary:false,
+        independenceGroup:"shared-origin",
+        provenance:{ derivativeOf:"source-a" }
+      })
+    ],
+    now: NOW
+  });
+  assert.equal(derivative.status, "READY");
+  assert.equal(packageValueConfidence(derivative).claimConfidence, "MODERATE");
+});
+
+test("TCW-034 F04 HIGH requires two Manager-authorized genuinely independent agreeing groups on one scale", () => {
+  const result = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:35, x:65 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b" })
+    ],
+    now: NOW
+  });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "READY");
+  assert.equal(result.winner, "YOU_WIN");
+  assert.equal(confidence.claimConfidence, "HIGH");
+  assert.deepEqual(confidence.independentEvidenceGroups, ["origin-a","origin-b"]);
+
+  const notManagerApprovedAsIndependent = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:35, x:65 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b", independentEvidenceApproved:false })
+    ],
+    now: NOW
+  });
+  assert.equal(notManagerApprovedAsIndependent.status, "READY");
+  assert.equal(packageValueConfidence(notManagerApprovedAsIndependent).claimConfidence, "MODERATE");
 });
 
 test("TCW-034 ranking projection ROS ADP waiver-style numeric fields never become package value", () => {
