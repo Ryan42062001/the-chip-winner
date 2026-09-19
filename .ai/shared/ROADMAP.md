@@ -36,7 +36,7 @@ Important product-status correction:
 - Future Trade Analyzer milestones require real deployed end-to-end user acceptance before being called complete.
 
 ## Trade Analyzer V2 — active product priority
-Status: **ACTIVE — BASELINE ACCEPTED; TCW-032 STRATEGY NEXT**
+Status: **ACTIVE — BASELINE ACCEPTED; TCW-032 STRATEGY ACTIVE**
 
 ### Product objective
 
@@ -174,7 +174,9 @@ Exit gate:
 - real user acceptance is recorded for that baseline before advancing its product status.
 
 #### TCW-032 — Trade Value + Team Needs Strategy Contract
+Status: **ACTIVE — STRATEGY ASSIGNED**
 Primary owner: In-Season Strategy & Decision Intelligence
+Assigned branch: `strategy/tcw-032-trade-value-team-needs-contract`
 
 Define:
 - winner/fairness semantics;
@@ -363,7 +365,7 @@ Owner: Independent Auditor / QA
 
 Audit exact deployed target `5362e2bff143a5aef050e160ccb0706a7060fb3d` for TCW-041-F01 closure and preserved Trade Analyzer ownership/package/read-only behavior. Product-owner UI/UAT acceptance remains a separate parallel gate.
 
-TCW-032/033 remain held until both TCW-043 and genuine deployed product-owner UAT clear the TCW-031 baseline.
+The TCW-031 baseline gates are cleared. TCW-032 is active. TCW-033 remains queued under smallest-necessary activation; TCW-034 remains blocked until the TCW-032 Strategy contract is accepted.
 
 
 ### Baseline closeout note — 2026-09-19
@@ -375,4 +377,4 @@ TCW-031, TCW-042, and TCW-043 are closed after:
 - V3.2 VERIFYING_MASTER checkpoint #637 PASS;
 - resulting canonical master #638 PASS.
 
-The next active product question is now exactly the product owner's scoring concern: define a defensible, explainable trade winner/fairness model under TCW-032 before implementing it in TCW-034.
+The active product question is exactly the product owner's scoring concern: define a defensible, explainable trade winner/fairness and team-needs contract under TCW-032 before implementing it in TCW-034.

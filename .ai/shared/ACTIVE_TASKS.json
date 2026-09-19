@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T13:46:00Z",
+  "updated_at_utc": "2026-09-19T14:18:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -20,5 +20,52 @@
     "VERIFYING_MASTER",
     "CLOSED"
   ],
-  "tasks": []
+  "tasks": [
+    {
+      "task_id": "TCW-032",
+      "title": "Trade Value + Team Needs Strategy Contract",
+      "owner": "Strategy",
+      "role_label": "In-Season Strategy & Decision Intelligence Analyst",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-032.md",
+      "role_handoff": ".ai/strategy/HANDOFF.md",
+      "assignment_master_sha": "c729753fe26a7eb074d29ffeef98d4bf591d2351",
+      "branch": "strategy/tcw-032-trade-value-team-needs-contract",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "strategy-trade-value-team-needs-contract",
+      "allowed_path_prefixes": [
+        ".ai/strategy/TCW-032_TRADE_VALUE_TEAM_NEEDS_CONTRACT.md",
+        ".ai/strategy/HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/rnd/",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/builder/",
+        ".github/",
+        "src/",
+        "test/",
+        "scripts/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "next_gate": "Strategy produces the deterministic TCW-032 contract and handoff, opens one PR, validates exact final head CI, and returns to Manager. TCW-034 remains blocked until Manager accepts the contract."
+    }
+  ]
 }

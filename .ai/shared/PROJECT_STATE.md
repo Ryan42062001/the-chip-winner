@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 scoring strategy next + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy active + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -60,23 +60,29 @@ Required intelligence includes:
 
 Canonical detailed roadmap: `.ai/shared/ROADMAP.md`.
 
-## Next product lane
+## Current product lane
 
-TCW-031 integrated/deployed target:
-`79b41042b9f556aa4f1368603bcda81df796a6fa`
+The Trade Analyzer functional-reset/remediation baseline is canonically accepted and closed.
 
-Master workflow #611 passed full test, Pages deployment, and production verification.
+Accepted deployed product target:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
 
-TCW-041 returned FAIL with accepted HIGH finding F01: ambiguous outgoing ownership is not fail-closed.
+Acceptance evidence:
+- product-owner deployed UAT: **ACCEPT**;
+- fresh TCW-043 independent audit: **PASS — no findings**;
+- VERIFYING_MASTER PR #140 / workflow #637: PASS;
+- closeout master `a64c90f3c45168adf73d9db0823f18aa8989db6e` / workflow #638: PASS;
+- final closeout PR #141 exact-head workflow #639: PASS;
+- canonical final-closeout master `c729753fe26a7eb074d29ffeef98d4bf591d2351` / workflow #640: PASS.
 
-Product-owner deployed use indicated the baseline substantially works, but UAT acceptance is withheld pending player-input UI polish.
+Active product task:
+`TCW-032 — Trade Value + Team Needs Strategy Contract`
 
-Active remediation:
-`TCW-042 — Trade Analyzer Ownership Remediation + Player Input UI Polish`
+Primary owner: In-Season Strategy & Decision Intelligence Analyst.
 
-The baseline remains unaccepted until the repaired target is integrated/deployed, freshly re-audited, and accepted in renewed real UAT. After that baseline is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
+TCW-033 R&D remains queued under smallest-necessary activation. TCW-034 Builder implementation remains blocked until Manager accepts the TCW-032 Strategy contract.
 
-GM Action Plan is paused behind the core Trade Analyzer V2 workflows.
+GM Action Plan remains paused behind the core Trade Analyzer V2 workflows.
 
 ## Release 1.0
 Field registry remains **10 passed / 1 pending**.
@@ -89,28 +95,6 @@ It requires genuine qualifying season state and must not be manufactured.
 Removed from Release 1.0 rather than falsely passed:
 - FV-A11Y-02 under TCW-D012
 - custom FLEX/OP/Superflex field certification under TCW-D013
-
-
-## TCW-042 repaired target freeze — 2026-09-19
-
-TCW-042 remediation is integrated and deployed.
-
-Exact repaired deployed product target:
-`5362e2bff143a5aef050e160ccb0706a7060fb3d`
-
-Evidence:
-- PR #133 final head `0d7857bb840b692f1c4cb964ea6cc700aab7fa93`;
-- PR #619 FULL PASS;
-- #620 final-head continuity PASS;
-- master #621 PASS with FULL test, Pages deploy, and production verification.
-
-TCW-041-F01 is remediated in the deployed candidate but not yet independently re-audited.
-
-Active gates:
-- TCW-043 fresh Independent Auditor re-audit of exact target `5362e2bf...`;
-- genuine connected-ESPN product-owner deployed UAT of the compact Send/Receive layout and baseline trade flow.
-
-TCW-031 remains unaccepted until both gates clear. TCW-032 Strategy and TCW-033 R&D remain waiting.
 
 
 ## Trade Analyzer baseline acceptance — 2026-09-19
@@ -128,5 +112,7 @@ Acceptance evidence:
 
 The accepted baseline is the read-only evaluate-a-trade workflow. It does not yet claim winner/fairness scoring.
 
-Next product lane:
-`TCW-032 — Trade Value + Team Needs Strategy Contract`, followed by TCW-034 Trade Winner Engine implementation.
+Active product lane:
+`TCW-032 — Trade Value + Team Needs Strategy Contract`.
+
+TCW-033 remains queued. TCW-034 remains blocked until the TCW-032 contract is Manager-accepted.
