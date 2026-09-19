@@ -1,93 +1,42 @@
 # In-Season Strategy Handoff
 
-HANDOFF
+STATUS: MANAGER_REVIEW_READY (subject to exact-final-head CI)
+TASK: TCW-032 — Trade Value + Team Needs Strategy Contract
+ROLE: In-Season Strategy & Decision Intelligence Analyst
+BRANCH: strategy/tcw-032-trade-value-team-needs-contract
+BASE: edcf670e64acfacb6148fdea231f81f2bbb609a7 (verified canonical master and initial branch head)
+AUTHORIZED BASELINE: c729753fe26a7eb074d29ffeef98d4bf591d2351
+ACCEPTED DEPLOYED TRADE ANALYZER PRODUCT TARGET: 5362e2bff143a5aef050e160ccb0706a7060fb3d
+PR: See the one TCW-032 Strategy PR against master; record exact final head/CI from live GitHub before acceptance.
+DONE: Authored bounded production-ready policy; preserved read-only ESPN, TCW-022 legality/coverage/source/horizon/lineup safeguards; no production implementation.
+CHANGED: .ai/strategy/TCW-032_TRADE_VALUE_TEAM_NEEDS_CONTRACT.md and .ai/strategy/HANDOFF.md only.
+TESTS: Normative synthetic acceptance matrix of 22 deterministic scenario/boundary cases in the contract; no production tests executed by Strategy. PR docs-only CI still required at exact final head.
+CI: Must be populated by live exact-final-head run metadata in Manager review/worker response; no assumption that an earlier commit's CI validates final head.
+BLOCKERS: Truthful package-value winner/split cannot be shipped without a documented approved comparable additive value source; R&D TCW-033 must investigate and Manager must accept. Team consequence/need policy itself has no new source blocker. No ESPN incoming-offer research or field-validation evidence is claimed.
+DECISIONS CONSUMED: TCW-031/042/043 closed; deployed UAT ACCEPT; TCW-043 PASS/no findings; master baseline workflow #640 PASS; V3.2 active task TCW-032 assigned. Sole pending field validation FV-SEASON-01 remains pending (10 passed / 1 pending).
+DO NOT REPEAT: Do not reopen old TCW-022 blanket winner ban, source-average current and future projections, infer market price from one-week projections, claim V2 complete, start TCW-033/034 without Manager activation, or merge this PR.
 
-Task ID: TCW-022  
-Role: In-Season Strategy & Decision Intelligence Analyst  
-Status: MANAGER_REVIEW_READY
+## Contract in one paragraph
 
-## Verified starting state
+The named-source **package asset-value** result is YOU WIN only above 55% incoming value, FAIR from 45% through 55% inclusive, and THEY WIN below 45%, otherwise WITHHELD. A 57/43 display is received/sent relative additive package value, never a win or offer-acceptance probability. A separate do-nothing comparison computes actual legal optimized starting-lineup, contingent-depth, bye, legal replacement, FLEX/OP and named-horizon effects, with user decision IMPROVES/WORSENS/MIXED/NO_MATERIAL_CHANGE/WITHHELD. Severe known unfillable gaps override a positive starter gain in the user recommendation, not in the independent package-value label. Roster legality, complete source coverage, timestamp/identity, calibrated value availability and unknown opponent preferences fail closed per claim. Team-needs model reports before/after tiered legal-slot gaps, feasible upgrades and actual expendability. DO_NOT_TRADE is hard for generators, PREFER_TO_KEEP soft, ACTIVELY_SHOP search priority; manual evaluation explains conflicts. Two-manager plausibility is a documented football rationale, never an acceptance percentage. No supported beneficial legal plausible package -> valid NO WORTHWHILE TRADE result.
 
-- Repository: `Ryan42062001/the-chip-winner`
-- Canonical branch: `master`
-- Fast Refresh master: `6cd89dd7bacf6331b55dff17f39cdc01f8e37afc`
-- Existing Strategy branch: `strategy/tcw-022-trade-analyzer-policy`
-- Existing Strategy PR: `#106 — TCW-022 Trade Analyzer v1 Strategy Contract`
-- Workflow: canonical V3.1 overlay active.
-- `.ai/shared/ACTIVE_TASKS.json` is machine-authoritative and records TCW-022 as `REWORK_REQUIRED`, owner `Strategy`, dependency `INDEPENDENT`, execution mode `STANDARD_CHAT`, merge authority `Manager`.
-- Manager review comment on PR #106 was verified and contains exactly two bounded blockers: undefined future/multiweek materiality and conclusion precedence that could hide a supported cross-horizon cost.
-- `master` advanced one commit from the original Strategy base. Compare evidence shows that advance changes only `.ai/manager/tasks/TCW-022.md` and `.ai/shared/ACTIVE_TASKS.json`; target advancement is `CONTROL_PLANE_ONLY` and non-overlapping with Strategy-owned artifacts.
+## Explicit TCW-033 / Manager dependencies
 
-## Work completed
+1. Validate and obtain Manager approval for a genuinely comparable additive asset-value source/model across both sides (including uneven packages), mapping, league scoring compatibility, age/TTL, full coverage, scale/version, source independence and non-double-counted scarcity. Until then TCW-034 should WITHHOLD package winner/split while retaining useful roster analysis. Manager should review the provisional inclusive 45–55 fairness heuristic.
+2. Buy-low/sell-high labels require a separately approved market vs source-compatible forward-utility divergence threshold; otherwise OPPORTUNITY_UNVERIFIED.
+3. Broader opponent/package generation depends on complete opponent roster and legal drop/availability data. Incoming ESPN offers remain a later read-only feasibility question with manual fallback, not assumed supported.
 
-Bounded rework was applied only to the accepted Trade Analyzer Strategy contract and this handoff.
+## Recommended next Manager action
 
-### Finding 1 — deterministic future/multiweek materiality
+Review the single exact-final-head CI-validated Strategy PR, accept or return bounded findings on the contract and its source-dependency/45–55 heuristic, then decide whether to route the *smallest necessary* TCW-033 research before authorizing TCW-034 implementation. Manager alone updates active machine state, activates downstream work and merges. Product UAT/independent audit remain separate future gates.
 
-Resolved with an inspectable per-week normalization rule:
+## Next Activation
 
-- complete selected future window: `HorizonMeanWeeklyDelta = HorizonDelta / SelectedWeekCount`;
-- complete playoff window: `PlayoffMeanWeeklyDelta = PlayoffWindowDelta / PlayoffWeekCount`;
-- `UPGRADE` at mean `>= +1.0` projected point/week;
-- `DOWNGRADE` at mean `<= -1.0` projected point/week;
-- `TOSSUP` when absolute mean `< 1.0`;
-- `UNKNOWN` whenever required horizon coverage is incomplete.
-
-Raw aggregate window deltas remain visible. Direction uses the mean weekly delta so longer windows do not become material merely because they contain more weeks. Normalization occurs only within one named source and homogeneous weekly horizon; current week, future, playoff, and projection sources are never averaged together.
-
-### Finding 2 — deterministic conclusion precedence
-
-Resolved by making horizon direction and precedence explicit:
-
-- each horizon must be source-resolved before it can drive a generic direction conclusion;
-- supported future/playoff directions reduce to `UPGRADE`, `DOWNGRADE`, `TOSSUP`, `MIXED`, or `UNKNOWN` using directions only, never numeric cross-horizon weighting;
-- `DANGEROUS_POSITIONAL_FRAGILITY` remains the narrow structural top guard;
-- short-term/long-term material conflict labels are evaluated before generic upgrade/depth labels;
-- `CLEAR_TEAM_UPGRADE` cannot apply when current week is a material downgrade or supported long-term state is `DOWNGRADE`/`MIXED`;
-- `STARTER_UPGRADE_DEPTH_COST` cannot apply when supported long-term state is `DOWNGRADE`/`MIXED`;
-- incomplete future evidence is `UNKNOWN`, not a fabricated conflict.
-
-Scenario E now deterministically produces `LONG_TERM_GAIN_SHORT_TERM_COST`. Inverse Scenario K deterministically produces `SHORT_TERM_GAIN_LONG_TERM_COST`. Scenario L proves that raw multiweek aggregate magnitude alone cannot manufacture materiality.
-
-## Evidence produced
-
-- Revised `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
-- Policy rework commit: `9dcb5b4ee111afceb8050aefffb2ff2f66dd7cb9`
-- Reworked content/handoff validation head: `e74633abef13da777591f4bedb242791c210d62f`
-- PR #106 workflow #543 / run `34914637355`: **PASS** at exact head `e74633abef13da777591f4bedb242791c210d62f`.
-- Passed gates: checkout/setup, deployment-scope classification, `npm ci`, `npm audit --audit-level=high`, `npm test`, `npm run eval:model`, `npm run smoke`, `npm run smoke:browser`, accessibility, readiness, mobile, extension, performance, and security.
-- Deploy and `verify-production` were **SKIPPED / NOT APPLICABLE** because the PR contains only `.ai/strategy/**` control-plane documentation.
-- PR scope remains exactly two files: `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md` and `.ai/strategy/HANDOFF.md`.
-
-## Files updated
-
-- `.ai/strategy/TCW-022_TRADE_ANALYZER_POLICY.md`
-- `.ai/strategy/HANDOFF.md`
-
-No production code, UI, data source, Manager-owned coordination file, or ESPN transaction behavior was changed.
-
-## Open findings
-
-- Blocking R&D dependency: **NONE** for this bounded rework.
-- Existing non-blocking future R&D questions remain unchanged: ESPN trade-processing legality, opponent acceptance/market modeling, calibrated playoff probability, and new injury/news sources.
-
-## Blocking issues
-
-None in the bounded Strategy contract. This final handoff-status commit must itself receive exact-head PR CI PASS before Strategy's external response treats the PR as fully validated.
-
-## Recommended next role
-
-Manager / Architect after exact-head validation of this final handoff-status commit.
-
-## Exact next action
-
-Verify PR #106 exact current head and full required CI. If green, Manager reviews the two bounded corrections and decides acceptance/Builder routing. Strategy must not merge PR #106.
-
-## Checkpoint / SHA
-
-- Current canonical master: `6cd89dd7bacf6331b55dff17f39cdc01f8e37afc`
-- Original Manager-reviewed Strategy head: `a97ef2ddd74eda11494d9036180d3a89faf036bc`
-- Bounded policy rework commit: `9dcb5b4ee111afceb8050aefffb2ff2f66dd7cb9`
-- Reworked content/handoff validation head: `e74633abef13da777591f4bedb242791c210d62f`
-- Exact-head validation at `e74633a...`: workflow #543 / run `34914637355` — PASS.
-- Final Strategy PR head: verify from PR metadata after this handoff-status commit; exact-head CI remains required before closeout.
+| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
+|---|---|---|---|---|
+| 1 | Manager / Architect | RECOMMEND TO MANAGER | TCW-032 Strategy review | Verify final Strategy PR head/CI, evaluate the winner/fairness and value-source dependency, accept or route bounded rework; control TCW-033/034 activation and merge. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-034 blocked on contract acceptance/value authority | Wait for Manager acceptance and explicit bounded implementation assignment; do not implement value from invented source. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | COMPLETE | TCW-032 one-PR handoff | Stop after final-head CI and report exact PR/SHA/run/job to Manager; do not merge. |
+| 4 | Research & Development (R&D) | WAIT | TCW-033 queued | Await Manager's smallest-necessary activation; research comparable additive value source and separately queued ESPN read-only offer feasibility without assuming results. |
+| 5 | Independent Auditor / QA | WAIT | Future implementation audit | Await Manager's frozen implementation target; TCW-043 already PASS/no findings. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | None | Act only if Manager routes a reproduced defect. |
