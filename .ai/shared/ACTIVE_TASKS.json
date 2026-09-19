@@ -115,4 +115,4 @@
       "next_gate": "Manager exact-head merge gate after final FULL validation; then verify master CI/Pages/production and route fresh independent workflow/control-plane audit."
     }
   ]
-}\n
+}
