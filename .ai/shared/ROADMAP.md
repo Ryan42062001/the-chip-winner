@@ -228,13 +228,13 @@ Decision artifact:
 `.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
 #### TCW-034 — Trade Winner Engine
-Status: **MANAGER_REVIEW_READY — REPAIRED FULL CANDIDATE**
+Status: **AUDIT_READY — REPAIRED FULL TARGET FROZEN; TCW-045 RE-AUDIT ACTIVE**
 Primary owner: Builder
 Builder PR: `#147` — DRAFT / UNMERGED
 Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
 Accepted audit findings: F01 HIGH, F02 MEDIUM, F03 MEDIUM, F04 LOW
 Repaired FULL candidate: `24be4be45f7fde351c0a6e209353dd2beed8d854` / workflow #674 PASS
-Required next gate: task-specific audit-readiness PASS on unchanged repaired head + Manager freeze + fresh independent re-audit
+Readiness PASS: blockers [] / readyForManagerFreeze true, packet sha256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`. Manager froze exact FULL repaired head `24be4be45f7fde351c0a6e209353dd2beed8d854`. Next gate: TCW-045 fresh independent re-audit.
 
 Implement:
 - `YOU WIN / FAIR TRADE / THEY WIN`;
@@ -257,7 +257,7 @@ Independent audit result:
 - F01-F03 blocking; F04 accepted for same-pass remediation
 - canonical finding decision: `.ai/manager/evidence/TRADE_WINNER_AUDIT_FINDING_DECISION.md`
 
-TCW-035 remains inactive until the repaired TCW-034 target passes a fresh independent re-audit and Manager consumes that verdict.
+TCW-045 re-audits exact immutable repaired target `24be4be45f7fde351c0a6e209353dd2beed8d854`; TCW-035 remains inactive until the repaired target passes that fresh independent re-audit and Manager consumes the verdict.
 
 #### TCW-035 — Team Needs + Opportunity Model
 Owner sequence: Strategy → Builder
