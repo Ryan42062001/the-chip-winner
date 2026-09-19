@@ -1,4 +1,4 @@
-import { analyzeTrade } from "../domain/trade-analyzer.js";
+import { analyzeTrade, buildTradeOwnershipIndex, isUniquelyOwnedByTeam } from "../domain/trade-analyzer.js";
 
 function signed(value) {
   if (!Number.isFinite(value)) return "Unavailable";
@@ -87,11 +87,12 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
       const state = getContext().state;
       const roster = state.snapshot.rosters.find((item) => item.teamId === state.selectedTeamId);
       const partner = state.snapshot.rosters.find((item) => String(item.teamId) === String(proposal.partnerTeamId));
+      const owners = buildTradeOwnershipIndex(state.snapshot);
       const outgoingIds = new Set((roster?.entries || []).map((entry) => entry.playerId));
       const incomingIds = new Set((partner?.entries || []).map((entry) => entry.playerId));
       const directIds = new Set([...(roster?.entries || []).map((entry) => entry.playerId).filter((item) => !proposal.outgoingPlayerIds.includes(item)), ...proposal.incomingPlayerIds]);
-      const permitted = side === "outgoingPlayerIds" ? outgoingIds.has(id)
-        : side === "incomingPlayerIds" ? Boolean(proposal.partnerTeamId) && incomingIds.has(id) && !outgoingIds.has(id)
+      const permitted = side === "outgoingPlayerIds" ? outgoingIds.has(id) && isUniquelyOwnedByTeam(owners, id, state.selectedTeamId)
+        : side === "incomingPlayerIds" ? Boolean(proposal.partnerTeamId) && incomingIds.has(id) && !outgoingIds.has(id) && isUniquelyOwnedByTeam(owners, id, proposal.partnerTeamId)
           : side === "plannedFollowUpDropIds" && directIds.has(id);
       if (!permitted) {
         result = null;
@@ -123,12 +124,7 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
     const myTeam = teams.find((team) => team.id === state.selectedTeamId);
     const roster = state.snapshot.rosters.find((item) => item.teamId === state.selectedTeamId);
     const rosterIds = new Set((roster?.entries || []).map((entry) => entry.playerId));
-    const ownerTeams = new Map();
-    for (const item of state.snapshot.rosters || []) for (const entry of item.entries || []) {
-      const owners = ownerTeams.get(entry.playerId) || new Set();
-      owners.add(item.teamId);
-      ownerTeams.set(entry.playerId, owners);
-    }
+    const ownerTeams = buildTradeOwnershipIndex(state.snapshot);
     const opponents = teams.filter((team) => team.id !== state.selectedTeamId && (state.snapshot.rosters || []).filter((item) => item.teamId === team.id && Array.isArray(item.entries)).length === 1);
     if (proposal.partnerTeamId && !opponents.some((team) => String(team.id) === String(proposal.partnerTeamId))) {
       proposal.partnerTeamId = "";
@@ -139,8 +135,16 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
     }
     const partnerTeam = opponents.find((team) => String(team.id) === String(proposal.partnerTeamId));
     const partnerRoster = state.snapshot.rosters.find((item) => item.teamId === partnerTeam?.id);
-    const outgoingChoices = (roster?.entries || []).map((entry) => state.snapshot.players.find((player) => player.id === entry.playerId)).filter(Boolean).filter((player) => !proposal.outgoingPlayerIds.includes(player.id));
-    const incomingChoices = (partnerRoster?.entries || []).map((entry) => state.snapshot.players.find((player) => player.id === entry.playerId)).filter(Boolean).filter((player) => ownerTeams.get(player.id)?.size === 1 && ownerTeams.get(player.id).has(partnerTeam.id)).filter((player) => !rosterIds.has(player.id) && !proposal.incomingPlayerIds.includes(player.id));
+    const outgoingChoices = (roster?.entries || [])
+      .map((entry) => state.snapshot.players.find((player) => player.id === entry.playerId))
+      .filter(Boolean)
+      .filter((player) => isUniquelyOwnedByTeam(ownerTeams, player.id, state.selectedTeamId))
+      .filter((player) => !proposal.outgoingPlayerIds.includes(player.id));
+    const incomingChoices = (partnerRoster?.entries || [])
+      .map((entry) => state.snapshot.players.find((player) => player.id === entry.playerId))
+      .filter(Boolean)
+      .filter((player) => isUniquelyOwnedByTeam(ownerTeams, player.id, partnerTeam?.id))
+      .filter((player) => !rosterIds.has(player.id) && !proposal.incomingPlayerIds.includes(player.id));
     const directIds = [...(roster?.entries || []).map((entry) => entry.playerId).filter((id) => !proposal.outgoingPlayerIds.includes(id)), ...proposal.incomingPlayerIds];
     const dropChoices = [...new Set(directIds)].map((id) => state.snapshot.players.find((player) => player.id === id)).filter(Boolean).filter((player) => !proposal.plannedFollowUpDropIds.includes(player.id));
     const playerMap = new Map(state.snapshot.players.map((player) => [player.id, player]));
@@ -149,8 +153,20 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
 
     content.innerHTML = `<div class="page-head"><div><p class="eyebrow">READ-ONLY TEAM CONSEQUENCE ANALYSIS</p><h2>Trade Analyzer</h2><p>Select one real opposing ESPN team and build a hypothetical player-for-player package. No trade is sent to ESPN.</p></div><span class="week-pill">ESPN snapshot · Week ${escapeHtml(String(state.snapshot.currentWeek ?? "unknown"))}</span></div>
       <article class="panel trade-proposal" aria-labelledby="trade-proposal-title"><div class="panel-head"><div><p class="eyebrow">PROPOSAL CONTROLS</p><h3 id="trade-proposal-title">Build the trade</h3></div><span class="quality fresh">Read-only</span></div>
-      <div class="connection-form"><p class="data-note">My team: <strong>${escapeHtml(myTeam?.name || "Selected roster unavailable")}</strong></p><label>Trade partner<select id="trade-partner-select" aria-label="Trade partner"><option value="">Select opposing team</option>${opponents.map((team) => `<option value="${escapeHtml(String(team.id))}" ${String(team.id) === String(proposal.partnerTeamId) ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("")}</select></label><label>Send from my roster<select id="trade-outgoing-select" aria-label="Outgoing player">${optionRows(outgoingChoices, outgoingChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary" id="trade-add-outgoing" type="button" ${outgoingChoices.length ? "" : "disabled"}>Add outgoing</button><label>Receive from selected partner<select id="trade-incoming-select" aria-label="Incoming player">${optionRows(incomingChoices, incomingChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary" id="trade-add-incoming" type="button" ${incomingChoices.length ? "" : "disabled"}>Add incoming</button><label>Team objective<select id="trade-objective"><option value="BALANCED" ${proposal.teamObjective === "BALANCED" ? "selected" : ""}>Balanced</option><option value="CURRENT_WEEK_STABILITY" ${proposal.teamObjective === "CURRENT_WEEK_STABILITY" ? "selected" : ""}>Current-week stability</option><option value="FUTURE_UPSIDE" ${proposal.teamObjective === "FUTURE_UPSIDE" ? "selected" : ""}>Future upside</option></select></label></div>
-      <div class="dashboard-grid"><div><p class="eyebrow">SEND · ${escapeHtml(myTeam?.name || "My team")}</p><div class="sync-actions">${proposal.outgoingPlayerIds.length ? proposal.outgoingPlayerIds.map((id) => selectedChip(id, "outgoingPlayerIds", "outgoing players")).join("") : `<span class="data-note">No outgoing players selected.</span>`}</div></div><div><p class="eyebrow">RECEIVE · ${escapeHtml(partnerTeam?.name || "Select opposing team")}</p><div class="sync-actions">${proposal.incomingPlayerIds.length ? proposal.incomingPlayerIds.map((id) => selectedChip(id, "incomingPlayerIds", "incoming players")).join("") : `<span class="data-note">No incoming players selected.</span>`}</div></div></div>
+      <div class="trade-partner-control"><label>Trade partner<select id="trade-partner-select" aria-label="Trade partner"><option value="">Select opposing team</option>${opponents.map((team) => `<option value="${escapeHtml(String(team.id))}" ${String(team.id) === String(proposal.partnerTeamId) ? "selected" : ""}>${escapeHtml(team.name)}</option>`).join("")}</select></label><p class="data-note">Choose one opposing ESPN team before selecting players to receive.</p></div>
+      <div class="trade-sides" aria-label="Trade player entry">
+        <section class="trade-side" data-trade-side="send" aria-labelledby="trade-send-title">
+          <div class="trade-side-head"><p class="eyebrow">SEND</p><h4 id="trade-send-title">${escapeHtml(myTeam?.name || "Selected user team")}</h4></div>
+          <div class="trade-player-entry"><label>Player<select id="trade-outgoing-select" aria-label="Outgoing player">${optionRows(outgoingChoices, outgoingChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary trade-add-button" id="trade-add-outgoing" type="button" aria-label="Add outgoing" ${outgoingChoices.length ? "" : "disabled"}>Add</button></div>
+          <div class="trade-selected" data-trade-selected="send">${proposal.outgoingPlayerIds.length ? proposal.outgoingPlayerIds.map((id) => selectedChip(id, "outgoingPlayerIds", "outgoing players")).join("") : `<span class="data-note">No outgoing players selected.</span>`}</div>
+        </section>
+        <section class="trade-side" data-trade-side="receive" aria-labelledby="trade-receive-title">
+          <div class="trade-side-head"><p class="eyebrow">RECEIVE</p><h4 id="trade-receive-title">${escapeHtml(partnerTeam?.name || "Select opposing team")}</h4></div>
+          <div class="trade-player-entry"><label>Player<select id="trade-incoming-select" aria-label="Incoming player">${optionRows(incomingChoices, incomingChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary trade-add-button" id="trade-add-incoming" type="button" aria-label="Add incoming" ${incomingChoices.length ? "" : "disabled"}>Add</button></div>
+          <div class="trade-selected" data-trade-selected="receive">${proposal.incomingPlayerIds.length ? proposal.incomingPlayerIds.map((id) => selectedChip(id, "incomingPlayerIds", "incoming players")).join("") : `<span class="data-note">No incoming players selected.</span>`}</div>
+        </section>
+      </div>
+      <div class="trade-objective-control"><label>Team objective<select id="trade-objective"><option value="BALANCED" ${proposal.teamObjective === "BALANCED" ? "selected" : ""}>Balanced</option><option value="CURRENT_WEEK_STABILITY" ${proposal.teamObjective === "CURRENT_WEEK_STABILITY" ? "selected" : ""}>Current-week stability</option><option value="FUTURE_UPSIDE" ${proposal.teamObjective === "FUTURE_UPSIDE" ? "selected" : ""}>Future upside</option></select></label></div>
       ${showDrops ? `<div class="section-divider"><span>FOLLOW-UP ROSTER ACTION</span></div><p class="data-note">Choose an explicit follow-up drop only when the known roster rules require another removal. The analyzer never chooses one silently.</p><div class="connection-form"><label>Planned follow-up drop<select id="trade-drop-select" aria-label="Follow-up drop">${optionRows(dropChoices, dropChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary" id="trade-add-drop" type="button" ${dropChoices.length ? "" : "disabled"}>Add follow-up drop</button></div><div class="sync-actions">${proposal.plannedFollowUpDropIds.map((id) => selectedChip(id, "plannedFollowUpDropIds", "follow-up drops")).join("")}</div>` : ""}
       <div class="sync-actions"><button class="button primary" id="trade-analyze" type="button">Analyze proposed trade</button><button class="button secondary" id="trade-reset" type="button">Reset proposal</button></div><p class="data-note">Future window: ${futureWeeks.length ? `Weeks ${futureWeeks.join(", ")}` : "no complete imported selection configured"}. Playoff window: ${playoffWeeks.length ? `Weeks ${playoffWeeks.join(", ")}` : "not configured"}.</p></article>
       ${viewError ? `<article class="panel" role="alert"><h3>Trade analysis unavailable</h3><p>${escapeHtml(viewError)}</p></article>` : ""}

@@ -20,6 +20,21 @@ function direction(delta) {
   return "TOSSUP";
 }
 function unique(values) { return [...new Set(Array.isArray(values) ? values : [])]; }
+export function buildTradeOwnershipIndex(snapshot) {
+  const owners = new Map();
+  for (const roster of snapshot?.rosters || []) {
+    for (const entry of roster?.entries || []) {
+      const teams = owners.get(entry.playerId) || new Set();
+      teams.add(String(roster.teamId));
+      owners.set(entry.playerId, teams);
+    }
+  }
+  return owners;
+}
+export function isUniquelyOwnedByTeam(owners, playerId, teamId) {
+  const teams = owners?.get(playerId);
+  return Boolean(teams && teams.size === 1 && teams.has(String(teamId)));
+}
 function activeEntries(entries) { return (entries || []).filter((entry) => entry.lineupSlot !== "IR"); }
 function withRoster(snapshot, teamId, entries) {
   return { ...snapshot, rosters: snapshot.rosters.map((roster) => roster.teamId === teamId ? { ...roster, entries } : roster) };
@@ -94,6 +109,8 @@ function validateProposal(snapshot, teamId, proposal) {
   if (!outgoing.length || !incoming.length) return { error: "Choose at least one outgoing and one incoming player." };
   if (outgoing.some((id) => incoming.includes(id))) return { error: "A player cannot appear on both sides of the proposal." };
   if (outgoing.some((id) => !rosterIds.has(id))) return { error: "Every outgoing player must be on the connected user's current roster." };
+  const owners = buildTradeOwnershipIndex(snapshot);
+  if (outgoing.some((id) => !isUniquelyOwnedByTeam(owners, id, teamId))) return { error: "Every outgoing player must belong exclusively to the connected user's current roster; ambiguous ownership fails closed." };
   const partnerId = proposal?.partnerTeamId;
   if (partnerId == null || partnerId === "") return { error: "Select one opposing ESPN team before analyzing a trade." };
   if (partnerId === teamId) return { error: "The connected user's team cannot be its own trade partner." };
@@ -102,15 +119,7 @@ function validateProposal(snapshot, teamId, proposal) {
   if (!partnerTeam || partnerRosters.length !== 1 || !Array.isArray(partnerRosters[0].entries)) return { error: "The selected opposing team's roster is unavailable in the current ESPN snapshot." };
   if (incoming.some((id) => !players.has(id))) return { error: "Every incoming player must exist in the current ESPN snapshot." };
   if (incoming.some((id) => rosterIds.has(id))) return { error: "Incoming players cannot already be on the connected user's roster." };
-  const owners = new Map();
-  for (const item of snapshot.rosters || []) {
-    for (const entry of item.entries || []) {
-      const ids = owners.get(entry.playerId) || new Set();
-      ids.add(item.teamId);
-      owners.set(entry.playerId, ids);
-    }
-  }
-  if (incoming.some((id) => (owners.get(id)?.size || 0) !== 1 || !owners.get(id).has(partnerId))) return { error: "Every incoming player must belong exclusively to the selected opposing team's current roster; free agents and mixed-opponent packages are not trades." };
+  if (incoming.some((id) => !isUniquelyOwnedByTeam(owners, id, partnerId))) return { error: "Every incoming player must belong exclusively to the selected opposing team's current roster; free agents and mixed-opponent packages are not trades." };
   return { roster, partnerTeam, players, rosterIds, outgoing, incoming, drops, objective };
 }
 

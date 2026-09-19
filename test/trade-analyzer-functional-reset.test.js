@@ -118,6 +118,16 @@ test("TCW-031 rejects a player with ambiguous ownership across opposing rosters"
   assert.match(result.reasons.join(" "), /exclusively/);
 });
 
+test("TCW-041-F01 outgoing player duplicated onto another roster fails closed while a unique user-owned player remains valid", () => {
+  const snap = snapshot({ size: 3 });
+  snap.rosters.find((item) => item.teamId === "third").entries.push(entry("a"));
+  const ambiguous = analyze(snap, packageFor(["a"], ["x"]));
+  assert.equal(ambiguous.analysisState, "INVALID_PROPOSAL");
+  assert.match(ambiguous.reasons.join(" "), /outgoing player must belong exclusively/i);
+
+  const normal = analyze(snap, packageFor(["b"], ["x"]));
+  assert.notEqual(normal.analysisState, "INVALID_PROPOSAL");
+});
 test("TCW-031 outgoing ownership, duplicates, and cross-side identities fail closed", () => {
   const snap = snapshot();
   assert.match(analyze(snap, packageFor(["z"], ["x"])).reasons.join(" "), /outgoing player must be/);
