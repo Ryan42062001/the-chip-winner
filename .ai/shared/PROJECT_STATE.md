@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer remediation independently audited/closed + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer V2 product rebuild prioritized + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -12,29 +12,64 @@ Operating state: Workflow V3.2 closed + Trade Analyzer remediation independently
 
 The Workflow V3.2 chain is closed. TCW-026/027/028/029 are no longer active.
 
-## Workflow V3.2 closeout evidence
-- TCW-026 source PR #114; original integrated target `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`; original master #577 PASS full CI + Pages + production smoke.
-- TCW-027 independent audit found F01/F02/F03; Manager accepted all three and routed TCW-028.
-- TCW-028 repaired target `216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9`; exact-head #585 PASS; master #586 PASS full CI + Pages + production smoke.
-- TCW-029 PR #120 exact Auditor head `4ffcab91922e2e4d371458936adcfac782cd7cdc`; exact-head #589 PASS; verdict PASS WITH NON-BLOCKING FINDINGS.
-- Manager independently accepted TCW-029-F01 as LOW/non-blocking. It is a human-facing Markdown-status lint bypass only; machine state and Manager merge/closeout authority remain protected.
-- Audit evidence integrated at `4251cae86116522855246a3f6517070ab62de7de`; master #590 PASS FULL.
-- VERIFYING_MASTER closeout evidence checkpoint `2556d56b3ec9ee62b72dc5e7201d5f7a3826baa4`; master #592 PASS FULL.
-- TCW-026, TCW-028, and TCW-029 were then eligible for active-only removal.
-
-V3.2 includes credit-efficient execution/refresh routing, active-only state determinism, blocker/user-action metadata, collision safety, Manager integration/audit tooling, transition/user-action helpers, integration/CI-debt queues, six-role routing visibility, and fail-closed docs-only CI with durable evidence.
-
 ## Product boundary
-The Chip Winner remains an ESPN-only, read-only, in-season fantasy-football decision companion. ESPN owns connected-league state. External rankings/projections remain separate overlays. Derived recommendations do not mutate source snapshots. ESPN write actions remain out of scope.
+The Chip Winner remains an ESPN-connected, read-only, in-season fantasy-football decision companion. ESPN owns connected-league state. External rankings/projections remain separate overlays. Derived recommendations do not mutate source snapshots. ESPN write actions remain out of scope unless separately authorized later.
 
-## Trade Analyzer v1
-Status: **COMPLETE — REMEDIATION INDEPENDENTLY AUDITED**
+## Trade Analyzer correction
 
-TCW-025 remediation is integrated/deployed at `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; product master #571 passed full CI, Pages deployment, and production smoke.
+The TCW-024 → TCW-025 → TCW-030 remediation/audit chain remains historically valid and closed:
+- deployed remediation `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`;
+- TCW-030 independently cleared accepted F01-F04;
+- audit/closeout master workflows passed.
 
-TCW-030 independently re-audited the accepted TCW-024-F01 through F04 remediation against that exact deployed target. Auditor PR #124 exact head `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35` passed #598 and returned **PASS** with no findings. Manager independently accepted the PASS; audit evidence master #599 passed. Explicit closeout checkpoint master #601 also passed.
+However, real user feedback after closeout established that the Trade Analyzer is **not functionally complete in actual use**.
 
-TCW-025 and TCW-030 are CLOSED and removed from active-only state.
+Therefore:
+- the old remediation tasks remain CLOSED;
+- the product-level claim that Trade Analyzer v1 was complete is withdrawn;
+- Trade Analyzer V2 is the primary product roadmap;
+- real deployed end-to-end user acceptance is mandatory before future Trade Analyzer product-complete claims.
+
+## Trade Analyzer V2 target experience
+
+Five user-facing workflows will share one common intelligence engine:
+1. Evaluate Trade.
+2. Find Me a Trade.
+3. Target a Player.
+4. Counter an Offer.
+5. Shop My Players.
+
+Required intelligence includes:
+- explicit winner/fairness result and understandable relative value;
+- do-nothing baseline;
+- team-needs diagnosis;
+- current/ROS/playoff lineup impact;
+- depth/fragility and roster-consolidation effects;
+- VORP/positional scarcity/replacement context;
+- fairness band and separate evidence confidence;
+- manager-to-manager fit and why the other manager may benefit;
+- multi-package generation;
+- preferences/untouchables;
+- buy-low/sell-high context;
+- playoff/bye fit when supported;
+- incoming-offer analysis with researched ESPN ingestion or manual fallback;
+- counteroffers and improve-this-trade;
+- negotiation guidance;
+- trade history / What Changed;
+- later league-wide proactive opportunity scanning.
+
+Canonical detailed roadmap: `.ai/shared/ROADMAP.md`.
+
+## Next product lane
+
+No worker task is active yet.
+
+Manager should next route:
+`TCW-031 — Trade Analyzer Functional Reset + UAT Contract`
+
+After the existing baseline workflow is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
+
+GM Action Plan is paused behind the core Trade Analyzer V2 workflows.
 
 ## Release 1.0
 Field registry remains **10 passed / 1 pending**.
