@@ -2,41 +2,22 @@
 
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
-Workflow overlay: `.ai/shared/WORKFLOW_V3_2.md`
 
-## Active lanes
+## TCW-031
+BLOCKED on TCW-042. Previous deployed target functioned substantially in product-owner use, but UAT acceptance is withheld and TCW-041 found blocking F01.
 
-### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-- Product target: `79b41042b9f556aa4f1368603bcda81df796a6fa`
-- Source PR: #129
-- State: WAITING_EXTERNAL_EVIDENCE
-- User action required: true
-- Master #611: test/deploy/production verification PASS
-- Current gate: genuine deployed connected-ESPN product-owner UAT with explicit ACCEPT/REJECT
-- Independent audit remains separately required under TCW-041
+## TCW-041
+VERIFYING_MASTER. Verdict accepted: **FAIL — REMEDIATION REQUIRED**.
+F01: ambiguous outgoing ownership must fail closed.
+Evidence PR #131 / #615 PASS; integration `efdb129e789e0d3d08080bf865578cfe6de909bd`; master #616 PASS.
 
-### TCW-041 — Trade Analyzer Functional Reset Independent Audit
-- Owner: Independent Auditor / QA
+## TCW-042
+- Owner: Builder
 - State: ASSIGNED
-- Execution: STANDARD_CHAT_HIGH
-- Refresh: FAST_REFRESH
-- Exact frozen target: `79b41042b9f556aa4f1368603bcda81df796a6fa`
-- Source PR: #129
-- Expected branch: `auditor/tcw-041-trade-analyzer-functional-reset-audit`
-- Current gate: fresh independent verdict on evidence-only PR
+- Mode: STANDARD_CHAT_HIGH
+- Refresh: BOUNDED_REMEDIATION_REFRESH
+- Branch: `builder/tcw-042-trade-ui-audit-remediation`
+- Scope: outgoing ownership exclusivity + compact balanced Send/Receive player-input UI.
+- Next gate: validated Builder PR/head.
 
-## Planned follow-on lanes
-TCW-032/033 and later V2 work remain waiting until Manager resolves the TCW-031 baseline acceptance gates.
-
-## Release 1.0 field state
-Field registry remains **10 passed / 1 pending**.
-Pending: `FV-SEASON-01 — Real playoff and bye intelligence states`.
-Do not manufacture it.
-
-## Role state
-- Manager — USER ACTION coordination / audit review.
-- Builder — WAIT.
-- Strategy — WAIT.
-- R&D — WAIT.
-- Auditor — ACTIVATE NOW on TCW-041.
-- Troubleshooting — IDLE/on-demand.
+Strategy/R&D remain waiting. Auditor waits for fresh repaired target. Troubleshooting idle.

@@ -1,57 +1,50 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-031 INTEGRATED + DEPLOYED — AUDIT AND REAL UAT ACTIVE
+STATUS: TCW-042 REMEDIATION ROUTED — TCW-031 BLOCKED
 ROLE: Manager / Architect
+CANONICAL ROUTING BASE: `efdb129e789e0d3d08080bf865578cfe6de909bd`
 
-## Frozen product target
+## Accepted audit result
 
-TCW-031 exact deployed integration:
-`79b41042b9f556aa4f1368603bcda81df796a6fa`
+TCW-041 on exact target `79b41042b9f556aa4f1368603bcda81df796a6fa`:
+**FAIL — REMEDIATION REQUIRED**
 
-Source Builder PR #129 final head:
-`350eea0d45fb7eb54df6082c169a0440366210f4`
+Accepted finding:
+- TCW-041-F01 HIGH — ambiguous outgoing ownership is not rejected at both domain and UI boundaries.
 
-Manager review: ACCEPTED for integration.
+Auditor PR #131 exact head `d6d22a049da88036a9872f1db089f38226ea5834`, workflow #615 PASS.
+Audit evidence integrated at `efdb129e789e0d3d08080bf865578cfe6de909bd`; master #616 PASS.
 
-Master workflow #611 / run `35442118898`:
-- test `105894620506` — PASS
-- deploy `105894809702` — PASS
-- verify-production `105894845601` — PASS
+## Product-owner UAT usability feedback
 
-## Remaining gates
+Functional baseline "seems like it worked," but final acceptance is withheld pending input UI polish.
 
-TCW-031 is **not closed**.
+Requested:
+- smaller Add outgoing action;
+- Add outgoing and Add incoming visually paired with their own selectors;
+- balanced Send/Receive layout;
+- clean responsive/mobile stack.
 
-Two gates are now active against the same exact deployed target:
-1. TCW-041 — fresh Independent Auditor / QA review.
-2. Genuine connected-ESPN product-owner UAT.
+## Active remediation
 
-The real UAT may run while the audit is in progress, but neither substitutes for the other.
+`TCW-042 — Trade Analyzer Ownership Remediation + Player Input UI Polish`
 
-## Privacy-safe real deployed UAT
+Expected branch:
+`builder/tcw-042-trade-ui-audit-remediation`
 
-Use the deployed app with the real connected ESPN league. Do not paste private league IDs, member IDs, cookies, tokens, authenticated URLs, or raw snapshots into chat.
+Scope is only:
+1. TCW-041-F01 outgoing ownership exclusivity.
+2. Player-entry UI polish described above.
 
-Record only PASS/FAIL observations for:
-1. correct selected user team/roster;
-2. real opposing team selectable;
-3. incoming choices only from that partner roster;
-4. real 1-for-1 hypothetical analyzes;
-5. result shows both teams/package and truthful consequence/limitation;
-6. multi-player edit/re-run clears stale result;
-7. partner switch clears stale incoming/result;
-8. free-agent/other-opponent asset cannot be selected as incoming;
-9. user-team or refreshed snapshot change clears old proposal/result;
-10. no ESPN transaction is sent;
-11. explicit product-owner ACCEPT or REJECT.
+After integration/deployment, Manager must freeze a fresh independent re-audit target and renew real deployed UAT.
 
 ## Next Activation
 
 | Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | USER ACTION | Collect real deployed TCW-031 UAT while independent audit runs | Keep exact target `79b41042b9f556aa4f1368603bcda81df796a6fa` frozen. Record privacy-safe product-owner ACCEPT/REJECT; also await TCW-041 verdict before closeout. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-031 integrated | Wait unless Manager routes remediation from audit/UAT. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 held behind baseline gates | Wait for Manager activation. |
-| 4 | Research & Development (R&D) | WAIT | TCW-033 held behind baseline gates | Wait for Manager activation. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-041 — Trade Analyzer Functional Reset Independent Audit | Freshly audit exact target `79b41042b9f556aa4f1368603bcda81df796a6fa` using the frozen packet; open evidence-only PR, validate exact head, and do not merge. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No unresolved convergence failure | Activate only if audit/UAT reveals a cross-layer diagnosis problem. |
+| 1 | Manager / Architect | WAIT | TCW-042 routed | Await Builder PR/head/CI; do not close TCW-031. |
+| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-042 ownership + input UI remediation | Execute TCW-042 from the prepared branch. Close outgoing ambiguous ownership at domain/UI boundaries and redesign Send/Receive player inputs into balanced sections with compact adjacent Add actions and responsive mobile stacking. Open one PR, verify exact-head CI, do not merge. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 held | No action. |
+| 4 | Research & Development (R&D) | WAIT | TCW-033 held | No action. |
+| 5 | Independent Auditor / QA | WAIT | Fresh re-audit after TCW-042 integration | No action until exact repaired target is frozen. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure | Activate only if Manager routes it. |
