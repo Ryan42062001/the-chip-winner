@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { chromium } from "playwright-core";
 
 const port = 4191;
@@ -45,8 +45,18 @@ try {
   await page.getByRole("heading", { name: "Trade Analyzer", level: 2 }).waitFor();
   await page.getByRole("heading", { name: "Build the trade", level: 3 }).waitFor();
 
+  const fixture = JSON.parse(readFileSync("src/data/sample-espn-snapshot.json", "utf8"));
+  const myTeamId = await page.locator("#team-select").inputValue();
+  const opposing = fixture.teams.find((team) => team.id !== myTeamId);
+  if (!opposing) throw new Error("Trade Analyzer sample has no opposing team.");
   if (await page.locator("#trade-outgoing-select option").count() < 1) throw new Error("Trade Analyzer did not offer outgoing roster players.");
-  if (await page.locator("#trade-incoming-select option").count() < 1) throw new Error("Trade Analyzer did not offer incoming ESPN snapshot players.");
+  if (await page.locator("#trade-incoming-select option").count() !== 0) throw new Error("Trade Analyzer offered incoming players without an explicit partner.");
+  await page.locator("#trade-partner-select").selectOption(opposing.id);
+  const expectedIncoming = fixture.rosters.find((item) => item.teamId === opposing.id).entries.map((entry) => entry.playerId).sort();
+  const actualIncoming = await page.locator("#trade-incoming-select option").evaluateAll((options) => options.map((item) => item.value).sort());
+  if (JSON.stringify(actualIncoming) !== JSON.stringify(expectedIncoming)) throw new Error(`Incoming choices were not restricted to the selected partner roster: ${actualIncoming.join(",")}`);
+  const freeAgentIds = fixture.players.map((player) => player.id).filter((id) => !fixture.rosters.some((roster) => roster.entries.some((entry) => entry.playerId === id)));
+  if (actualIncoming.some((id) => freeAgentIds.includes(id))) throw new Error("Unrostered player appeared as incoming trade asset.");
 
   await page.getByRole("button", { name: "Add outgoing" }).click();
   await page.getByRole("button", { name: "Add incoming" }).click();
@@ -66,6 +76,23 @@ try {
   if (await page.locator('[data-trade-remove="outgoingPlayerIds"]').count() !== 1) throw new Error("Trade Analyzer could not re-add an outgoing player after editing.");
   await page.getByRole("button", { name: "Analyze proposed trade" }).click();
   await page.locator("#trade-results-title").waitFor();
+  await page.getByText("My team", { exact: true }).first().waitFor();
+  await page.getByText(opposing.name, { exact: true }).first().waitFor();
+  await page.locator("#trade-incoming-select").waitFor();
+
+  await page.locator("#team-select").selectOption(opposing.id);
+  if (await page.locator('[data-trade-remove="incomingPlayerIds"]').count() !== 0) throw new Error("Trade Analyzer retained incoming players after changing the connected user's team.");
+  if (await page.locator("#trade-partner-select").inputValue() !== "") throw new Error("Trade Analyzer retained a trade partner after changing the connected user's team.");
+  if (await page.locator("#trade-results-title").count()) throw new Error("Trade Analyzer retained stale analysis after changing the connected user's team.");
+  await page.locator("#trade-partner-select").selectOption(myTeamId);
+  await page.getByRole("button", { name: "Add outgoing" }).click();
+  await page.getByRole("button", { name: "Add incoming" }).click();
+  await page.getByRole("button", { name: "Analyze proposed trade" }).click();
+  await page.locator("#trade-results-title").waitFor();
+  await page.getByRole("button", { name: "Reset proposal" }).click();
+  if (await page.locator("#trade-partner-select").inputValue() !== "" || await page.locator('[data-trade-remove="incomingPlayerIds"]').count() || await page.locator("#trade-results-title").count()) {
+    throw new Error("Trade Analyzer reset did not clear partner, incoming selections, and previous result.");
+  }
 
   if (pageErrors.length) throw new Error(`Trade Analyzer browser page errors: ${pageErrors.join(" | ")}`);
   await context.close();
