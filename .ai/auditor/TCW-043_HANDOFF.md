@@ -44,5 +44,5 @@ Do not merge.
 | 2 | Implementation Engineer / Builder | WAIT | TCW-042 implementation complete | No action unless Manager routes a new finding. |
 | 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | TCW-032 held | No action. |
 | 4 | Research & Development (R&D) | WAIT | TCW-033 held | No action. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-043 fresh ownership re-audit | Audit exact frozen target `5362e2bff143a5aef050e160ccb0706a7060fb3d`, publish evidence-only PR, do not merge or claim product-owner UAT. |
+| 5 | Independent Auditor / QA | ACTIVE | TCW-043 fresh ownership re-audit | Audit exact frozen target `5362e2bff143a5aef050e160ccb0706a7060fb3d`, publish evidence-only PR, do not merge or claim product-owner UAT. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No convergence failure | Activate only on Manager routing. |
