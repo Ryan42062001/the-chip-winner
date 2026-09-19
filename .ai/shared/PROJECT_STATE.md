@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + TCW-042 Trade Analyzer remediation active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + TCW-042 repaired/deployed with re-audit and UI-UAT gates active + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -71,10 +71,16 @@ TCW-041 returned FAIL with accepted HIGH finding F01: ambiguous outgoing ownersh
 
 Product-owner deployed use indicated the baseline substantially works, but UAT acceptance is withheld pending player-input UI polish.
 
-Active remediation:
-`TCW-042 — Trade Analyzer Ownership Remediation + Player Input UI Polish`
+TCW-042 is now integrated and deployed at:
+`5362e2bff143a5aef050e160ccb0706a7060fb3d`
 
-The baseline remains unaccepted until the repaired target is integrated/deployed, freshly re-audited, and accepted in renewed real UAT. After that baseline is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
+Master FULL workflow #621 passed test, Pages deployment, and production verification.
+
+Active acceptance gates:
+- TCW-043 fresh independent re-audit of TCW-041-F01 and preserved ownership/UI mechanics;
+- renewed product-owner deployed UI/UAT acceptance of the compact Send/Receive layout.
+
+The baseline remains unaccepted until both gates pass. After that baseline is actually usable, TCW-032 Strategy and TCW-033 R&D may proceed as the policy/data foundations for the V2 winner/finder/counter engines.
 
 GM Action Plan is paused behind the core Trade Analyzer V2 workflows.
 
