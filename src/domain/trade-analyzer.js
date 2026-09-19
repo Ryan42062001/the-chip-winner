@@ -535,6 +535,28 @@ function replacementDemandSlots(depth, bye) {
   return unique([...contingencySlots, ...byeSlots]).sort();
 }
 
+function supportedReplacementQualityCost({ snapshot, postEntries, replacement, postContingency, bye, outgoing, players }) {
+  if (replacement?.status !== "READY" || replacement?.acquisitionCapacity?.status !== "available") return false;
+  if (!snapshot?.meta?.capturedAt || replacement.capturedAt !== snapshot.meta.capturedAt || !Number.isInteger(snapshot?.currentWeek)) return false;
+  const contingencySlots = postContingency?.status === "READY"
+    ? (postContingency.items || []).filter((item) => item.uncoveredAfterLoss > 0).map((item) => item.slot)
+    : [];
+  const byeSlots = (bye?.rows || []).filter((row) => row.gapDelta > 0).flatMap((row) => row.postUncoveredSlotCandidates || []);
+  const demandSlots = unique([...contingencySlots, ...byeSlots]).sort();
+  if (!demandSlots.length) return false;
+
+  const feasible = structuralReplacementPlayers(replacement, players)
+    .filter((player) => demandSlots.some((slot) => canFillSlot(player, slot)))
+    .filter((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+    .filter((player) => Number.isFinite(player.projection));
+  if (!feasible.length) return false;
+  const bestReplacementProjection = Math.max(...feasible.map((player) => player.projection));
+  return outgoing
+    .map((id) => players.get(id))
+    .filter((player) => Number.isFinite(player?.projection) && demandSlots.some((slot) => canFillSlot(player, slot)))
+    .some((player) => player.projection - bestReplacementProjection >= WAIVER_MATERIALITY);
+}
+
 function replacementScarcityContract({ snapshot, postEntries, replacement, depth, bye, players }) {
   const ready = replacement?.status === "READY";
   const structural = ready ? (replacement.structuralCandidates || []) : [];
@@ -709,12 +731,24 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const fragility = fragilityState({ snapshot, postEntries: resolvedEntries, preContingency, postContingency, bye, replacement, outgoing, players });
   const allPositions = unique([...Object.keys(preListed), ...Object.keys(postListed)]);
   const listedChanges = allPositions.map((position) => Object.freeze({ position, before: preListed[position] || 0, after: postListed[position] || 0, delta: (postListed[position] || 0) - (preListed[position] || 0) }));
-  const depthCost = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss > preContingency.maxUncoveredAfterLoss;
-  const depthGain = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss < preContingency.maxUncoveredAfterLoss;
+  const contingencyCost = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss > preContingency.maxUncoveredAfterLoss;
+  const contingencyGain = preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss < preContingency.maxUncoveredAfterLoss;
+  const replacementQualityCost = supportedReplacementQualityCost({
+    snapshot,
+    postEntries: resolvedEntries,
+    replacement,
+    postContingency,
+    bye,
+    outgoing,
+    players
+  });
+  const depthCost = contingencyCost || replacementQualityCost;
+  const depthGain = contingencyGain;
   const depth = Object.freeze({
     listedPositionChanges: freezeList(listedChanges),
     listedPositionChangesAreDescriptive: true,
     contingency: Object.freeze({ pre: preContingency, post: postContingency }),
+    materialDepthEvidence: Object.freeze({ contingencyCost, contingencyGain, replacementQualityCost }),
     fragility,
     depthCost,
     depthGain
