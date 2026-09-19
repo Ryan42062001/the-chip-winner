@@ -36,7 +36,7 @@ Important product-status correction:
 - Future Trade Analyzer milestones require real deployed end-to-end user acceptance before being called complete.
 
 ## Trade Analyzer V2 — active product priority
-Status: **ACTIVE — TCW-042 OWNERSHIP + INPUT UI REMEDIATION**
+Status: **ACTIVE — BASELINE UAT ACCEPTED; TCW-043 AUDIT PENDING**
 
 ### Product objective
 
@@ -160,7 +160,7 @@ All of the following are roadmap requirements, not optional ideas:
 ### Trade Analyzer V2 execution roadmap
 
 #### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-Status: **BLOCKED — TCW-041 FAIL + PRODUCT-OWNER UI POLISH REQUIRED**
+Status: **BLOCKED — PRODUCT-OWNER UAT ACCEPTED; TCW-043 AUDIT PENDING**
 Owner sequence: Manager → Builder → Auditor / User acceptance
 
 Goals:
@@ -349,7 +349,7 @@ Explicit product-owner direction continues to supersede older discovery ordering
 
 
 #### TCW-042 — Ownership Remediation + Player Input UI Polish
-Status: **INTEGRATED / DEPLOYED — FINAL AUDIT + UAT GATES ACTIVE**
+Status: **INTEGRATED / DEPLOYED — PRODUCT-OWNER UAT ACCEPTED; TCW-043 PENDING**
 
 Exact repaired deployed target:
 `5362e2bff143a5aef050e160ccb0706a7060fb3d`
