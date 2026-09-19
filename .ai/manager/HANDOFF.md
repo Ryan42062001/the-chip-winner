@@ -1,80 +1,39 @@
 # Manager / Architect Handoff
 
-HANDOFF
+STATUS: MERGE_READY
+TASK: TCW-026 — Workflow V3.2 Cross-Project Parity Upgrade
+ROLE: Manager / Architect
+BRANCH: `manager/tcw-026-workflow-v32-parity-upgrade`
+BASE: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
+PR: #114
 
-Task ID: TCW-025  
-Role: Manager / Architect  
-Status: ACTIVE — TRADE ANALYZER AUDIT REMEDIATION
+## DONE
+- Compared current The Chip Winner workflow with current mature War Room and Family Finance Hub workflow/control-plane patterns.
+- Selected only cross-project controls that materially apply.
+- Explicitly excluded War Room protected historical-scoring authority machinery and Family Finance Hub financial/Supabase-specific controls.
+- Integrated TCW-025 first so the already-green Trade Analyzer remediation would not be made stale by the workflow upgrade.
+- TCW-025 merged as `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; master #571 passed full CI, Pages deploy, and production smoke.
+- TCW-025 remains AUDIT_READY for independent F01-F04 retest.
 
-## Current product state
+## TCW-026 TARGET
+Implement Workflow V3.2:
+- STANDARD_CHAT_HIGH default / WORK_MODE execution-leverage routing;
+- FAST / BOUNDED_REMEDIATION / reason-gated FULL refresh;
+- active-only schema v3 and stronger validator;
+- blocker/user-action metadata;
+- branch/PR/worker-slot/write-prefix collision checks;
+- Manager execution packets and integration records;
+- audit-readiness/frozen-target tooling;
+- dry-run transition helper and user-action queue;
+- integration queue and CI-debt registry;
+- compact handoffs and six-role Next Activation dashboard;
+- fail-closed docs-only CI fast path with predecessor continuity and durable evidence;
+- material workflow audit gate and standing bounded workflow-improvement authority.
 
-Trade Analyzer v1 remains deployed at production implementation baseline:
+## BLOCKERS
+None known.
 
-`e112156deedf453fb3e0081412c07e2e15c0256d`
+## NEXT ACTION
+Finish exact branch implementation, open one Manager PR, run FULL exact-head CI, inspect complete diff, merge only if clean, verify master CI/Pages/production, then freeze the exact integrated workflow target for fresh independent control-plane audit.
 
-TCW-024 Independent Auditor / QA returned **FAIL** in PR #111 with four accepted findings. Manager independently reviewed the exact implementation evidence, accepted TCW-024-F01 through F04, and merged the Auditor evidence as control-plane master:
-
-`1407da4043fbdf9ced1ef19b81dbc564d798ada6`
-
-Master workflow #562 passed the full test gate; deploy and production verification correctly skipped because the merge changed only `.ai/**`.
-
-Durable Manager acceptance evidence:
-
-`.ai/manager/evidence/TCW-024_TRADE_ANALYZER_AUDIT_ACCEPTANCE.md`
-
-## Accepted findings
-
-- `TCW-024-F01 — HIGH` — replacement-path eligibility can falsely miss a valid ESPN replacement and incorrectly produce DANGEROUS; structural checking also relies on a top-12 presentation shortlist instead of the full relevant availability pool.
-- `TCW-024-F02 — HIGH` — explicit current entry/player locks leak into future/playoff optimization and can fabricate horizon deltas/conclusions.
-- `TCW-024-F03 — MEDIUM` — unverified contingency coverage is converted to THIN instead of remaining unknown.
-- `TCW-024-F04 — LOW` — dedicated accessibility/mobile section loops omit Trade Analyzer; this is an evidence-coverage gap, not an observed accessibility defect.
-
-Private authenticated Trade Analyzer behavior remains `UNVERIFIED AT LEVEL 4`; no private field state was manufactured.
-
-## TCW-025 routing
-
-Manager has opened:
-
-`TCW-025 — Trade Analyzer Audit Remediation`
-
-Assignment:
-- owner: Implementation Engineer / Builder;
-- expected branch: `builder/tcw-025-trade-analyzer-audit-remediation`;
-- assignment master: `1407da4043fbdf9ced1ef19b81dbc564d798ada6`;
-- execution mode: `STANDARD_CHAT`;
-- task spec: `.ai/manager/tasks/TCW-025.md`;
-- role handoff: `.ai/builder/HANDOFF.md`;
-- merge authority: Manager / Architect.
-
-Workflow V3.1 defect fast lane applies directly. No Strategy, R&D, or Troubleshooting detour is needed because the accepted policy is not ambiguous and the defects are deterministic implementation/test issues.
-
-## Remediation boundary
-
-Builder is authorized only to remediate F01-F04. Do not broaden the feature, change the TCW-022 policy, alter field-validation state, add data sources, add ESPN write actions, or introduce hidden trade scoring.
-
-Post-remediation Manager integration must include exact-head PR review, master CI, GitHub Pages deployment, and production verification because production/test-script files will change. After successful integration, Manager must route an Independent Auditor retest of the accepted findings.
-
-## Release 1.0 field gate remains separate
-
-Authoritative field registry remains **10 passed / 1 pending**.
-
-Pending:
-- `FV-SEASON-01 — Real playoff and bye intelligence states`.
-
-Do not manufacture that season condition. TCW-025 neither closes nor modifies Release 1.0 field status.
-
-## Current routing
-
-ACTIVE:
-- Builder — TCW-025 remediation.
-- Manager / Architect — integration and later Auditor retest routing.
-
-IDLE:
-- Independent Auditor / QA — waits for deployed remediation retest target;
-- Strategy — accepted policy remains frozen;
-- R&D — no unresolved source/feasibility question;
-- Troubleshooting — not instantiated.
-
-## Next Manager gate
-
-Review the final exact-head Builder PR for TCW-025. Merge only if all four accepted findings are directly remediated, focused regressions and full CI are green, read-only/no-score behavior remains intact, and scope has not drifted. Then verify post-merge master deployment/production behavior before routing the independent retest.
+Trade Analyzer product retest remains separately required; do not conflate the two audit gates.

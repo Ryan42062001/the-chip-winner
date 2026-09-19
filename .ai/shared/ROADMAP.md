@@ -1,80 +1,54 @@
 # The Chip Winner — Canonical Roadmap
 
-Last reconciled: 2026-09-15
-Current work: Release 1.0 event-gated field validation + Trade Analyzer v1 audit remediation
+Last reconciled: 2026-09-18
 
-## Current milestone state
-
-### M1 — Release 1.0 trustworthy read-only companion
-
+## M1 — Release 1.0 trustworthy read-only companion
 Status: ACTIVE — FIELD VALIDATION EVENT-GATED
 
-Authoritative live field status is `config/field-validation.json`.
+Field registry: **10 passed / 1 pending**.
 
-Sole remaining blocker:
-1. FV-SEASON-01 — real playoff/bye intelligence states.
+Sole pending field condition:
+1. `FV-SEASON-01 — Real playoff and bye intelligence states`
 
-Registry field gate remains **10 passed / 1 pending**.
+Do not manufacture the season condition.
 
-The remaining field check requires a genuine season condition and must not be manufactured merely to create work.
-
-### Trade Analyzer v1
-
-Status: DEPLOYED — AUDIT REMEDIATION ACTIVE
+## Trade Analyzer v1
+Status: REMEDIATION DEPLOYED — INDEPENDENT RETEST PENDING
 
 Completed:
-1. TCW-022 Strategy contract — accepted.
-2. TCW-023 production implementation — Manager reviewed, merged, deployed, and production-verified.
-3. TCW-024 independent audit — FAIL accepted by Manager.
+1. TCW-022 Strategy contract.
+2. TCW-023 initial production implementation.
+3. TCW-024 independent audit — FAIL with F01-F04.
+4. TCW-025 bounded remediation implementation, Manager integration, full master CI, Pages deployment, and production smoke.
 
-Accepted TCW-024 findings:
-- F01 HIGH — replacement-path eligibility/full-pool defect can falsely produce DANGEROUS;
-- F02 HIGH — explicit current locks leak into future/playoff optimization;
-- F03 MEDIUM — unverified contingency becomes THIN instead of unknown;
-- F04 LOW — dedicated accessibility/mobile loops omit Trade Analyzer.
+Current exact deployed remediation:
+`7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
 
-Auditor PR #111 exact head `d6c506b2cd504e12133a335979c2b399da7f0f2b` passed workflow #561. Audit evidence merged as control-plane master `1407da4043fbdf9ced1ef19b81dbc564d798ada6`; master workflow #562 passed and correctly skipped deploy/production because only `.ai/**` changed.
+Next product-quality gate:
+- fresh Independent Auditor retest of F01-F04.
+- TCW-025 is not CLOSED before that verdict is integrated.
 
-Active:
-4. TCW-025 Builder remediation of F01-F04 under the Workflow V3.1 reproduced-defect fast lane.
+## Workflow / operating-system maturity
+Status: TCW-026 IN PROGRESS
 
-No Strategy/R&D/Troubleshooting detour is required because the defects are deterministic and the accepted policy is clear.
+The product owner directed The Chip Winner to adopt all applicable workflow improvements already proven useful in The War Room and Family Finance Hub.
 
-## Trade Analyzer v1 protected boundary
+TCW-026 scope includes execution/refresh efficiency, active-state determinism, collision safety, Manager integration/audit tooling, full-team routing visibility, and fail-closed documentation-only CI efficiency.
 
-Remediation must preserve:
-- roster consequence rather than a hidden package score;
-- connected user's team;
-- 1-for-1 and multi-player / unequal-count hypothetical packages;
-- explicit roster-space/follow-up-drop consequences;
-- pre/post best legal lineup impact;
-- source separation and missing-data honesty;
-- complete-only future/playoff math using mean-weekly materiality;
-- read-only behavior with no ESPN trade write action;
-- accepted TCW-022 conclusion precedence except where a defect currently fabricates a conclusion.
+TCW-026 excludes project-specific draft protected-execution machinery and Family Finance Hub financial/Supabase controls.
 
-## Immediate dependency order
+Exit gate:
+- exact-head full CI;
+- Manager integration;
+- post-merge master CI/deploy/production verification;
+- fresh independent workflow/control-plane audit.
 
-1. Builder completes TCW-025 and opens one exact-head green production PR.
-2. Manager reviews scope and accepted-finding coverage.
-3. If accepted, Manager merges and verifies master CI, GitHub Pages deployment, and production behavior.
-4. Manager routes an Independent Auditor retest of TCW-024-F01 through F04 against the exact deployed remediation target.
-5. If retest PASS CANDIDATE is accepted, close the Trade Analyzer v1 remediation loop.
-6. Complete `FV-SEASON-01` only when genuine qualifying season evidence exists.
+## Later product discovery candidates
+After current quality/control-plane gates:
+1. GM Action Plan / recommendation synthesis
+2. recommendation confidence + league-market intelligence
+3. decision-impacting injury/news intelligence and notifications, only after trustworthy-source feasibility
+4. playoff probability / championship-path modeling, only after calibrated prerequisites
+5. ESPN write actions — later gated and separately authorized
 
-## Release 1.0 exit gate
-
-Release 1.0 may close only when every scoped item remaining in `config/field-validation.json` is passed with privacy-safe evidence, no unresolved blocking defect remains, final CI/deployment verification is green, and the product remains read-only.
-
-Trade Analyzer work does not waive or alter that exit gate.
-
-## Product roadmap after explicit Trade Analyzer authorization
-
-1. **Trade Analyzer v1 — AUDIT REMEDIATION ACTIVE**.
-2. **GM Action Plan / recommendation synthesis — DISCOVERY CANDIDATE**.
-3. **Recommendation confidence + league-market intelligence — DISCOVERY CANDIDATE**.
-4. **Decision-impacting injury/news intelligence and notifications — DISCOVERY CANDIDATE**, only after trustworthy-source feasibility.
-5. **Playoff probability / championship-path modeling — DISCOVERY CANDIDATE**, only after calibrated-model prerequisites.
-6. **ESPN write actions — LATER GATED**, requiring separately authorized scope and confirmation safeguards.
-
-Detailed older discovery input remains in `docs/post-1.0-roadmap-candidates.md`; where it conflicts with explicit product-owner authorization, this roadmap and ACTIVE_TASKS control current routing.
+Explicit product-owner direction continues to supersede older discovery ordering.
