@@ -160,7 +160,7 @@ All of the following are roadmap requirements, not optional ideas:
 ### Trade Analyzer V2 execution roadmap
 
 #### TCW-031 — Trade Analyzer Functional Reset + UAT Contract
-Status: **ASSIGNED — BUILDER BASELINE RESET**
+Status: **INTEGRATED/DEPLOYED — INDEPENDENT AUDIT + REAL UAT ACTIVE**
 Owner sequence: Manager → Builder → Auditor / User acceptance
 
 Goals:
