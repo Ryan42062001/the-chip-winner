@@ -13,7 +13,7 @@ export function classifyTradeValueShare(incomingSharePct) {
   return "FAIR_TRADE";
 }
 
-function withheldBase(reason, sourceResults = []) {
+export function withheldPackageValue(reason, sourceResults = []) {
   return Object.freeze({
     status: "WITHHELD",
     basis: "ABSTRACT_ASSET_VALUE",
@@ -93,7 +93,7 @@ export function evaluatePackageValue({
 } = {}) {
   const normalizedSources = Array.isArray(sources) ? sources : [];
   if (!normalizedSources.length) {
-    return withheldBase("NO_APPROVED_COMPARABLE_VALUE_SOURCE");
+    return withheldPackageValue("NO_APPROVED_COMPARABLE_VALUE_SOURCE");
   }
 
   const assetIds = [...new Set([...outgoingPlayerIds, ...incomingPlayerIds])];
@@ -143,7 +143,7 @@ export function evaluatePackageValue({
   const blocked = sourceResults.filter((result) => result.status !== "READY");
   if (blocked.length) {
     return Object.freeze({
-      ...withheldBase("PACKAGE_VALUE_SOURCE_GATE_FAILED", sourceResults),
+      ...withheldPackageValue("PACKAGE_VALUE_SOURCE_GATE_FAILED", sourceResults),
       reasons: freezeList(["PACKAGE_VALUE_SOURCE_GATE_FAILED", ...new Set(blocked.flatMap((result) => result.reasons || []))])
     });
   }
@@ -177,7 +177,7 @@ export function evaluatePackageValue({
     const primaries = sourceResults.filter((result) => result.primary);
     if (primaries.length !== 1) {
       return Object.freeze({
-        ...withheldBase("DESIGNATED_PRIMARY_SOURCE_REQUIRED", sourceResults),
+        ...withheldPackageValue("DESIGNATED_PRIMARY_SOURCE_REQUIRED", sourceResults),
         reasons: freezeList(["DESIGNATED_PRIMARY_SOURCE_REQUIRED"])
       });
     }
