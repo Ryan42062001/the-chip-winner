@@ -1,49 +1,34 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-18
-Operating state: Trade Analyzer remediation deployed/audit-ready + Workflow V3.2 parity integration + Release 1.0 field gate event-waiting
+Operating state: Workflow V3.2 integrated / independent audit pending + Trade Analyzer remediation deployed / independent retest pending + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
 - Default branch: `master`
-- V3.2 candidate overlay: `.ai/shared/WORKFLOW_V3_2.md`
+- Current integrated Workflow V3.2 target: `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`
 - Active machine state: `.ai/shared/ACTIVE_TASKS.json`
 - Field authority: `config/field-validation.json`
 
-TCW-026 is a material control-plane upgrade. Its exact integrated target must receive a fresh independent workflow/control-plane audit before TCW-026 may close.
+TCW-026 is integrated and production-verified but not closed. TCW-027 must independently audit the exact integrated V3.2 target before final canonical closure.
+
+## Workflow V3.2 integration evidence
+- source PR #114
+- final source head `4a511c99f3726bd9c39be0ec9080320072e64661`
+- PR run #576 / `35418225147`: FULL PASS
+- integrated master `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`
+- master run #577 / `35418315839`: full CI PASS, Pages deploy PASS, production smoke PASS
+- fresh control-plane audit: TCW-027 ASSIGNED
+
+V3.2 includes credit-efficient execution/refresh routing, active-only state determinism, blocker/user-action metadata, collision safety, Manager integration/audit tooling, transition/user-action helpers, integration/CI-debt queues, six-role routing visibility, and fail-closed docs-only CI with durable evidence.
+
+Non-applicable War Room protected-scoring/draft machinery and Family Finance Hub financial/Supabase controls remain excluded.
 
 ## Product boundary
 The Chip Winner remains an ESPN-only, read-only, in-season fantasy-football decision companion. ESPN owns connected-league state. External rankings/projections remain separate overlays. Derived recommendations do not mutate source snapshots. ESPN write actions remain out of scope.
 
 ## Trade Analyzer v1
-TCW-022 Strategy is accepted.
-
-TCW-023 initial production implementation was independently audited under TCW-024 and returned FAIL on four bounded findings.
-
-TCW-025 remediated those findings and is now integrated/deployed:
-- Builder PR #113 final head: `368a601046df1d4de2f477936f4ac5598e5de753`
-- integration master: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- master workflow #571: full tests/model/browser/a11y/mobile/security PASS
-- GitHub Pages deployment PASS
-- production smoke PASS
-
-TCW-025 remains AUDIT_READY until a fresh Independent Auditor retests TCW-024-F01 through F04. No Level-4 private ESPN evidence is fabricated or implied.
-
-## Workflow V3.2 parity upgrade
-TCW-026 implements applicable maturity from The War Room and Family Finance Hub:
-- two-mode credit-efficient execution;
-- Fast/Bounded/Full refresh discipline;
-- active-only state, blocker/user-action metadata, write scopes and concurrency collision checks;
-- Manager Integration Records and TCW_TASK_V2;
-- execution packets, decision consumption, audit readiness/frozen targets;
-- transition and user-action helpers;
-- integration queue / known CI debt;
-- full-workforce Next Activation dashboard;
-- fail-closed docs-only PR CI fast path with predecessor continuity and evidence artifacts;
-- material control-plane audit gate;
-- standing bounded workflow-improvement authority.
-
-Project-specific scoring-authority, financial reconciliation, Supabase, or draft-only machinery is intentionally excluded.
+TCW-025 remediation is integrated/deployed at `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; master #571 passed full CI/Pages/production. It remains AUDIT_READY for a separate fresh F01-F04 retest.
 
 ## Release 1.0
 Field registry remains **10 passed / 1 pending**.
@@ -53,6 +38,6 @@ Sole pending item:
 
 It requires genuine qualifying season state and must not be manufactured.
 
-Removed from Release 1.0 scope rather than falsely passed:
+Removed from Release 1.0 rather than falsely passed:
 - FV-A11Y-02 under TCW-D012
 - custom FLEX/OP/Superflex field certification under TCW-D013

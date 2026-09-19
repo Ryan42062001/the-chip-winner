@@ -1,39 +1,28 @@
 # Manager / Architect Handoff
 
-STATUS: MERGE_READY
+STATUS: BLOCKED ON INDEPENDENT AUDIT
 TASK: TCW-026 — Workflow V3.2 Cross-Project Parity Upgrade
 ROLE: Manager / Architect
-BRANCH: `manager/tcw-026-workflow-v32-parity-upgrade`
-BASE: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-PR: #114
+SOURCE PR: #114
+FINAL PR HEAD: `4a511c99f3726bd9c39be0ec9080320072e64661`
+INTEGRATED MASTER: `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`
 
-## DONE
-- Compared current The Chip Winner workflow with current mature War Room and Family Finance Hub workflow/control-plane patterns.
-- Selected only cross-project controls that materially apply.
-- Explicitly excluded War Room protected historical-scoring authority machinery and Family Finance Hub financial/Supabase-specific controls.
-- Integrated TCW-025 first so the already-green Trade Analyzer remediation would not be made stale by the workflow upgrade.
-- TCW-025 merged as `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`; master #571 passed full CI, Pages deploy, and production smoke.
-- TCW-025 remains AUDIT_READY for independent F01-F04 retest.
+## COMPLETE
+- Applicable War Room + Family Finance Hub workflow/control-plane upgrades implemented.
+- Non-applicable protected-scoring/draft and financial/Supabase controls excluded.
+- Final PR run #576 / `35418225147` passed FULL validation.
+- Manager squash-merged PR #114.
+- Master run #577 / `35418315839` passed full CI, Pages deployment, and production smoke.
+- TCW-027 frozen audit packet prepared for exact integrated target `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`.
 
-## TCW-026 TARGET
-Implement Workflow V3.2:
-- STANDARD_CHAT_HIGH default / WORK_MODE execution-leverage routing;
-- FAST / BOUNDED_REMEDIATION / reason-gated FULL refresh;
-- active-only schema v3 and stronger validator;
-- blocker/user-action metadata;
-- branch/PR/worker-slot/write-prefix collision checks;
-- Manager execution packets and integration records;
-- audit-readiness/frozen-target tooling;
-- dry-run transition helper and user-action queue;
-- integration queue and CI-debt registry;
-- compact handoffs and six-role Next Activation dashboard;
-- fail-closed docs-only CI fast path with predecessor continuity and durable evidence;
-- material workflow audit gate and standing bounded workflow-improvement authority.
+## CURRENT GATE
+TCW-026 cannot close until fresh TCW-027 Independent Auditor / QA review returns PASS or PASS WITH accepted non-blocking findings.
 
-## BLOCKERS
-None known.
+## SEPARATE PRODUCT GATE
+TCW-025 remains AUDIT_READY for its independent F01-F04 Trade Analyzer remediation retest. Do not conflate TCW-025 with the V3.2 control-plane audit.
+
+## RELEASE 1.0
+`FV-SEASON-01` remains the sole genuine-season field gate and must not be manufactured.
 
 ## NEXT ACTION
-Finish exact branch implementation, open one Manager PR, run FULL exact-head CI, inspect complete diff, merge only if clean, verify master CI/Pages/production, then freeze the exact integrated workflow target for fresh independent control-plane audit.
-
-Trade Analyzer product retest remains separately required; do not conflate the two audit gates.
+Activate TCW-027 in a fresh Independent Auditor chat from the Manager-routed audit branch. Manager reviews/integrates the resulting verdict; Auditor does not merge.
