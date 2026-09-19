@@ -16,6 +16,16 @@ const TARGET_ADVANCEMENT = new Set(["CONTROL_PLANE_ONLY","NON_OVERLAPPING","OVER
 const TASK_ID_RE = /^TCW-(?:PW-)?\d{3}$/;
 const SHA_RE = /^[0-9a-f]{40}$/;
 const BRANCH_PREFIX = Object.freeze({ Manager:"manager/", Builder:"builder/", Auditor:"auditor/", "R&D":"rnd/", Strategy:"strategy/", Troubleshooting:"troubleshooting/" });
+const CANONICAL_NEXT_ACTIVATION_ROLES = Object.freeze([
+  "Manager / Architect",
+  "Implementation Engineer / Builder",
+  "In-Season Strategy & Decision Intelligence Analyst",
+  "Research & Development (R&D)",
+  "Independent Auditor / QA",
+  "Troubleshooting & Root Cause Engineer — on-demand"
+]);
+const CLOSEOUT_AUDIT_VERDICTS = new Set(["PASS","PASS WITH NON-BLOCKING FINDINGS","NOT_APPLICABLE"]);
+const CLOSEOUT_CANARY_RESULTS = new Set(["PASS","NOT_APPLICABLE"]);
 
 function add(errors, condition, message) { if (!condition) errors.push(message); }
 function field(text, name) {
@@ -90,6 +100,17 @@ export function validateRegistryShape(registry) {
     add(errors,Array.isArray(task?.forbidden_path_prefixes),`${id}: forbidden_path_prefixes must be an array`);
     add(errors,typeof task?.audit_required === "boolean",`${id}: audit_required must be boolean`);
     add(errors,typeof task?.post_merge_canary_required === "boolean",`${id}: post_merge_canary_required must be boolean`);
+    if (task?.closeout_evidence != null) {
+      const closeout = task.closeout_evidence;
+      add(errors,closeout && typeof closeout === "object" && !Array.isArray(closeout),`${id}: closeout_evidence must be an object`);
+      if (closeout && typeof closeout === "object" && !Array.isArray(closeout)) {
+        add(errors,closeout.manager_verdict === "ACCEPTED",`${id}: closeout_evidence.manager_verdict must be ACCEPTED`);
+        add(errors,closeout.integration_verification === "PASS",`${id}: closeout_evidence.integration_verification must be PASS`);
+        add(errors,closeout.master_verification === "PASS",`${id}: closeout_evidence.master_verification must be PASS`);
+        add(errors,CLOSEOUT_AUDIT_VERDICTS.has(closeout.audit_verdict),`${id}: invalid closeout_evidence.audit_verdict`);
+        add(errors,CLOSEOUT_CANARY_RESULTS.has(closeout.canary_verification),`${id}: invalid closeout_evidence.canary_verification`);
+      }
+    }
     add(errors,SHA_RE.test(task?.assignment_master_sha || ""),`${id}: assignment_master_sha must be full SHA`);
     add(errors,typeof task?.task_file === "string" && task.task_file.startsWith(".ai/manager/tasks/"),`${id}: task_file must be Manager task path`);
     add(errors,typeof task?.role_handoff === "string" && task.role_handoff.startsWith(".ai/"),`${id}: role_handoff must be .ai path`);
@@ -141,11 +162,24 @@ export function validateRegistryShape(registry) {
 
 export async function validateRegistryFiles(registry,rootDir=process.cwd()) {
   const errors=[];
+  const dashboardTargets=new Map([[".ai/manager/HANDOFF.md",{ label:"Manager handoff", allowActivateNow:true }]]);
   for (const task of registry?.tasks || []) {
     for (const [label,rel] of [["task_file",task.task_file],["role_handoff",task.role_handoff]]) {
       if (!rel) continue; try { await access(path.join(rootDir,rel)); } catch { errors.push(`${task.task_id}: ${label} does not exist: ${rel}`); }
     }
     if (task.task_file) { try { const text=await readFile(path.join(rootDir,task.task_file),"utf8"); errors.push(...validateTaskSpecContract(task,text)); } catch {} }
+    if (task.role_handoff && path.basename(task.role_handoff) !== "HANDOFF.md") {
+      dashboardTargets.set(task.role_handoff,{ label:`${task.task_id} handoff`, allowActivateNow:task.owner === "Manager" });
+    }
+  }
+  for (const [rel,options] of dashboardTargets) {
+    try {
+      const text=await readFile(path.join(rootDir,rel),"utf8");
+      errors.push(...validateNextActivationDashboard(text,options));
+    } catch {
+      // Missing task-scoped handoffs are already reported above; Manager handoff existence is a repository invariant.
+      if (rel === ".ai/manager/HANDOFF.md") errors.push("Manager handoff does not exist: .ai/manager/HANDOFF.md");
+    }
   }
   return errors;
 }
@@ -154,16 +188,101 @@ export function taskIdFromPullRequest(pr) {
   const text=`${pr?.title || ""}\n${pr?.body || ""}`;
   return text.match(/^Task-ID:\s*(TCW-(?:PW-)?\d{3})\s*$/im)?.[1] || text.match(/\bTCW-(?:PW-)?\d{3}\b/)?.[0] || null;
 }
-function supersedesPrNumbers(pr) { const text=`${pr?.title || ""}\n${pr?.body || ""}`; return [...text.matchAll(/^Supersedes-PR:\s*#?(\d+)\s*$/gim)].map((match)=>Number(match[1])); }
+
+export function validateNextActivationDashboard(text,{ label="handoff", allowActivateNow=false }={}) {
+  const errors=[];
+  const section=String(text || "").match(/(?:^|\n)## Next Activation\s*\n([\s\S]*?)(?=\n##\s|$)/)?.[1] || "";
+  if (!section) return [`${label}: missing ## Next Activation dashboard`];
+  const rows=section.split(/\r?\n/)
+    .filter((line)=>/^\|\s*\d+\s*\|/.test(line))
+    .map((line)=>line.split("|").slice(1,-1).map((cell)=>cell.trim()));
+  add(errors,rows.length === CANONICAL_NEXT_ACTIVATION_ROLES.length,`${label}: Next Activation must contain exactly six role rows`);
+  for (let i=0;i<CANONICAL_NEXT_ACTIVATION_ROLES.length;i+=1) {
+    add(errors,rows[i]?.[1] === CANONICAL_NEXT_ACTIVATION_ROLES[i],`${label}: Next Activation row ${i+1} must be ${CANONICAL_NEXT_ACTIVATION_ROLES[i]}`);
+  }
+  if (!allowActivateNow && rows.some((row)=>row[2] === "ACTIVATE NOW")) errors.push(`${label}: worker handoff cannot use ACTIVATE NOW`);
+  return errors;
+}
+
+function supersedesPrNumbers(pr) {
+  const text=`${pr?.title || ""}\n${pr?.body || ""}`;
+  return [...text.matchAll(/^Supersedes-PR:\s*#?(\d+)\s*$/gim)].map((match)=>Number(match[1]));
+}
+
 export function detectDuplicateTaskPullRequests(prs) {
   const groups=new Map();
-  for (const pr of prs || []) { const id=taskIdFromPullRequest(pr); if (!id) continue; const group=groups.get(id) || []; group.push(pr); groups.set(id,group); }
+  for (const pr of prs || []) {
+    const id=taskIdFromPullRequest(pr);
+    if (!id) continue;
+    const group=groups.get(id) || [];
+    group.push(pr);
+    groups.set(id,group);
+  }
   const errors=[]; const warnings=[];
   for (const [id,group] of groups) {
     if (group.length < 2) continue;
-    const numbers=new Set(group.map((pr)=>Number(pr.number)));
-    if (group.some((pr)=>supersedesPrNumbers(pr).some((n)=>numbers.has(n)))) warnings.push(`${id}: multiple open PRs have explicit supersession; close older PR promptly`);
-    else errors.push(`${id}: multiple open PRs claim same Task ID without Supersedes-PR metadata`);
+    const byNumber=new Map(group.map((pr)=>[Number(pr.number),pr]));
+    const edges=new Map([...byNumber.keys()].map((number)=>[number,[]]));
+    const incoming=new Map([...byNumber.keys()].map((number)=>[number,0]));
+    let unsafe=false;
+
+    for (const pr of group) {
+      const from=Number(pr.number);
+      for (const target of supersedesPrNumbers(pr)) {
+        if (target === from) {
+          errors.push(`${id}: PR #${from} cannot supersede itself`);
+          unsafe=true;
+          continue;
+        }
+        if (!byNumber.has(target)) {
+          errors.push(`${id}: PR #${from} has unsafe unknown Supersedes-PR #${target}`);
+          unsafe=true;
+          continue;
+        }
+        if (!edges.get(from).includes(target)) {
+          edges.get(from).push(target);
+          incoming.set(target,incoming.get(target)+1);
+        }
+      }
+    }
+
+    const visiting=new Set(); const visited=new Set();
+    function visit(number,trail=[]) {
+      if (visiting.has(number)) {
+        errors.push(`${id}: supersession cycle detected: ${[...trail,number].map((n)=>`#${n}`).join(" -> ")}`);
+        unsafe=true;
+        return;
+      }
+      if (visited.has(number)) return;
+      visiting.add(number);
+      for (const next of edges.get(number) || []) visit(next,[...trail,number]);
+      visiting.delete(number);
+      visited.add(number);
+    }
+    for (const number of byNumber.keys()) visit(number);
+
+    const survivors=[...byNumber.keys()].filter((number)=>incoming.get(number) === 0);
+    if (survivors.length !== 1) {
+      errors.push(`${id}: same-task open PRs require exactly one current survivor; found ${survivors.length}`);
+      unsafe=true;
+    }
+
+    if (!unsafe && survivors.length === 1) {
+      const covered=new Set(); const stack=[survivors[0]];
+      while (stack.length) {
+        const number=stack.pop();
+        if (covered.has(number)) continue;
+        covered.add(number);
+        for (const next of edges.get(number) || []) stack.push(next);
+      }
+      if (covered.size !== byNumber.size) {
+        const missing=[...byNumber.keys()].filter((number)=>!covered.has(number));
+        errors.push(`${id}: supersession coverage from survivor #${survivors[0]} does not reach ${missing.map((n)=>`#${n}`).join(", ")}`);
+        unsafe=true;
+      }
+    }
+
+    if (!unsafe && survivors.length === 1) warnings.push(`${id}: multiple open PRs form one coherent supersession chain with survivor #${survivors[0]}; close superseded PRs promptly`);
   }
   return { errors,warnings };
 }

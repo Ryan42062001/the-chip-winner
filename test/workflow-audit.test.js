@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { detectDuplicateTaskPullRequests, validateRegistryShape } from "../scripts/audit-workflow.js";
+import {
+  detectDuplicateTaskPullRequests,
+  validateNextActivationDashboard,
+  validateRegistryShape
+} from "../scripts/audit-workflow.js";
 
 const states = ["PLANNED","WAITING_EXTERNAL_EVIDENCE","BLOCKED","ASSIGNED","IN_PROGRESS","MANAGER_REVIEW_READY","AUDIT_READY","MERGE_READY","REWORK_REQUIRED","MERGED","VERIFYING_MASTER","CLOSED"];
 
@@ -45,6 +49,28 @@ function registry(overrides = {}) {
   };
 }
 
+function pr(number, supersedes = []) {
+  return {
+    number,
+    title: `TCW-010 PR #${number}`,
+    body: ["Task-ID: TCW-010", ...supersedes.map((target) => `Supersedes-PR: #${target}`)].join("\n")
+  };
+}
+
+const dashboard = (status = "RECOMMEND TO MANAGER") => `# Handoff
+
+## Next Activation
+
+| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | ${status} | Gate | Review. |
+| 2 | Implementation Engineer / Builder | WAIT | Gate | Wait. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | Gate | No action. |
+| 4 | Research & Development (R&D) | IDLE | Gate | No action. |
+| 5 | Independent Auditor / QA | WAIT | Gate | Wait. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | Gate | No action. |
+`;
+
 test("accepts valid active task metadata", () => {
   assert.deepEqual(validateRegistryShape(registry()).errors, []);
 });
@@ -75,19 +101,79 @@ test("user-action flag requires a compatible blocker type", () => {
   assert.deepEqual(validateRegistryShape(registry({ status: "BLOCKED", blocker_type: "USER_ACTION", user_action_required: true, blocked_on: ["User input"] })).errors, []);
 });
 
-test("detects duplicate open task pull requests", () => {
-  const result = detectDuplicateTaskPullRequests([
-    { number: 70, title: "TCW-010 first", body: "Task-ID: TCW-010" },
-    { number: 71, title: "TCW-010 replacement", body: "Task-ID: TCW-010" }
-  ]);
-  assert.equal(result.errors.length, 1);
+test("closeout evidence values fail closed when malformed", () => {
+  const result = validateRegistryShape(registry({
+    closeout_evidence: {
+      manager_verdict: "PENDING",
+      integration_verification: "UNKNOWN",
+      master_verification: "UNKNOWN",
+      audit_verdict: "PENDING",
+      canary_verification: "PENDING"
+    }
+  }));
+  assert.match(result.errors.join("\n"), /manager_verdict must be ACCEPTED/);
+  assert.match(result.errors.join("\n"), /integration_verification must be PASS/);
+  assert.match(result.errors.join("\n"), /master_verification must be PASS/);
+  assert.match(result.errors.join("\n"), /invalid closeout_evidence.audit_verdict/);
+  assert.match(result.errors.join("\n"), /invalid closeout_evidence.canary_verification/);
 });
 
-test("explicit supersession downgrades duplicate open PRs to a warning", () => {
-  const result = detectDuplicateTaskPullRequests([
-    { number: 70, title: "TCW-010 first", body: "Task-ID: TCW-010" },
-    { number: 71, title: "TCW-010 replacement", body: "Task-ID: TCW-010\nSupersedes-PR: #70" }
-  ]);
+test("detects duplicate open task pull requests", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71)]);
+  assert.ok(result.errors.length >= 1);
+  assert.match(result.errors.join("\n"), /exactly one current survivor/);
+});
+
+test("existing two-PR supersession happy path remains valid", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71, [70])]);
   assert.deepEqual(result.errors, []);
   assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /survivor #71/);
+});
+
+test("partial three-PR supersession remains an error", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71), pr(72, [70])]);
+  assert.ok(result.errors.length >= 1);
+  assert.match(result.errors.join("\n"), /exactly one current survivor/);
+});
+
+test("valid three-PR transitive succession has exactly one survivor", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71, [70]), pr(72, [71])]);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /survivor #72/);
+});
+
+test("supersession cycles fail closed", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70, [71]), pr(71, [70])]);
+  assert.match(result.errors.join("\n"), /cycle detected/);
+});
+
+test("self supersession fails closed", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70, [70]), pr(71, [70])]);
+  assert.match(result.errors.join("\n"), /cannot supersede itself/);
+});
+
+test("unsafe unknown supersession references fail closed", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71, [999])]);
+  assert.match(result.errors.join("\n"), /unsafe unknown Supersedes-PR #999/);
+});
+
+test("multiple current survivors fail closed", () => {
+  const result = detectDuplicateTaskPullRequests([pr(70), pr(71, [70]), pr(72)]);
+  assert.match(result.errors.join("\n"), /exactly one current survivor; found 2/);
+});
+
+test("six-role Next Activation dashboard validates in canonical order", () => {
+  assert.deepEqual(validateNextActivationDashboard(dashboard(), { label: "Builder handoff" }), []);
+});
+
+test("Next Activation rejects a missing canonical role row", () => {
+  const missing = dashboard().replace("| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | Gate | No action. |\n", "");
+  assert.match(validateNextActivationDashboard(missing, { label: "Builder handoff" }).join("\n"), /exactly six role rows/);
+});
+
+test("worker handoffs cannot self-authorize ACTIVATE NOW", () => {
+  assert.match(validateNextActivationDashboard(dashboard("ACTIVATE NOW"), { label: "Builder handoff" }).join("\n"), /worker handoff cannot use ACTIVATE NOW/);
+  assert.deepEqual(validateNextActivationDashboard(dashboard("ACTIVATE NOW"), { label: "Manager handoff", allowActivateNow: true }), []);
 });
