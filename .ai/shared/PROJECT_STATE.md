@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-034 repaired FULL candidate at Manager readiness gate + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-034 repaired FULL target frozen + TCW-045 independent re-audit assigned + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -150,6 +150,11 @@ TCW-033 is now **CLOSED — MANAGER ACCEPTED** at integration master `2124602b0e
 
 TCW-044 is **CLOSED — FAIL CONSUMED** after Manager accepted findings F01-F04.
 
-TCW-034 is now **MANAGER_REVIEW_READY — REPAIRED FULL CANDIDATE** on existing draft PR #147 at exact head `24be4be45f7fde351c0a6e209353dd2beed8d854`.
+TCW-034 is now **AUDIT_READY — REPAIRED FULL TARGET FROZEN** on existing draft PR #147 at exact head `24be4be45f7fde351c0a6e209353dd2beed8d854`.
 
 No live third-party value source is authorized; package-value output remains fail-closed in production. TCW-035 remains inactive until the repaired target passes fresh independent re-audit.
+
+
+## Repaired freeze and independent re-audit — 2026-09-19
+
+Actual task-specific audit-readiness on exact Builder head `24be4be45f7fde351c0a6e209353dd2beed8d854`: blockers [], readyForManagerFreeze true, sha256 `ae906987bfbad2bab022bd7d1afd24693b4fd047397ebe779dca101c82e7de4b`. Manager freezes that FULL head as immutable repaired audit target. TCW-045 fresh Independent Auditor re-audit ASSIGNED; historical TCW-044 failed target remains unchanged. Builder PR #147 DRAFT / UNMERGED. TCW-035 inactive. Live package-value provider authority remains EMPTY and winner/split WITHHELD.
