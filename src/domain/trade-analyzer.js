@@ -325,26 +325,65 @@ function structuralReplacementPlayers(replacement, players) {
   return (replacement.structuralCandidates || replacement.candidates || []).map((item) => players.get(item.playerId)).filter(Boolean);
 }
 
+function verifiedAcquisitionRosterState(snapshot, entries, players) {
+  const rules = snapshot?.league?.rosterRules;
+  const assessed = rosterRuleState(snapshot, entries, players);
+  // A proven violation is blocking even when other settings are absent; absence of
+  // a violation is NOT proof that the unreported constraints permit the move.
+  if (assessed.violations.length) return Object.freeze({ status: "KNOWN_BLOCKED", reason: assessed.reason });
+  const completeSize = Number.isInteger(rules?.size) && rules.size > 0;
+  const completePositions = Array.isArray(rules?.positionLimits)
+    && rules.positionLimits.every((rule) => typeof rule?.position === "string"
+      && rule.position.length > 0 && Number.isInteger(rule.limit) && rule.limit >= -1);
+  const knownPlayers = activeEntries(entries).every((entry) => {
+    const player = players.get(entry.playerId);
+    return player && typeof player.position === "string" && player.position.length > 0;
+  });
+  if (!completeSize || !completePositions || !knownPlayers || assessed.status !== "verified") {
+    return Object.freeze({ status: "UNKNOWN", reason: "Complete applicable ESPN roster size, position-limit and player-position evidence is required before an acquisition path can be verified." });
+  }
+  return Object.freeze({ status: "KNOWN_LEGAL", reason: null });
+}
+
 function hasKnownLegalAcquisitionPath(snapshot, postEntries, candidate, players) {
   const candidateEntry = { playerId: candidate.id, lineupSlot: "BE" };
-  const direct = rosterRuleState(snapshot, [...postEntries, candidateEntry], players);
-  if (!direct.violations.length) return true;
+  const direct = verifiedAcquisitionRosterState(snapshot, [...postEntries, candidateEntry], players);
+  if (direct.status === "KNOWN_LEGAL") return Object.freeze({ status: "KNOWN_LEGAL", requiresExplicitDrop: false, conditionalDropPlayerId: null, reason: null });
+  let unknown = direct.status === "UNKNOWN";
+  let conditionalDropPlayerId = null;
   for (const entry of activeEntries(postEntries)) {
+    // A locked entry cannot be assumed droppable for a current-week counterfactual.
+    if (entry.locked === true || getLineupLockReason(snapshot, entry, players.get(entry.playerId))) continue;
     const simulated = [...postEntries.filter((item) => item !== entry), candidateEntry];
-    if (!rosterRuleState(snapshot, simulated, players).violations.length) return true;
+    const assessed = verifiedAcquisitionRosterState(snapshot, simulated, players);
+    if (assessed.status === "KNOWN_LEGAL" && conditionalDropPlayerId === null) conditionalDropPlayerId = entry.playerId;
+    else if (assessed.status === "UNKNOWN") unknown = true;
   }
-  return false;
+  if (conditionalDropPlayerId !== null) return Object.freeze({
+    status: "KNOWN_LEGAL", requiresExplicitDrop: true, conditionalDropPlayerId,
+    reason: "Only a hypothetical user-selected follow-up drop could create a legal acquisition path; no drop is authorized or automatic."
+  });
+  return Object.freeze({
+    status: unknown ? "UNKNOWN" : "KNOWN_BLOCKED", requiresExplicitDrop: false, conditionalDropPlayerId: null,
+    reason: unknown ? "Incomplete ESPN roster rules leave direct-add and hypothetical-drop feasibility unknown."
+      : "Known ESPN roster constraints block direct addition and every eligible hypothetical drop path."
+  });
 }
 
 function replacementPathState(snapshot, postEntries, replacement, slots, players) {
   if (replacement.status !== "READY") return Object.freeze({ status: "UNKNOWN", player: null, reason: replacement.reason });
   if (replacement.acquisitionCapacity?.status === "exhausted") return Object.freeze({ status: "BLOCKED", player: null, reason: replacement.acquisitionCapacity.reason });
+  if (replacement.acquisitionCapacity?.status !== "available") return Object.freeze({ status: "UNKNOWN", player: null, reason: "Acquisition availability is not verified." });
   const candidateObjects = structuralReplacementPlayers(replacement, players);
   const eligible = candidateObjects.filter((player) => slots.some((slot) => canFillSlot(player, slot)));
   if (!eligible.length) return Object.freeze({ status: "NO_ELIGIBLE", player: null, reason: `The latest ESPN pool has no verified eligible replacement for ${slots.join("/") || "the uncovered slot"}.` });
-  const legal = eligible.find((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players));
-  if (legal) return Object.freeze({ status: "VERIFIED", player: legal, reason: null });
-  return Object.freeze({ status: "BLOCKED", player: null, reason: `The latest ESPN pool has a slot-eligible replacement for ${slots.join("/") || "the uncovered slot"}, but known ESPN roster constraints block a verified acquisition path.` });
+  const assessed = eligible.map((player) => ({ player, path: hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players) }));
+  const direct = assessed.find((item) => item.path.status === "KNOWN_LEGAL" && !item.path.requiresExplicitDrop);
+  if (direct) return Object.freeze({ status: "VERIFIED", player: direct.player, reason: null });
+  const conditional = assessed.find((item) => item.path.status === "KNOWN_LEGAL" && item.path.requiresExplicitDrop);
+  if (conditional) return Object.freeze({ status: "CONDITIONAL", player: conditional.player, reason: conditional.path.reason, conditionalDropPlayerId: conditional.path.conditionalDropPlayerId });
+  if (assessed.some((item) => item.path.status === "UNKNOWN")) return Object.freeze({ status: "UNKNOWN", player: null, reason: "Roster rules or proposed drop feasibility are not fully verified." });
+  return Object.freeze({ status: "BLOCKED", player: null, reason: `Known ESPN roster constraints block every eligible replacement path for ${slots.join("/") || "the uncovered slot"}.` });
 }
 
 function fragilityState({ snapshot, postEntries, preContingency, postContingency, bye, replacement, outgoing, players }) {
@@ -356,9 +395,15 @@ function fragilityState({ snapshot, postEntries, preContingency, postContingency
   if (worsenedRows.length && replacement.status === "READY") {
     const uncoveredSlots = unique(worsenedRows.flatMap((row) => row.postUncoveredSlotCandidates));
     const path = replacementPathState(snapshot, postEntries, replacement, uncoveredSlots, players);
+    if (path.status === "UNKNOWN" || path.status === "CONDITIONAL") return Object.freeze({ state: "UNKNOWN", reason: `A bye-week lineup gap exists but replacement acquisition feasibility is not established: ${path.reason}` });
     if (path.status === "NO_ELIGIBLE" || path.status === "BLOCKED") return Object.freeze({ state: "DANGEROUS", reason: `A known bye-week lineup gap is created and ${path.reason}` });
   }
   if (newlyThin) {
+    const affectedSlots = (postContingency.items || []).filter((item) => item.uncoveredAfterLoss > 0).map((item) => item.slot);
+    const acquisitionPath = replacementPathState(snapshot, postEntries, replacement, affectedSlots, players);
+    if (acquisitionPath.status === "UNKNOWN" || acquisitionPath.status === "CONDITIONAL") {
+      return Object.freeze({ state: "UNKNOWN", reason: `New contingency loss is supported, but replacement feasibility remains unresolved: ${acquisitionPath.reason}` });
+    }
     if (replacement.status !== "READY") return Object.freeze({ state: "SCARCE_THIN", reason: "The trade newly removes complete internal contingency coverage, and ESPN replacement quality is unavailable." });
     const outgoingPlayers = outgoing.map((id) => players.get(id)).filter((player) => Number.isFinite(player?.projection));
     const fullCandidates = replacement.structuralCandidates || replacement.candidates;
@@ -547,7 +592,7 @@ function supportedReplacementQualityCost({ snapshot, postEntries, replacement, p
 
   const feasible = structuralReplacementPlayers(replacement, players)
     .filter((player) => demandSlots.some((slot) => canFillSlot(player, slot)))
-    .filter((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+    .filter((player) => { const path = hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players); return path.status === "KNOWN_LEGAL" && !path.requiresExplicitDrop; })
     .filter((player) => Number.isFinite(player.projection));
   if (!feasible.length) return false;
   const bestReplacementProjection = Math.max(...feasible.map((player) => player.projection));
@@ -566,17 +611,21 @@ function replacementScarcityContract({ snapshot, postEntries, replacement, depth
   const demand = demandSlots.map((slot) => {
     const eligible = candidateObjects.filter((player) => canFillSlot(player, slot));
     const feasible = replacement?.acquisitionCapacity?.status === "available"
-      ? eligible.filter((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+      ? eligible.filter((player) => { const path = hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players); return path.status === "KNOWN_LEGAL" && !path.requiresExplicitDrop; })
       : [];
     return Object.freeze({
       slot,
       eligibleCandidateIds: freezeList(eligible.map((player) => player.id).sort()),
-      feasibleCandidateIds: freezeList(feasible.map((player) => player.id).sort())
+      feasibleCandidateIds: freezeList(feasible.map((player) => player.id).sort()),
+      acquisitionPathStatus: !ready || replacement?.acquisitionCapacity?.status !== "available" ? "UNKNOWN"
+        : feasible.length ? "KNOWN_LEGAL"
+          : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players).status === "UNKNOWN") ? "UNKNOWN"
+            : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players).requiresExplicitDrop) ? "CONDITIONAL" : "KNOWN_BLOCKED"
     });
   });
   const feasibleProjected = candidateObjects
     .filter((player) => demandSlots.some((slot) => canFillSlot(player, slot)))
-    .filter((player) => replacement?.acquisitionCapacity?.status === "available" && hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players))
+    .filter((player) => { const path = hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players); return replacement?.acquisitionCapacity?.status === "available" && path.status === "KNOWN_LEGAL" && !path.requiresExplicitDrop; })
     .filter((player) => Number.isFinite(player.projection))
     .sort((left, right) => right.projection - left.projection || String(left.id).localeCompare(String(right.id)));
   const sameSourceWeek = Boolean(ready && snapshot?.meta?.capturedAt && replacement?.capturedAt === snapshot.meta.capturedAt && Number.isInteger(snapshot?.currentWeek));
@@ -588,7 +637,7 @@ function replacementScarcityContract({ snapshot, postEntries, replacement, depth
     : !demandSlots.length ? "No explicit affected configured-slot demand is established, so numeric replacement projection is withheld."
       : replacement?.acquisitionCapacity?.status !== "available" ? "A known feasible acquisition path is not established, so numeric replacement projection is withheld."
         : !eligibleSlots.length ? "The structural pool has no candidate eligible for the supported configured-slot demand."
-          : !feasibleProjected.length ? "No slot-eligible candidate has both a known feasible roster path and a same-horizon numeric projection."
+          : !feasibleProjected.length ? "No slot-eligible candidate has a verified direct-add path and same-horizon numeric projection; missing rules and hypothetical follow-up drops are not legal authorization."
             : "Numeric replacement projection uses the best verified feasible candidate for the explicit configured-slot demand; it remains separate from package market value.";
   return Object.freeze({
     poolSnapshotAt: replacement?.capturedAt || null,
