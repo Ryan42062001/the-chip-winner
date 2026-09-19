@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T03:49:00Z",
+  "updated_at_utc": "2026-09-19T04:27:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -64,8 +64,8 @@
       "next_gate": "Manager routes a fresh Independent Auditor retest of accepted TCW-024-F01 through F04 against exact deployed remediation master 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "7c95cdaa9c3e172a7f7d1e09f996b731c78862d7",
-        "reason": "Compared deployed remediation target 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0 through current master; advancement contains workflow/control-plane/evidence changes only and no src/** or config/** product changes."
+        "checked_at_sha": "216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9",
+        "reason": "Compared deployed Trade Analyzer remediation target 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0 through TCW-028 integrated master. Subsequent changes are workflow/control-plane/audit tooling and evidence only; no src/** or config/** product behavior changed."
       }
     },
     {
@@ -123,79 +123,33 @@
       "post_merge_canary_required": true,
       "integration_sha": "4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4",
       "post_merge_run": 577,
-      "next_gate": "TCW-028 Builder remediation -> Manager exact-head integration/master verification -> fresh Independent Auditor bounded re-audit. TCW-026 remains blocked until that re-audit passes."
-    },
-    {
-      "task_id": "TCW-027",
-      "title": "Workflow V3.2 Independent Control-Plane Audit",
-      "owner": "Auditor",
-      "role_label": "Independent Auditor / QA",
-      "status": "VERIFYING_MASTER",
-      "dependency": "INDEPENDENT",
-      "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "FAST_REFRESH",
-      "refresh_reason": null,
-      "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
-      "task_file": ".ai/manager/tasks/TCW-027.md",
-      "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4",
-      "branch": "auditor/tcw-027-workflow-v32-control-plane-audit",
-      "pr": 116,
-      "worker_checkpoint_sha": "49f65e05aaf65d463d3b562c1c4d223866b72da4",
-      "worker_slot": "auditor-workflow-v32-control-plane",
-      "allowed_path_prefixes": [
-        ".ai/auditor/HANDOFF.md",
-        ".ai/audit/TCW-027_WORKFLOW_V3_2_CONTROL_PLANE_AUDIT.md"
-      ],
-      "forbidden_path_prefixes": [
-        ".ai/shared/",
-        ".ai/manager/",
-        ".ai/roles/",
-        ".github/",
-        "scripts/",
-        "test/",
-        "src/",
-        "config/",
-        ".ai/builder/",
-        ".ai/strategy/",
-        ".ai/rnd/",
-        ".ai/audit/TCW-027_WORKFLOW_V3_2_AUDIT_PACKET_4e737f5f.md"
-      ],
-      "audit_required": false,
-      "post_merge_canary_required": false,
-      "audit_target_task": "TCW-026",
-      "audit_target_pr": 114,
-      "audit_target_branch": "master",
-      "audit_target_sha": "4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4",
-      "next_gate": "Manager canonical-state reconciliation must clear master run #582's TCW-025 staleness failure; then TCW-027 evidence closeout may be completed without weakening the accepted remediation block.",
-      "integration_sha": "7c95cdaa9c3e172a7f7d1e09f996b731c78862d7",
-      "post_merge_run": 582
+      "next_gate": "TCW-029 fresh Independent Auditor / QA bounded re-audit of the integrated TCW-028 remediation. TCW-026 remains blocked through TCW-028 until that re-audit passes or only accepted non-blocking findings remain."
     },
     {
       "task_id": "TCW-028",
       "title": "Workflow V3.2 Audit Remediation",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "ASSIGNED",
+      "status": "BLOCKED",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
       "refresh_reason": "Manager accepted TCW-027-F01 HIGH, TCW-027-F02 MEDIUM, and TCW-027-F03 LOW against the frozen Workflow V3.2 target.",
       "merge_authority": "Manager",
-      "blocker_type": "NONE",
+      "blocker_type": "AUDIT",
       "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on_tasks": [
+        "TCW-029"
+      ],
+      "blocked_on": [
+        "TCW-029 fresh independent bounded re-audit of accepted TCW-027-F01/F02/F03 against frozen integrated target 216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9."
+      ],
       "task_file": ".ai/manager/tasks/TCW-028.md",
       "role_handoff": ".ai/builder/TCW-028_HANDOFF.md",
       "assignment_master_sha": "7c95cdaa9c3e172a7f7d1e09f996b731c78862d7",
       "branch": "builder/tcw-028-workflow-v32-audit-remediation",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 118,
+      "worker_checkpoint_sha": "863531f8b6093e9df05c8b3b5f7dc11bd5bf15fe",
       "worker_slot": "builder-workflow-v32-audit-remediation",
       "allowed_path_prefixes": [
         ".ai/builder/TCW-028_HANDOFF.md",
@@ -217,7 +171,58 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Implement only accepted TCW-027-F01/F02/F03 remediation, run focused tests, inspect scope, publish one final candidate, and obtain exact-head FULL CI before Manager review."
+      "next_gate": "TCW-029 fresh Independent Auditor / QA bounded re-audit of the frozen integrated TCW-028 target. TCW-028 cannot close until that audit passes or returns only Manager-accepted non-blocking findings.",
+      "integration_sha": "216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9",
+      "post_merge_run": 586
+    },
+    {
+      "task_id": "TCW-029",
+      "title": "Workflow V3.2 Remediation Independent Re-Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-029.md",
+      "role_handoff": ".ai/auditor/TCW-029_HANDOFF.md",
+      "assignment_master_sha": "216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9",
+      "branch": "auditor/tcw-029-workflow-v32-remediation-reaudit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-workflow-v32-remediation-reaudit",
+      "allowed_path_prefixes": [
+        ".ai/auditor/TCW-029_HANDOFF.md",
+        ".ai/audit/TCW-029_WORKFLOW_V3_2_REAUDIT.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".github/",
+        "scripts/",
+        "test/",
+        "src/",
+        "config/",
+        ".ai/builder/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/audit/TCW-029_WORKFLOW_V3_2_REAUDIT_PACKET_216b9e90.md",
+        ".ai/audit/TCW-027_WORKFLOW_V3_2_CONTROL_PLANE_AUDIT.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-028",
+      "audit_target_pr": 118,
+      "audit_target_branch": "master",
+      "audit_target_sha": "216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9",
+      "next_gate": "Independently re-audit only accepted TCW-027-F01/F02/F03 remediation on exact frozen SHA 216b9e9030c3dc84d9e2af2b3120d1c8dbb3bee9 and return PASS, PASS WITH NON-BLOCKING FINDINGS, or FAIL — REMEDIATION REQUIRED."
     }
   ]
 }
