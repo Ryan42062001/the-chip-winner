@@ -23,7 +23,10 @@
   - inspected bounded diff;
   - no provider/source-authority leakage.
 - Manager merge authority only.
-- Fresh independent audit is required after Manager freeze/integration routing.
+- Task-specific audit-readiness: PASS; blockers []; readyForManagerFreeze true.
+- Frozen Builder target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
+- Frozen audit packet: `.ai/audit/TCW-044_TRADE_WINNER_ENGINE_AUDIT_PACKET_a40c8db8.md`.
+- Fresh independent audit TCW-044 is required before any Manager integration of PR #147.
 
 ## CLOSED / CONSUMED
 
