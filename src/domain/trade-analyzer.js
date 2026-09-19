@@ -4,6 +4,8 @@ import { isStarter, SUPPORTED_LINEUP_SLOTS } from "./model.js";
 import { buildByeWeekCoverage } from "./season-intelligence.js";
 import { selectSnapshotFreshness } from "./selectors.js";
 import { evaluateAcquisitionCapacity } from "./waiver-engine.js";
+import { evaluatePackageValue, packageValueConfidence, withheldPackageValue } from "./trade-value-engine.js";
+import { PRODUCTION_TRADE_VALUE_SOURCES } from "./trade-value-source.js";
 import { evaluateFutureProjectionCompatibility, selectMappedFutureProjection } from "../providers/projections/future-projection-provider.js";
 
 const OBJECTIVES = new Set(["BALANCED", "CURRENT_WEEK_STABILITY", "FUTURE_UPSIDE"]);
@@ -369,8 +371,8 @@ function fragilityState({ snapshot, postEntries, preContingency, postContingency
   return Object.freeze({ state: "THIN", reason: "At least one optimized starter lacks a complete internal contingency lineup after the trade." });
 }
 
-function longTermDirection(future, playoffs) {
-  const known = [future?.direction, playoffs?.direction].filter((item) => item && item !== "UNKNOWN");
+function longTermDirection(future, restOfSeason, playoffs) {
+  const known = [future?.direction, restOfSeason?.direction, playoffs?.direction].filter((item) => item && item !== "UNKNOWN");
   if (!known.length) return "UNKNOWN";
   if (known.includes("UPGRADE") && known.includes("DOWNGRADE")) return "MIXED";
   if (known.includes("UPGRADE")) return "UPGRADE";
@@ -397,6 +399,160 @@ function chooseConclusion({ currentDirection, longDirection, sourceDisagreement,
   return "INSUFFICIENT_EVIDENCE";
 }
 
+
+function rosterSignature(entries) {
+  return activeEntries(entries).map((entry) => `${entry.playerId}:${entry.lineupSlot}`).sort().join("|");
+}
+
+function withheldDoNothing(preEntries = [], postEntries = [], reason = "Roster consequence is not yet supportable.") {
+  return Object.freeze({
+    preRosterSignature: rosterSignature(preEntries),
+    postResolvedRosterSignature: postEntries ? rosterSignature(postEntries) : null,
+    userDecision: "WITHHELD",
+    recommendation: "NOT_ENOUGH_EVIDENCE",
+    supportedHorizonScope: freezeList([]),
+    severeGap: false,
+    materialBenefits: freezeList([]),
+    materialCosts: freezeList([]),
+    reasons: freezeList([reason])
+  });
+}
+
+function deriveDoNothing({ preEntries, postEntries, currentWeek, future, restOfSeason, playoffs, depth, bye }) {
+  const benefits = [];
+  const costs = [];
+  const supported = [];
+  const addDirection = (label, item, actionable = true) => {
+    if (!item || item.status === "UNKNOWN" || item.direction === "UNKNOWN") return;
+    supported.push(label);
+    if (!actionable) return;
+    if (item.direction === "UPGRADE") benefits.push(`${label}_UPGRADE`);
+    else if (item.direction === "DOWNGRADE") costs.push(`${label}_DOWNGRADE`);
+  };
+  addDirection("CURRENT_WEEK", currentWeek, currentWeek?.actionability !== "INFORMATIONAL_ONLY");
+  addDirection("FUTURE_WINDOW", future);
+  addDirection("REST_OF_SEASON", restOfSeason);
+  addDirection("PLAYOFFS", playoffs);
+  if (depth?.depthGain) benefits.push("DEPTH_OR_CONTINGENCY_GAIN");
+  if (depth?.depthCost) costs.push("DEPTH_OR_CONTINGENCY_COST");
+  if (bye?.improvedWeeks?.length) benefits.push("SUPPORTED_BYE_RELIEF");
+  if (bye?.worsenedWeeks?.length) costs.push("SUPPORTED_BYE_GAP");
+  const severeGap = depth?.fragility?.state === "DANGEROUS";
+  if (severeGap && !costs.includes("DANGEROUS_POSITIONAL_FRAGILITY")) costs.unshift("DANGEROUS_POSITIONAL_FRAGILITY");
+
+  let userDecision;
+  if (severeGap) userDecision = "WORSENS";
+  else if (benefits.length && costs.length) userDecision = "MIXED";
+  else if (benefits.length) userDecision = "IMPROVES";
+  else if (costs.length) userDecision = "WORSENS";
+  else if (supported.length || depth?.fragility?.state === "COVERED" || depth?.fragility?.state === "THIN") userDecision = "NO_MATERIAL_CHANGE";
+  else userDecision = "WITHHELD";
+
+  const recommendation = userDecision === "IMPROVES" ? "CONSIDER"
+    : userDecision === "WORSENS" ? "DO_NOT_PROCEED"
+      : userDecision === "MIXED" ? "REVIEW_TRADEOFF"
+        : userDecision === "NO_MATERIAL_CHANGE" ? "HOLD_DO_NOTHING"
+          : "NOT_ENOUGH_EVIDENCE";
+  return Object.freeze({
+    preRosterSignature: rosterSignature(preEntries),
+    postResolvedRosterSignature: rosterSignature(postEntries),
+    userDecision,
+    recommendation,
+    supportedHorizonScope: freezeList(supported),
+    severeGap,
+    materialBenefits: freezeList(benefits),
+    materialCosts: freezeList(costs),
+    reasons: freezeList([
+      severeGap ? "A supported dangerous roster gap overrides apparent starter benefit." : null,
+      currentWeek?.actionability === "INFORMATIONAL_ONLY" ? "Current-week locked evidence is counterfactual and does not drive an executable recommendation." : null
+    ].filter(Boolean))
+  });
+}
+
+function mappedLineupSources(currentWeek, future, restOfSeason, playoffs) {
+  const current = (currentWeek?.sources || []).map((source) => Object.freeze({
+    sourceId: source.source,
+    capturedAt: source.capturedAt || null,
+    horizonType: "CURRENT_WEEK",
+    weeks: freezeList([]),
+    status: source.status,
+    preTotal: source.preTotal,
+    postTotal: source.postTotal,
+    delta: source.delta,
+    meanWeeklyDelta: source.delta,
+    direction: source.direction,
+    preAssignments: source.preAssignments || null,
+    postAssignments: source.postAssignments || null,
+    startedIncomingIds: freezeList(source.assignments?.incomingStarters || []),
+    benchedIncomingIds: freezeList(source.assignments?.incomingBenchDepth || []),
+    displacedIds: freezeList(source.assignments?.displacedExisting || []),
+    promotedIds: freezeList(source.assignments?.promotedExisting || []),
+    missingPlayerIds: freezeList(source.missingPlayerIds || []),
+    actionability: currentWeek?.actionability || "HYPOTHETICAL_READ_ONLY"
+  }));
+  const horizons = [
+    ["FUTURE_WINDOW", future],
+    ["REST_OF_SEASON", restOfSeason],
+    ["PLAYOFFS", playoffs]
+  ].flatMap(([horizonType, horizon]) => {
+    if (!horizon) return [];
+    return [Object.freeze({
+      sourceId: horizon.source || null,
+      capturedAt: horizon.capturedAt || null,
+      horizonType,
+      weeks: freezeList(horizon.weeks || []),
+      status: horizon.status,
+      preTotal: null,
+      postTotal: null,
+      delta: horizon.horizonDelta,
+      meanWeeklyDelta: horizon.meanWeeklyDelta,
+      direction: horizon.direction,
+      preAssignments: null,
+      postAssignments: null,
+      startedIncomingIds: freezeList([]),
+      benchedIncomingIds: freezeList([]),
+      displacedIds: freezeList([]),
+      promotedIds: freezeList([]),
+      missingPlayerIds: freezeList((horizon.rows || []).flatMap((row) => (row.missing || []).map((item) => item.playerId))),
+      actionability: "HYPOTHETICAL_READ_ONLY"
+    })];
+  });
+  return freezeList([...current, ...horizons]);
+}
+
+function replacementScarcityContract(replacement, depth) {
+  const ready = replacement?.status === "READY";
+  const structural = ready ? (replacement.structuralCandidates || []) : [];
+  const projections = structural.map((item) => item.projection).filter(Number.isFinite);
+  return Object.freeze({
+    poolSnapshotAt: replacement?.capturedAt || null,
+    fullStructuralPoolUsed: ready,
+    acquisitionPathStatus: replacement?.acquisitionCapacity?.status || "UNKNOWN",
+    eligibleSlots: freezeList([]),
+    candidateIds: freezeList(structural.map((item) => item.playerId)),
+    sameSourceWeek: true,
+    positionalAndFLEXOPDemand: freezeList([]),
+    replacementProjectionOrNull: ready && projections.length ? Math.max(...projections) : null,
+    marginalVorpOrNull: null,
+    scarcityState: depth?.fragility?.state || "UNKNOWN",
+    noDoubleCountAttestation: true,
+    reason: ready ? "Replacement projections remain structural waiver context and are not package market value." : replacement?.reason || "Replacement basis unavailable."
+  });
+}
+
+function userDecisionConfidence(doNothing, evidenceState, depth) {
+  const withheld = doNothing?.userDecision === "WITHHELD";
+  return Object.freeze({
+    claimConfidence: withheld ? "WITHHELD" : evidenceState?.startsWith("COMPLETE") && depth?.fragility?.state !== "UNKNOWN" ? "MODERATE" : "LOW",
+    evidenceState: evidenceState || "UNKNOWN",
+    coverage: withheld ? "INSUFFICIENT" : evidenceState?.startsWith("COMPLETE") ? "COMPLETE_SUPPORTED_HORIZONS" : "PARTIAL_SUPPORTED_HORIZONS",
+    freshness: "SOURCE_SPECIFIC",
+    identity: "VERIFIED_ESPN_ROSTER_OWNERSHIP",
+    comparability: "DO_NOTHING_SAME_ROSTER_RULES",
+    limitations: freezeList(withheld ? ["Roster consequence could not be established from supported evidence."] : [])
+  });
+}
+
 function resultBase(snapshot, teamId, partnerTeamId, objective, outgoing, incoming, drops, now) {
   const playerMap = new Map((snapshot.players || []).map((player) => [player.id, player]));
   const teams = new Map((snapshot.teams || []).map((team) => [team.id, team]));
@@ -412,14 +568,27 @@ function resultBase(snapshot, teamId, partnerTeamId, objective, outgoing, incomi
 
 export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const now = options.now ?? Date.now();
+  const valueSources = Array.isArray(options.tradeValueSources) ? options.tradeValueSources : PRODUCTION_TRADE_VALUE_SOURCES;
   const checked = validateProposal(snapshot, teamId, proposal);
   const fallbackObjective = OBJECTIVES.has(proposal?.teamObjective) ? proposal.teamObjective : "BALANCED";
-  if (checked.error) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot || { players: [], teams: [] }, teamId, proposal?.partnerTeamId, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || [], now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList([checked.error]), limitations: freezeList([checked.error]) });
+  if (checked.error) return Object.freeze({
+    contractVersion: "TCW_032_V1",
+    analysisState: "INVALID_PROPOSAL",
+    ...resultBase(snapshot || { players: [], teams: [] }, teamId, proposal?.partnerTeamId, fallbackObjective, proposal?.outgoingPlayerIds || [], proposal?.incomingPlayerIds || [], proposal?.plannedFollowUpDropIds || [], now),
+    packageValue: withheldPackageValue("INVALID_PROPOSAL"),
+    doNothing: withheldDoNothing([], null, checked.error),
+    validation: Object.freeze({ identity: "INVALID", uniqueOwnership: "UNVERIFIED", userRosterLegality: "UNVERIFIED", opponentRosterLegality: "UNVERIFIED", unresolvedRules: freezeList([checked.error]), currentWeekActionability: "UNKNOWN", readOnly: true, transactionActions: freezeList([]) }),
+    confidence: Object.freeze({ packageValue: packageValueConfidence(withheldPackageValue("INVALID_PROPOSAL")), userDecision: userDecisionConfidence(withheldDoNothing([], null, checked.error), "UNKNOWN", null) }),
+    conclusion: "INSUFFICIENT_EVIDENCE",
+    reasons: freezeList([checked.error]),
+    limitations: freezeList([checked.error])
+  });
   const { roster, players, outgoing, incoming, drops, objective } = checked;
+  const packageValue = evaluatePackageValue({ snapshot, outgoingPlayerIds: outgoing, incomingPlayerIds: incoming, sources: valueSources, now });
   const directEntries = buildDirectEntries(snapshot, roster, outgoing, incoming);
   const directRules = rosterRuleState(snapshot, directEntries, players);
-  if (!directRules.violations.length && drops.length) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
-  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
+  if (!directRules.violations.length && drops.length) return Object.freeze({ contractVersion: "TCW_032_V1", analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), packageValue: withheldPackageValue("INVALID_PROPOSAL"), doNothing: withheldDoNothing(roster.entries, null, "Unexpected follow-up drop on an otherwise legal direct roster."), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Follow-up drops are only part of Trade Analyzer v1 when a known roster constraint requires another explicit removal."]), limitations: freezeList([]) });
+  if (drops.some((id) => !directEntries.some((entry) => entry.playerId === id))) return Object.freeze({ contractVersion: "TCW_032_V1", analysisState: "INVALID_PROPOSAL", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), packageValue: withheldPackageValue("INVALID_PROPOSAL"), doNothing: withheldDoNothing(roster.entries, null, "Follow-up drop identity is invalid."), conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(["Every follow-up drop must be a player on the direct post-trade roster."]), limitations: freezeList([]) });
   const resolvedEntries = directRules.violations.length && drops.length ? directEntries.filter((entry) => !drops.includes(entry.playerId)) : directEntries;
   const resolvedRules = rosterRuleState(snapshot, resolvedEntries, players);
   const rosterConsequences = Object.freeze({
@@ -434,7 +603,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
     const reasons = directRules.violations.map((item) => item.kind === "ROSTER_SIZE" ? `Known ESPN roster size requires at least ${item.excess} explicit follow-up removal${item.excess === 1 ? "" : "s"}.` : `Known ESPN ${item.position} limit ${item.limit} is exceeded by ${item.excess}.`);
     if (rosterConsequences.requiredFollowUpRemovals > 1) reasons.unshift(`At least ${rosterConsequences.requiredFollowUpRemovals} explicit follow-up removals are required to resolve the known combined roster constraints.`);
     if (drops.length && resolvedRules.violations.length) reasons.push("The selected follow-up drop set does not yet resolve every known roster constraint.");
-    return Object.freeze({ analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
+    return Object.freeze({ contractVersion: "TCW_032_V1", analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), packageValue, doNothing: withheldDoNothing(roster.entries, null, "Known roster constraints require explicit resolution before user-roster consequence can be finalized."), validation: Object.freeze({ identity: "VERIFIED", uniqueOwnership: "VERIFIED", userRosterLegality: "ACTION_REQUIRED", opponentRosterLegality: "UNKNOWN", unresolvedRules: freezeList(reasons), currentWeekActionability: "UNKNOWN", readOnly: true, transactionActions: freezeList([]) }), roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null, conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No expanded-roster optimizer result is presented as a final legal post-trade lineup."]) });
   }
 
   const config = lineupConfiguration(snapshot, roster);
@@ -472,6 +641,10 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const playoffWeeks = Array.isArray(options.playoffWeeks) ? options.playoffWeeks : (Array.isArray(snapshot.league?.playoffWeeks) ? snapshot.league.playoffWeeks : []);
   const future = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, futureWeeks, futureWeeks.length ? `Weeks ${unique(futureWeeks).sort((a, b) => a - b).join(", ")}` : "Selected future weeks", now);
   const playoffs = evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, playoffWeeks, playoffWeeks.length ? `Playoff weeks ${unique(playoffWeeks).sort((a, b) => a - b).join(", ")}` : "Playoff window", now);
+  const requestedRosWeeks = Array.isArray(options.restOfSeasonWeeks) ? unique(options.restOfSeasonWeeks).sort((a, b) => a - b) : [];
+  const restOfSeason = options.restOfSeasonComplete === true && requestedRosWeeks.length
+    ? evaluateHorizon(snapshot, roster.entries, resolvedEntries, config, futureSet, identityMap, requestedRosWeeks, `Rest of season: Weeks ${requestedRosWeeks.join(", ")}`, now)
+    : Object.freeze({ label: "Rest of season", status: "UNKNOWN", weeks: freezeList(requestedRosWeeks), rows: freezeList([]), horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", reason: requestedRosWeeks.length ? "The supplied ROS window is not explicitly certified complete." : "No explicitly defined complete rest-of-season window is configured." });
 
   const bye = byeEffects(snapshot, teamId, roster.entries, resolvedEntries, unique([...outgoing, ...incoming, ...drops]));
   const replacement = replacementContext(snapshot, teamId, players, now);
@@ -487,11 +660,11 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   const depthGain = listedChanges.some((item) => item.delta > 0) || (preContingency.status === "READY" && postContingency.status === "READY" && postContingency.maxUncoveredAfterLoss < preContingency.maxUncoveredAfterLoss);
   const depth = Object.freeze({ listedPositionChanges: freezeList(listedChanges), contingency: Object.freeze({ pre: preContingency, post: postContingency }), fragility, depthCost, depthGain });
 
-  const longDirection = longTermDirection(future, playoffs);
+  const longDirection = longTermDirection(future, restOfSeason, playoffs);
   const anyUpgrade = currentResolution.direction === "UPGRADE" || longDirection === "UPGRADE";
-  const numericEvidence = currentSources.some((item) => item.status === "READY") || future.status === "READY" || playoffs.status === "READY";
+  const numericEvidence = currentSources.some((item) => item.status === "READY") || future.status === "READY" || restOfSeason.status === "READY" || playoffs.status === "READY";
   const conclusion = chooseConclusion({ currentDirection: currentResolution.direction, longDirection, sourceDisagreement: currentResolution.disagreement, fragility, depthCost, depthGain, bye, anyUpgrade, numericEvidence });
-  const incomplete = currentSources.some((item) => item.status !== "READY") || (futureWeeks.length && future.status !== "READY") || (playoffWeeks.length && playoffs.status !== "READY");
+  const incomplete = currentSources.some((item) => item.status !== "READY") || (futureWeeks.length && future.status !== "READY") || (requestedRosWeeks.length && restOfSeason.status !== "READY") || (playoffWeeks.length && playoffs.status !== "READY");
   const evidenceState = currentResolution.disagreement ? "SOURCE_DISAGREEMENT"
     : incomplete ? "PARTIAL_COVERAGE"
       : currentResolution.readySources >= 2 ? "COMPLETE_MULTI_SOURCE_AGREEMENT"
@@ -501,6 +674,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   if (config.status !== "ready") limitations.push(config.reason);
   if (currentWeek.limitation) limitations.push(currentWeek.limitation);
   if (future.status !== "READY" && futureWeeks.length) limitations.push(`Future window: ${future.reason}`);
+  if (restOfSeason.status !== "READY" && requestedRosWeeks.length) limitations.push(`Rest of season: ${restOfSeason.reason}`);
   if (playoffs.status !== "READY" && playoffWeeks.length) limitations.push(`Playoff window: ${playoffs.reason}`);
   if (replacement.status !== "READY") limitations.push(replacement.reason);
   if (fragility.state === "UNKNOWN") limitations.push(`Depth contingency: ${fragility.reason}`);
@@ -515,16 +689,71 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
   if (bye.improvedWeeks.length) reasons.push(`Known bye coverage improves in Week${bye.improvedWeeks.length === 1 ? "" : "s"} ${bye.improvedWeeks.join(", ")}.`);
   if (bye.worsenedWeeks.length) reasons.push(`Known bye coverage worsens in Week${bye.worsenedWeeks.length === 1 ? "" : "s"} ${bye.worsenedWeeks.join(", ")}.`);
   if (currentResolution.disagreement) reasons.push("Current-week projection sources disagree materially; no source-agnostic winner is inferred.");
+  const doNothing = deriveDoNothing({ preEntries: roster.entries, postEntries: resolvedEntries, currentWeek, future, restOfSeason, playoffs, depth, bye });
+  const validation = Object.freeze({
+    identity: "VERIFIED",
+    uniqueOwnership: "VERIFIED",
+    userRosterLegality: resolvedRules.status === "verified" ? "VERIFIED" : resolvedRules.status.toUpperCase(),
+    opponentRosterLegality: "UNKNOWN",
+    unresolvedRules: freezeList(resolvedRules.status === "unverified" ? [resolvedRules.reason] : []),
+    currentWeekActionability: currentWeek.actionability,
+    readOnly: true,
+    transactionActions: freezeList([])
+  });
+  const lineup = Object.freeze({ sourceResults: mappedLineupSources(currentWeek, future, restOfSeason, playoffs), sameHorizonDisagreement: currentResolution.disagreement });
+  const rosterSpace = Object.freeze({
+    user: Object.freeze({
+      preActiveCount: activeEntries(roster.entries).length,
+      directActiveCount: directRules.activeCount,
+      resolvedActiveCount: resolvedRules.activeCount,
+      netRosterCount: rosterConsequences.netRosterCount,
+      openActiveSlots: rosterConsequences.openRosterSpots,
+      requiredDrops: freezeList(drops),
+      ruleViolations: freezeList(resolvedRules.violations || [])
+    }),
+    opponent: Object.freeze({ status: "UNKNOWN", reason: "Opponent reciprocal roster consequence is deferred to the TCW-035 opportunity model boundary." }),
+    conditionalFollowUpAddsExcluded: true
+  });
+  const replacementScarcity = replacementScarcityContract(replacement, depth);
+  const horizons = Object.freeze({
+    currentWeek,
+    futureWindow: future,
+    restOfSeason,
+    playoffs,
+    crossHorizonConflict: (currentResolution.direction === "UPGRADE" && longDirection === "DOWNGRADE") ? "SHORT_TERM_GAIN_LONG_TERM_COST"
+      : (currentResolution.direction === "DOWNGRADE" && longDirection === "UPGRADE") ? "LONG_TERM_GAIN_SHORT_TERM_COST"
+        : longDirection === "MIXED" ? "MIXED" : null
+  });
+  const confidence = Object.freeze({
+    packageValue: packageValueConfidence(packageValue),
+    userDecision: userDecisionConfidence(doNothing, evidenceState, depth),
+    horizons: Object.freeze({
+      currentWeek: currentResolution.direction === "UNKNOWN" ? "LOW" : currentWeek.actionability === "INFORMATIONAL_ONLY" ? "COUNTERFACTUAL" : "MODERATE",
+      futureWindow: future.status === "READY" ? "MODERATE" : "WITHHELD",
+      restOfSeason: restOfSeason.status === "READY" ? "MODERATE" : "WITHHELD",
+      playoffs: playoffs.status === "READY" ? "MODERATE" : "WITHHELD"
+    })
+  });
   const analysisState = conclusion === "INSUFFICIENT_EVIDENCE" && !numericEvidence ? "INSUFFICIENT_EVIDENCE" : (incomplete || resolvedRules.status === "unverified" ? "PARTIAL_EVIDENCE" : "READY");
 
   return Object.freeze({
+    contractVersion: "TCW_032_V1",
     analysisState,
     ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now),
+    validation,
+    packageValue,
+    doNothing,
+    lineup,
+    rosterSpace,
+    replacementScarcity,
+    horizons,
+    confidence,
     roster: rosterConsequences,
     directPostTradeEntries: freezeList(directEntries),
     resolvedPostTradeEntries: freezeList(resolvedEntries),
     currentWeek,
     future,
+    restOfSeason,
     playoffs,
     bye,
     depth,
