@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T05:10:00Z",
+  "updated_at_utc": "2026-09-19T05:15:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -20,119 +20,5 @@
     "VERIFYING_MASTER",
     "CLOSED"
   ],
-  "tasks": [
-    {
-      "task_id": "TCW-025",
-      "title": "Trade Analyzer Audit Remediation",
-      "owner": "Builder",
-      "role_label": "Implementation Engineer / Builder",
-      "status": "VERIFYING_MASTER",
-      "dependency": "HARD",
-      "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
-      "refresh_reason": "Accepted TCW-024 findings F01-F04 on the same Trade Analyzer remediation lane.",
-      "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
-      "task_file": ".ai/manager/tasks/TCW-025.md",
-      "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "c00e4e90b07436c532db5988bebd361026e882b7",
-      "branch": "builder/tcw-025-trade-analyzer-audit-remediation",
-      "pr": 113,
-      "worker_checkpoint_sha": "368a601046df1d4de2f477936f4ac5598e5de753",
-      "worker_slot": "builder-trade-analyzer-remediation",
-      "allowed_path_prefixes": [
-        ".ai/builder/HANDOFF.md",
-        "scripts/audit-accessibility.js",
-        "scripts/audit-mobile.js",
-        "src/domain/lineup-optimizer.js",
-        "src/domain/trade-analyzer.js",
-        "test/trade-analyzer-audit-remediation.test.js"
-      ],
-      "forbidden_path_prefixes": [
-        ".ai/shared/",
-        ".ai/manager/",
-        ".ai/strategy/",
-        "config/field-validation.json"
-      ],
-      "audit_required": true,
-      "post_merge_canary_required": true,
-      "integration_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
-      "post_merge_run": 571,
-      "next_gate": "Closeout evidence is recorded. After this VERIFYING_MASTER checkpoint passes exact-head CI and canonical master CI, Manager may remove TCW-025 from active-only state.",
-      "target_advancement": {
-        "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "54b5a695a7d8a323b16bb7798b9a1d2ea736842e",
-        "reason": "Compared deployed Trade Analyzer remediation target 7bb690429ad5b829e36e5d464ae9d7e74cc77ce0 through integrated TCW-030 audit evidence master. Subsequent changes are workflow/control-plane/audit evidence only; no src/** or config/** product behavior changed."
-      },
-      "closeout_evidence": {
-        "manager_verdict": "ACCEPTED",
-        "integration_verification": "PASS",
-        "master_verification": "PASS",
-        "audit_verdict": "PASS",
-        "canary_verification": "PASS"
-      }
-    },
-    {
-      "task_id": "TCW-030",
-      "title": "Trade Analyzer Remediation Independent Re-Audit",
-      "owner": "Auditor",
-      "role_label": "Independent Auditor / QA",
-      "status": "VERIFYING_MASTER",
-      "dependency": "INDEPENDENT",
-      "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "FAST_REFRESH",
-      "refresh_reason": null,
-      "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
-      "task_file": ".ai/manager/tasks/TCW-030.md",
-      "role_handoff": ".ai/auditor/TCW-030_HANDOFF.md",
-      "assignment_master_sha": "b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f",
-      "branch": "auditor/tcw-030-trade-analyzer-remediation-retest",
-      "pr": 124,
-      "worker_checkpoint_sha": "78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35",
-      "worker_slot": "auditor-trade-analyzer-remediation-retest",
-      "allowed_path_prefixes": [
-        ".ai/audit/TCW-030_TRADE_ANALYZER_REMEDIATION_REAUDIT.md",
-        ".ai/auditor/TCW-030_HANDOFF.md"
-      ],
-      "forbidden_path_prefixes": [
-        ".ai/shared/",
-        ".ai/manager/",
-        ".ai/roles/",
-        ".github/",
-        "scripts/",
-        "test/",
-        "src/",
-        "config/",
-        ".ai/builder/",
-        ".ai/strategy/",
-        ".ai/rnd/",
-        ".ai/audit/TCW-030_TRADE_ANALYZER_REAUDIT_PACKET_7bb69042.md",
-        ".ai/manager/evidence/TCW-024_TRADE_ANALYZER_AUDIT_ACCEPTANCE.md",
-        ".ai/manager/evidence/TCW-025_TRADE_ANALYZER_REMEDIATION_INTEGRATION.md"
-      ],
-      "audit_required": false,
-      "post_merge_canary_required": false,
-      "audit_target_task": "TCW-025",
-      "audit_target_pr": 113,
-      "audit_target_branch": "master",
-      "audit_target_sha": "7bb690429ad5b829e36e5d464ae9d7e74cc77ce0",
-      "next_gate": "Closeout evidence is recorded. After this VERIFYING_MASTER checkpoint passes exact-head CI and canonical master CI, Manager may remove TCW-030 from active-only state.",
-      "integration_sha": "54b5a695a7d8a323b16bb7798b9a1d2ea736842e",
-      "post_merge_run": 599,
-      "closeout_evidence": {
-        "manager_verdict": "ACCEPTED",
-        "integration_verification": "PASS",
-        "master_verification": "PASS",
-        "audit_verdict": "NOT_APPLICABLE",
-        "canary_verification": "NOT_APPLICABLE"
-      }
-    }
-  ]
+  "tasks": []
 }

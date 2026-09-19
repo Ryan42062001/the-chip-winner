@@ -4,26 +4,25 @@ Manager-owned queue. Repository/PR state remains authoritative.
 
 ## READY / PENDING
 
-### TCW-025 — Trade Analyzer Audit Remediation
-- Integrated production master: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- Master workflow #571: full test/deploy/production verification PASS
-- Advancement through routing base `b7a87447ae14cf80cf3b6c4b30c60c1afdcc8f0f`: CONTROL_PLANE_ONLY
-- Current gate: TCW-030 fresh independent TCW-024-F01 through F04 retest.
-- TCW-025 remains BLOCKED on audit and is not CLOSED before Manager consumes that verdict.
-
-### TCW-030 — Trade Analyzer Remediation Independent Re-Audit
-- Frozen target: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
-- Target task: TCW-025
-- Target PR: #113
-- Exact Builder head: `368a601046df1d4de2f477936f4ac5598e5de753`
-- Expected branch: `auditor/tcw-030-trade-analyzer-remediation-retest`
-- Required output: fresh independent PASS / PASS WITH NON-BLOCKING FINDINGS / FAIL — REMEDIATION REQUIRED
-- Manager will not close TCW-025 before consuming the verdict.
+None.
 
 ## CLOSED / CONSUMED
 
+### Trade Analyzer remediation / re-audit chain
+- TCW-025 deployed remediation: `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
+- Product master #571: PASS including Pages + production smoke
+- TCW-030 Auditor PR #124 exact head `78ab71f17a2ed14dc3b06f7f8f5bd46a6a6bef35`
+- Auditor exact-head #598: PASS
+- Auditor verdict: PASS; no findings
+- Audit evidence integration `54b5a695a7d8a323b16bb7798b9a1d2ea736842e`; master #599 PASS
+- Explicit closeout checkpoint PR #125 exact head `4bf1665cbf39e737d6b655fd964220f4d3e75ee9`; exact-head #600 PASS
+- Closeout checkpoint integration `a246ce6ea430533f43a6b979ac44a4c5d07485fd`; master #601 PASS
+- TCW-025 and TCW-030 are CLOSED and removed from active-only state.
+
 ### Workflow V3.2 chain
-TCW-026/027/028/029 remain closed. Their control-plane changes do not satisfy or alter the separate TCW-025 product audit.
+TCW-026/027/028/029 remain closed.
 
 ## Ordering
-TCW-030 is the immediate product-quality gate. `FV-SEASON-01` remains a separate real-season field gate and must not be manufactured.
+No task is currently pending integration.
+The next Manager product lane may be selected from the post-Trade-Analyzer roadmap.
+`FV-SEASON-01` remains a separate real-season field gate and must not be manufactured.

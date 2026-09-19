@@ -13,20 +13,20 @@ Sole pending field condition:
 Do not manufacture the season condition.
 
 ## Trade Analyzer v1
-Status: REMEDIATION DEPLOYED — INDEPENDENT RETEST PENDING
+Status: COMPLETE — REMEDIATION INDEPENDENTLY AUDITED
 
 Completed:
 1. TCW-022 Strategy contract.
 2. TCW-023 initial production implementation.
 3. TCW-024 independent audit — FAIL with F01-F04.
 4. TCW-025 bounded remediation implementation, Manager integration, full master CI, Pages deployment, and production smoke.
+5. TCW-030 fresh Independent Auditor re-audit — **PASS**, clearing TCW-024-F01 through F04 with no new findings.
+6. Manager audit-evidence integration and fail-closed closeout checkpoints — master #599 and #601 PASS.
 
-Current exact deployed remediation:
+Canonical deployed remediation:
 `7bb690429ad5b829e36e5d464ae9d7e74cc77ce0`
 
-Next product-quality gate:
-- fresh Independent Auditor retest of F01-F04.
-- TCW-025 is not CLOSED before that verdict is integrated.
+TCW-025 and TCW-030 are CLOSED and removed from active-only state.
 
 ## Workflow / operating-system maturity
 Status: COMPLETE — WORKFLOW V3.2 CANONICAL
@@ -43,7 +43,7 @@ The canonical closeout sequence passed:
 TCW-026, TCW-028, and TCW-029 are closed and removed from active-only state.
 
 ## Later product discovery candidates
-After the remaining Trade Analyzer quality gate and while the real-season field gate remains event-dependent:
+With the Trade Analyzer quality gate cleared and while the real-season field gate remains event-dependent:
 1. GM Action Plan / recommendation synthesis
 2. recommendation confidence + league-market intelligence
 3. decision-impacting injury/news intelligence and notifications, only after trustworthy-source feasibility
