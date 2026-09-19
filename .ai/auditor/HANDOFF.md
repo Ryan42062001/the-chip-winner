@@ -1,194 +1,101 @@
-# Auditor Handoff — TCW-024
+# Auditor Handoff — TCW-027
 
-Independent disposition: **FAIL**
+STATUS: COMPLETE — **FAIL — REMEDIATION REQUIRED**  
+TASK: TCW-027 — Workflow V3.2 Independent Control-Plane Audit  
+ROLE: Independent Auditor / QA  
+EXECUTION: STANDARD_CHAT_HIGH  
+REFRESH: FAST_REFRESH  
+BRANCH: `auditor/tcw-027-workflow-v32-control-plane-audit`  
+FROZEN TARGET: `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`  
+CURRENT MASTER VERIFIED AT AUDIT START: `9f0786b4f089af8a24732220db00f66321e25c10`
 
-## Audit scope
+## Verdict
 
-TCW-024 independently audits the deployed Trade Analyzer v1 implementation against the accepted TCW-022 Strategy contract and TCW-023 product boundary. No production code, Strategy policy, Manager task scope, or field-validation registry state is modified by this Auditor task.
+**FAIL — REMEDIATION REQUIRED**
 
-## Verified starting state
+Independent report:
 
-- Fast Refresh verified canonical control-plane `master` at `c32557c7f2aae8c5df5844334ac90b5f6c4d317e`.
-- `.ai/shared/ACTIVE_TASKS.json` assigns TCW-024 to Independent Auditor / QA on `auditor/tcw-024-trade-analyzer-v1-audit`, with Manager-only merge authority.
-- Exact deployed production target: `e112156deedf453fb3e0081412c07e2e15c0256d`.
-- `c32557c...` is exactly one commit ahead of `e112156...`; comparison shows only `.ai/**` coordination/evidence files changed, so target advancement is **CONTROL_PLANE_ONLY** and the deployed product tree under audit is unchanged.
-- Builder PR #109 exact head is `5c492f22ce7ab107771d946ee318c2ac5665ce16`; it merged as `e112156deedf453fb3e0081412c07e2e15c0256d`.
-- Exact-head PR workflow #556 / run `34918806042` completed successfully.
-- Post-merge master workflow #557 / run `34919138546` completed successfully with the repository test/model/browser/accessibility/readiness/mobile/extension/performance/security gate, GitHub Pages deployment, and production release smoke.
+`.ai/audit/TCW-027_WORKFLOW_V3_2_CONTROL_PLANE_AUDIT.md`
 
-Those integration facts are accepted only as execution/deployment evidence; they do not establish feature correctness by themselves.
+Report blob SHA:
 
-## Independent review methods and validation levels
-
-### Level 1 — Static correctness
-
-Independently reviewed the accepted TCW-022 contract, TCW-023 requirements, exact deployed `src/domain/trade-analyzer.js`, the optional configured-slot extension in `src/domain/lineup-optimizer.js`, bye-coverage slot semantics, future-projection compatibility/mapping, production Trade Analyzer UI/route integration, focused tests, and browser smoke.
-
-Static review confirms substantial accepted behavior, including:
-- Trade Analyzer is read-only and exposes no ESPN propose/send/accept/reject/veto action;
-- result objects expose `readOnly: true` and an empty transaction-action list;
-- no hidden trade score, winner percentage, confidence percentage, acceptance probability, or equivalent composite verdict was found in the audited feature;
-- outgoing membership, incoming snapshot identity, duplicate identities, and side conflicts fail closed;
-- direct/resolved hypothetical rosters are distinct;
-- incoming players are added as active bench candidates rather than inheriting an opponent slot or silently entering IR;
-- known roster size and finite listed-position limits are enforced before a final legal post-trade roster is claimed;
-- unresolved pressure returns `ROSTER_ACTION_REQUIRED` and no silent drop/free-agent add is performed;
-- configured starter-slot skeletons are supported by the optimizer while the existing no-override caller remains supported;
-- current-week projection completeness uses the active pre/post union roster and does not zero-fill missing projections;
-- starter/FLEX assignment changes and incoming bench depth are explicit;
-- current-week +/-1.0 materiality is implemented;
-- current-week lock semantics reuse `getLineupLockReason()` and produce informational/counterfactual wording without claiming ESPN trade-processing behavior;
-- listed-position depth, contingency coverage, replacement context, bye effects, future/playoff horizons, source identity/capture/freshness, reasons, limitations, and read-only state are separately inspectable;
-- complete future/playoff windows expose raw aggregate plus mean weekly delta; incomplete windows withhold aggregate/mean/direction; materiality uses the accepted +/-1.0 mean-weekly rule;
-- sources remain separate and are not numerically averaged;
-- objective selection changes narrative framing rather than source facts/math.
-
-Static review also found the blocking defects recorded below.
-
-### Level 2 — Automated tests / CI
-
-- PR #109 exact-head workflow #556 passed the complete repository test gate.
-- Exact deployed master workflow #557 passed the full test gate, deployment, and production release smoke.
-- Focused Trade Analyzer domain tests contain meaningful assertions for 1-for-1, bench-only incoming value, unequal-count packages, explicit follow-up drops, finite position limits, no automatic IR, FLEX/OP, current locks, incomplete current/future/playoff coverage, source disagreement, mean-weekly materiality, bye effects, ordinary versus dangerous depth, missing availability, objective framing, cross-horizon precedence, and no hidden score/mutation.
-- Focused browser smoke exercises sample-mode Trade Analyzer navigation, proposal editing, objective selection, analysis, read-only/no-score copy, and re-analysis.
-
-Passing CI does not clear the findings below because the focused suite does not exercise the failing replacement-path shape or future-horizon explicit-lock leakage.
-
-The repository accessibility/mobile jobs pass globally, but the dedicated accessibility and mobile navigation loops do not currently include the new `trade` route; Trade Analyzer-specific browser smoke is desktop-sized. This is recorded as a low-severity evidence-coverage finding below rather than an observed accessibility failure.
-
-### Level 3 — Controlled in-season/sample scenarios
-
-Existing deterministic fixtures cover most accepted policy scenarios. Auditor adversarial counterexamples against the exact deployed logic additionally reproduced:
-
-1. an ESPN-available RB that should satisfy an uncovered `RB` slot is rejected by the deployed DANGEROUS replacement check because bye coverage supplies the slot as string `"RB"`, the caller wraps it as `{ slot: "RB" }`, and `canFillSlot()` expects the string slot value;
-2. a currently explicit-locked high-projection bench RB remains excluded from a future-week optimizer run even when future evaluation uses time `0`, allowing a trade to appear as a +5 future upgrade in a one-RB controlled case where the future lineup should remain unchanged (0-point delta) once the current lock is ignored.
-
-These are deterministic implementation failures, not Level-4 field claims.
-
-### Level 4 — Genuine authenticated / field behavior
-
-**UNVERIFIED AT LEVEL 4:** no separate authenticated private-league Trade Analyzer field session after deployment was supplied or manufactured for TCW-024. In particular, this audit does not claim real private-league validation of Trade Analyzer proposal choices, roster-rule combinations, replacement pools, or trade-specific lock/future combinations.
-
-This does not block a responsible implementation verdict: TCW-024 explicitly does not require manufacturing a private ESPN trade state, and the blocking defects are independently established at Levels 1-3.
-
-No credentials, cookies, tokens, private URLs, private league/member identifiers, or raw private snapshots are preserved.
+`7283adf5fa43362e57074ea89826884395269216`
 
 ## Findings
 
-### TCW-024-F01 — HIGH — replacement-path verification can falsely manufacture or miss `DANGEROUS_POSITIONAL_FRAGILITY`
+### TCW-027-F01 — HIGH — transition helper can remove unfinished audit-required tasks
 
-**Violated requirement**  
-`DANGEROUS` is intentionally narrow: a known supported-horizon lineup gap may be called dangerous only when the latest ESPN pool supplies no verified eligible replacement path under known constraints, or known constraints block that path. Replacement context must remain a separate conditional follow-up action.
+`scripts/workflow-manager-transition.js --remove` deletes any active task before validation, without proving the task is completion-eligible. On the exact target, TCW-025 is still `AUDIT_READY` with a required independent retest; the helper can remove it and then validate only the remaining registry.
 
-**Exact evidence**  
-`buildByeWeekCoverage()` exposes `uncoveredSlotCandidates` as slot-label strings such as `RB`, `FLEX`, or `OP`. In `fragilityState()`, the deployed analyzer converts those strings to objects with `uncoveredSlots.map((slot) => ({ slot }))` before passing them to `bestEligibleReplacement()`. That helper forwards each object directly to `canFillSlot(player, slot)`, while `canFillSlot()` accepts a slot **string** and compares it to `"FLEX"`, `"OP"`, or the player's listed position. The resulting eligibility test therefore rejects a genuinely eligible candidate. A controlled RB case reproduces the mismatch: `canFillSlot(RB, {slot: "RB"})` is false while `canFillSlot(RB, "RB")` is true.
+Required remediation: make removal fail closed on machine-verifiable closeout/audit/post-merge prerequisites; add incomplete/removal/rollback tests.
 
-The replacement verifier also evaluates only `replacement.candidates`, which is pre-truncated to the top 12 available players overall. An otherwise eligible replacement outside that presentation shortlist is therefore invisible to the DANGEROUS path even though the accepted contract requires the latest ESPN pool to be checked for a verified replacement path.
+### TCW-027-F02 — MEDIUM — partial supersession can hide a remaining duplicate PR
 
-Existing focused coverage tests the DANGEROUS case with an explicitly empty availability pool, so it does not catch the case where a valid eligible ESPN replacement actually exists.
+`detectDuplicateTaskPullRequests()` downgrades an entire same-task PR group to warning when any one in-group supersession edge exists. In a three-PR case, one replacement may supersede one sibling while another unresolved same-task PR remains live, yet the audit reports warning-only.
 
-**User / product impact**  
-`DANGEROUS_POSITIONAL_FRAGILITY` has the highest conclusion precedence. A valid trade can therefore receive the product's strongest structural warning because an available legal-position replacement is incorrectly treated as absent. This directly undermines the analyzer's core “what happens to my team, and why?” trust boundary.
+Required remediation: require one coherent current survivor and explicit supersession/closure coverage for every sibling; add multi-PR adversarial tests.
 
-**Remediation direction**  
-Evaluate replacement eligibility using the actual uncovered slot-label contract and the full relevant ESPN availability pool, separating presentation truncation from legality/fragility evaluation. Preserve acquisition/roster constraints and keep any acquisition explicitly conditional; do not auto-add a replacement.
+### TCW-027-F03 — LOW — mandatory six-role Next Activation dashboard omitted
 
-**Validation required after remediation**  
-Add deterministic cases where a known post-trade bye gap has an eligible ESPN replacement and must **not** become DANGEROUS, including ordinary listed-position and FLEX/OP-compatible paths; cover an eligible player outside any UI shortlist; preserve DANGEROUS when the pool truly has no eligible path or a known blocking constraint applies. Run full CI and independent Auditor re-audit.
+The TCW-026 Manager handoff and the post-integration routing handoff omit the V3.2-mandated six-row Next Activation table.
 
-**Confidence:** HIGH
+Required remediation: include the six canonical roles in current/future meaningful V3.2 handoffs; add narrowly scoped lint if practical.
 
-### TCW-024-F02 — HIGH — current explicit ESPN lock flags leak into future/playoff lineup optimization
+## Verified successful controls
 
-**Violated requirement**  
-Current ESPN/player locks and passed kickoff constrain the current-week actionable view. The accepted contract explicitly states that current kickoff-derived lock state must **not** be projected into future weekly projection windows. Future/playoff best-lineup math must represent the future roster and projections, not today's lock state.
+- Exactly two forward execution modes and reason-bounded refresh modes are documented/enforced.
+- Schema-v3 active-only state, blocker/user-action metadata, branch/worker-slot/write-overlap checks, dependency-cycle detection, Manager merge authority, integration records, frozen audit targets, user-action derivation, CI debt/integration queues, and project boundaries are materially present.
+- Docs-only CI allowlist is narrow and fails closed to FULL for non-doc/mixed/malformed/manual/push changes.
+- Docs-only synchronize requires predecessor continuity; unavailable continuity expands to FULL.
+- `Deploy website / test` remains always present.
+- Durable classification/stage/log artifacts are uploaded.
+- No War Room protected-scoring/draft custody machinery or Family Finance Hub financial/Supabase controls were imported.
+- No product source or `config/field-validation.json` change was part of PR #114.
 
-**Exact evidence**  
-The deployed analyzer tries to neutralize future kickoff locking by evaluating future rows with `FUTURE_EVALUATION_TIME = 0`. However, `getLineupLockReason()` first checks `entry.locked === true || player.locked === true` before checking kickoff time. `evaluateHorizon()` passes the same pre/post roster entries and player objects into the optimizer, so explicit current ESPN locks survive unchanged in future and playoff windows.
+## CI evidence independently verified
 
-A controlled one-RB counterexample reproduces the consequence. With a current starter projected 10, a currently locked bench RB projected 20 for the future week, and an incoming trade RB projected 15, deployed future logic keeps the 20-point bench player pinned and computes 10 -> 15, a false +5 future upgrade. Ignoring the current lock for the future week correctly starts the 20-point player both before and after, producing a 0-point delta.
+- #572 / `35417860352`: FAIL — collision fixture assertion exposed.
+- #573 / `35417894336`: FAIL — V3.1 workflow-audit fixtures not migrated.
+- #575 / `35418058017`: FAIL — malformed `ACTIVE_TASKS.json` rejected.
+- #576 / `35418225147`: PASS — exact source head `4a511c99f3726bd9c39be0ec9080320072e64661`, FULL mode, complete gate green.
+- #577 / `35418315839`: PASS — frozen target `4e737f5f...`, FULL mode, Pages deploy and production smoke green.
+- #580 / `35418627770`: PASS — audit-routing master `9f0786b4...`, FULL test gate green.
 
-Existing lock tests establish current-week informational semantics, but no focused test proves explicit current locks are ignored for future/playoff optimizer assignments.
-
-**User / product impact**  
-Future/playoff aggregate, mean weekly direction, and cross-horizon conclusion precedence can become materially wrong during real game-lock windows. The analyzer can manufacture a future UPGRADE/DOWNGRADE or a short-term/long-term conflict from a constraint that should exist only in the current week.
-
-**Remediation direction**  
-Give future/playoff optimization an explicit lock-neutral evaluation mode, or sanitize current explicit lock flags from both roster entries and player objects for future horizons, while preserving all current-week lock semantics unchanged. Do not redefine slot eligibility or projection math.
-
-**Validation required after remediation**  
-Add deterministic future and playoff cases with explicitly locked starters and explicitly locked bench players showing that current lock flags do not alter future assignments/deltas, while current-week analysis remains informational/lock-aware. Include a case that would otherwise fabricate a cross-horizon conclusion. Run full CI and independent Auditor re-audit.
-
-**Confidence:** HIGH
-
-### TCW-024-F03 — MEDIUM — unverified contingency coverage is asserted as `THIN`
-
-**Violated requirement**  
-`THIN` is a supported structural state: at least one optimized starter is known to lack a complete internal contingency lineup. Missing or unverified evidence must not be silently converted into an asserted weakness state.
-
-**Exact evidence**  
-`contingency()` correctly returns `status: "UNKNOWN"` when assignments or a supported lineup configuration are unavailable. `fragilityState()` immediately converts any post-contingency status other than `READY` into `{ state: "THIN", reason: "Contingency coverage could not be fully verified." }`. The UI then renders that `THIN` label as the depth/contingency state.
-
-**User / product impact**  
-The analyzer can tell the user the roster is thin while simultaneously admitting it could not verify contingency coverage. That overstates evidence and can contaminate depth reasoning/narrative trust even when the numeric lineup conclusion is correctly withheld.
-
-**Remediation direction**  
-Preserve an explicit `UNKNOWN`/unverified fragility state when contingency cannot be established. Reserve `THIN` for a positively demonstrated contingency gap, and keep downstream conclusion/reason handling evidence-bounded.
-
-**Validation required after remediation**  
-Add deterministic missing-lineup-configuration and incomplete-current-projection cases proving unverified contingency remains UNKNOWN rather than THIN; retain existing COVERED/THIN/SCARCE_THIN/DANGEROUS cases. Run full CI and independent Auditor re-audit.
-
-**Confidence:** HIGH
-
-### TCW-024-F04 — LOW — Trade Analyzer-specific responsive/accessibility automation is incomplete
-
-**Violated requirement**  
-TCW-023 requires reasonable responsive/accessibility behavior and focused UI/browser regression evidence for the production Trade Analyzer.
-
-**Exact evidence**  
-The Trade Analyzer browser smoke exercises the feature at a 1280x900 desktop viewport. The repository WCAG browser audit and mobile audit both pass, but their section-navigation loops enumerate the pre-existing sections and omit `trade`. Runtime navigation does include `trade`, so the new route is reachable but not directly exercised by those dedicated a11y/mobile gates.
-
-**User / product impact**  
-No accessibility or phone-layout defect was observed in this audit, but the CI evidence labeled broadly as accessibility/mobile PASS does not directly prove the new Trade Analyzer route at those dimensions. A future Trade-specific regression could escape those gates.
-
-**Remediation direction**  
-Include the Trade Analyzer route in representative WCAG and phone/reflow navigation coverage and exercise at least proposal controls plus a result state.
-
-**Validation required after remediation**  
-Run the updated accessibility/mobile audits and preserve the focused desktop proposal smoke.
-
-**Confidence:** HIGH
+The development failures were corrected rather than hidden.
 
 ## Verification matrix
 
-| Dimension | Result | Evidence |
+| Dimension | Status | Evidence |
 | --- | --- | --- |
-| Level 1 — static correctness | **FAIL** | TCW-024-F01/F02/F03 are concrete contract violations in exact deployed code; read-only, proposal, roster, source-separation, horizon math, and most UI boundaries otherwise match policy |
-| Level 2 — automated tests / CI | **PASS with coverage gaps** | PR #109 workflow #556 and deployed master workflow #557 passed; focused assertions are substantive, but do not cover F01/F02/F03 and dedicated a11y/mobile loops omit the Trade route |
-| Level 3 — controlled scenarios | **FAIL** | adversarial controlled counterexamples reproduce F01 replacement-slot mismatch and F02 future explicit-lock leakage; existing deterministic suite covers many accepted normal/edge scenarios |
-| Level 4 — authenticated field | **UNVERIFIED AT LEVEL 4** | no private authenticated Trade Analyzer field session was required or manufactured; deployment smoke is not treated as authenticated field proof |
-| Exact-head Auditor PR CI | **PENDING — ROLE OWNED** | verify after this evidence commit/PR is created |
-| Post-merge Auditor evidence | **PENDING — MANAGER OWNED** | Auditor does not merge its own PR |
+| Static/control-plane review | **FAIL** | F01/F02 blocking control-plane defects; F03 non-blocking |
+| Exact frozen target CI | **PASS** | master #577 / `35418315839` |
+| Source final-head CI | **PASS** | PR #114 #576 / `35418225147` |
+| Routing master CI | **PASS** | #580 / `35418627770` |
+| Auditor evidence PR exact-head CI | **PENDING — ROLE OWNED** | verify after PR opens |
+| Product/private ESPN field validation | **NOT APPLICABLE / NOT CLAIMED** | workflow-control-plane audit only |
 
-## Disposition
+## Handoff
 
-**FAIL**
+Task ID: TCW-027  
+Role: Independent Auditor / QA  
+Status: COMPLETE — FAIL — REMEDIATION REQUIRED  
+Verified starting state: master `9f0786b4f089af8a24732220db00f66321e25c10`; frozen target `4e737f5f0b4cc5f3825f5c12ec4e5dccaf65c4f4`.  
+Work completed: fresh independent static/adversarial workflow audit; source/merge/CI/development-failure evidence independently verified.  
+Evidence produced: report above; TCW-027-F01 HIGH, F02 MEDIUM, F03 LOW.  
+Files updated: `.ai/audit/TCW-027_WORKFLOW_V3_2_CONTROL_PLANE_AUDIT.md`, `.ai/auditor/HANDOFF.md`.  
+Open findings: F01, F02, F03.  
+Blocking issues: F01 and F02 require remediation before TCW-026 closure.  
+Recommended next role: Manager / Architect.  
+Exact next action: Manager reviews the independent findings, keeps TCW-026 blocked, scopes bounded V3.2 remediation if accepted, routes implementation under protected workflow, then returns the exact repaired target for fresh Independent Auditor re-audit.  
+Checkpoint / SHA: report blob `7283adf5fa43362e57074ea89826884395269216`; final Auditor branch head established after this handoff commit.
 
-TCW-024-F01 and TCW-024-F02 are blocking HIGH findings because they can materially change the analyzer's primary recommendation/conclusion. TCW-024-F03 is a MEDIUM evidence-semantics defect. TCW-024-F04 is a LOW non-blocking test-evidence gap.
+## Next Activation
 
-The deployed integration and broad CI health are real, but they do not override these independently reproduced contract failures.
-
-## HANDOFF
-
-**Task ID:** TCW-024  
-**Role:** Independent Auditor / QA  
-**Status:** COMPLETE — FAIL  
-**Verified starting state:** canonical control-plane `master` `c32557c7f2aae8c5df5844334ac90b5f6c4d317e`; exact deployed product target `e112156deedf453fb3e0081412c07e2e15c0256d`; advancement classified CONTROL_PLANE_ONLY.  
-**Work completed:** Independently reconstructed TCW-022/TCW-023 requirements; reviewed exact deployed Trade Analyzer domain/UI/optimizer/source behavior, PR #109, focused tests/browser smoke, CI/deployment evidence; challenged replacement fragility, locks, lineup consequences, future/playoff math, source separation, precedence, objective framing, and UI evidence.  
-**Evidence produced:** TCW-024-F01 HIGH, TCW-024-F02 HIGH, TCW-024-F03 MEDIUM, TCW-024-F04 LOW; explicit Level-4 boundary recorded.  
-**Files updated:** `.ai/auditor/HANDOFF.md` only.  
-**Open findings:** TCW-024-F01/F02/F03/F04.  
-**Blocking issues:** F01 and F02 block Trade Analyzer v1 audit acceptance; F03 also requires bounded semantic remediation.  
-**Recommended next role:** Manager / Architect, then Builder through the Workflow V3.1 reproduced-defect fast lane if findings are accepted.  
-**Exact next action:** Manager reviews/accepts or rejects each finding. If accepted, scope bounded remediation for replacement-path legality, future-horizon lock neutrality, and unknown contingency semantics; include Trade route in a11y/mobile coverage; route Builder implementation, verify exact-head/post-merge production CI, then return the repaired feature to Independent Auditor.  
-**Checkpoint / SHA:** audited product `e112156deedf453fb3e0081412c07e2e15c0256d`; Auditor branch starts from control-plane `c32557c7f2aae8c5df5844334ac90b5f6c4d317e`.
+| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | RECOMMEND TO MANAGER | Review TCW-027 FAIL findings and preserve TCW-026 audit block | Review TCW-027 report and PR; accept/reject each finding, and if accepted route bounded Workflow V3.2 remediation without closing TCW-026. |
+| 2 | Implementation Engineer / Builder | WAIT | No self-authorized remediation; Manager must scope accepted control-plane fixes | Wait for a Manager-approved remediation task/branch covering only accepted TCW-027 findings. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No Strategy question exists in this control-plane audit | No action unless Manager identifies a genuine in-season policy question. |
+| 4 | Research & Development (R&D) | IDLE | No external research dependency exists | No action unless Manager identifies a genuine external/technical research unknown. |
+| 5 | Independent Auditor / QA | COMPLETE | TCW-027 verdict published; stop after validated evidence PR | After Manager-approved remediation is integrated and frozen, start a fresh independent re-audit against the exact repaired target. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No troubleshooting escalation is presently required | Activate only if bounded remediation encounters a cross-layer diagnosis loop that normal ownership cannot resolve. |
