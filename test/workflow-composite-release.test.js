@@ -40,7 +40,7 @@ const protectionRule = () => ({
 });
 function files() {
   return SOURCE_PATHS.map((name, i) => ({
-    path: name, mode: "100644", blob: S("abcd"[i])
+    path: name, mode: "100644", blob: FROZEN_SOURCE.fileBlobs[i]
   }));
 }
 function evidence(letter, pr) {
@@ -61,7 +61,7 @@ function fixture() {
     },
     source: {
       repoId: REPOSITORY.id, repoFullName: REPOSITORY.fullName, taskId: "TCW-047",
-      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: ACCEPTED_A, tree: S("1"),
+      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: ACCEPTED_A, tree: FROZEN_SOURCE.tree,
       historicalCreationBaseline: "7ca2953009d37a014e041cc24f4934bfe61b5cad",
       effectiveScopeBaseline: EFFECTIVE_BASE,
       packet: {
@@ -550,6 +550,20 @@ function rebindSyntheticAttempt(a) {
   for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
   return a;
 }
+test("F01: an independently frozen A Git tree and every original source blob reject coherent substitutions",()=>{
+  const a=fixture();
+  assert.equal(a.source.tree,FROZEN_SOURCE.tree);
+  assert.deepEqual(a.source.files.map((file)=>file.blob),FROZEN_SOURCE.fileBlobs);
+  const altered=fixture();altered.source.tree=S("f");
+  for(let i=0;i<altered.source.files.length;i++){
+    altered.source.files[i].blob=S("abcd"[i]);
+    altered.stage.changedFiles[i].blob=S("abcd"[i]);
+  }
+  rebindSyntheticAttempt(altered);
+  const out=validateLocalContract(altered,{now:NOW});
+  assert.equal(out.classification,"FAIL");
+  assert.match(out.blockers.join("; "),/source A differs from independently frozen|source A original frozen path/);
+});
 test("F01: coherent forged replacement A, packet, effective baseline and unrelated TCW-050 audit remain rejected",()=>{
   for(const [mutate,pattern] of [
     [(a)=>{a.source.sha=S("e");a.source.tree=S("f");
@@ -628,7 +642,7 @@ test("F02: effective PR-required/strict-app/no-bypass/merge is one authenticated
     (l)=>{l.effectiveRuleList.push({id:42});},
     (l)=>{l.effectiveRulesets.push({...clone(l.ruleset),id:42});},
     (l)=>{l.effectiveRuleList=null;},
-    (l)=>{l.effectiveRulesets=[{id:42,...clone(l.ruleset)}];}
+    (l)=>{l.effectiveRulesets=[{...clone(l.ruleset),id:42}];}
   ]) {
     const altered=clone(original);mutate(altered);
     assert.match(validateEffectiveProtection(a,altered).blockers.join("; "),

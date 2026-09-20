@@ -49,6 +49,13 @@ const historicalBaseline = "7ca2953009d37a014e041cc24f4934bfe61b5cad";
 // prospective applicant's attestation/tuple, ledger or mutable source PR.
 export const FROZEN_SOURCE = Object.freeze({
   sha: "17e5f413f2afd3d743fd28d401f0df421825df2a",
+  tree: "0489918782362c62e4e1eba516a86983d9df7079",
+  fileBlobs: Object.freeze([
+    "61c6d8f9206668f574fad5b8688bf44d6f498c10",
+    "a7009d77b80893c3edefeec9cbd712a7cd9d904c",
+    "af5ce84184f5fb57f8b88df762d2cc5f144af304",
+    "75265dd9efd799c3d49ff7e0505b738a45d18773"
+  ]),
   historicalCreation: historicalBaseline,
   effectiveBaseline: "e0fe6309dc0aaa184bbeef35861f7d49256385b7",
   packetSha256: "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894",
@@ -172,7 +179,7 @@ export function validateLocalContract(a, options = {}) {
     source.branch === "builder/tcw-047-automated-audit-readiness",
   "source A task/PR/branch identity mismatch");
   check(issues, sameRepo(source), "source A repository mismatch");
-  check(issues, source.sha === FROZEN_SOURCE.sha && exact(source.tree),
+  check(issues, source.sha === FROZEN_SOURCE.sha && source.tree === FROZEN_SOURCE.tree,
     "source A differs from independently frozen TCW-050 checkpoint");
   check(issues, source.historicalCreationBaseline === FROZEN_SOURCE.historicalCreation &&
     source.effectiveScopeBaseline === FROZEN_SOURCE.effectiveBaseline,
@@ -193,6 +200,11 @@ export function validateLocalContract(a, options = {}) {
     "exact four immutable Builder file tuples required");
   if (Array.isArray(source.files)) {
     source.files.forEach((item, i) => pathTuple(issues, item, "source file " + i));
+    for (const [i, path] of SOURCE_PATHS.entries()) {
+      const item = source.files.find((file) => file?.path === path);
+      check(issues, item?.mode === "100644" && item?.blob === FROZEN_SOURCE.fileBlobs[i],
+        "source A original frozen path/mode/blob custody mismatch: " + path);
+    }
     check(issues, unique(source.files.map((item) => item?.path)) &&
       eq(source.files.map((item) => item?.path).sort(), [...SOURCE_PATHS].sort()),
     "source A file inventory must contain each approved path exactly once");
@@ -688,7 +700,8 @@ export async function observeStageReadOnly(a, read) {
     read("/git/commits/" + a.stage.preview.sha)
   ]);
   if (sourceCommit?.sha !== FROZEN_SOURCE.sha ||
-      sourceCommit?.tree?.sha !== a.source.tree)
+      sourceCommit?.tree?.sha !== FROZEN_SOURCE.tree ||
+      a.source.tree !== FROZEN_SOURCE.tree)
     throw new Error("independently frozen source A Git SHA/tree mismatch");
   const [sourceCustody, stageAuthority, protection] = await Promise.all([
     observeFrozenSourceCustody(a, read, sourceCommit),
