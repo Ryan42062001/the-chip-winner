@@ -244,7 +244,7 @@ function overlayCanonicalControlPlane(manager, builder) {
     { recursive: true, force: true, dereference: false });
   verifyOnlyCanonicalOverlay(builder);
 }
-function runMechanical(builder, task) {
+function runMechanical(builder, task, manager, options = {}) {
   // The frozen package entrypoint is checked before execution. CLI ignore-scripts
   // suppresses Builder-provided pre/post hooks, even for broadly authorized tasks.
   const env = { ...unprivilegedEnv(), npm_config_ignore_scripts: "true" };
@@ -263,7 +263,25 @@ function runMechanical(builder, task) {
   const blockers = verifyOriginalPacket(packet, task);
   assert(child.status === 0 && packet.readyForManagerFreeze === true && blockers.length === 0,
     "mechanical readiness helper reported blockers: " + blockers.join("; "));
-  return packet;
+  // npm can resolve project-controlled node shims. Independently execute the
+  // frozen helper with the runner Node binary; only matching packets can PASS.
+  authenticateTrustedVerifier(manager, builder, options);
+  const direct = spawnSync(process.execPath,
+    ["scripts/workflow-audit-readiness.js", "--task", task.task_id],
+    { cwd: builder, env: unprivilegedEnv(), encoding: "utf8", timeout: 180000,
+      maxBuffer: 2 * 1024 * 1024 });
+  if (direct.error || direct.signal) fail("trusted direct validator execution unavailable", "INFRA_ERROR");
+  let independentlyVerified;
+  try { independentlyVerified = JSON.parse(direct.stdout.trim()); } catch { /* diagnostic retained below */ }
+  if (!independentlyVerified) fail("trusted direct validator did not produce a packet: " +
+    safeDiagnostic([direct.stdout, direct.stderr].filter(Boolean).join("\n")));
+  const directBlockers = verifyOriginalPacket(independentlyVerified, task);
+  assert(direct.status === 0 && independentlyVerified.readyForManagerFreeze === true &&
+    directBlockers.length === 0, "trusted direct validator reported blockers: " + directBlockers.join("; "));
+  assert(JSON.stringify(packet) === JSON.stringify(independentlyVerified),
+    "npm mechanical packet does not match independently executed frozen verifier");
+  authenticateTrustedVerifier(manager, builder, options);
+  return independentlyVerified;
 }
 function baseResult(task, managerSha) {
   return {
@@ -278,7 +296,8 @@ function baseResult(task, managerSha) {
     provenance: { canonicalRegistryFrom: managerSha, trustedVerifierAnchorSha: TRUSTED_VERIFIER_SHA,
       trustedVerifierFileSha256: null, builderTargetPinnedToExactSha: false,
       isolatedBranchVerified: false, originalTargetHeadUnchanged: false,
-      canonicalControlPlaneOverlaid: false, originalPacketVerified: false },
+      canonicalControlPlaneOverlaid: false, originalPacketVerified: false,
+      trustedDirectInvocationVerified: false },
     resultSha256: null
   };
 }
@@ -314,7 +333,8 @@ async function runTask(task, manager, managerSha, token, artifacts, options = {}
     result.provenance.isolatedBranchVerified = true;
     overlayCanonicalControlPlane(manager, builder);
     result.provenance.canonicalControlPlaneOverlaid = true;
-    const packet = runMechanical(builder, task);
+    const packet = runMechanical(builder, task, manager, options);
+    result.provenance.trustedDirectInvocationVerified = true;
     assert(JSON.stringify(packet.changedFiles) === JSON.stringify(result.changedFiles),
       "mechanical helper changed-files packet differs from verified Git diff");
     result.originalPacketSha256 = packet.sha256;

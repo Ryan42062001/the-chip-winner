@@ -1,6 +1,9 @@
 # TCW-047 — Builder Workflow Automation Handoff
 
-STATUS: IMPLEMENTED CANDIDATE — CODE-HEAD FULL CI PASS; FINAL HANDOFF-HEAD CI / INDEPENDENT AUDIT PENDING
+STATUS: BOUNDED F01/F02/F03 REPAIR CANDIDATE — FINAL HANDOFF-INCLUSIVE FULL CI AND FRESH AUDIT PENDING
+REWORK AUTHORITY: Manager accepted TCW-048-F01 HIGH/BLOCKING, F02 MEDIUM/BLOCKING, F03 LOW/same-pass
+REPAIR PARENT / IMMUTABLE FAILED AUDIT TARGET: acb63b0c85b98b34fac9af99f00f38553de5670c
+CANONICAL MASTER VERIFIED AT REWORK START: c9c757625acde9a220149151f2a57a1dc97b1465
 TASK: TCW-047 — Automated Exact-SHA Task Audit-Readiness Gate
 ROLE: Implementation Engineer / Builder — independent Workflow Automation lane
 EXECUTION MODE: STANDARD_CHAT_HIGH
@@ -36,6 +39,18 @@ Validated code/test checkpoint: `783ec3123429cd88d238022aed88344e89658794`.
 FULL PR #162 GitHub Actions run `35480569465`, test job `105997501171`: SUCCESS. All 488 Node tests passed (0 failed), including the synthetic actual-helper PASS/FAIL/INFRA_ERROR checkout/overlay/provenance/packet test; workflow V3.2 audit, dependency install/audit, model eval, static/browser smoke, accessibility, readiness, mobile, extension, performance and security checks all passed. CI evidence artifact: `tcw-ci-evidence-35480569465-1` (artifact ID `10595497712`). Deployment and production verification skipped on the PR, as expected.
 
 PENDING: final handoff-inclusive exact-head CI and independent Manager acceptance. The new workflow is not available on the default branch until a Manager-authorized integration; GitHub's workflow_dispatch trigger cannot be considered actually validated solely by this feature branch's YAML or unit tests. Manager must require an actual Actions checkout/provenance/packet exercise after safe installation or separately authorize a bounded test mechanism. In-flight TCW-034/TCW-046 freezes must use existing independently verified procedure.
+
+## TCW-048 bounded security remediation and new validation
+
+F01: Frozen Manager trust anchor 86a7f95217e6152db397ada8039533a7f4722b3a authenticates canonical and Builder copies of the original mechanical helper, static validator and complete npm package entrypoint independently of Builder write authority. Divergence fails closed, including broadly authorized scripts/package changes. npm lifecycle hooks are suppressed; the original pinned helper also executes independently using the runner Node binary with exact packet comparison, avoiding project-controlled npm executable shims. A legitimate validator upgrade needs a distinct explicit trust-anchor update.
+
+F02: The pinned original static validator is executed on canonical Manager metadata on every invocation before task selection, including zero-work and manual dispatch; corrupt root, inactive task authority and task specs produce FAIL artifacts, not NO_ELIGIBLE_TASK. Valid empty and concurrent eligible tasks preserve prior behavior.
+
+F03: Git/process/environment errors are classified INFRA_ERROR separately from authority/static/scope FAIL, with bounded token-redacted diagnostic output retained in per-task or global artifacts. Existing original immutable SHA, ancestry, PR/branch/head, canonical overlay, read-only credential isolation and no-merge/no-freeze controls remain intact.
+
+Repaired interim FULL PR run 35484727661, test job 106008904225: SUCCESS, 488/488 Node tests PASS, workflow, dependencies, model, static/browser smoke, accessibility, readiness, mobile, extension, performance and security PASS. Interim checkpoint: 92592742b2175f627b8ae8dc4daf51dbec89e892. FULL retained CI artifact tcw-ci-evidence-35484727661-1, ID 10596868556. First adversarial fixture run 35484688898 FAILED two fixture cases; corrected and superseded, not represented as green.
+
+This single final combined script/test/handoff commit must receive a new FULL PR CI at its exact unchanged SHA. No subsequent docs-only SHA may be substituted as a freeze target. This is Builder self-validation, NOT reversal of historical TCW-048 FAIL or a fresh independent verdict. Manager must independently review scope, reconcile canonical checkpoint, obtain task-specific mechanical readiness PASS at the new exact head, freeze a NEW immutable target, and route a separately numbered FRESH workflow/security re-audit. Actual first-party Actions master-push/dispatch/auth/artifact verification is still a distinct post-installation gate. PR #162 and trade PR #147 remain DRAFT/UNMERGED; TCW-034 failed product target 035c5f5112b7393f9d4f17685792548afa67dd2e and manual readiness remain authoritative; TCW-035 inactive.
 
 ## Next Activation
 

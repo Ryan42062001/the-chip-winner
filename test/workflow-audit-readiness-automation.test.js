@@ -342,6 +342,7 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
   assert.equal(Object.keys(pass.provenance.trustedVerifierFileSha256).length, 3);
   assert.equal(pass.provenance.canonicalControlPlaneOverlaid, true);
   assert.equal(pass.provenance.originalTargetHeadUnchanged, true);
+  assert.equal(pass.provenance.trustedDirectInvocationVerified, true);
   assert.equal(pass.resultSha256, resultDigest(pass));
   assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "PASS");
   assert.match(readFileSync(path.join(artifacts, "TCW-101.log"), "utf8"), /verified/);
@@ -393,5 +394,21 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
     assert.match(rejected.blockers.join(" "), /trusted verifier source diverges/);
     assert.equal(rejected.provenance.originalPacketVerified, false);
     assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "FAIL");
+  }
+});
+
+test("canonical Manager verifier alterations require an explicit trust-anchor update", () => {
+  const manager = mkdtempSync(path.join(os.tmpdir(), "tcw-047-canonical-trust-"));
+  mkdirSync(path.join(manager, "scripts"));
+  const files = ["scripts/audit-workflow.js", "scripts/workflow-audit-readiness.js", "package.json"];
+  for (const name of files) cpSync(path.join(ROOT, name), path.join(manager, name));
+  const options = { trustedFiles: (name) => readFileSync(path.join(ROOT, name), "utf8") };
+  assert.equal(authenticateTrustedVerifier(manager, null, options).commit, TRUSTED_VERIFIER_SHA);
+  for (const name of files) {
+    const location = path.join(manager, name), original = readFileSync(location, "utf8");
+    writeFileSync(location, original + "\n");
+    assert.throws(() => authenticateTrustedVerifier(manager, null, options),
+      /canonical Manager trusted verifier source diverges from frozen anchor/);
+    writeFileSync(location, original);
   }
 });
