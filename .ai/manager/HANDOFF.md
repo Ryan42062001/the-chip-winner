@@ -1,6 +1,6 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-045 AUDIT FAIL CONSUMED — TCW-034 BOUNDED SECOND REMEDIATION ASSIGNED
+STATUS: THIRD REPAIRED FULL CANDIDATE — MANAGER_REVIEW_READY / AWAIT TASK-SPECIFIC READINESS
 ROLE: Manager / Architect
 CANONICAL AUDIT EVIDENCE MASTER: `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
 
@@ -52,3 +52,10 @@ Required next evidence: NEW fresh FULL exact-head Builder checkpoint INCLUDING f
 | 4 | Research & Development (R&D) | IDLE | No value-provider authority granted | Await separate routing. |
 | 5 | Independent Auditor / QA | WAIT | TCW-045 CLOSED / FAIL consumed | Do not reuse a historical audit as new-target proof. Await Manager's immutable repaired target and fresh audit branch. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No separate diagnosis escalation | Activate only if bounded repair cannot converge. |
+
+
+## Third repaired FULL checkpoint — 2026-09-19
+
+Existing Builder PR #147 remains DRAFT / UNMERGED. Exact Builder branch/head `035c5f5112b7393f9d4f17685792548afa67dd2e` is unchanged. It passed FULL workflow #692 / run `35477501875`, test job `105989175098`, with final Builder handoff already in the tested head. Repair diff versus `24be4be45f7fde351c0a6e209353dd2beed8d854` is limited to five Builder-owned files. Canonical Manager state now records `worker_checkpoint_sha = 035c5f5112b7393f9d4f17685792548afa67dd2e`, `status = MANAGER_REVIEW_READY` and `pr = 147`.
+
+**Next gate:** execute task-specific `workflow:audit-readiness -- --task TCW-034` against unchanged exact Builder HEAD `035c5f5112b7393f9d4f17685792548afa67dd2e` with current Manager machine/task files; retain actual PASS packet/hash. Only on actual `blockers: []` and `readyForManagerFreeze: true` may Manager freeze that SAME FULL SHA and activate another fresh Independent Auditor re-audit. No Builder merge, provider authorization, field-validation mutation, or TCW-035 activation.

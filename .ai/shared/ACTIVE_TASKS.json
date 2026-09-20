@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-19T19:25:00Z",
+  "updated_at_utc": "2026-09-19T20:05:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,7 +26,7 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "ASSIGNED",
+      "status": "MANAGER_REVIEW_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
@@ -41,7 +41,7 @@
       "assignment_master_sha": "24be4be45f7fde351c0a6e209353dd2beed8d854",
       "branch": "builder/tcw-034-trade-winner-engine",
       "pr": 147,
-      "worker_checkpoint_sha": null,
+      "worker_checkpoint_sha": "035c5f5112b7393f9d4f17685792548afa67dd2e",
       "worker_slot": "builder-trade-winner-engine",
       "allowed_path_prefixes": [
         "src/domain/trade-analyzer.js",
@@ -73,7 +73,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "Builder repairs only accepted F02-R1/F04-R1 and necessary regressions on unchanged existing PR #147 from parent 24be4be45f7fde351c0a6e209353dd2beed8d854, returns a fresh FULL exact-head final implementation+handoff checkpoint to Manager; no merge or TCW-035 activation.",
+      "next_gate": "Run task-specific workflow:audit-readiness against unchanged exact FULL Builder HEAD 035c5f5112b7393f9d4f17685792548afa67dd2e, relative to authorized remediation parent 24be4be45f7fde351c0a6e209353dd2beed8d854, using reconciled canonical Manager state. If PASS only, Manager freezes the same SHA and routes a fresh independent re-audit. PR #147 stays draft/unmerged; TCW-035 remains inactive.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "c6ba9b3599e4befa9abce9a958f6a7c45a0245dc"
