@@ -12,6 +12,14 @@ const BRANCH = /^builder\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)
 const READY = new Set(["MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY"]);
 const SCHEMA = "TCW_TASK_AUDIT_READINESS_AUTOMATION_V1";
 const REPO = "Ryan42062001/the-chip-winner";
+// Explicit frozen trust anchor. A future Manager-approved validator upgrade must
+// update this constant in a separately reviewed control-plane change.
+const TRUSTED_VERIFIER_SHA = "86a7f95217e6152db397ada8039533a7f4722b3a";
+const TRUSTED_FILES = Object.freeze([
+  "scripts/audit-workflow.js",
+  "scripts/workflow-audit-readiness.js",
+  "package.json"
+]);
 
 function fail(reason, classification = "FAIL") {
   const error = new Error(reason);
@@ -24,14 +32,61 @@ function assert(condition, reason, classification) {
 function sha(value) { return typeof value === "string" && SHA.test(value); }
 function stamp() { return new Date().toISOString(); }
 function git(cwd, args, env = process.env) {
-  return execFileSync("git", args, { cwd, env, encoding: "utf8", timeout: 120000, stdio: ["ignore", "pipe", "pipe"] }).trim();
+  try {
+    return execFileSync("git", args, { cwd, env, encoding: "utf8", timeout: 120000, stdio: ["ignore", "pipe", "pipe"] }).trim();
+  } catch {
+    fail("local Git operation failed: " + String(args[0] || "unknown"), "INFRA_ERROR");
+  }
 }
 function digest(data) { return crypto.createHash("sha256").update(data).digest("hex"); }
 function resultDigest(result) { const { resultSha256, ...fields } = result; return digest(JSON.stringify(fields)); }
 function writeJson(location, data) { writeFileSync(location, JSON.stringify(data, null, 2) + "\n"); }
-function safeDiagnostic(error) {
-  return String(error?.message || error || "Unknown error").slice(0, 800)
-    .replace(/(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)/g, "[REDACTED]");
+function safeDiagnostic(error, token = process.env.GITHUB_TOKEN) {
+  let message = String(error?.message || error || "Unknown error");
+  for (const secret of [token, token && Buffer.from("x-access-token:" + token).toString("base64")]) {
+    if (secret && secret.length >= 6) message = message.replaceAll(secret, "[REDACTED]");
+  }
+  return message.replace(/(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|Bearer\s+\S+|AUTHORIZATION:\s*basic\s+\S+)/gi, "[REDACTED]")
+    .replace(/[\x00-\x08\x0b-\x1f\x7f]/g, " ").slice(0, 1600);
+}
+function classifyException(error) {
+  if (error?.classification === "FAIL" || error?.classification === "INFRA_ERROR") return error.classification;
+  return ["EACCES", "EPERM", "ENOSPC", "EIO", "EMFILE", "ENOMEM", "ETIMEDOUT", "EAGAIN"]
+    .includes(error?.code) ? "INFRA_ERROR" : "FAIL";
+}
+function trustedBytes(manager, name, options = {}) {
+  if (options.trustedFiles) return options.trustedFiles(name);
+  // Never load a mutable branch or trust Builder-provided metadata as verifier authority.
+  try {
+    return execFileSync("git", ["show", TRUSTED_VERIFIER_SHA + ":" + name],
+      { cwd: manager, encoding: "utf8", timeout: 120000, stdio: ["ignore", "pipe", "pipe"] });
+  } catch { fail("pinned trusted verifier source unavailable: " + name, "INFRA_ERROR"); }
+}
+export function authenticateTrustedVerifier(manager, builder = null, options = {}) {
+  const hashes = {};
+  for (const name of TRUSTED_FILES) {
+    const pinned = trustedBytes(manager, name, options);
+    hashes[name] = digest(pinned);
+    for (const [label, location] of [["canonical Manager", manager], ...(builder ? [["Builder", builder]] : [])]) {
+      const candidate = path.join(location, name);
+      assert(existsSync(candidate), label + " trusted verifier source missing: " + name);
+      assert(readFileSync(candidate, "utf8") === pinned,
+        label + " trusted verifier source diverges from frozen anchor: " + name);
+    }
+  }
+  return { commit: TRUSTED_VERIFIER_SHA, fileSha256: hashes };
+}
+export function validateCanonicalState(manager, options = {}) {
+  const trust = authenticateTrustedVerifier(manager, null, options);
+  const audit = spawnSync(process.execPath, [path.join(manager, "scripts/audit-workflow.js")],
+    { cwd: manager, env: unprivilegedEnv(), encoding: "utf8", timeout: 120000, maxBuffer: 2 * 1024 * 1024 });
+  if (audit.error) fail("canonical static validation process unavailable", "INFRA_ERROR");
+  if (audit.signal) fail("canonical static validation timed out or terminated", "INFRA_ERROR");
+  if (audit.status !== 0) {
+    const detail = safeDiagnostic([audit.stdout, audit.stderr].filter(Boolean).join("\n"));
+    fail("canonical static registry/task-spec validation failed: " + detail);
+  }
+  return trust;
 }
 function controlPath(name) { return name.startsWith(".ai/"); }
 function pathAllowed(name, task) {
@@ -131,7 +186,7 @@ function authenticatedGitEnv(token) {
 function unprivilegedEnv() {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (/^(?:GITHUB_TOKEN|GH_TOKEN|ACTIONS_RUNTIME_TOKEN|GIT_CONFIG_)/.test(key)) delete env[key];
+    if (/^(?:GITHUB_TOKEN|GH_TOKEN|ACTIONS_RUNTIME_TOKEN|GIT_CONFIG_|NODE_OPTIONS$|NODE_PATH$|npm_config_|NPM_CONFIG_)/i.test(key)) delete env[key];
   }
   return env;
 }
@@ -190,15 +245,20 @@ function overlayCanonicalControlPlane(manager, builder) {
   verifyOnlyCanonicalOverlay(builder);
 }
 function runMechanical(builder, task) {
-  const child = spawnSync("npm", ["run", "--silent", "workflow:audit-readiness", "--", "--task", task.task_id],
-    { cwd: builder, env: unprivilegedEnv(), encoding: "utf8", timeout: 180000, maxBuffer: 2 * 1024 * 1024 });
+  // The frozen package entrypoint is checked before execution. CLI ignore-scripts
+  // suppresses Builder-provided pre/post hooks, even for broadly authorized tasks.
+  const env = { ...unprivilegedEnv(), npm_config_ignore_scripts: "true" };
+  const child = spawnSync("npm", ["--ignore-scripts", "--userconfig=/dev/null", "--globalconfig=/dev/null",
+    "run", "--silent", "workflow:audit-readiness", "--", "--task", task.task_id],
+    { cwd: builder, env, encoding: "utf8", timeout: 180000, maxBuffer: 2 * 1024 * 1024 });
   if (child.error) fail("mechanical helper could not execute: " + safeDiagnostic(child.error), "INFRA_ERROR");
   if (child.signal) fail("mechanical helper timed out or was terminated", "INFRA_ERROR");
   let packet;
   try { packet = JSON.parse(child.stdout.trim()); } catch { /* static validator may fail before producing a packet */ }
   if (!packet) {
-    fail(child.status === 0 ? "mechanical helper produced no valid JSON packet" :
-      "static workflow audit or mechanical helper rejected the canonical state: exit " + child.status);
+    const diagnostics = safeDiagnostic([child.stdout, child.stderr].filter(Boolean).join("\n"));
+    fail(child.status === 0 ? "mechanical helper produced no valid JSON packet: " + diagnostics :
+      "static workflow audit or mechanical helper rejected canonical state (exit " + child.status + "): " + diagnostics);
   }
   const blockers = verifyOriginalPacket(packet, task);
   assert(child.status === 0 && packet.readyForManagerFreeze === true && blockers.length === 0,
@@ -215,7 +275,8 @@ function baseResult(task, managerSha) {
     workflow: { repository: REPO, runId: process.env.GITHUB_RUN_ID || null,
       attempt: process.env.GITHUB_RUN_ATTEMPT || null, job: process.env.GITHUB_JOB || null,
       url: process.env.GITHUB_RUN_ID ? "https://github.com/" + REPO + "/actions/runs/" + process.env.GITHUB_RUN_ID : null },
-    provenance: { canonicalRegistryFrom: managerSha, builderTargetPinnedToExactSha: false,
+    provenance: { canonicalRegistryFrom: managerSha, trustedVerifierAnchorSha: TRUSTED_VERIFIER_SHA,
+      trustedVerifierFileSha256: null, builderTargetPinnedToExactSha: false,
       isolatedBranchVerified: false, originalTargetHeadUnchanged: false,
       canonicalControlPlaneOverlaid: false, originalPacketVerified: false },
     resultSha256: null
@@ -247,6 +308,8 @@ async function runTask(task, manager, managerSha, token, artifacts, options = {}
       "Builder branch advanced between GitHub API verification and Git fetch");
     git(builder, ["checkout", "-q", "-B", task.branch, task.worker_checkpoint_sha]);
     result.changedFiles = verifyGitCheckout(builder, task);
+    const verifiedTrust = authenticateTrustedVerifier(manager, builder, options);
+    result.provenance.trustedVerifierFileSha256 = verifiedTrust.fileSha256;
     result.provenance.builderTargetPinnedToExactSha = true;
     result.provenance.isolatedBranchVerified = true;
     overlayCanonicalControlPlane(manager, builder);
@@ -272,8 +335,8 @@ async function runTask(task, manager, managerSha, token, artifacts, options = {}
     result.readinessStatus = "MECHANICALLY_READY_ONLY";
     log.push("Exact SHA, branch, PR, ancestor, diff, canonical metadata and helper packet verified.");
   } catch (error) {
-    result.classification = error?.classification === "INFRA_ERROR" ? "INFRA_ERROR" : "FAIL";
-    result.blockers.push(safeDiagnostic(error));
+    result.classification = classifyException(error);
+    result.blockers.push(safeDiagnostic(error, token));
     log.push(result.blockers[0]);
   } finally {
     result.completedAt = stamp();
@@ -308,7 +371,15 @@ async function main() {
     const token = process.env.GITHUB_TOKEN;
     assert(typeof token === "string" && token.length > 0,
       "read-only GitHub Actions token missing", "INFRA_ERROR");
-    const registry = JSON.parse(readFileSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json"), "utf8"));
+    // Must run on every invocation, including a genuine NO_ELIGIBLE_TASK outcome.
+    // This checker was authenticated against the frozen trust anchor above.
+    validateCanonicalState(manager);
+    let registry;
+    try { registry = JSON.parse(readFileSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json"), "utf8")); }
+    catch (error) {
+      if (classifyException(error) === "INFRA_ERROR") throw error;
+      fail("canonical Manager registry is missing or invalid JSON");
+    }
     let previous = null;
     let changedTaskSpecs = [];
     if (event === "push") {
@@ -331,7 +402,7 @@ async function main() {
     overall = summarizeResults(results, selected.length);
   } catch (error) {
     const global = { schema: SCHEMA, canonicalManagerSha: managerSha,
-      classification: error?.classification === "INFRA_ERROR" ? "INFRA_ERROR" : "FAIL",
+      classification: classifyException(error),
       blockers: [safeDiagnostic(error)], completedAt: stamp() };
     writeJson(path.join(artifacts, "global-error.json"), global);
     overall = global.classification;
@@ -357,4 +428,4 @@ async function main() {
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invoked) await main();
 
-export { verifyGitCheckout, overlayCanonicalControlPlane, pathAllowed, digest, resultDigest, runTask };
+export { verifyGitCheckout, overlayCanonicalControlPlane, pathAllowed, digest, resultDigest, runTask, TRUSTED_VERIFIER_SHA };
