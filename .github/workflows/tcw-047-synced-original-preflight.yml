@@ -1,0 +1,142 @@
+name: TCW synchronized one-time ORIGINAL mechanical preflight
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - .github/workflows/tcw-047-synced-original-preflight.yml
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  original-synced-mechanical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact canonical triggering master
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: manager
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout exact synchronized Builder checkpoint, without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: 17e5f413f2afd3d743fd28d401f0df421825df2a
+          path: builder
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prepare Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate historical provenance, effective sync baseline and clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          test "$GITHUB_REF" = "refs/heads/master"
+          test "$(git -C manager rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git -C builder rev-parse HEAD)" = "17e5f413f2afd3d743fd28d401f0df421825df2a"
+          test -z "$(git -C builder status --porcelain)"
+          git -C builder merge-base --is-ancestor "7ca2953009d37a014e041cc24f4934bfe61b5cad" "17e5f413f2afd3d743fd28d401f0df421825df2a"
+          git -C builder merge-base --is-ancestor "e0fe6309dc0aaa184bbeef35861f7d49256385b7" "17e5f413f2afd3d743fd28d401f0df421825df2a"
+          git -C builder checkout -q -B builder/tcw-047-automated-audit-readiness "17e5f413f2afd3d743fd28d401f0df421825df2a"
+          test "$(git -C builder branch --show-current)" = "builder/tcw-047-automated-audit-readiness"
+          git -C builder diff --no-renames --name-only "e0fe6309dc0aaa184bbeef35861f7d49256385b7..HEAD" > evidence/actual-diff.txt
+          printf 'canonicalManagerSha=%s\nbuilderCandidateSha=%s\nactualHistoricalCreationSha=%s\neffectiveSynchronizedAssignmentSha=%s\n' "$GITHUB_SHA" "17e5f413f2afd3d743fd28d401f0df421825df2a" "7ca2953009d37a014e041cc24f4934bfe61b5cad" "e0fe6309dc0aaa184bbeef35861f7d49256385b7" > evidence/provenance.txt
+
+      - name: Verify remote Builder PR before original mechanical helper
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 2 -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/Ryan42062001/the-chip-winner/pulls/162" > evidence/pr-before.json
+          node --input-type=module -e 'import fs from "node:fs"; const p=JSON.parse(fs.readFileSync("evidence/pr-before.json","utf8")); if(p.state!=="open"||p.draft!==true||p.head.sha!=="17e5f413f2afd3d743fd28d401f0df421825df2a"||p.head.ref!=="builder/tcw-047-automated-audit-readiness"||p.head.repo.full_name!=="Ryan42062001/the-chip-winner"||p.base.ref!=="master") process.exit(2);'
+
+      - name: Overlay exact canonical Manager .ai files without touching Builder HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -a manager/.ai/. builder/.ai/
+          test "$(git -C builder rev-parse HEAD)" = "17e5f413f2afd3d743fd28d401f0df421825df2a"
+          test "$(git -C builder branch --show-current)" = "builder/tcw-047-automated-audit-readiness"
+          git -C builder status --porcelain > evidence/overlay-status.txt
+          if grep -v -E '^.. \.ai/' evidence/overlay-status.txt | grep .; then
+            echo "Unexpected non-control-plane checkout modification" >&2
+            exit 2
+          fi
+
+      - name: Run ORIGINAL task-specific mechanical helper, retain original unmodified packet
+        working-directory: builder
+        shell: bash
+        env:
+          npm_config_ignore_scripts: "true"
+        run: |
+          set -euo pipefail
+          npm run --silent workflow:audit-readiness -- --task TCW-047 > ../evidence/original-packet.json 2> ../evidence/original-stderr.log
+
+      - name: Independently validate original packet bytes, hash, exact scope and task authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import crypto from "node:crypto";
+          const packet=JSON.parse(fs.readFileSync("evidence/original-packet.json","utf8"));
+          const {sha256,...payload}=packet;
+          const computed=crypto.createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+          const expected=[".ai/builder/TCW-047_HANDOFF.md",".github/workflows/task-audit-readiness.yml","scripts/workflow-audit-readiness-automation.js","test/workflow-audit-readiness-automation.test.js"].sort();
+          const registry=JSON.parse(fs.readFileSync("manager/.ai/shared/ACTIVE_TASKS.json","utf8"));
+          const task=registry.tasks.find(t=>t.task_id==="TCW-047");
+          if(sha256!==computed||packet.schema!=="TCW_AUDIT_READINESS_V1"||
+            packet.taskId!=="TCW-047"||packet.branch!=="builder/tcw-047-automated-audit-readiness"||
+            packet.head!=="17e5f413f2afd3d743fd28d401f0df421825df2a"||packet.assignmentMasterSha!=="e0fe6309dc0aaa184bbeef35861f7d49256385b7"||
+            packet.pr!==162||packet.auditRequired!==true||packet.readyForManagerFreeze!==true||
+            !Array.isArray(packet.blockers)||packet.blockers.length!==0||
+            !Array.isArray(packet.changedFiles)||packet.changedFiles.length!==4||
+            JSON.stringify([...packet.changedFiles].sort())!==JSON.stringify(expected)||
+            task?.worker_checkpoint_sha!=="17e5f413f2afd3d743fd28d401f0df421825df2a"||task?.status!=="MANAGER_REVIEW_READY"||
+            task?.assignment_master_sha!=="e0fe6309dc0aaa184bbeef35861f7d49256385b7"||
+            task?.historical_builder_creation_baseline_sha!=="7ca2953009d37a014e041cc24f4934bfe61b5cad"||
+            task?.original_assignment_master_sha!=="7ca2953009d37a014e041cc24f4934bfe61b5cad"||
+            task?.audit_target_sha!=="7c5bd1add860d1e8ed7bc03717451c7d88a21c50"||
+            task?.historical_failed_audit_target_sha!=="acb63b0c85b98b34fac9af99f00f38553de5670c"){
+            console.error("Original mechanical packet or historical/effective baseline/Manager custody does not match exact new authorized candidate");
+            process.exit(2);
+          }
+          fs.writeFileSync("evidence/verified-original-packet.json",JSON.stringify({
+            classification:"PASS",canonicalManagerSha:process.env.GITHUB_SHA,
+            exactNewBuilderSha:packet.head,actualHistoricalCreationSha:"7ca2953009d37a014e041cc24f4934bfe61b5cad",
+            effectiveSyncAssignmentSha:packet.assignmentMasterSha,
+            verifiedOriginalPacketSha256:sha256,changedFiles:packet.changedFiles,
+            blockers:packet.blockers,readyForManagerFreeze:packet.readyForManagerFreeze,
+            originalHelperOnly:true,newAutomationInstalled:false},null,2)+"\n");
+          console.log("SYNCHRONIZED ORIGINAL TASK-SPECIFIC MECHANICAL READINESS PASS; packet SHA256="+sha256);
+          NODE
+
+      - name: Verify exact unchanged remote PR and Git HEAD after original helper
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 2 -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/Ryan42062001/the-chip-winner/pulls/162" > evidence/pr-after.json
+          node --input-type=module -e 'import fs from "node:fs"; const a=JSON.parse(fs.readFileSync("evidence/pr-after.json","utf8")); const b=JSON.parse(fs.readFileSync("evidence/pr-before.json","utf8")); if(a.state!=="open"||a.draft!==true||a.head.sha!=="17e5f413f2afd3d743fd28d401f0df421825df2a"||a.head.sha!==b.head.sha||a.base.ref!=="master") process.exit(2);'
+          test "$(git -C builder rev-parse HEAD)" = "17e5f413f2afd3d743fd28d401f0df421825df2a"
+
+      - name: Upload original mechanical PASS/FAIL evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcw-synced-original-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 14
