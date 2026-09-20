@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,7 +8,7 @@ import test from "node:test";
 import {
   validateCandidate, selectEligibleTasks, validateRemoteSnapshot, verifyOriginalPacket,
   summarizeResults, verifyGitCheckout, overlayCanonicalControlPlane,
-  digest, resultDigest, pathAllowed
+  digest, resultDigest, pathAllowed, runTask
 } from "../scripts/workflow-audit-readiness-automation.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -222,4 +222,86 @@ test("new automation is read-only and never grants merge or freeze authority", (
   assert.match(workflow, /persist-credentials: false/);
   assert.match(workflow, /if: always\(\)/);
   assert.doesNotMatch(workflow, /contents: write|pull-requests: write|merge-pull-request|auto-merge/);
+});
+
+test("isolated synthetic Builder checkout runs the real unchanged mechanical helper against canonical Manager state, retains PASS/FAIL/INFRA_ERROR", async () => {
+  const source = mkdtempSync(path.join(os.tmpdir(), "tcw-047-source-"));
+  runGit(source, "init", "-q");
+  runGit(source, "config", "user.email", "fixture@example.invalid");
+  runGit(source, "config", "user.name", "Fixture");
+  mkdirSync(path.join(source, "scripts"), { recursive: true });
+  mkdirSync(path.join(source, "src"), { recursive: true });
+  mkdirSync(path.join(source, ".ai/shared"), { recursive: true });
+  cpSync(path.join(ROOT, "scripts/audit-workflow.js"),
+    path.join(source, "scripts/audit-workflow.js"));
+  cpSync(path.join(ROOT, "scripts/workflow-audit-readiness.js"),
+    path.join(source, "scripts/workflow-audit-readiness.js"));
+  writeFileSync(path.join(source, "package.json"), JSON.stringify({
+    name: "tcw-synthetic-readiness", type: "module", private: true,
+    scripts: { "workflow:audit-readiness": "node scripts/workflow-audit-readiness.js" }
+  }));
+  writeFileSync(path.join(source, ".ai/shared/ACTIVE_TASKS.json"), '{"staleBuilderRegistry":true}\n');
+  writeFileSync(path.join(source, "src/allowed.txt"), "baseline\n");
+  runGit(source, "add", ".");
+  runGit(source, "commit", "-qm", "authorized assignment baseline");
+  const baseline = runGit(source, "rev-parse", "HEAD");
+  runGit(source, "checkout", "-qb", "builder/tcw-101-example");
+  writeFileSync(path.join(source, "src/allowed.txt"), "implementation\n");
+  runGit(source, "add", ".");
+  runGit(source, "commit", "-qm", "exact Builder checkpoint");
+  const checkpoint = runGit(source, "rev-parse", "HEAD");
+  const t = {
+    ...task(), title: "Synthetic readiness validation", role_label: "Implementation Engineer / Builder",
+    dependency: "INDEPENDENT", execution_mode: "STANDARD_CHAT_HIGH", refresh_mode: "FAST_REFRESH",
+    blocker_type: "NONE", user_action_required: false, blocked_on_tasks: [], blocked_on: [],
+    worker_slot: "synthetic-workflow-audit-readiness", post_merge_canary_required: false,
+    task_file: ".ai/manager/tasks/TCW-101.md", role_handoff: ".ai/builder/HANDOFF.md",
+    assignment_master_sha: baseline, worker_checkpoint_sha: checkpoint
+  };
+  const manager = mkdtempSync(path.join(os.tmpdir(), "tcw-047-manager-e2e-"));
+  cpSync(path.join(ROOT, ".ai"), path.join(manager, ".ai"), { recursive: true });
+  const managerRegistry = JSON.parse(readFileSync(path.join(ROOT, ".ai/shared/ACTIVE_TASKS.json")));
+  managerRegistry.tasks = [t];
+  writeFileSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json"),
+    JSON.stringify(managerRegistry, null, 2) + "\n");
+  const specPath = path.join(manager, ".ai/manager/tasks/TCW-101.md");
+  const spec = [
+    "# TCW-101 — Synthetic readiness validation", "Schema: TCW_TASK_V2",
+    "ROLE ROUTING: Implementation Engineer / Builder", "STATUS: MANAGER_REVIEW_READY",
+    "DEPENDENCY: INDEPENDENT", "EXECUTION MODE: STANDARD_CHAT_HIGH",
+    "REFRESH MODE: FAST_REFRESH", "BLOCKER TYPE: NONE", "USER ACTION REQUIRED: false",
+    "PRODUCTION_SHA: N/A", "VALIDATED_CI: synthetic", "HANDOFF_SHA: synthetic",
+    "INTEGRATION_SHA: N/A", "MANAGER_VERDICT: PENDING", "AUDIT_STATUS: PENDING"
+  ].join("\n") + "\n";
+  writeFileSync(specPath, spec);
+  const artifacts = mkdtempSync(path.join(os.tmpdir(), "tcw-047-evidence-"));
+  const readGithub = async (apiPath) => {
+    if (apiPath.startsWith("/git/ref/heads/")) return { object: { sha: checkpoint } };
+    if (apiPath.startsWith("/pulls/")) return remote(t).pr;
+    throw Error("unexpected API URL");
+  };
+  const options = { readGithub, originUrl: source };
+  const managerSha = SHA("e");
+  const pass = await runTask(t, manager, managerSha, "test-token", artifacts, options);
+  assert.equal(pass.classification, "PASS", JSON.stringify(pass));
+  assert.deepEqual(pass.changedFiles, ["src/allowed.txt"]);
+  assert.equal(pass.originalPacketSha256?.length, 64);
+  assert.equal(pass.provenance.builderTargetPinnedToExactSha, true);
+  assert.equal(pass.provenance.canonicalControlPlaneOverlaid, true);
+  assert.equal(pass.provenance.originalTargetHeadUnchanged, true);
+  assert.equal(pass.resultSha256, resultDigest(pass));
+  assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "PASS");
+  assert.match(readFileSync(path.join(artifacts, "TCW-101.log"), "utf8"), /verified/);
+  // Static validator catches the canonical task-spec inconsistency before issuing a PASS packet.
+  writeFileSync(specPath, spec.replace("STATUS: MANAGER_REVIEW_READY", "STATUS: ASSIGNED"));
+  const failed = await runTask(t, manager, managerSha, "test-token", artifacts, options);
+  assert.equal(failed.classification, "FAIL", JSON.stringify(failed));
+  assert.equal(failed.originalPacketSha256, null);
+  assert.ok(failed.blockers.length);
+  assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "FAIL");
+  // A transient/unavailable Git remote is infrastructure, not a mechanical PASS or FAIL.
+  const infra = await runTask(t, manager, managerSha, "test-token", artifacts,
+    { ...options, originUrl: path.join(manager, "missing-git-remote") });
+  assert.equal(infra.classification, "INFRA_ERROR", JSON.stringify(infra));
+  assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "INFRA_ERROR");
 });
