@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-20T04:09:00Z",
+  "updated_at_utc": "2026-09-20T04:40:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -146,11 +146,11 @@
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "USER_ACTION",
-      "user_action_required": true,
+      "blocker_type": "EXTERNAL_EVIDENCE",
+      "user_action_required": false,
       "blocked_on_tasks": [],
       "blocked_on": [
-        "Separate product-owner choice on whether to commission a changed protected-branch staging/freeze provenance protocol and eventual separate installation authority for an independently audited NEW staged PR SHA. Current exact Builder PR #162 is BEHIND strict required up-to-date test; no verified V3.2-compliant installation route or owner authority exists for a new staged SHA."
+        "Owner separately AUTHORIZED protected-release DESIGN and FRESH independent governance AUDIT only. TCW-052 independent review of exact non-operative TCW-051 proposal is pending. New staged source PR creation, activation of a material governance change, installation/merging or alteration of strict GitHub protection remain UNAUTHORIZED; future specific owner action required after the independent design review."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -185,7 +185,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-050 independent bounded preinstall L1-L3 PASS ACCEPTED for exact frozen Builder 17e5f413f2afd3d743fd28d401f0df421825df2a; original mechanical and FULL #738 SUCCESS, evidence-only PR #175 integrated 793fd1fd4f78edb25e86b6eb49b1dec9c5dbb1dc and real master #745/run 35489331789/test 106021413570 SUCCESS. Nevertheless existing Builder PR #162 remains DRAFT/UNMERGED/BEHIND STRICT required test; do NOT merge or resync without a fresh source SHA/audit and separate authority. Manager protected-branch staging design evidence .ai/manager/evidence/TCW-047_STRICT_PROTECTED_RELEASE_DESIGN_793fd1fd.md is CONDITIONAL/UNVERIFIED, requires separately approved governance change and independent material workflow audit before an actual staged-source PR, new staged exact-head security review, strict up-to-date FULL test and separately explicit product-owner release approval. No NEW automatic Actions installation or L4 evidence. TCW-034 manual readiness and historic trade target preserved; TCW-035 inactive.",
+      "next_gate": "Current TCW-047 is OPEN with accepted TCW-050 bounded PRE-INSTALL PASS ONLY for source SHA 17e5f413f2afd3d743fd28d401f0df421825df2a, no default-branch new workflow/L4. User authorized DESIGN+GOVERNANCE AUDIT ONLY: TCW-051 documentary protocol PR #177 exact head c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75 integrated non-operative; fresh TCW-052 independent design audit assigned. Await verdict before considering separate material governance implementation and its own independent audit; require separate owner approval before creating any future staging source PR and still another explicit exact-new-SHA installation approval, strict required up-to-date test, real post-merge FULL/production and L4. Preserve PR #162 frozen/draft/unmerged and trade #147 untouched.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -263,6 +263,20 @@
         "original_packet_sha256": "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894",
         "operational_actions_exercise": "NOT_ESTABLISHED",
         "protected_release": "BLOCKED_UP_TO_DATE_TEST_NEW_STAGING_PLAN_UNVERIFIED"
+      },
+      "release_design_authorization": {
+        "owner_authorized_design_and_independent_governance_audit": true,
+        "source_task": "TCW-051",
+        "governance_audit_task": "TCW-052",
+        "exact_proposal_sha": "c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75",
+        "proposal_pr": 177,
+        "proposal_integration_master": "3c93bac1e3d9fba0d5600e30f440757f2e27401a",
+        "source_builder_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
+        "design_only": true,
+        "governance_active": false,
+        "staging_pr_creation_authorized": false,
+        "installation_authorized": false,
+        "actual_new_workflow_installed": false
       }
     },
     {
@@ -320,6 +334,119 @@
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
+      }
+    },
+    {
+      "task_id": "TCW-051",
+      "title": "Protected-Master Exact-SHA Release Protocol Design — Non-Operative",
+      "owner": "Manager",
+      "role_label": "Manager / Architect — Protected-Release Protocol Design",
+      "status": "AUDIT_READY",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-051.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "5b1259e350c5b35d97d6542784e1f97869f0ae83",
+      "branch": "manager/tcw-051-protected-release-protocol-design",
+      "pr": 177,
+      "worker_checkpoint_sha": "c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75",
+      "worker_slot": "manager-tcw-051-protected-release-protocol-design",
+      "allowed_path_prefixes": [
+        ".ai/manager/evidence/TCW-051_PROTECTED_RELEASE_PROTOCOL_PROPOSAL.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/roles/",
+        ".ai/builder/",
+        ".ai/auditor/",
+        ".ai/audit/",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json",
+        ".ai/manager/tasks/TCW-047.md",
+        ".ai/manager/tasks/TCW-050.md"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "audit_target_sha": "c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75",
+      "proposal_integration_sha": "3c93bac1e3d9fba0d5600e30f440757f2e27401a",
+      "proposal_document_blob_sha": "a38cc9aeccd7b7650cd7704b8788b8a96178db9b",
+      "owner_authorized_design_only": true,
+      "material_protocol_active": false,
+      "next_gate": "Fresh separate independent TCW-052 design-only workflow governance audit of exact frozen proposal c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75 and blob a38cc9aeccd7b7650cd7704b8788b8a96178db9b, original documentary Manager PR #177 only one path, #748 DOCS_ONLY and #749 postmerge master success. Never treat audit PASS as active release exception or source installation.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "3c93bac1e3d9fba0d5600e30f440757f2e27401a"
+      }
+    },
+    {
+      "task_id": "TCW-052",
+      "title": "Fresh Independent Protected-Release Protocol Governance Design Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-052.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "3c93bac1e3d9fba0d5600e30f440757f2e27401a",
+      "branch": "auditor/tcw-052-protected-release-governance-audit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-052-protected-release-governance-audit",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-052_PROTECTED_RELEASE_GOVERNANCE_AUDIT.md",
+        ".ai/auditor/TCW-052_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/builder/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json",
+        ".ai/audit/TCW-052_PROTECTED_RELEASE_GOVERNANCE_AUDIT_PACKET_c7b0923f.md",
+        ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_REAUDIT.md",
+        ".ai/auditor/TCW-050_HANDOFF.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-051",
+      "audit_target_pr": 177,
+      "audit_target_branch": "manager/tcw-051-protected-release-protocol-design",
+      "audit_target_sha": "c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75",
+      "actual_historical_auditor_branch_creation_sha": "3c93bac1e3d9fba0d5600e30f440757f2e27401a",
+      "next_gate": "Fresh independent exact-proposal design governance audit only, two evidence paths/one PR, no source staging, ruleset modification or installation. Verify Auditor branch historical creation 3c93bac1e3d9fba0d5600e30f440757f2e27401a then Manager non-force fast-forward to formal integration master, proposal exact c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75 and original design blob; return canonical verdict to Manager.",
+      "target_advancement": {
+        "classification": "NON_OVERLAPPING",
+        "checked_at_sha": "3c93bac1e3d9fba0d5600e30f440757f2e27401a"
       }
     }
   ]
