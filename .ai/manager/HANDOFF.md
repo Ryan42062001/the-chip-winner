@@ -20,7 +20,7 @@ ROLE: Manager / Architect · canonical Workflow V3.2
 | ---: | --- | --- | --- | --- |
 | 1 | Manager / Architect | ACTIVE — MECHANICAL PREFLIGHT | NEW exact synced FULL-green Builder SHA `17e5f413f2afd3d743fd28d401f0df421825df2a` | Run original separate task-specific mechanical PASS, new frozen packet/task and route fresh Independent Auditor; no installation before separate authorization. |
 | 2 | Implementation Engineer / Builder | WAIT | PR #162 updated exact head and fixture FULL green | No new code or handoff edits except Manager-requested bounded remediation; preserve current branch. |
-| 3 | In-Season Strategy Analyst | IDLE | No new workflow assignment | Preserve product semantics. |
-| 4 | R&D | IDLE | No workflow research assignment | Preserve providers/read-only contract. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No new workflow assignment | Preserve product semantics. |
+| 4 | Research & Development (R&D) | IDLE | No workflow research assignment | Preserve providers/read-only contract. |
 | 5 | Independent Auditor / QA | WAIT — FRESH ASSIGNMENT | New target independent workflow/security audit after mechanical PASS | Do not adopt old TCW-049 verdict for new head; await formal Manager packet and dedicated branch. |
-| 6 | Troubleshooting / Root Cause | IDLE | No new defect beyond fixed test-fixture assumption | Route if mechanical/security gate fails. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new defect beyond fixed test-fixture assumption | Route if mechanical/security gate fails. |
