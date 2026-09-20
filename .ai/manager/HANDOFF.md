@@ -43,9 +43,9 @@ Manager independently routed separate task TCW-048 for Builder PR #162 exact imm
 
 | Order | Employee / Role | Status | Current Task / Gate | Next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-046 and TCW-047 routed | Consume TCW-046 fresh independent verdict; separately review TCW-047 workflow PR and require independent workflow/security audit before integration. |
-| 2 | Implementation Engineer / Builder | ACTIVATE TCW-047 IN SEPARATE CHAT / TCW-034 WAIT | TCW-047 automated readiness implementation; TCW-034 frozen audit target | Work only on distinct `builder/tcw-047-automated-audit-readiness` branch and workflow scope; do not modify frozen Builder PR #147 or auto-freeze/merge. |
+| 1 | Manager / Architect | WAIT | TCW-048 independent audit activated | Consume TCW-048 exact-target verdict; separately reconcile TCW-034 remediation; no protected PR merge. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-047 audit-ready; separate TCW-034 remediation | TCW-047 Builder remains idle pending independent workflow audit. TCW-034 bounded product repair is separately authorized but requires canonical state reconciliation. |
 | 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No new strategy question | Await separate Manager routing. |
 | 4 | Research & Development (R&D) | IDLE | No approved trade-value provider | Await separate Manager routing. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-046 fresh third repaired-target re-audit | Independently audit immutable `035c5f5112b7393f9d4f17685792548afa67dd2e`; one evidence PR, no merge. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-048 fresh workflow/security audit | Verify integrated task, frozen packet, exact target and dedicated branch; write two TCW-048 evidence files only and return one unmerged PR with exact-head CI. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only upon Manager assignment. |
