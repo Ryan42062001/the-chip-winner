@@ -410,7 +410,7 @@
       "dormant_read_only_release_guard_only": true,
       "staged_source_pr_creation_authorized": false,
       "installation_authorized": false,
-      "next_gate": "TCW-054 FAIL F01/F02 accepted on immutable historical 324e5fe9. Manager independently froze REPAIRED SOURCE FOR AUDIT ONLY: Builder #182 DRAFT/UNMERGED exact new 70e74c5612f71ba2808c7309127c14a02a54b765, tree Builder-reported 96ac9a74b8e45e84400eb63b6b0ea3732256b9c7 pending native Auditor check; true creation baseline 17cb363b preserved; 18 ahead/0 behind/four cumulative paths, 11-commit remediation only source code/tests. FULL #773/run 35517031364/test 106094607548 SUCCESS 496/496. NEW fresh TCW-055 exact repaired implementation audit assigned, old TCW-054 FAIL remains historical. ORIGINAL TCW-053 task-specific mechanical helper NOT EXECUTED / no TCW_AUDIT_READINESS_V1 packet: stay MANAGER_REVIEW_READY below AUDIT_READY/MERGE_READY. External protected actor/nonce ledger, original packet bytes, actual S/G/L4, source PR #162/trade PR #147 and owner staging/installation remain separately blocked; no Builder merge or release.",
+      "next_gate": "Manager accepted TCW-055 repaired TCW-053 dormant source-only independent PASS at exact Builder 70e74c5612f71ba2808c7309127c14a02a54b765/native tree 96ac9a74b8e45e84400eb63b6b0ea3732256b9c7. Historical TCW-054 F01/F02 FAIL remains old SHA-specific and is remediated only for repaired source; audit evidence #186 merged at 59f33604a87dd0c02aec6d56a962a629ce701d11, genuine master #778 SUCCESS. ORIGINAL TCW-053 task-specific npm run workflow:audit-readiness -- --task TCW-053 with assigned exact Builder checkout and genuine isolated canonical Manager READ-ONLY overlay NOT EXECUTED; no authentic TCW_AUDIT_READINESS_V1 packet/digest/readyForManagerFreeze. Remain MANAGER_REVIEW_READY below AUDIT_READY/MERGE_READY; verify genuine original-helper packet, correct true historical 17cb... baseline, exact PR/head before any separate integration decision. TCW-047 original retained packet BYTES, external actor/nonce ledger/rights, actual S/G, owner staging and installation consent, first-party L4 and release remain UNVERIFIED/UNAUTHORIZED. Do not merge source #182/#162/trade #147 or historical audit #184, stage/install/protection change/dispatch/activate based on source-only PASS.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "17cb363bf457d02cb0029430b110af002e43dc6a"
@@ -450,7 +450,20 @@
       "mechanical_status": "PENDING_ORIGINAL_HELPER_NOT_EXECUTED__NO_READINESS_PACKET",
       "protocol_activation_status": "RELEASE_HOLD__DORMANT_ONLY",
       "historical_failed_tcw054_audit_target_sha": "324e5fe91d3749e882cd1aceb5ec2a4a73163123",
-      "historical_failed_tcw054_audit_tree_sha": "2c8147a0dfe945124e0acbd2cf338e31b9b2e9e2"
+      "historical_failed_tcw054_audit_tree_sha": "2c8147a0dfe945124e0acbd2cf338e31b9b2e9e2",
+      "accepted_repaired_source_audit": {
+        "audit_task": "TCW-055",
+        "verdict": "PASS — BOUNDED DORMANT/READ-ONLY SOURCE ONLY",
+        "frozen_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
+        "native_tree_sha": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
+        "auditor_pr": 186,
+        "auditor_final_sha": "c58a649e25603605f6af89c67bd94849856f7634",
+        "manager_acceptance_comment": 5750593995,
+        "evidence_integration_sha": "59f33604a87dd0c02aec6d56a962a629ce701d11",
+        "post_merge_run": 35518336450,
+        "post_merge_test_job": 106097966978,
+        "scope": "SOURCE_ONLY_NO_MECHANICAL_OR_RELEASE_AUTHORITY"
+      }
     },
     {
       "task_id": "TCW-054",
@@ -521,7 +534,7 @@
       "title": "Fresh Independent Re-Audit of Repaired Composite Governance Implementation",
       "owner": "Auditor",
       "role_label": "Independent Auditor / QA — Fresh Material Workflow and Security Implementation Re-Audit",
-      "status": "ASSIGNED",
+      "status": "VERIFYING_MASTER",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -535,8 +548,8 @@
       "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "25706f183e9d4523370748ca5ef8af459601bb60",
       "branch": "auditor/tcw-055-repaired-composite-governance-reaudit",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 186,
+      "worker_checkpoint_sha": "c58a649e25603605f6af89c67bd94849856f7634",
       "worker_slot": "auditor-tcw-055-repaired-composite-governance-reaudit",
       "allowed_path_prefixes": [
         ".ai/audit/TCW-055_REPAIRED_COMPOSITE_GOVERNANCE_IMPLEMENTATION_REAUDIT.md",
@@ -569,11 +582,26 @@
       "actual_historical_auditor_creation_baseline_sha": "25706f183e9d4523370748ca5ef8af459601bb60",
       "mechanical_status_at_activation": "NOT_EXECUTED_NOT_A_RELEASE_READY_SOURCE",
       "owner_authorization_scope": "FRESH_INDEPENDENT_REPAIRED_MATERIAL_IMPLEMENTATION_SOURCE_AUDIT_ONLY",
-      "next_gate": "Manager assignment PR must first merge under strict protection, run genuine master CI, nonforce fast-forward untouched Auditor branch from actual historical creation 25706f... to new canonical master, and confirm branch/master exact equality BEFORE any Auditor evidence writes. Independently audit immutable repaired TCW-053 Builder #182 SHA 70e74c5612f71ba2808c7309127c14a02a54b765, native tree reported 96ac9a74b8e45e84400eb63b6b0ea3732256b9c7, F01/F02 corrected executable predicates, negative fixtures and read-only HOLD. Exactly TWO own evidence-only files, one distinct OPEN/UNMERGED PR and exact final Auditor-head CI. Original TCW-053 task-specific mechanical helper NOT EXECUTED; external actor/ledger, real stage S/G and L4/owner consent are separate HOLD. Do not merge or activate.",
+      "next_gate": "TCW-055 independent bounded dormant source-only PASS accepted by Manager on PR #186 comment 5750593995, report/handoff EXACT two-file evidence-only PR #186 guarded MERGED at canonical 59f33604a87dd0c02aec6d56a962a629ce701d11, genuine master PUSH #778/run 35518336450/test 106097966978 SUCCESS. Task VERIFYING_MASTER with audit-of-audit/canary N/A; Manager may separately perform active-only closeout removal after verifying all exact predicates. This acceptance does NOT authorize TCW-053 readiness/integration/release. Original TCW-053 task-specific mechanical helper NOT EXECUTED and source original TCW-047 packet bytes/actor ledger/S/G/owner/L4 remain RELEASE_HOLD.",
       "target_advancement": {
         "classification": "NON_OVERLAPPING",
         "checked_at_sha": "25706f183e9d4523370748ca5ef8af459601bb60"
-      }
+      },
+      "integration_sha": "59f33604a87dd0c02aec6d56a962a629ce701d11",
+      "post_merge_run": 35518336450,
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "NOT_APPLICABLE",
+        "canary_verification": "NOT_APPLICABLE"
+      },
+      "accepted_source_audit_verdict": "PASS — BOUNDED DORMANT/READ-ONLY SOURCE ONLY",
+      "audit_report_blob_sha": "535837e86b675ef4d1cbbcd53f9ac04f950507f1",
+      "audit_handoff_blob_sha": "7ca88d0d81978d21d68e45f23b9a6e96947b43fd",
+      "auditor_evidence_ci_run": 35518097627,
+      "auditor_evidence_test_job": 106097348168,
+      "post_merge_test_job": 106097966978
     }
   ]
 }
