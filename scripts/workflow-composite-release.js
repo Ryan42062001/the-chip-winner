@@ -171,8 +171,9 @@ export function validateLocalContract(a, options = {}) {
   check(issues, source.taskId === "TCW-047" && source.pr === 162 &&
     source.branch === "builder/tcw-047-automated-audit-readiness",
   "source A task/PR/branch identity mismatch");
-  check(issues, sameRepo(source) && source.sha === FROZEN_SOURCE.sha &&
-    exact(source.tree), "source A differs from independently frozen TCW-050 checkpoint");
+  check(issues, sameRepo(source), "source A repository mismatch");
+  check(issues, source.sha === FROZEN_SOURCE.sha && exact(source.tree),
+    "source A differs from independently frozen TCW-050 checkpoint");
   check(issues, source.historicalCreationBaseline === FROZEN_SOURCE.historicalCreation &&
     source.effectiveScopeBaseline === FROZEN_SOURCE.effectiveBaseline,
     "original source A historical creation/effective baseline differs from accepted independent freeze");

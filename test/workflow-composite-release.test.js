@@ -477,8 +477,8 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
       pr:a.stage.pr,task_file:a.stage.authorization.taskPath
     }]}),S("e"));
   responses["/contents/"+a.stage.authorization.taskPath+"?ref="+a.master.sha] =
-    bytes("# "+a.stage.authorization.taskId+"\\nROLE ROUTING: Manager / Architect\\n"+
-      a.stage.branch.replace("refs/heads/","")+"\\nPR #"+a.stage.pr,S("f"));
+    bytes("# "+a.stage.authorization.taskId+"\nROLE ROUTING: Manager / Architect\n"+
+      a.stage.branch.replace("refs/heads/","")+"\nPR #"+a.stage.pr,S("f"));
   responses["/rulesets?includes_parents=true&targets=branch&per_page=100"] =
     [{id:a.ruleset.id}];
   const read=async(endpoint)=>{
@@ -544,6 +544,105 @@ test("real premerge and postmerge entrypoints cannot be made ready by caller-pro
   assert.ok(forged.blockers.some(x=>/GitHub observation unavailable|truncated/.test(x)));
   assert.equal(forged.liveReadOnly,true);
 });
+
+function rebindSyntheticAttempt(a) {
+  a.ledger.tupleDigest=tupleDigest(a);
+  for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
+  return a;
+}
+test("F01: coherent forged replacement A, packet, effective baseline and unrelated TCW-050 audit remain rejected",()=>{
+  for(const [mutate,pattern] of [
+    [(a)=>{a.source.sha=S("e");a.source.tree=S("f");
+      a.source.packet.head=a.source.sha;a.source.audit.targetSha=a.source.sha;
+      a.source.packet.sha256=H("e");a.source.audit.evidenceCommit=S("d");
+      for(let i=0;i<a.source.files.length;i++){
+        a.source.files[i].blob=S("abcd"[i]);a.stage.changedFiles[i].blob=S("abcd"[i]);}
+    },/source A differs from independently frozen/],
+    [(a)=>{a.source.packet.sha256=H("f");},/original helper packet differs/],
+    [(a)=>{a.source.effectiveScopeBaseline=S("e");},/effective baseline differs/],
+    [(a)=>{a.source.audit.evidenceCommit=S("f");},/TCW-050 accepted exact-A audit/]
+  ]) {
+    const a=rebindSyntheticAttempt(fixture());mutate(a);rebindSyntheticAttempt(a);
+    const out=validateLocalContract(a,{now:NOW});
+    assert.equal(out.classification,"FAIL");
+    assert.match(out.blockers.join("; "),pattern);
+  }
+  const clean=fixture(), mock=liveFixture(clean);
+  mock.sourceCustody.originalPacketBytesVerified=false;
+  assert.match(validatePremergeSnapshot(clean,mock).blockers.join("; "),
+    /original A packet bytes.*UNVERIFIED/);
+});
+test("F02: Manager-looking prefix alone and fake Builder/Auditor stage assignments are not authority",()=>{
+  for(const branch of ["refs/heads/auditor/fake-stage","refs/heads/builder/fake-stage"]) {
+    const a=fixture();
+    a.stage.branch=branch;
+    a.stage.authorization.branch=branch;
+    rebindSyntheticAttempt(a);
+    assert.equal(validateLocalContract(a,{now:NOW}).classification,"FAIL");
+  }
+  const a=fixture(), mock=liveFixture(a);
+  for(const mutate of [
+    (x)=>{x.stageAuthority.owner="Builder";},
+    (x)=>{x.stageAuthority.verified=false;},
+    (x)=>{x.stageAuthority.taskId="TCW-001";},
+    (x)=>{x.stageAuthority.pr=999;}
+  ]) {
+    const altered=clone(mock);mutate(altered);
+    const out=validatePremergeSnapshot(a,altered);
+    assert.equal(out.classification,"FAIL");
+    assert.match(out.blockers.join("; "),/independently assigned Manager stage/);
+  }
+});
+test("F02: effective PR-required/strict-app/no-bypass/merge is one authenticated applicable ruleset",()=>{
+  const a=fixture(), original=liveFixture(a);
+  assert.equal(validateEffectiveProtection(a,original).classification,
+    "LOCAL_PROTECTION_CONTRACT_PASS");
+  for(const [mutate,pattern] of [
+    [(l)=>{l.ruleset.rules=l.ruleset.rules.filter(x=>x.type!=="pull_request");},
+      /PR-required rule/],
+    [(l)=>{l.ruleset.bypass_actors=[{actor_id:17,actor_type:"OrganizationAdmin"}];},
+      /no-bypass actors/],
+    [(l)=>{l.ruleset.current_user_can_bypass="always";},/no-bypass actors/],
+    [(l)=>{l.ruleset.rules[1].parameters.strict_required_status_checks_policy=false;},
+      /strict up-to-date/],
+    [(l)=>{l.ruleset.rules[1].parameters.required_status_checks[0].integration_id=1;},
+      /strict up-to-date/],
+    [(l)=>{l.ruleset.rules[0].parameters.allowed_merge_methods=["squash","rebase"];},
+      /merge method/],
+    [(l)=>{l.ruleset.conditions.ref_name.include=["refs/heads/other"];},
+      /branch scope/]
+  ]) {
+    const altered=clone(original), attest=fixture();
+    mutate(altered);
+    altered.effectiveRulesets=[clone(altered.ruleset)];
+    attest.ruleset.digest=sha256(stableFixture(altered.ruleset));
+    attest.ruleset.effectiveDigest=sha256(stableFixture(altered.effectiveRulesets));
+    rebindSyntheticAttempt(attest);
+    altered.rulesetDigest=attest.ruleset.digest;
+    altered.effectiveRulesetDigest=attest.ruleset.effectiveDigest;
+    const out=validatePremergeSnapshot(attest,altered);
+    assert.equal(out.classification,"FAIL",pattern+" rehashed tuple accepted");
+    assert.match(out.blockers.join("; "),pattern);
+  }
+  for(const mutate of [
+    (l)=>{l.effectiveRuleList.push({id:42});},
+    (l)=>{l.effectiveRulesets.push({...clone(l.ruleset),id:42});},
+    (l)=>{l.effectiveRuleList=null;},
+    (l)=>{l.effectiveRulesets=[{id:42,...clone(l.ruleset)}];}
+  ]) {
+    const altered=clone(original);mutate(altered);
+    assert.match(validateEffectiveProtection(a,altered).blockers.join("; "),
+      /complete effective protection list/);
+  }
+  const staleAttestation=fixture();
+  staleAttestation.ruleset.digest=H("f");
+  rebindSyntheticAttempt(staleAttestation);
+  assert.match(validatePremergeSnapshot(staleAttestation,original).blockers.join("; "),
+    /ruleset digest mismatch/);
+  assert.match(validateEffectiveProtection(a,{}).blockers.join("; "),
+    /complete effective protection list/);
+});
+
 test("CLI local PASS stays explicitly local; premerge without trusted token returns HOLD; no writes",()=>{
   const dir=mkdtempSync(path.join(os.tmpdir(),"tcw-053-fixture-"));
   const filepath=path.join(dir,"fixture.json");
