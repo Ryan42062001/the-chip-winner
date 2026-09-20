@@ -3,7 +3,7 @@
 Last updated: 2026-09-19
 Machine authority: `.ai/shared/ACTIVE_TASKS.json`
 
-## TCW-034 — ASSIGNED / BOUNDED SECOND-AUDIT REMEDIATION
+## TCW-034 — MANAGER_REVIEW_READY / THIRD REPAIRED FULL CHECKPOINT
 
 Owner: Implementation Engineer / Builder
 
@@ -27,4 +27,7 @@ Decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`.
 
 Builder may repair only missing/incomplete roster-rule acquisition legality and false derivative-source independence, including necessary regressions and final Builder handoff. Historical F01/F03 repairs must remain intact. Do not merge Manager/audit evidence into Builder product branch.
 
-Next gate: Builder returns a NEW fresh FULL exact-head implementation checkpoint that already contains final Builder handoff. Then Manager reconciles checkpoint/status, runs task-specific audit-readiness against unchanged bounded diff, freezes exact FULL head on PASS, and routes a FRESH independent re-audit. No merge of #147, no live provider authorization, no TCW-035 activation.
+Next gate:
+Run task-specific `workflow:audit-readiness -- --task TCW-034` against unchanged exact Builder HEAD `035c5f5112b7393f9d4f17685792548afa67dd2e` using canonical Manager machine/task state. If PASS, Manager freezes exactly this FULL-tested SHA and routes a fresh independent re-audit. PR #147 remains draft/unmerged; TCW-035 inactive.
+
+Fresh FULL workflow #692 / run `35477501875`, test job `105989175098`: PASS at same exact SHA, including final Builder handoff. Bounded repair diff against parent `24be4be45f7fde351c0a6e209353dd2beed8d854`: exactly five authorized Builder files.
