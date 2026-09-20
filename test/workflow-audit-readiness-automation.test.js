@@ -19,7 +19,7 @@ const runGit = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf
 function task(id = "TCW-101") {
   return {
     task_id: id, owner: "Builder", status: "MANAGER_REVIEW_READY",
-    audit_required: true, branch: "builder/tcw-101-example",
+    audit_required: true, merge_authority: "Manager", branch: "builder/tcw-101-example",
     assignment_master_sha: SHA("a"), worker_checkpoint_sha: SHA("b"), pr: 42,
     allowed_path_prefixes: ["src/allowed.txt"], forbidden_path_prefixes: ["src/private.txt"]
   };
@@ -88,6 +88,7 @@ test("missing checkpoint, wrong status, PR, branch, audit authority and malforme
   for (const invalid of [
     { worker_checkpoint_sha: null }, { worker_checkpoint_sha: "HEAD" },
     { status: "IN_PROGRESS" }, { owner: "Auditor" }, { audit_required: false },
+    { merge_authority: "Builder" },
     { pr: null }, { pr: -1 }, { branch: "builder/../attack" },
     { branch: "auditor/tcw-101" }, { assignment_master_sha: "master" },
     { allowed_path_prefixes: [] }
