@@ -77,3 +77,11 @@ No queued task is activated by this remediation routing.
 - Actual task readiness: blockers [], readyForManagerFreeze true, packet hash `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`. FULL workflow #692 / run `35477501875`, test `105989175098`: PASS on exact same head including final handoff.
 - Fresh TCW-046 Auditor audit of exact target ASSIGNED; Manager must consume verdict before Builder merge. TCW-035 inactive.
 - Separate TCW-047 automated-readiness workflow task ASSIGNED on distinct branch/files. It is not yet implemented or production-active, cannot change the frozen audit target or bypass the human Manager freeze, and requires an independent workflow/security audit before integration.
+
+
+## TCW-047 — WORKFLOW AUTOMATION AUDIT ROUTED / NOT INTEGRATION-ELIGIBLE (2026-09-19)
+
+- Builder PR #162 DRAFT/UNMERGED; actual Builder creation baseline `7ca2953009d37a014e041cc24f4934bfe61b5cad`, exact frozen workflow/security target `acb63b0c85b98b34fac9af99f00f38553de5670c`.
+- FULL code checkpoint `783ec3123429cd88d238022aed88344e89658794`, #709/run `35480569465`/test `105997501171`: SUCCESS. Final handoff-only exact head #710/run `35480647573`/test `105997706858`: SUCCESS with predecessor FULL continuity; not a fresh FULL at final head.
+- Fresh separate Auditor task TCW-048, packet `.ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT_PACKET_acb63b0c.md`, branch `auditor/tcw-048-readiness-workflow-security-audit` (actual creation baseline `86a7f95217e6152db397ada8039533a7f4722b3a`), only `.ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT.md` and `.ai/auditor/TCW-048_HANDOFF.md` output.
+- Independent verdict PENDING; Builder PR #162 and #147 must remain unmerged. TCW-034 frozen product target unchanged; TCW-035 inactive. New automation not installed; manual TCW-034 readiness authoritative. After independently accepted audit and authorized installation, execute separate actual Actions push/dispatch/token/artifact exercise before closure.
