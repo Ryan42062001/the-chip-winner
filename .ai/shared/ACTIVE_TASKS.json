@@ -140,16 +140,18 @@
       "title": "Automated Exact-SHA Task Audit-Readiness Gate",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Workflow Automation",
-      "status": "AUDIT_READY",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
+      "blocker_type": "USER_ACTION",
+      "user_action_required": true,
       "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on": [
+        "Separate product-owner choice on whether to commission a changed protected-branch staging/freeze provenance protocol and eventual separate installation authority for an independently audited NEW staged PR SHA. Current exact Builder PR #162 is BEHIND strict required up-to-date test; no verified V3.2-compliant installation route or owner authority exists for a new staged SHA."
+      ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "e0fe6309dc0aaa184bbeef35861f7d49256385b7",
@@ -183,7 +185,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "NEW Manager-frozen exact synchronized repaired target 17e5f413f2afd3d743fd28d401f0df421825df2a after separate verified ORIGINAL task-specific mechanical PASS (Manager a3bbd9c3bf833987b9f72a0661ef82e41837dcd7, run 35488171554/job 106018254992, original packet SHA256 f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894). FRESH separately numbered TCW-050 independent workflow/security audit REQUIRED on NEW target including true historical creation 7ca2953009d37a014e041cc24f4934bfe61b5cad vs current effective assignment e0fe6309dc0aaa184bbeef35861f7d49256385b7 and bounded status fixture. Prior TCW-049 PASS applies ONLY older 7c5bd1add860d1e8ed7bc03717451c7d88a21c50; historic TCW-048 FAIL unchanged. Do not merge Builder PR #162 or transfer prior installation authorization; later new exact-head owner release authorization and real first-party Actions exercise required. Strict GitHub up-to-date test staging must be resolved without bypass or false re-audit claim.",
+      "next_gate": "TCW-050 independent bounded preinstall L1-L3 PASS ACCEPTED for exact frozen Builder 17e5f413f2afd3d743fd28d401f0df421825df2a; original mechanical and FULL #738 SUCCESS, evidence-only PR #175 integrated 793fd1fd4f78edb25e86b6eb49b1dec9c5dbb1dc and real master #745/run 35489331789/test 106021413570 SUCCESS. Nevertheless existing Builder PR #162 remains DRAFT/UNMERGED/BEHIND STRICT required test; do NOT merge or resync without a fresh source SHA/audit and separate authority. Manager protected-branch staging design evidence .ai/manager/evidence/TCW-047_STRICT_PROTECTED_RELEASE_DESIGN_793fd1fd.md is CONDITIONAL/UNVERIFIED, requires separately approved governance change and independent material workflow audit before an actual staged-source PR, new staged exact-head security review, strict up-to-date FULL test and separately explicit product-owner release approval. No NEW automatic Actions installation or L4 evidence. TCW-034 manual readiness and historic trade target preserved; TCW-035 inactive.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -220,10 +222,10 @@
         "candidate_scope": "EXACT_FOUR_ORIGINAL_BUILDER_FILES",
         "historical_tcw049_preinstall_pass_target": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
         "new_mechanical_status": "PENDING",
-        "new_independent_security_status": "PENDING",
+        "new_independent_security_status": "ACCEPTED_TCw050_EXACT_FROZEN_SHA",
         "installation_authorized_for_new_head": false
       },
-      "preinstall_fresh_independent_audit_status": "REQUIRED_TCw050_PENDING",
+      "preinstall_fresh_independent_audit_status": "ACCEPTED_TCw050_BOUNDED_EXACT_17e5f413_NOT_INSTALLED",
       "prior_preinstall_audit_at_previous_sha": {
         "task_id": "TCW-049",
         "verdict": "PASS",
@@ -246,6 +248,21 @@
         "verified_new_head": "17e5f413f2afd3d743fd28d401f0df421825df2a",
         "historical_branch_creation_sha": "7ca2953009d37a014e041cc24f4934bfe61b5cad",
         "effective_assignment_master_sha": "e0fe6309dc0aaa184bbeef35861f7d49256385b7"
+      },
+      "accepted_independent_audit": {
+        "task_id": "TCW-050",
+        "verdict": "PASS",
+        "scope": "BOUNDED_PREINSTALL_L1_L3_EXACT_SYNCHRONIZED_SOURCE",
+        "target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
+        "auditor_evidence_pr": 175,
+        "auditor_evidence_head": "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7",
+        "auditor_evidence_integration_sha": "793fd1fd4f78edb25e86b6eb49b1dec9c5dbb1dc",
+        "post_merge_run": 35489331789,
+        "builder_full_run": 35487865670,
+        "original_mechanical_run": 35488171554,
+        "original_packet_sha256": "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894",
+        "operational_actions_exercise": "NOT_ESTABLISHED",
+        "protected_release": "BLOCKED_UP_TO_DATE_TEST_NEW_STAGING_PLAN_UNVERIFIED"
       }
     },
     {
@@ -303,68 +320,6 @@
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
-      }
-    },
-    {
-      "task_id": "TCW-050",
-      "title": "Fresh Exact-SHA Synchronized Readiness Workflow / Security Re-Audit",
-      "owner": "Auditor",
-      "role_label": "Independent Auditor / QA",
-      "status": "ASSIGNED",
-      "dependency": "HARD",
-      "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "FAST_REFRESH",
-      "refresh_reason": null,
-      "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
-      "task_file": ".ai/manager/tasks/TCW-050.md",
-      "role_handoff": ".ai/auditor/HANDOFF.md",
-      "assignment_master_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7",
-      "branch": "auditor/tcw-050-synced-readiness-security-reaudit",
-      "pr": null,
-      "worker_checkpoint_sha": null,
-      "worker_slot": "auditor-tcw-050-synced-readiness-security-reaudit",
-      "allowed_path_prefixes": [
-        ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_REAUDIT.md",
-        ".ai/auditor/TCW-050_HANDOFF.md"
-      ],
-      "forbidden_path_prefixes": [
-        ".ai/shared/",
-        ".ai/manager/",
-        ".ai/roles/",
-        ".ai/strategy/",
-        ".ai/rnd/",
-        ".ai/builder/",
-        ".github/",
-        "scripts/",
-        "src/",
-        "test/",
-        "extensions/",
-        "config/",
-        "package.json",
-        "package-lock.json",
-        ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_AUDIT_PACKET_17e5f413.md",
-        ".ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT.md",
-        ".ai/auditor/TCW-048_HANDOFF.md",
-        ".ai/audit/TCW-049_WORKFLOW_SECURITY_REAUDIT.md",
-        ".ai/auditor/TCW-049_HANDOFF.md",
-        ".ai/audit/TCW-046_TRADE_WINNER_ENGINE_REAUDIT.md",
-        ".ai/auditor/TCW-046_HANDOFF.md"
-      ],
-      "audit_required": false,
-      "post_merge_canary_required": false,
-      "audit_target_task": "TCW-047",
-      "audit_target_pr": 162,
-      "audit_target_branch": "builder/tcw-047-automated-audit-readiness",
-      "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
-      "actual_historical_auditor_branch_creation_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7",
-      "next_gate": "FRESH independent TCW-050 Auditor verifies only exact new frozen 17e5f413f2afd3d743fd28d401f0df421825df2a, historical creation vs effective baseline, original packet, full CI, F01/F02/F03, non-force merge and strict up-to-date release staging. Exactly two assigned evidence files in one unmerged PR with exact Auditor head CI, no Builder merge.",
-      "target_advancement": {
-        "classification": "NON_OVERLAPPING",
-        "checked_at_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7"
       }
     }
   ]
