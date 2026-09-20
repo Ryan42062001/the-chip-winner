@@ -326,3 +326,5 @@ async function main() {
 }
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invoked) await main();
+
+export { verifyGitCheckout, overlayCanonicalControlPlane, pathAllowed, digest, resultDigest };
