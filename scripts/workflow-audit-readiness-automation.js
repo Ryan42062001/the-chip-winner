@@ -187,7 +187,7 @@ function overlayCanonicalControlPlane(manager, builder) {
   verifyOnlyCanonicalOverlay(builder);
 }
 function runMechanical(builder, task) {
-  const child = spawnSync("npm", ["run", "workflow:audit-readiness", "--", "--task", task.task_id],
+  const child = spawnSync("npm", ["run", "--silent", "workflow:audit-readiness", "--", "--task", task.task_id],
     { cwd: builder, env: unprivilegedEnv(), encoding: "utf8", timeout: 180000, maxBuffer: 2 * 1024 * 1024 });
   if (child.error) fail("mechanical helper could not execute: " + safeDiagnostic(child.error), "INFRA_ERROR");
   if (child.signal) fail("mechanical helper timed out or was terminated", "INFRA_ERROR");
