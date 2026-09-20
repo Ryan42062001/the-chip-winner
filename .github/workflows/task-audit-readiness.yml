@@ -1,0 +1,64 @@
+name: TCW task audit-readiness (exact SHA)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - .ai/shared/ACTIVE_TASKS.json
+      - .ai/manager/tasks/**
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: Canonical Manager task ID to recheck (selection only; never SHA or approval authority)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  exact-sha-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout triggering canonical Manager commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prepare Node environment
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Initialize retained readiness evidence
+        run: mkdir -p audit-readiness-evidence
+
+      - name: Verify exact checkpoint and run existing mechanical gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TCW_MANAGER_SHA: ${{ github.sha }}
+          TCW_PREVIOUS_MASTER_SHA: ${{ github.event.before }}
+          TCW_EVENT: ${{ github.event_name }}
+          TCW_DISPATCH_TASK: ${{ inputs.task_id }}
+        run: |
+          set -o pipefail
+          node scripts/workflow-audit-readiness-automation.js \
+            --manager-sha "$TCW_MANAGER_SHA" \
+            --before-sha "$TCW_PREVIOUS_MASTER_SHA" \
+            --event "$TCW_EVENT" \
+            --task "$TCW_DISPATCH_TASK" \
+            --output-dir audit-readiness-evidence \
+            2>&1 | tee audit-readiness-evidence/runner.log
+
+      - name: Retain per-task readiness and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcw-task-audit-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: audit-readiness-evidence/
+          if-no-files-found: error
+          retention-days: 30
