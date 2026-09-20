@@ -49,6 +49,7 @@ export function validateCandidate(task) {
   if (!sha(task.assignment_master_sha)) errors.push("invalid assignment baseline SHA");
   if (!sha(task.worker_checkpoint_sha)) errors.push("missing or invalid worker checkpoint SHA");
   if (!Number.isSafeInteger(task.pr) || task.pr <= 0) errors.push("missing or invalid assigned PR");
+  if (task.merge_authority !== "Manager") errors.push("merge authority must remain Manager-owned");
   if (!Array.isArray(task.allowed_path_prefixes) || !task.allowed_path_prefixes.length ||
       !Array.isArray(task.forbidden_path_prefixes) ||
       !task.allowed_path_prefixes.every((x) => typeof x === "string") ||
@@ -58,7 +59,8 @@ export function validateCandidate(task) {
 function significant(task) {
   if (!task) return null;
   const keys = ["task_id", "owner", "status", "audit_required", "branch",
-    "assignment_master_sha", "worker_checkpoint_sha", "pr"];
+    "assignment_master_sha", "worker_checkpoint_sha", "pr", "task_file",
+    "allowed_path_prefixes", "forbidden_path_prefixes", "merge_authority"];
   return JSON.stringify(Object.fromEntries(keys.map((key) => [key, task[key] ?? null])));
 }
 export function selectEligibleTasks(current, previous, options = {}) {
@@ -134,11 +136,14 @@ function unprivilegedEnv() {
   return env;
 }
 async function githubJson(apiPath, token) {
-  const response = await fetch("https://api.github.com/repos/" + REPO + apiPath, {
-    headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28" },
-    signal: AbortSignal.timeout(30000)
-  });
+  let response;
+  try {
+    response = await fetch("https://api.github.com/repos/" + REPO + apiPath, {
+      headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28" },
+      signal: AbortSignal.timeout(30000)
+    });
+  } catch { fail("GitHub API request failed or timed out", "INFRA_ERROR"); }
   if (!response.ok) fail("GitHub API returned HTTP " + response.status,
     response.status === 404 ? "FAIL" : "INFRA_ERROR");
   return response.json();
@@ -155,15 +160,14 @@ function verifyGitCheckout(dir, task) {
   assert(ancestor.status === 0, "assignment baseline is not an ancestor of immutable Builder target");
   const changedFiles = git(dir, ["diff", "--name-only",
     task.assignment_master_sha + "..HEAD"]).split(/\r?\n/).filter(Boolean);
-  const unauthorized = changedFiles.filter((name) => !pathAllowed(name, task));
+  // --no-renames checks both old and new names, not only a renamed destination.
+  const allChangedPaths = git(dir, ["diff", "--name-only", "--no-renames",
+    task.assignment_master_sha + "..HEAD"]).split(/\r?\n/).filter(Boolean);
+  const unauthorized = allChangedPaths.filter((name) => !pathAllowed(name, task));
   assert(unauthorized.length === 0, "changed paths outside task authority: " + unauthorized.join(", "));
   return changedFiles;
 }
-function overlayCanonicalControlPlane(manager, builder) {
-  assert(existsSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json")) &&
-    existsSync(path.join(manager, ".ai/manager")), "canonical Manager control-plane source missing");
-  cpSync(path.join(manager, ".ai"), path.join(builder, ".ai"),
-    { recursive: true, force: true, dereference: false });
+function verifyOnlyCanonicalOverlay(builder) {
   const status = git(builder, ["status", "--porcelain", "-z", "--untracked-files=all"]);
   const entries = status.split("\0").filter(Boolean);
   for (const entry of entries) {
@@ -174,6 +178,13 @@ function overlayCanonicalControlPlane(manager, builder) {
     assert(controlPath(name), "non-control-plane checkout modification: " + name);
   }
   assert(!git(builder, ["diff", "--cached", "--name-only"]), "unexpected staged changes in Builder checkout");
+}
+function overlayCanonicalControlPlane(manager, builder) {
+  assert(existsSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json")) &&
+    existsSync(path.join(manager, ".ai/manager")), "canonical Manager control-plane source missing");
+  cpSync(path.join(manager, ".ai"), path.join(builder, ".ai"),
+    { recursive: true, force: true, dereference: false });
+  verifyOnlyCanonicalOverlay(builder);
 }
 function runMechanical(builder, task) {
   const child = spawnSync("npm", ["run", "workflow:audit-readiness", "--", "--task", task.task_id],
@@ -201,7 +212,7 @@ function baseResult(task, managerSha) {
     workflow: { repository: REPO, runId: process.env.GITHUB_RUN_ID || null,
       attempt: process.env.GITHUB_RUN_ATTEMPT || null, job: process.env.GITHUB_JOB || null,
       url: process.env.GITHUB_RUN_ID ? "https://github.com/" + REPO + "/actions/runs/" + process.env.GITHUB_RUN_ID : null },
-    provenance: { canonicalRegistryFrom: managerSha, builderFetchedByExactSha: false,
+    provenance: { canonicalRegistryFrom: managerSha, builderTargetPinnedToExactSha: false,
       isolatedBranchVerified: false, originalTargetHeadUnchanged: false,
       canonicalControlPlaneOverlaid: false, originalPacketVerified: false },
     resultSha256: null
@@ -231,16 +242,26 @@ async function runTask(task, manager, managerSha, token, artifacts) {
       "Builder branch advanced between GitHub API verification and Git fetch");
     git(builder, ["checkout", "-q", "-B", task.branch, task.worker_checkpoint_sha]);
     result.changedFiles = verifyGitCheckout(builder, task);
-    result.provenance.builderFetchedByExactSha = true;
+    result.provenance.builderTargetPinnedToExactSha = true;
     result.provenance.isolatedBranchVerified = true;
     overlayCanonicalControlPlane(manager, builder);
     result.provenance.canonicalControlPlaneOverlaid = true;
     const packet = runMechanical(builder, task);
+    assert(JSON.stringify(packet.changedFiles) === JSON.stringify(result.changedFiles),
+      "mechanical helper changed-files packet differs from verified Git diff");
     result.originalPacketSha256 = packet.sha256;
     result.changedFiles = packet.changedFiles;
     result.provenance.originalPacketVerified = true;
+    verifyOnlyCanonicalOverlay(builder);
     assert(git(builder, ["rev-parse", "HEAD"]) === task.worker_checkpoint_sha,
       "Builder HEAD changed during readiness execution");
+    // Revalidate the two remote refs to reject advancement while the helper executed.
+    const finalBranch = await githubJson("/git/ref/heads/" + task.branch, token);
+    const finalPr = await githubJson("/pulls/" + task.pr, token);
+    const finalBlockers = validateRemoteSnapshot(task,
+      { refSha: finalBranch.object?.sha, pr: finalPr });
+    assert(finalBlockers.length === 0,
+      "assigned Builder branch or PR advanced during readiness: " + finalBlockers.join("; "));
     result.provenance.originalTargetHeadUnchanged = true;
     result.classification = "PASS";
     result.readinessStatus = "MECHANICALLY_READY_ONLY";
