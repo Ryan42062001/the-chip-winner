@@ -430,6 +430,111 @@ async function githubGet(resource, token) {
   return response.json();
 }
 const encodeRef = (ref) => ref.split("/").map(encodeURIComponent).join("/");
+function requireTreeTuples(tree, paths, label) {
+  if (tree?.truncated !== false || !Array.isArray(tree.tree))
+    throw new Error(label + " complete Git tree unavailable or truncated");
+  return paths.map((file) => {
+    const matched = tree.tree.filter((entry) =>
+      entry.path === file && entry.type === "blob");
+    if (matched.length !== 1 || !exact(matched[0].sha))
+      throw new Error(label + " expected source file blob unavailable: " + file);
+    return { filename: file, mode: matched[0].mode, sha: matched[0].sha };
+  });
+}
+function requiredCheckFromGitHub(a, run, job, checks, previewChecks, previewCommit, stagePr) {
+  const requiredStages = [
+    "Workflow V3.2 state audit", "Dependency audit", "Full unit and contract tests",
+    "Model evaluation", "Static smoke", "Browser smoke", "Accessibility audit",
+    "Readiness audit", "Mobile audit", "Extension audit", "Performance audit",
+    "Security scan"
+  ];
+  const full = run?.head_sha === a.stage.sha && run?.event === "pull_request" &&
+    run?.conclusion === "success" && job?.run_id === a.stage.ci.runId &&
+    job?.name === "test" && job?.conclusion === "success" &&
+    requiredStages.every((name) => job?.steps?.some((step) =>
+      step.name === name && step.conclusion === "success"));
+  const check = checks?.check_runs?.find((entry) =>
+    entry.id === a.stage.ci.checkRunId &&
+    entry.head_sha === a.stage.sha &&
+    entry.name === REQUIRED_CHECK.context && entry.conclusion === "success" &&
+    entry.app?.id === REQUIRED_CHECK.integrationId &&
+    entry.check_suite?.id === a.stage.ci.checkSuiteId);
+  const previewCheck = previewChecks?.check_runs?.find((entry) =>
+    entry.head_sha === a.stage.preview.sha &&
+    entry.name === REQUIRED_CHECK.context && entry.conclusion === "success" &&
+    entry.app?.id === REQUIRED_CHECK.integrationId);
+  const previewParents = previewCommit?.parents?.map((p) => p.sha);
+  const previewClean = stagePr?.merge_commit_sha === a.stage.preview.sha &&
+    Array.isArray(previewParents) && previewParents.length === 2 &&
+    previewParents[0] === a.master.sha && previewParents[1] === a.stage.sha &&
+    previewCommit?.tree?.sha === a.stage.tree;
+  return {
+    ci: {
+      headSha: run?.head_sha, context: check?.name, integrationId: check?.app?.id,
+      mode: full ? "FULL" : "UNVERIFIED", conclusion: full && check ? "success" : "unverified",
+      runId: run?.id, jobId: job?.id, checkRunId: check?.id,
+      checkSuiteId: check?.check_suite?.id, appId: check?.app?.id
+    },
+    preview: {
+      sha: previewCommit?.sha, headSha: previewClean ? a.stage.sha : null,
+      baseSha: previewClean ? a.master.sha : null,
+      context: previewCheck?.name, integrationId: previewCheck?.app?.id,
+      conclusion: previewClean && previewCheck ? "success" : "unverified"
+    }
+  };
+}
+/**
+ * Read-only GitHub observation of S/A/M, complete PR file inventory and exact
+ * actual required test/check/preview provenance. The caller must still NOT use
+ * these observations as owner/audit/ledger authentication or merge authority.
+ */
+export async function observeStageReadOnly(a, read) {
+  const [repo, masterRef, sourceRef, stageRef, stagePr, sourcePr, stageCommit,
+    masterCommit, sourceCommit, ruleset, sourceTree, stageTree, stagePrFiles,
+    run, job, checks, previewChecks, previewCommit] = await Promise.all([
+    read(""),
+    read("/git/ref/heads/master"),
+    read("/git/ref/heads/" + encodeRef(a.source.branch)),
+    read("/git/ref/heads/" + encodeRef(a.stage.branch.replace("refs/heads/", ""))),
+    read("/pulls/" + a.stage.pr),
+    read("/pulls/" + a.source.pr),
+    read("/git/commits/" + a.stage.sha),
+    read("/git/commits/" + a.master.sha),
+    read("/git/commits/" + a.source.sha),
+    read("/rulesets/" + a.ruleset.id),
+    read("/git/trees/" + a.source.tree + "?recursive=1"),
+    read("/git/trees/" + a.stage.tree + "?recursive=1"),
+    read("/pulls/" + a.stage.pr + "/files?per_page=100"),
+    read("/actions/runs/" + a.stage.ci.runId),
+    read("/actions/jobs/" + a.stage.ci.jobId),
+    read("/commits/" + a.stage.sha + "/check-runs?check_name=test&per_page=100"),
+    read("/commits/" + a.stage.preview.sha + "/check-runs?check_name=test&per_page=100"),
+    read("/git/commits/" + a.stage.preview.sha)
+  ]);
+  if (sourceCommit?.tree?.sha !== a.source.tree)
+    throw new Error("independent source A Git tree mismatch");
+  if (!Array.isArray(stagePrFiles) || stagePrFiles.length !== SOURCE_PATHS.length ||
+      stagePr?.changed_files !== SOURCE_PATHS.length ||
+      !eq(stagePrFiles.map((file) => file.filename).sort(), [...SOURCE_PATHS].sort()))
+    throw new Error("complete stage PR changed-file inventory missing or unauthorized");
+  const sourceFiles = requireTreeTuples(sourceTree, SOURCE_PATHS, "source A");
+  const stageTreeFiles = requireTreeTuples(stageTree, SOURCE_PATHS, "stage S");
+  const changedFiles = stagePrFiles.map((file) => {
+    const tree = stageTreeFiles.find((entry) => entry.filename === file.filename);
+    if (!tree || file.sha !== tree.sha || !["added", "modified"].includes(file.status))
+      throw new Error("stage PR changed blob/status not equal immutable S tree");
+    return tree;
+  });
+  const checksData = requiredCheckFromGitHub(a, run, job, checks, previewChecks,
+    previewCommit, stagePr);
+  return {
+    repository: repo, masterRef, sourceRef, stageRef, stagePr, sourcePr,
+    stageCommit, masterCommit, sourceFiles, stageChangedFiles: changedFiles,
+    ruleset, rulesetDigest: sha256(stable(ruleset)),
+    ci: { ...checksData.ci, pr: stagePr.number },
+    preview: checksData.preview
+  };
+}
 /**
  * Actual CLI premerge intentionally holds unless every required live verification
  * (including protected ledger and actor-rights proof) is available. It never
@@ -444,26 +549,16 @@ export async function verifyPremergeReadOnly(a, options = {}) {
   const blockers = [];
   const read = options.githubGet || ((resource) => githubGet(resource, token));
   try {
-    const [repo, masterRef, sourceRef, stageRef, stagePr, sourcePr, stageCommit, masterCommit, ruleset] =
-      await Promise.all([
-        read(""), read("/git/ref/heads/master"), read("/git/ref/heads/" + encodeRef(a.source.branch)),
-        read("/git/ref/heads/" + encodeRef(a.stage.branch.replace("refs/heads/", ""))),
-        read("/pulls/" + a.stage.pr), read("/pulls/" + a.source.pr),
-        read("/git/commits/" + a.stage.sha), read("/git/commits/" + a.master.sha),
-        read("/rulesets/" + a.ruleset.id)
-      ]);
-    const snapshot = validatePremergeSnapshot(a, {
-      repository: repo, masterRef, sourceRef, stageRef, stagePr, sourcePr,
-      stageCommit, masterCommit, ruleset
-    });
+    const observed = await observeStageReadOnly(a, read);
+    const snapshot = validatePremergeSnapshot(a, observed);
     blockers.push(...snapshot.blockers);
-    // No read-only GitHub endpoint in this implementation establishes an
-    // independently protected append-only nonce ledger, publisher-rights
-    // separation, complete exact-stage check/preview, audited owner evidence,
-    // and real rollback availability. Never synthesize these as true.
+    // Independent GitHub reads can establish immutable file and CI observation;
+    // they do NOT prove an externally protected release ledger, actor rights,
+    // owner approval or independently available rollback operator.
     blockers.push("authenticated owner/Manager/Auditor publication and rights NOT VERIFIED");
     blockers.push("protected durable nonce ledger and consumed/aborted receipt NOT VERIFIED");
-    blockers.push("exact-S FULL check-run/required synthetic merge-preview and source blob inventory NOT VERIFIED");
+    if (snapshot.blockers.some((issue) => /FULL test|synthetic merge preview|stage S diff|source A blob|ruleset/.test(issue)))
+      blockers.push("exact-S FULL check, required synthetic preview, source blob or ruleset NOT VERIFIED");
     blockers.push("immutable independent off-master stage audit, exact-S owner consent and rollback operator NOT VERIFIED");
     return { classification: "RELEASE_HOLD", blockers, liveReadOnly: true };
   } catch (error) {

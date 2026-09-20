@@ -7,7 +7,7 @@ import test from "node:test";
 import {
   SCHEMA, REPOSITORY, SOURCE_PATHS, REQUIRED_CHECK, sha256, releaseTuple, tupleDigest,
   validateLocalContract, validateLedgerTransition, validatePremergeSnapshot,
-  validatePostmergeSnapshot, verifyPremergeReadOnly, verifyPostmergeReadOnly
+  validatePostmergeSnapshot, observeStageReadOnly, verifyPremergeReadOnly, verifyPostmergeReadOnly
 } from "../scripts/workflow-composite-release.js";
 
 const S = (letter) => letter.repeat(40), H = (letter) => letter.repeat(64);
@@ -352,6 +352,97 @@ test("two-parent ordered actual protected G/tree/master and full changed path in
     const out=validatePostmergeSnapshot(a,changed);
     assert.equal(out.classification,"FAIL");
     assert.match(out.blockers.join("; "),pattern);
+  }
+});
+test("read-only GitHub stage observation validates original/stage blobs, FULL check and synthetic preview provenance", async () => {
+  const a=fixture(), live=liveFixture(a);
+  const sourceTree={truncated:false,tree:a.source.files.map((f)=>({
+    path:f.path,type:"blob",mode:f.mode,sha:f.blob
+  }))};
+  const stageTree={truncated:false,tree:a.stage.changedFiles.map((f)=>({
+    path:f.path,type:"blob",mode:f.mode,sha:f.blob
+  }))};
+  const actionRun={id:a.stage.ci.runId,head_sha:a.stage.sha,event:"pull_request",
+    conclusion:"success"};
+  const requiredStages=[
+    "Workflow V3.2 state audit","Dependency audit","Full unit and contract tests",
+    "Model evaluation","Static smoke","Browser smoke","Accessibility audit",
+    "Readiness audit","Mobile audit","Extension audit","Performance audit","Security scan"
+  ];
+  const job={id:a.stage.ci.jobId,run_id:a.stage.ci.runId,name:"test",
+    conclusion:"success",steps:requiredStages.map((name)=>({name,conclusion:"success"}))};
+  const check={id:a.stage.ci.checkRunId,head_sha:a.stage.sha,name:"test",
+    conclusion:"success",app:{id:15368},check_suite:{id:a.stage.ci.checkSuiteId}};
+  const previewCheck={head_sha:a.stage.preview.sha,name:"test",conclusion:"success",
+    app:{id:15368}};
+  const previewCommit={sha:a.stage.preview.sha,tree:{sha:a.stage.tree},
+    parents:[{sha:a.master.sha},{sha:a.stage.sha}]};
+  const responses={
+    "":live.repository,
+    "/git/ref/heads/master":live.masterRef,
+    ["/git/ref/heads/"+a.source.branch]:live.sourceRef,
+    ["/git/ref/heads/"+a.stage.branch.replace("refs/heads/","")]:live.stageRef,
+    ["/pulls/"+a.stage.pr]:{...live.stagePr,changed_files:4,
+      merge_commit_sha:a.stage.preview.sha},
+    ["/pulls/"+a.source.pr]:live.sourcePr,
+    ["/git/commits/"+a.stage.sha]:live.stageCommit,
+    ["/git/commits/"+a.master.sha]:live.masterCommit,
+    ["/git/commits/"+a.source.sha]:{sha:a.source.sha,tree:{sha:a.source.tree}},
+    ["/rulesets/"+a.ruleset.id]:live.ruleset,
+    ["/git/trees/"+a.source.tree+"?recursive=1"]:sourceTree,
+    ["/git/trees/"+a.stage.tree+"?recursive=1"]:stageTree,
+    ["/pulls/"+a.stage.pr+"/files?per_page=100"]:
+      a.stage.changedFiles.map((f)=>({filename:f.path,sha:f.blob,status:"modified"})),
+    ["/actions/runs/"+a.stage.ci.runId]:actionRun,
+    ["/actions/jobs/"+a.stage.ci.jobId]:job,
+    ["/commits/"+a.stage.sha+"/check-runs?check_name=test&per_page=100"]:
+      {check_runs:[check]},
+    ["/commits/"+a.stage.preview.sha+"/check-runs?check_name=test&per_page=100"]:
+      {check_runs:[previewCheck]},
+    ["/git/commits/"+a.stage.preview.sha]:previewCommit
+  };
+  a.ruleset.digest=sha256(JSON.stringify(live.ruleset, Object.keys(live.ruleset).sort()));
+  // Attestation ruleset digest must be the actual stable GitHub ruleset JSON.
+  a.ruleset.digest=sha256((()=>{const stable=(x)=>Array.isArray(x)?"["+x.map(stable).join(",")+"]":
+    x&&typeof x==="object"?"{"+Object.keys(x).sort().map(k=>JSON.stringify(k)+":"+stable(x[k])).join(",")+"}":
+    JSON.stringify(x);return stable(live.ruleset);})());
+  a.ledger.tupleDigest=tupleDigest(a);
+  for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
+  const read=async(endpoint)=>{
+    assert.ok(Object.hasOwn(responses,endpoint),"unexpected read "+endpoint);
+    return clone(responses[endpoint]);
+  };
+  const observed=await observeStageReadOnly(a,read);
+  assert.equal(observed.ci.mode,"FULL");
+  assert.equal(observed.ci.appId,15368);
+  assert.equal(observed.preview.conclusion,"success");
+  assert.equal(observed.rulesetDigest,a.ruleset.digest);
+  const local=validatePremergeSnapshot(a,{...observed,
+    auditEvidence:live.auditEvidence,planEvidence:live.planEvidence,
+    installEvidence:live.installEvidence,ledgerReceipt:live.ledgerReceipt,
+    actors:live.actors,rollback:live.rollback});
+  assert.equal(local.classification,"LOCAL_SNAPSHOT_CONTRACT_PASS",
+    local.blockers.join("; "));
+  // Real CLI never accepts this mocked snapshot as a rights/ledger proof.
+  const real=await verifyPremergeReadOnly(a,{now:NOW,token:"synthetic-read-only",githubGet:read});
+  assert.equal(real.classification,"RELEASE_HOLD");
+  assert.match(real.blockers.join(" "),/rights NOT VERIFIED/);
+  for(const [mutate,pattern] of [
+    [(v)=>v["/actions/jobs/"+a.stage.ci.jobId].steps.find(s=>
+      s.name==="Full unit and contract tests").conclusion="skipped",/FULL test/],
+    [(v)=>v["/commits/"+a.stage.sha+"/check-runs?check_name=test&per_page=100"]
+      .check_runs[0].app.id=999,/FULL test/],
+    [(v)=>v["/git/commits/"+a.stage.preview.sha].parents.reverse(),/synthetic merge preview/],
+    [(v)=>v["/pulls/"+a.stage.pr+"/files?per_page=100"].push({
+      filename:"src/unaudited.js",sha:S("f"),status:"added"}),/inventory/],
+    [(v)=>v["/git/trees/"+a.source.tree+"?recursive=1"].truncated=true,/truncated/]
+  ]) {
+    const changed=clone(responses);mutate(changed);
+    const badRead=async(key)=>changed[key];
+    const held=await verifyPremergeReadOnly(a,{now:NOW,token:"synthetic-read-only",
+      githubGet:badRead});
+    assert.equal(held.classification,"RELEASE_HOLD");
+    assert.match(held.blockers.join(" "),pattern);
   }
 });
 test("real premerge and postmerge entrypoints cannot be made ready by caller-provided PASS flags",async()=>{

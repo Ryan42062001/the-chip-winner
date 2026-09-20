@@ -36,6 +36,10 @@ Initial handoff-inclusive implementation checkpoint: c808d6b962acc638be2d19b4454
 
 The final combined code/test/handoff commit extends immutable release-tuple binding to every source and stage file tuple, exact-stage check/preview, actor approval and rollback fields, with targeted negative regression coverage. **A fresh FULL GitHub PR run on that exact final commit is required**; no subsequent docs-only head may replace its freeze target. Manager must verify the final run/job IDs and same-SHA test status before any freeze.
 
+## Authenticated read-only stage observation hardening
+
+The bounded premerge command now also independently GETs original A and stage S Git trees, exact complete stage PR file inventory and blobs/modes, strict ruleset/digest, required actual stage-head FULL Actions run/test job/check-run/app/check-suite, and the required GitHub synthetic merge-preview commit/test and ordered M/S parents. Truncated trees, changed PR path inventory, failed or DOCS_ONLY required stages, wrong check app or changed preview fail closed as RELEASE_HOLD. These authenticated read-only observations remain insufficient to prove owner/Manager/Auditor publication rights, an external protected nonce ledger, separate exact-S owner approval or rollback availability. This still cannot authorize a merge or claim operational L4; any unavailable permission/evidence holds the release.
+
 ## Self-validation and remaining Manager gates
 
 Required final evidence: exact final Builder HEAD containing implementation/tests/this handoff, allowed-path diff from 17cb363bf457d02cb0029430b110af002e43dc6a, targeted node --test test/workflow-composite-release.test.js, existing static workflow audit, full npm test and fresh GitHub PR FULL CI at the exact handoff-inclusive SHA. CI evidence and job/run IDs must be published separately after observed completion; no invented mechanical PASS. The original task-specific helper on Builder branch needs canonical Manager task/registry read-only overlay and eligibility reconciliation before a genuine prefreeze readiness run, without committing Manager activation files or pretending the branch was created later.
