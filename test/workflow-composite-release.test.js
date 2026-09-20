@@ -408,6 +408,7 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
     JSON.stringify(x);return stable(live.ruleset);})());
   a.ledger.tupleDigest=tupleDigest(a);
   for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
+  live.ledgerReceipt.tupleDigest=a.ledger.tupleDigest;
   const read=async(endpoint)=>{
     assert.ok(Object.hasOwn(responses,endpoint),"unexpected read "+endpoint);
     return clone(responses[endpoint]);
@@ -465,7 +466,7 @@ test("real premerge and postmerge entrypoints cannot be made ready by caller-pro
   const forged=await verifyPremergeReadOnly(a,{now:NOW,token:"synthetic-token",
     githubGet:async()=>({})});
   assert.equal(forged.classification,"RELEASE_HOLD");
-  assert.ok(forged.blockers.some(x=>/NOT VERIFIED/.test(x)));
+  assert.ok(forged.blockers.some(x=>/GitHub observation unavailable|truncated/.test(x)));
   assert.equal(forged.liveReadOnly,true);
 });
 test("CLI local PASS stays explicitly local; premerge without trusted token returns HOLD; no writes",()=>{

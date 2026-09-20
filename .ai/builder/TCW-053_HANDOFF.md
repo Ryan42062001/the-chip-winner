@@ -36,6 +36,10 @@ Initial handoff-inclusive implementation checkpoint: c808d6b962acc638be2d19b4454
 
 The final combined code/test/handoff commit extends immutable release-tuple binding to every source and stage file tuple, exact-stage check/preview, actor approval and rollback fields, with targeted negative regression coverage. **A fresh FULL GitHub PR run on that exact final commit is required**; no subsequent docs-only head may replace its freeze target. Manager must verify the final run/job IDs and same-SHA test status before any freeze.
 
+## Adversarial fixture correction before final full-head validation
+
+The first extended read-only observer FULL PR run 35512667724/test job 106083210858 correctly failed two newly added test fixtures: the fixture's protected ledger snapshot retained its old digest after a synthetic ruleset mutation, and an all-empty mocked API now fails at explicit truncated/missing Git tree observation instead of the older generic NOT VERIFIED assertion. Corrected these fixtures without weakening any security predicate; that run is FAILURE, not accepted evidence. Require a new exact-final-head FULL CI after this combined test/handoff fix.
+
 ## Authenticated read-only stage observation hardening
 
 The bounded premerge command now also independently GETs original A and stage S Git trees, exact complete stage PR file inventory and blobs/modes, strict ruleset/digest, required actual stage-head FULL Actions run/test job/check-run/app/check-suite, and the required GitHub synthetic merge-preview commit/test and ordered M/S parents. Truncated trees, changed PR path inventory, failed or DOCS_ONLY required stages, wrong check app or changed preview fail closed as RELEASE_HOLD. These authenticated read-only observations remain insufficient to prove owner/Manager/Auditor publication rights, an external protected nonce ledger, separate exact-S owner approval or rollback availability. This still cannot authorize a merge or claim operational L4; any unavailable permission/evidence holds the release.
