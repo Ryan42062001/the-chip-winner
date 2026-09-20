@@ -7,7 +7,8 @@ import test from "node:test";
 import {
   SCHEMA, REPOSITORY, SOURCE_PATHS, REQUIRED_CHECK, sha256, releaseTuple, tupleDigest,
   validateLocalContract, validateLedgerTransition, validatePremergeSnapshot,
-  validatePostmergeSnapshot, observeStageReadOnly, verifyPremergeReadOnly, verifyPostmergeReadOnly
+  validatePostmergeSnapshot, validateEffectiveProtection, FROZEN_SOURCE,
+  observeStageReadOnly, verifyPremergeReadOnly, verifyPostmergeReadOnly
 } from "../scripts/workflow-composite-release.js";
 
 const S = (letter) => letter.repeat(40), H = (letter) => letter.repeat(64);
@@ -18,6 +19,25 @@ const PACKET_DIGEST = "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f59
 const AUDIT_HEAD = "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7";
 const stamp = (delta) => new Date(NOW + delta).toISOString();
 const clone = (data) => structuredClone(data);
+const stableFixture = (obj) => Array.isArray(obj) ?
+  "[" + obj.map(stableFixture).join(",") + "]" :
+  obj && typeof obj === "object" ?
+    "{" + Object.keys(obj).sort().map((k) =>
+      JSON.stringify(k) + ":" + stableFixture(obj[k])).join(",") + "}" :
+    JSON.stringify(obj);
+const protectionRule = () => ({
+  id: 22309639, name: "Protect Master", enforcement: "active",
+  target: "branch", source_type: "Repository", source: REPOSITORY.fullName,
+  conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
+  bypass_actors: [], current_user_can_bypass: "never",
+  rules: [
+    { type: "pull_request", parameters: {
+      allowed_merge_methods: ["merge", "squash", "rebase"] } },
+    { type: "required_status_checks", parameters: {
+      strict_required_status_checks_policy: true,
+      required_status_checks: [{ context: "test", integration_id: 15368 }] } }
+  ]
+});
 function files() {
   return SOURCE_PATHS.map((name, i) => ({
     path: name, mode: "100644", blob: S("abcd"[i])
@@ -56,6 +76,8 @@ function fixture() {
       repoId: REPOSITORY.id, repoFullName: REPOSITORY.fullName,
       pr: 201, branch: "refs/heads/manager/composite-test-stage", sha: S("c"), tree: S("5"),
       baseSha: S("b"), mergeMethod: "merge", parents: [S("b")],
+      authorization: { taskId: "TCW-999", taskPath: ".ai/manager/tasks/TCW-999.md",
+        masterSha: S("b"), pr: 201, branch: "refs/heads/manager/composite-test-stage" },
       changedFiles: clone(sourceFiles),
       ci: {
         headSha: S("c"), context: "test", integrationId: 15368, appId: 15368,
@@ -68,7 +90,7 @@ function fixture() {
       }
     },
     ruleset: {
-      id: 22309639, digest: H("b"), strictUpToDate: true, bypass: false,
+      id: 22309639, digest: H("b"), effectiveDigest: H("c"), strictUpToDate: true, bypass: false,
       mergeMethod: "merge", requiredContext: "test", integrationId: 15368
     },
     auditor: {
@@ -102,6 +124,9 @@ function fixture() {
       state: "OWNER_APPROVED", consumed: false, aborted: false, events: []
     }
   };
+  const rule = protectionRule();
+  a.ruleset.digest = sha256(stableFixture(rule));
+  a.ruleset.effectiveDigest = sha256(stableFixture([rule]));
   a.ledger.tupleDigest = tupleDigest(a);
   a.ledger.events = [
     { state: "PREPARED", commit: S("6"), previousCommit: null, nonce: a.attempt.nonce,
@@ -269,9 +294,24 @@ function liveFixture(a) {
     },
     stageCommit:{sha:a.stage.sha,tree:{sha:a.stage.tree},parents:[{sha:a.master.sha}]},
     sourceFiles:srcFiles,stageChangedFiles:staged,
-    ruleset:{id:a.ruleset.id,enforcement:"active",rules:[{type:"required_status_checks",
-      parameters:{strict_required_status_checks_policy:true,required_status_checks:[
-        {context:"test",integration_id:15368}]}}]},rulesetDigest:a.ruleset.digest,
+    ruleset:protectionRule(), rulesetDigest:a.ruleset.digest,
+    effectiveRuleList:[{id:22309639}], effectiveRulesets:[protectionRule()],
+    effectiveRulesetDigest:a.ruleset.effectiveDigest,
+    sourceCustody: {
+      sourceSha: FROZEN_SOURCE.sha,
+      historicalCreation: FROZEN_SOURCE.historicalCreation,
+      effectiveBaseline: FROZEN_SOURCE.effectiveBaseline,
+      packetSha256: FROZEN_SOURCE.packetSha256,
+      originalPacketBytesVerified: true, // synthetic LOCAL snapshot ONLY
+      auditHead: FROZEN_SOURCE.acceptedAuditHead,
+      auditReportBlob: FROZEN_SOURCE.acceptedReportBlob,
+      auditTarget: FROZEN_SOURCE.sha, auditVerdict: "PASS"
+    },
+    stageAuthority: {
+      verified:true, masterSha:a.master.sha,taskId:a.stage.authorization.taskId,
+      taskPath:a.stage.authorization.taskPath,branch:a.stage.branch,
+      pr:a.stage.pr,owner:"Manager"
+    },
     ci:clone(a.stage.ci),preview:clone(a.stage.preview),
     auditEvidence:{
       commit:{sha:a.auditor.evidence.commit,tree:{sha:a.auditor.evidence.tree}},
@@ -405,14 +445,42 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
       {check_runs:[previewCheck]},
     ["/git/commits/"+a.stage.preview.sha]:previewCommit
   };
-  a.ruleset.digest=sha256(JSON.stringify(live.ruleset, Object.keys(live.ruleset).sort()));
-  // Attestation ruleset digest must be the actual stable GitHub ruleset JSON.
-  a.ruleset.digest=sha256((()=>{const stable=(x)=>Array.isArray(x)?"["+x.map(stable).join(",")+"]":
-    x&&typeof x==="object"?"{"+Object.keys(x).sort().map(k=>JSON.stringify(k)+":"+stable(x[k])).join(",")+"}":
-    JSON.stringify(x);return stable(live.ruleset);})());
+  a.ruleset.digest=sha256(stableFixture(live.ruleset));
+  a.ruleset.effectiveDigest=sha256(stableFixture([live.ruleset]));
   a.ledger.tupleDigest=tupleDigest(a);
   for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
   live.ledgerReceipt.tupleDigest=a.ledger.tupleDigest;
+  const frozen = [FROZEN_SOURCE.sha, FROZEN_SOURCE.historicalCreation,
+    FROZEN_SOURCE.effectiveBaseline, FROZEN_SOURCE.packetSha256].join(" ");
+  const bytes=(str,sha)=>({encoding:"base64",
+    content:Buffer.from(str).toString("base64"),sha});
+  responses["/contents/.ai/manager/evidence/TCW-047_SYNCED_ORIGINAL_MECHANICAL_FREEZE_17e5f413.md?ref="+
+    FROZEN_SOURCE.trustedCanonicalMaster] =
+    bytes(frozen,FROZEN_SOURCE.frozenManagerEvidenceBlob);
+  responses["/contents/"+FROZEN_SOURCE.acceptedReportPath+"?ref="+
+    FROZEN_SOURCE.acceptedAuditHead] =
+    bytes("INDEPENDENT VERDICT: PASS "+FROZEN_SOURCE.sha+" "+
+      FROZEN_SOURCE.packetSha256,FROZEN_SOURCE.acceptedReportBlob);
+  responses["/git/commits/"+FROZEN_SOURCE.acceptedAuditHead] =
+    {sha:FROZEN_SOURCE.acceptedAuditHead};
+  responses["/pulls/"+FROZEN_SOURCE.auditPr] =
+    {head:{sha:FROZEN_SOURCE.acceptedAuditHead},merged:true};
+  responses["/actions/runs/"+FROZEN_SOURCE.originalHelperRunId] =
+    {id:FROZEN_SOURCE.originalHelperRunId,conclusion:"success"};
+  responses["/actions/jobs/"+FROZEN_SOURCE.originalHelperJobId] =
+    {id:FROZEN_SOURCE.originalHelperJobId,
+      run_id:FROZEN_SOURCE.originalHelperRunId,conclusion:"success"};
+  responses["/contents/.ai/shared/ACTIVE_TASKS.json?ref="+a.master.sha] =
+    bytes(JSON.stringify({tasks:[{
+      task_id:a.stage.authorization.taskId,owner:"Manager",
+      merge_authority:"Manager",branch:a.stage.branch.replace("refs/heads/",""),
+      pr:a.stage.pr,task_file:a.stage.authorization.taskPath
+    }]}),S("e"));
+  responses["/contents/"+a.stage.authorization.taskPath+"?ref="+a.master.sha] =
+    bytes("# "+a.stage.authorization.taskId+"\\nROLE ROUTING: Manager / Architect\\n"+
+      a.stage.branch.replace("refs/heads/","")+"\\nPR #"+a.stage.pr,S("f"));
+  responses["/rulesets?includes_parents=true&targets=branch&per_page=100"] =
+    [{id:a.ruleset.id}];
   const read=async(endpoint)=>{
     assert.ok(Object.hasOwn(responses,endpoint),"unexpected read "+endpoint);
     return clone(responses[endpoint]);
@@ -422,16 +490,19 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
   assert.equal(observed.ci.appId,15368);
   assert.equal(observed.preview.conclusion,"success");
   assert.equal(observed.rulesetDigest,a.ruleset.digest);
+  assert.equal(observed.effectiveRulesetDigest,a.ruleset.effectiveDigest);
+  assert.equal(observed.stageAuthority.verified,true);
+  assert.equal(observed.sourceCustody.originalPacketBytesVerified,false);
   const local=validatePremergeSnapshot(a,{...observed,
     auditEvidence:live.auditEvidence,planEvidence:live.planEvidence,
     installEvidence:live.installEvidence,ledgerReceipt:live.ledgerReceipt,
     actors:live.actors,rollback:live.rollback});
-  assert.equal(local.classification,"LOCAL_SNAPSHOT_CONTRACT_PASS",
-    local.blockers.join("; "));
+  assert.equal(local.classification,"FAIL");
+  assert.match(local.blockers.join("; "),/original A packet bytes.*UNVERIFIED/);
   // Real CLI never accepts this mocked snapshot as a rights/ledger proof.
   const real=await verifyPremergeReadOnly(a,{now:NOW,token:"synthetic-read-only",githubGet:read});
   assert.equal(real.classification,"RELEASE_HOLD");
-  assert.match(real.blockers.join(" "),/rights NOT VERIFIED/);
+  assert.match(real.blockers.join(" "),/packet BYTES\/digest.*UNVERIFIED/);
   for(const [mutate,pattern] of [
     [(v)=>v["/actions/jobs/"+a.stage.ci.jobId].steps.find(s=>
       s.name==="Full unit and contract tests").conclusion="skipped",/FULL test/],
