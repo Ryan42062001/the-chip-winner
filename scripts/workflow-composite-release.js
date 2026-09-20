@@ -45,6 +45,19 @@ const record = (value) => value && typeof value === "object" && !Array.isArray(v
 const sameRepo = (ref) => ref?.repoId === REPOSITORY.id && ref?.repoFullName === REPOSITORY.fullName;
 function validTime(value) { return typeof value === "string" && ISO.test(value) && Number.isFinite(Date.parse(value)); }
 const historicalBaseline = "7ca2953009d37a014e041cc24f4934bfe61b5cad";
+// Immutable accepted TCW-047/TCW-050 custody anchors, independent of a
+// prospective applicant's attestation/tuple, ledger or mutable source PR.
+export const FROZEN_SOURCE = Object.freeze({
+  sha: "17e5f413f2afd3d743fd28d401f0df421825df2a",
+  historicalCreation: historicalBaseline,
+  effectiveBaseline: "e0fe6309dc0aaa184bbeef35861f7d49256385b7",
+  packetSha256: "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894",
+  sourcePr: 162, auditPr: 175,
+  acceptedAuditHead: "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7",
+  acceptedReportPath: ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_REAUDIT.md",
+  acceptedReportBlob: "59d400a4215c9fb308eb0887364557f4a09ea7d8"
+});
+const STAGE_REF = /^refs\/heads\/manager\/[a-z0-9][a-z0-9/_-]*$/;
 
 export function releaseTuple(attestation) {
   const a = attestation;
@@ -154,19 +167,23 @@ export function validateLocalContract(a, options = {}) {
   check(issues, source.taskId === "TCW-047" && source.pr === 162 &&
     source.branch === "builder/tcw-047-automated-audit-readiness",
   "source A task/PR/branch identity mismatch");
-  check(issues, sameRepo(source) && exact(source.sha) && exact(source.tree),
-    "source A repository/SHA/tree invalid");
-  check(issues, source.historicalCreationBaseline === historicalBaseline &&
-    exact(source.effectiveScopeBaseline) &&
-    source.effectiveScopeBaseline !== source.historicalCreationBaseline,
-    "actual source branch creation must remain distinct from approved effective scope baseline");
-  check(issues, record(source.packet) && DIGEST.test(source.packet?.sha256 || "") &&
-    source.packet?.head === source.sha && source.packet?.pr === source.pr &&
-    source.packet?.branch === source.branch && source.packet?.readyForManagerFreeze === true,
-    "original helper packet must independently bind A/PR/branch");
-  check(issues, record(source.audit) && source.audit.targetSha === source.sha &&
-    source.audit.verdict === "PASS" && exact(source.audit.evidenceCommit),
-    "independent exact-A audit evidence required");
+  check(issues, sameRepo(source) && source.sha === FROZEN_SOURCE.sha &&
+    exact(source.tree), "source A differs from independently frozen TCW-050 checkpoint");
+  check(issues, source.historicalCreationBaseline === FROZEN_SOURCE.historicalCreation &&
+    source.effectiveScopeBaseline === FROZEN_SOURCE.effectiveBaseline,
+    "original source A historical creation/effective baseline differs from accepted independent freeze");
+  check(issues, record(source.packet) &&
+    source.packet?.sha256 === FROZEN_SOURCE.packetSha256 &&
+    source.packet?.head === FROZEN_SOURCE.sha &&
+    source.packet?.pr === FROZEN_SOURCE.sourcePr &&
+    source.packet?.branch === source.branch &&
+    source.packet?.readyForManagerFreeze === true,
+    "original helper packet differs from immutable TCW-050 digest/A/PR/branch; self-hash is not authority");
+  check(issues, record(source.audit) &&
+    source.audit.targetSha === FROZEN_SOURCE.sha &&
+    source.audit.verdict === "PASS" &&
+    source.audit.evidenceCommit === FROZEN_SOURCE.acceptedAuditHead,
+    "TCW-050 accepted exact-A audit/head mismatch; self-reported PASS is not authenticated provenance");
   check(issues, Array.isArray(source.files) && source.files.length === SOURCE_PATHS.length,
     "exact four immutable Builder file tuples required");
   if (Array.isArray(source.files)) {
@@ -178,7 +195,7 @@ export function validateLocalContract(a, options = {}) {
   check(issues, exact(master.sha) && exact(master.tree) && master.sha !== source.sha,
     "frozen M SHA/tree invalid or confused with source A");
   check(issues, sameRepo(stage) && goodId(stage.pr) && stage.pr !== source.pr &&
-    typeof stage.branch === "string" && REF.test(stage.branch) &&
+    typeof stage.branch === "string" && STAGE_REF.test(stage.branch) &&
     stage.branch !== source.branch && stage.branch !== "refs/heads/master",
   "separate Manager-owned stage PR/ref required");
   check(issues, exact(stage.sha) && exact(stage.tree) && stage.sha !== source.sha &&
