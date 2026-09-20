@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-20T04:02:00Z",
+  "updated_at_utc": "2026-09-20T04:09:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -140,7 +140,7 @@
       "title": "Automated Exact-SHA Task Audit-Readiness Gate",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Workflow Automation",
-      "status": "MANAGER_REVIEW_READY",
+      "status": "AUDIT_READY",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -183,24 +183,13 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "New synchronized Builder candidate 17e5f413f2afd3d743fd28d401f0df421825df2a on PR #162 DRAFT/UNMERGED, exact FULL #738/run 35487865670/test 106017434730 SUCCESS. Historical ACTUAL creation baseline 7ca2953009d37a014e041cc24f4934bfe61b5cad preserved separately and unchanged; current authorized EFFECTIVE sync-reassignment verification baseline e0fe6309dc0aaa184bbeef35861f7d49256385b7 is the second parent/current Manager master of nonforce merge. Never mislabel effective verification checkpoint as actual branch creation. Audit target 7c5bd1add860d1e8ed7bc03717451c7d88a21c50 is PREVIOUS old frozen SHA, not the NEW candidate. Execute SEPARATE original task-specific mechanical readiness on NEW exact head with canonical Manager overlay and new effective baseline. Only if PASS, Manager freezes NEW SHA in a distinct packet, obtains FRESH independent security re-audit then separately obtains owner release authorization for NEW SHA. No installation or use for TCW-034 manual readiness.",
-      "audit_target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
+      "next_gate": "NEW Manager-frozen exact synchronized repaired target 17e5f413f2afd3d743fd28d401f0df421825df2a after separate verified ORIGINAL task-specific mechanical PASS (Manager a3bbd9c3bf833987b9f72a0661ef82e41837dcd7, run 35488171554/job 106018254992, original packet SHA256 f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894). FRESH separately numbered TCW-050 independent workflow/security audit REQUIRED on NEW target including true historical creation 7ca2953009d37a014e041cc24f4934bfe61b5cad vs current effective assignment e0fe6309dc0aaa184bbeef35861f7d49256385b7 and bounded status fixture. Prior TCW-049 PASS applies ONLY older 7c5bd1add860d1e8ed7bc03717451c7d88a21c50; historic TCW-048 FAIL unchanged. Do not merge Builder PR #162 or transfer prior installation authorization; later new exact-head owner release authorization and real first-party Actions exercise required. Strict GitHub up-to-date test staging must be resolved without bypass or false re-audit claim.",
+      "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
       },
       "historical_failed_audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c",
-      "accepted_independent_audit": {
-        "task_id": "TCW-049",
-        "verdict": "PASS",
-        "scope": "BOUNDED_PREINSTALL_L1_L3",
-        "target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
-        "auditor_evidence_pr": 170,
-        "auditor_evidence_head": "33a4986ab90631c48f701aff21268f11f65b611c",
-        "auditor_evidence_integration_sha": "d702e40a9ed3f690541b7ab8e0f0616eb051b114",
-        "post_merge_run": 35486699736,
-        "operational_actions_exercise": "NOT_ESTABLISHED"
-      },
       "release_attempt": {
         "owner_authorized_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
         "premerge_master_sha": "86c5563e10b4107c59374159a09c793cae632a99",
@@ -233,6 +222,30 @@
         "new_mechanical_status": "PENDING",
         "new_independent_security_status": "PENDING",
         "installation_authorized_for_new_head": false
+      },
+      "preinstall_fresh_independent_audit_status": "REQUIRED_TCw050_PENDING",
+      "prior_preinstall_audit_at_previous_sha": {
+        "task_id": "TCW-049",
+        "verdict": "PASS",
+        "scope": "BOUNDED_PREINSTALL_L1_L3",
+        "target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
+        "auditor_evidence_pr": 170,
+        "auditor_evidence_head": "33a4986ab90631c48f701aff21268f11f65b611c",
+        "auditor_evidence_integration_sha": "d702e40a9ed3f690541b7ab8e0f0616eb051b114",
+        "post_merge_run": 35486699736,
+        "operational_actions_exercise": "NOT_ESTABLISHED"
+      },
+      "latest_original_mechanical_gate": {
+        "canonical_manager_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7",
+        "original_packet_sha256": "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894",
+        "workflow_run": 35488171554,
+        "job": 106018254992,
+        "artifact_id": 10598497668,
+        "ready": true,
+        "blockers": [],
+        "verified_new_head": "17e5f413f2afd3d743fd28d401f0df421825df2a",
+        "historical_branch_creation_sha": "7ca2953009d37a014e041cc24f4934bfe61b5cad",
+        "effective_assignment_master_sha": "e0fe6309dc0aaa184bbeef35861f7d49256385b7"
       }
     },
     {
@@ -290,6 +303,68 @@
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
+      }
+    },
+    {
+      "task_id": "TCW-050",
+      "title": "Fresh Exact-SHA Synchronized Readiness Workflow / Security Re-Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-050.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7",
+      "branch": "auditor/tcw-050-synced-readiness-security-reaudit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-050-synced-readiness-security-reaudit",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_REAUDIT.md",
+        ".ai/auditor/TCW-050_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/builder/",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json",
+        ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_AUDIT_PACKET_17e5f413.md",
+        ".ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT.md",
+        ".ai/auditor/TCW-048_HANDOFF.md",
+        ".ai/audit/TCW-049_WORKFLOW_SECURITY_REAUDIT.md",
+        ".ai/auditor/TCW-049_HANDOFF.md",
+        ".ai/audit/TCW-046_TRADE_WINNER_ENGINE_REAUDIT.md",
+        ".ai/auditor/TCW-046_HANDOFF.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-047",
+      "audit_target_pr": 162,
+      "audit_target_branch": "builder/tcw-047-automated-audit-readiness",
+      "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
+      "actual_historical_auditor_branch_creation_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7",
+      "next_gate": "FRESH independent TCW-050 Auditor verifies only exact new frozen 17e5f413f2afd3d743fd28d401f0df421825df2a, historical creation vs effective baseline, original packet, full CI, F01/F02/F03, non-force merge and strict up-to-date release staging. Exactly two assigned evidence files in one unmerged PR with exact Auditor head CI, no Builder merge.",
+      "target_advancement": {
+        "classification": "NON_OVERLAPPING",
+        "checked_at_sha": "a3bbd9c3bf833987b9f72a0661ef82e41837dcd7"
       }
     }
   ]
