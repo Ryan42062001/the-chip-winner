@@ -574,6 +574,95 @@ function requiredCheckFromGitHub(a, run, job, checks, previewChecks, previewComm
  * actual required test/check/preview provenance. The caller must still NOT use
  * these observations as owner/audit/ledger authentication or merge authority.
  */
+function canonicalContent(item, label) {
+  if (item?.encoding !== "base64" || !exact(item?.sha) ||
+      typeof item?.content !== "string")
+    throw new Error(label + " immutable GitHub evidence UNVERIFIED");
+  return Buffer.from(item.content.replace(/\s/g, ""), "base64").toString("utf8");
+}
+/** The known manager freeze + accepted Auditor report are pinned Git blobs. */
+export async function observeFrozenSourceCustody(a, read, sourceCommit) {
+  const [freeze, report, auditCommit, auditPr, run, job] = await Promise.all([
+    read("/contents/.ai/manager/evidence/TCW-047_SYNCED_ORIGINAL_MECHANICAL_FREEZE_17e5f413.md?ref=" +
+      FROZEN_SOURCE.trustedCanonicalMaster),
+    read("/contents/" + FROZEN_SOURCE.acceptedReportPath + "?ref=" +
+      FROZEN_SOURCE.acceptedAuditHead),
+    read("/git/commits/" + FROZEN_SOURCE.acceptedAuditHead),
+    read("/pulls/" + FROZEN_SOURCE.auditPr),
+    read("/actions/runs/" + FROZEN_SOURCE.originalHelperRunId),
+    read("/actions/jobs/" + FROZEN_SOURCE.originalHelperJobId)
+  ]);
+  const frozenText = canonicalContent(freeze, "original Manager freeze");
+  const auditText = canonicalContent(report, "independent TCW-050 report");
+  if (freeze.sha !== FROZEN_SOURCE.frozenManagerEvidenceBlob ||
+      report.sha !== FROZEN_SOURCE.acceptedReportBlob ||
+      sourceCommit?.sha !== FROZEN_SOURCE.sha ||
+      auditCommit?.sha !== FROZEN_SOURCE.acceptedAuditHead ||
+      auditPr?.head?.sha !== FROZEN_SOURCE.acceptedAuditHead ||
+      auditPr?.merged !== true ||
+      ![FROZEN_SOURCE.sha, FROZEN_SOURCE.historicalCreation,
+        FROZEN_SOURCE.effectiveBaseline, FROZEN_SOURCE.packetSha256].every(
+        (value) => frozenText.includes(value)) ||
+      !auditText.includes(FROZEN_SOURCE.sha) ||
+      !auditText.includes(FROZEN_SOURCE.packetSha256) ||
+      !/INDEPENDENT VERDICT:\s*PASS/.test(auditText) ||
+      run?.id !== FROZEN_SOURCE.originalHelperRunId ||
+      run?.conclusion !== "success" ||
+      job?.id !== FROZEN_SOURCE.originalHelperJobId ||
+      job?.run_id !== FROZEN_SOURCE.originalHelperRunId ||
+      job?.conclusion !== "success")
+    throw new Error("independent original A/TCW-050 report/packet-run provenance UNVERIFIED");
+  // No authenticated original packet bytes are available to this bounded
+  // read-only API. The self-reported SHA and historical log are NOT sufficient.
+  return {
+    sourceSha: FROZEN_SOURCE.sha, historicalCreation: FROZEN_SOURCE.historicalCreation,
+    effectiveBaseline: FROZEN_SOURCE.effectiveBaseline,
+    packetSha256: FROZEN_SOURCE.packetSha256,
+    auditHead: FROZEN_SOURCE.acceptedAuditHead,
+    auditReportBlob: FROZEN_SOURCE.acceptedReportBlob,
+    auditTarget: FROZEN_SOURCE.sha, auditVerdict: "PASS",
+    originalPacketBytesVerified: false,
+    originalPacketBlocker: "original helper packet BYTES/digest from retained TCW-047 artifact UNVERIFIED; protected source custody RELEASE_HOLD"
+  };
+}
+/** Reads Manager-owned stage authority from immutable, protected master M. */
+export async function observeManagerStageAuthority(a, read) {
+  const auth = a.stage?.authorization;
+  if (!record(auth) || !/^TCW-[0-9]{3}$/.test(auth.taskId || ""))
+    throw new Error("independent Manager stage task authority missing");
+  const [registryFile, taskFile] = await Promise.all([
+    read("/contents/.ai/shared/ACTIVE_TASKS.json?ref=" + a.master.sha),
+    read("/contents/" + auth.taskPath + "?ref=" + a.master.sha)
+  ]);
+  const taskText = canonicalContent(taskFile, "frozen Manager stage task");
+  let registry;
+  try { registry = JSON.parse(canonicalContent(registryFile, "frozen Manager registry")); }
+  catch { throw new Error("frozen Manager stage registry invalid/unavailable"); }
+  const matches = registry?.tasks?.filter((x) => x.task_id === auth.taskId);
+  const task = matches?.length === 1 ? matches[0] : null;
+  if (task?.owner !== "Manager" || task?.merge_authority !== "Manager" ||
+      task?.branch !== a.stage.branch.replace("refs/heads/", "") ||
+      task?.pr !== a.stage.pr || task?.task_file !== auth.taskPath ||
+      !/^ROLE ROUTING:.*Manager/m.test(taskText) ||
+      !taskText.includes(auth.taskId) ||
+      !taskText.includes(a.stage.branch.replace("refs/heads/", "")) ||
+      !taskText.includes(String(a.stage.pr)))
+    throw new Error("independent protected Manager-owned stage task/branch/PR UNVERIFIED");
+  return { verified: true, masterSha: a.master.sha,
+    taskId: auth.taskId, taskPath: auth.taskPath, branch: a.stage.branch,
+    pr: a.stage.pr, owner: "Manager", registryBlob: registryFile.sha, taskBlob: taskFile.sha };
+}
+export async function observeEffectiveProtection(a, read, ruleset) {
+  const list = await read("/rulesets?includes_parents=true&targets=branch&per_page=100");
+  const snapshot = { effectiveRuleList: list, effectiveRulesets: [ruleset],
+    rulesetDigest: sha256(stable(ruleset)),
+    effectiveRulesetDigest: sha256(stable([ruleset])) };
+  const result = validateEffectiveProtection(a, snapshot);
+  if (result.classification !== "LOCAL_PROTECTION_CONTRACT_PASS")
+    throw new Error("effective GitHub PR/strict-test/no-bypass protection UNVERIFIED: " +
+      result.blockers.join("; "));
+  return { list, rulesets: [ruleset], digest: snapshot.effectiveRulesetDigest };
+}
 export async function observeStageReadOnly(a, read) {
   const [repo, masterRef, sourceRef, stageRef, stagePr, sourcePr, stageCommit,
     masterCommit, sourceCommit, ruleset, sourceTree, stageTree, stagePrFiles,
@@ -597,8 +686,14 @@ export async function observeStageReadOnly(a, read) {
     read("/commits/" + a.stage.preview.sha + "/check-runs?check_name=test&per_page=100"),
     read("/git/commits/" + a.stage.preview.sha)
   ]);
-  if (sourceCommit?.tree?.sha !== a.source.tree)
-    throw new Error("independent source A Git tree mismatch");
+  if (sourceCommit?.sha !== FROZEN_SOURCE.sha ||
+      sourceCommit?.tree?.sha !== a.source.tree)
+    throw new Error("independently frozen source A Git SHA/tree mismatch");
+  const [sourceCustody, stageAuthority, protection] = await Promise.all([
+    observeFrozenSourceCustody(a, read, sourceCommit),
+    observeManagerStageAuthority(a, read),
+    observeEffectiveProtection(a, read, ruleset)
+  ]);
   if (!Array.isArray(stagePrFiles) || stagePrFiles.length !== SOURCE_PATHS.length ||
       stagePr?.changed_files !== SOURCE_PATHS.length ||
       !eq(stagePrFiles.map((file) => file.filename).sort(), [...SOURCE_PATHS].sort()))
@@ -617,6 +712,8 @@ export async function observeStageReadOnly(a, read) {
     repository: repo, masterRef, sourceRef, stageRef, stagePr, sourcePr,
     stageCommit, masterCommit, sourceFiles, stageChangedFiles: changedFiles,
     ruleset, rulesetDigest: sha256(stable(ruleset)),
+    effectiveRuleList: protection.list, effectiveRulesets: protection.rulesets,
+    effectiveRulesetDigest: protection.digest, sourceCustody, stageAuthority,
     ci: { ...checksData.ci, pr: stagePr.number },
     preview: checksData.preview
   };
@@ -641,6 +738,7 @@ export async function verifyPremergeReadOnly(a, options = {}) {
     // Independent GitHub reads can establish immutable file and CI observation;
     // they do NOT prove an externally protected release ledger, actor rights,
     // owner approval or independently available rollback operator.
+    blockers.push(observed.sourceCustody.originalPacketBlocker);
     blockers.push("authenticated owner/Manager/Auditor publication and rights NOT VERIFIED");
     blockers.push("protected durable nonce ledger and consumed/aborted receipt NOT VERIFIED");
     if (snapshot.blockers.some((issue) => /FULL test|synthetic merge preview|stage S diff|source A blob|ruleset/.test(issue)))
