@@ -168,7 +168,10 @@ function verifyGitCheckout(dir, task) {
   return changedFiles;
 }
 function verifyOnlyCanonicalOverlay(builder) {
-  const status = git(builder, ["status", "--porcelain", "-z", "--untracked-files=all"]);
+  // Preserve the leading XY status columns: generic git().trim() would erase the
+  // leading space in an unstaged modification and falsely classify it as staged.
+  const status = execFileSync("git", ["status", "--porcelain", "-z", "--untracked-files=all"],
+    { cwd: builder, encoding: "utf8", timeout: 120000, stdio: ["ignore", "pipe", "pipe"] });
   const entries = status.split("\0").filter(Boolean);
   for (const entry of entries) {
     const name = entry.slice(3);
