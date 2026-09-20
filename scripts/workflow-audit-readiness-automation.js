@@ -248,7 +248,7 @@ function runMechanical(builder, task) {
   // The frozen package entrypoint is checked before execution. CLI ignore-scripts
   // suppresses Builder-provided pre/post hooks, even for broadly authorized tasks.
   const env = { ...unprivilegedEnv(), npm_config_ignore_scripts: "true" };
-  const child = spawnSync("npm", ["--ignore-scripts", "--userconfig=/dev/null", "--globalconfig=/dev/null",
+  const child = spawnSync("npm", ["--ignore-scripts", "--userconfig=/dev/null",
     "run", "--silent", "workflow:audit-readiness", "--", "--task", task.task_id],
     { cwd: builder, env, encoding: "utf8", timeout: 180000, maxBuffer: 2 * 1024 * 1024 });
   if (child.error) fail("mechanical helper could not execute: " + safeDiagnostic(child.error), "INFRA_ERROR");
