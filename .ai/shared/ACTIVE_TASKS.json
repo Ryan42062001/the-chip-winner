@@ -147,7 +147,7 @@
       "blocked_on_tasks": [],
       "blocked_on": [],
       "task_file": ".ai/manager/tasks/TCW-047.md",
-      "role_handoff": ".ai/builder/TCW-047_HANDOFF.md",
+      "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "936b9885ed27d0ec288e749d841d38b44b7a4c4d",
       "branch": "builder/tcw-047-automated-audit-readiness",
       "pr": null,
