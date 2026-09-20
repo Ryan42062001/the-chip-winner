@@ -2,7 +2,7 @@
 
 ## PENDING
 
-### Trade Winner Engine — bounded SECOND audit remediation
+### Trade Winner Engine — THIRD IMMUTABLE TARGET FROZEN / TCW-046 INDEPENDENT RE-AUDIT
 - Source Builder PR: `#147` — DRAFT / UNMERGED.
 - Existing Builder branch: `builder/tcw-034-trade-winner-engine`.
 - Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
@@ -69,3 +69,11 @@ TCW-039 — Independent Trade Intelligence Audit.
 TCW-040 — Real-League Trade Center UAT.
 
 No queued task is activated by this remediation routing.
+
+
+## Current exact gates — 2026-09-19
+
+- TCW-034 Builder PR #147 DRAFT/UNMERGED at immutable third repaired FULL SHA `035c5f5112b7393f9d4f17685792548afa67dd2e`.
+- Actual task readiness: blockers [], readyForManagerFreeze true, packet hash `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`. FULL workflow #692 / run `35477501875`, test `105989175098`: PASS on exact same head including final handoff.
+- Fresh TCW-046 Auditor audit of exact target ASSIGNED; Manager must consume verdict before Builder merge. TCW-035 inactive.
+- Separate TCW-047 automated-readiness workflow task ASSIGNED on distinct branch/files. It is not yet implemented or production-active, cannot change the frozen audit target or bypass the human Manager freeze, and requires an independent workflow/security audit before integration.

@@ -1,7 +1,7 @@
 # The Chip Winner — Canonical Project State
 
 Last reconciled: 2026-09-19
-Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-045 FAIL consumed + TCW-034 bounded F02-R1/F04-R1 Builder remediation active + Release 1.0 season gate waiting
+Operating state: Workflow V3.2 closed + Trade Analyzer baseline accepted + TCW-032 Strategy accepted + TCW-033 research accepted + TCW-044 audit consumed/failed + TCW-045 FAIL consumed + TCW-034 third FULL target frozen + TCW-046 independent re-audit active + TCW-047 separate readiness automation assigned + Release 1.0 season gate waiting
 
 ## Repository / workflow
 - Repository: `Ryan42062001/the-chip-winner`
@@ -163,3 +163,10 @@ Actual task-specific audit-readiness on exact Builder head `24be4be45f7fde351c0a
 ## Second independent audit disposition — 2026-09-19
 
 TCW-045 is CLOSED after exact-target FAIL on `24be4be45f7fde351c0a6e209353dd2beed8d854`. Auditor evidence PR #157 / #679 PASS merged as master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc` / #680 PASS. Manager independently accepted F02-R1 MEDIUM/BLOCKING (unknown roster rules mistaken for verified acquisition legality and numeric replacement) and F04-R1 LOW/SAME-PASS (explicit derivative ancestry ignored by independently named group labels). Canonical decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`. TCW-034 returns to ASSIGNED on existing Builder PR #147, from exact remediation parent `24be4be45f7fde351c0a6e209353dd2beed8d854`; next requires fresh FULL final handoff-inclusive checkpoint, Manager readiness/freeze, and new independent audit. No merge or TCW-035 activation. Provider authority remains EMPTY, live package winner/split WITHHELD, FV-SEASON-01 pending.
+
+
+## Third repaired target freeze + automated readiness improvement — 2026-09-19
+
+TCW-034 is AUDIT_READY after actual task-specific readiness PASS (blockers [], readyForManagerFreeze true) at immutable FULL target `035c5f5112b7393f9d4f17685792548afa67dd2e`; packet SHA256 `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`. Fresh target workflow #692 PASS; Manager checkpoint master `936b9885ed27d0ec288e749d841d38b44b7a4c4d`, workflow #694 PASS. TCW-046 fresh independent Auditor re-audit is ASSIGNED. Existing Builder PR #147 stays DRAFT / UNMERGED; TCW-035 inactive.
+
+TCW-047 independently assigns an automated GitHub Actions exact-SHA task-specific readiness gate so users no longer need Windows/Ubuntu terminal commands for future checkpoints. This is not yet implemented or deployed; it is a separate workflow/security-audited task with disjoint branch and write scope and may not alter TCW-034, TCW-046 or any existing frozen SHA. Manager freeze/merge and independent audit remain separate authority gates. Approved production trade-value provider set still EMPTY and live winner/split WITHHELD; FV-SEASON-01 remains pending.

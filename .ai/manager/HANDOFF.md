@@ -1,61 +1,47 @@
 # Manager / Architect Handoff
 
-STATUS: THIRD REPAIRED FULL CANDIDATE — MANAGER_REVIEW_READY / AWAIT TASK-SPECIFIC READINESS
+STATUS: TCW-034 THIRD REPAIRED TARGET FROZEN — TCW-046 FRESH AUDIT + TCW-047 SEPARATE READINESS AUTOMATION ASSIGNED
 ROLE: Manager / Architect
-CANONICAL AUDIT EVIDENCE MASTER: `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
 
-## Decision and immutable evidence
+## Immutable Trade Winner audit target
 
-Historical first failed target: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`.
-Historical second failed repaired target: `24be4be45f7fde351c0a6e209353dd2beed8d854`.
+Existing Builder PR #147: DRAFT / UNMERGED.
+Exact FULL-tested final Builder head and IMMUTABLE THIRD REPAIRED AUDIT TARGET:
+`035c5f5112b7393f9d4f17685792548afa67dd2e`
 
-Independent Auditor TCW-045 report: `.ai/audit/TCW-045_TRADE_WINNER_ENGINE_REAUDIT.md`.
-- Auditor evidence PR #157 exact head `a9ab541f46d571347c22b291534d343477bf37bb`
-- exact-head workflow #679 / run `35476232619`, test `105985840004`: PASS
-- PR #157 merged as evidence-only master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc`
-- master workflow #680 / run `35476504713`, test `105986552934`: PASS
+Prior historical failed targets:
+- `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
+- `24be4be45f7fde351c0a6e209353dd2beed8d854`
 
-Manager independently reviewed and ACCEPTED:
-- F02-R1 — MEDIUM / BLOCKING: unverified or incomplete roster rules can falsely authorize a legal acquisition, numeric replacement and material depth cost.
-- F04-R1 — LOW / SAME-PASS: explicit derivative source ancestry is ignored when distinct group labels confer HIGH confidence.
+Actual task-specific readiness PASS from unchanged exact Builder SHA with canonical Manager metadata:
+- `blockers: []`
+- `readyForManagerFreeze: true`
+- packet SHA256 `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`
+- assignment baseline `24be4be45f7fde351c0a6e209353dd2beed8d854`
+- PR #147
+- exactly five authorized changed files.
 
-Canonical decision: `.ai/manager/evidence/TRADE_WINNER_SECOND_AUDIT_DECISION.md`.
+Fresh FULL on same head: workflow #692 / run `35477501875`, test `105989175098`: PASS.
+Manager readiness checkpoint master `936b9885ed27d0ec288e749d841d38b44b7a4c4d`: workflow #694 / run `35478099599`: PASS.
+This mechanical PASS is NOT an independent audit verdict or product acceptance.
 
-Historical F01 raw-count and F03 caller-horizon subset findings are CLOSED within the prior audit's stated limits. The fresh repair must preserve them. TCW-045 is CLOSED and its FAIL consumed; no audit acceptance or Builder merge is implied.
+TCW-034 status: AUDIT_READY. Frozen packet: `.ai/audit/TCW-046_TRADE_WINNER_REAUDIT_PACKET_035c5f51.md`.
 
-## Active Builder task
+## Independent parallel work, separated by branch and scope
 
-`TCW-034 — Trade Winner Engine`
+TCW-046 (Independent Auditor / QA) is ASSIGNED to fresh re-audit of exact frozen `035c5f5112b7393f9d4f17685792548afa67dd2e`. Branch: `auditor/tcw-046-trade-winner-third-reaudit`. Only two task-specific audit evidence files. No merge.
 
-Owner: Implementation Engineer / Builder
-Execution: `STANDARD_CHAT_HIGH`
-Refresh: `BOUNDED_REMEDIATION_REFRESH`
-Existing branch: `builder/tcw-034-trade-winner-engine`
-Existing PR: #147 — DRAFT / UNMERGED
-Exact remediation parent: `24be4be45f7fde351c0a6e209353dd2beed8d854`
+TCW-047 (Workflow Automation Builder) is ASSIGNED independently to create an automatic GitHub Actions task-specific readiness gate for FUTURE checkpoints. Branch: `builder/tcw-047-automated-audit-readiness`. It must not touch PR #147, change the frozen target, or supply TCW-046 audit evidence. New Actions workflow, standalone runner and deterministic tests only; no changes to Manager machine state or existing authority scripts. The gate is NOT live until implemented, independently audited, accepted and merged; existing proven manual gate remains authoritative for this freeze.
 
-Only F02-R1 / F04-R1 and directly necessary regression tests, contract changes and final Builder handoff are authorized. Do NOT merge Manager/audit control-plane changes into Builder's product branch.
-
-For F02-R1, unknown/partial applicable roster settings must stay UNKNOWN, not become VERIFIED merely because known violations are empty. Preserve separately verified direct-add/drop paths, slot/FLEX/OP/source/current-week evidence and conditional-drop semantics. Ensure unsupported replacement numeric and material-quality results are withheld; UNKNOWN is not a proved blocked path.
-
-For F04-R1, distinct arbitrary group names must not override declared derivative ancestry/shared origin. Resolve source roots conservatively (including chains/cycles/unknown origin), prove genuinely independent Manager-authorized agreeing same-scale roots for HIGH; otherwise MODERATE or WITHHELD. Production provider set remains EMPTY.
-
-Required next evidence: NEW fresh FULL exact-head Builder checkpoint INCLUDING final handoff; PR #147 remains draft/unmerged. Manager will reconcile that exact checkpoint in active machine state, run task-specific readiness against its unchanged bounded diff, freeze exact FULL head on PASS, and route a FRESH independent re-audit. Do not manufacture FV-SEASON-01 or activate TCW-035.
+Production approved-package-value providers remain EMPTY; live winner/split WITHHELD. ESPN is read-only. FV-SEASON-01 remains pending. TCW-035 and later product tasks remain inactive.
 
 ## Next Activation
 
-| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
+| Order | Employee / Role | Status | Current Task / Gate | Next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | Independent audit findings consumed / repair routed | Await new exact FULL Builder SHA, independently check it, reconcile machine checkpoint, then readiness/freeze/fresh audit. |
-| 2 | Implementation Engineer / Builder | ACTIVATE NOW | TCW-034 bounded second-audit repair | Resume existing PR #147 at `24be4be45f7fde351c0a6e209353dd2beed8d854`; repair only F02-R1 and F04-R1 with regressions and final handoff in the exact fresh FULL checkpoint. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No unresolved policy question | Await separate routing. |
-| 4 | Research & Development (R&D) | IDLE | No value-provider authority granted | Await separate routing. |
-| 5 | Independent Auditor / QA | WAIT | TCW-045 CLOSED / FAIL consumed | Do not reuse a historical audit as new-target proof. Await Manager's immutable repaired target and fresh audit branch. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No separate diagnosis escalation | Activate only if bounded repair cannot converge. |
-
-
-## Third repaired FULL checkpoint — 2026-09-19
-
-Existing Builder PR #147 remains DRAFT / UNMERGED. Exact Builder branch/head `035c5f5112b7393f9d4f17685792548afa67dd2e` is unchanged. It passed FULL workflow #692 / run `35477501875`, test job `105989175098`, with final Builder handoff already in the tested head. Repair diff versus `24be4be45f7fde351c0a6e209353dd2beed8d854` is limited to five Builder-owned files. Canonical Manager state now records `worker_checkpoint_sha = 035c5f5112b7393f9d4f17685792548afa67dd2e`, `status = MANAGER_REVIEW_READY` and `pr = 147`.
-
-**Next gate:** execute task-specific `workflow:audit-readiness -- --task TCW-034` against unchanged exact Builder HEAD `035c5f5112b7393f9d4f17685792548afa67dd2e` with current Manager machine/task files; retain actual PASS packet/hash. Only on actual `blockers: []` and `readyForManagerFreeze: true` may Manager freeze that SAME FULL SHA and activate another fresh Independent Auditor re-audit. No Builder merge, provider authorization, field-validation mutation, or TCW-035 activation.
+| 1 | Manager / Architect | WAIT | TCW-046 and TCW-047 routed | Consume TCW-046 fresh independent verdict; separately review TCW-047 workflow PR and require independent workflow/security audit before integration. |
+| 2 | Implementation Engineer / Builder | ACTIVATE TCW-047 IN SEPARATE CHAT / TCW-034 WAIT | TCW-047 automated readiness implementation; TCW-034 frozen audit target | Work only on distinct `builder/tcw-047-automated-audit-readiness` branch and workflow scope; do not modify frozen Builder PR #147 or auto-freeze/merge. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No new strategy question | Await separate Manager routing. |
+| 4 | Research & Development (R&D) | IDLE | No approved trade-value provider | Await separate Manager routing. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-046 fresh third repaired-target re-audit | Independently audit immutable `035c5f5112b7393f9d4f17685792548afa67dd2e`; one evidence PR, no merge. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only upon Manager assignment. |
