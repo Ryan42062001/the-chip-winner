@@ -186,14 +186,12 @@ test("workflow aggregate never reports PASS for missing, failed, or infrastructu
 });
 test("trusted canonical audit precedes NO_ELIGIBLE_TASK and rejects invalid inactive/root/spec state with artifacts", () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "tcw-047-e2e-"));
-  runGit(dir, "init", "-q", "-b", "master");
+  // A local full-history clone preserves the real immutable trusted verifier ref.
+  // No production branch, PR, or canonical repository file is mutated by this fixture.
+  execFileSync("git", ["clone", "-q", "--no-hardlinks", "--", ROOT, dir]);
+  runGit(dir, "checkout", "-q", "-B", "master");
   runGit(dir, "config", "user.email", "fixture@example.invalid");
   runGit(dir, "config", "user.name", "Fixture");
-  cpSync(path.join(ROOT, ".ai"), path.join(dir, ".ai"), { recursive: true });
-  mkdirSync(path.join(dir, "scripts"), { recursive: true });
-  for (const file of ["scripts/audit-workflow.js", "scripts/workflow-audit-readiness.js", "package.json"]) {
-    cpSync(path.join(ROOT, file), path.join(dir, file));
-  }
   const file = path.join(dir, ".ai/shared/ACTIVE_TASKS.json");
   const original = JSON.parse(readFileSync(file, "utf8"));
   const old = structuredClone(original);
