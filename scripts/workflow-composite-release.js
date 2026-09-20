@@ -55,7 +55,11 @@ export const FROZEN_SOURCE = Object.freeze({
   sourcePr: 162, auditPr: 175,
   acceptedAuditHead: "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7",
   acceptedReportPath: ".ai/audit/TCW-050_SYNCED_READINESS_SECURITY_REAUDIT.md",
-  acceptedReportBlob: "59d400a4215c9fb308eb0887364557f4a09ea7d8"
+  acceptedReportBlob: "59d400a4215c9fb308eb0887364557f4a09ea7d8",
+  trustedCanonicalMaster: "25706f183e9d4523370748ca5ef8af459601bb60",
+  frozenManagerEvidenceBlob: "cb5c0cd8c227bd9faf59057a13d52d4122e996ae",
+  originalHelperRunId: 35488171554,
+  originalHelperJobId: 106018254992
 });
 const STAGE_REF = /^refs\/heads\/manager\/[a-z0-9][a-z0-9/_-]*$/;
 
@@ -194,6 +198,14 @@ export function validateLocalContract(a, options = {}) {
   }
   check(issues, exact(master.sha) && exact(master.tree) && master.sha !== source.sha,
     "frozen M SHA/tree invalid or confused with source A");
+  check(issues, record(stage.authorization) &&
+    /^TCW-[0-9]{3}$/.test(stage.authorization?.taskId || "") &&
+    stage.authorization?.taskPath ===
+      ".ai/manager/tasks/" + stage.authorization?.taskId + ".md" &&
+    stage.authorization?.masterSha === master.sha &&
+    stage.authorization?.pr === stage.pr &&
+    stage.authorization?.branch === stage.branch,
+    "stage task/PR/branch requires separate exact-M Manager assignment; prefix is not authority");
   check(issues, sameRepo(stage) && goodId(stage.pr) && stage.pr !== source.pr &&
     typeof stage.branch === "string" && STAGE_REF.test(stage.branch) &&
     stage.branch !== source.branch && stage.branch !== "refs/heads/master",
@@ -218,7 +230,9 @@ export function validateLocalContract(a, options = {}) {
     }
   }
   check(issues, record(a.ruleset) && goodId(a.ruleset.id) &&
-    DIGEST.test(a.ruleset.digest || "") && a.ruleset.strictUpToDate === true &&
+    DIGEST.test(a.ruleset.digest || "") &&
+    DIGEST.test(a.ruleset.effectiveDigest || "") &&
+    a.ruleset.strictUpToDate === true &&
     a.ruleset.bypass === false && a.ruleset.mergeMethod === "merge" &&
     a.ruleset.requiredContext === REQUIRED_CHECK.context &&
     a.ruleset.integrationId === REQUIRED_CHECK.integrationId,
@@ -316,6 +330,49 @@ function actualPaths(files) {
     path: file.filename, mode: file.mode, blob: file.sha
   })).sort((a, b) => a.path.localeCompare(b.path));
 }
+/**
+ * An effective protection snapshot is LOCAL evidence only; the read-only
+ * observer must independently obtain the complete effective-list AND each
+ * fully expanded applicable rule from GitHub. Never splice a PR rule from a
+ * different ruleset onto a strict status-check rule, or accept a self-report
+ * bypass:false when the actual rules grant bypass rights.
+ */
+export function validateEffectiveProtection(a, live) {
+  const blockers = [], rules = live?.effectiveRulesets, listed = live?.effectiveRuleList;
+  check(blockers, Array.isArray(listed) && listed.length === 1 &&
+    Array.isArray(rules) && rules.length === 1 &&
+    listed[0]?.id === rules[0]?.id && rules[0]?.id === a.ruleset?.id,
+    "complete effective protection list/ruleset identity missing, partial or cross-ruleset");
+  const rule = Array.isArray(rules) && rules.length === 1 ? rules[0] : null;
+  check(blockers, record(rule) && rule.id === a.ruleset?.id &&
+    rule.enforcement === "active" && rule.target === "branch" &&
+    rule.source_type === "Repository" && rule.source === REPOSITORY.fullName &&
+    eq(rule.conditions?.ref_name?.include, ["~DEFAULT_BRANCH"]) &&
+    eq(rule.conditions?.ref_name?.exclude, []) &&
+    Array.isArray(rule.bypass_actors) && rule.bypass_actors.length === 0 &&
+    rule.current_user_can_bypass === "never",
+    "applicable protected master provenance, no-bypass actors/current-user or branch scope unverified");
+  const pull = rule?.rules?.filter((entry) => entry.type === "pull_request") || [];
+  const status = rule?.rules?.filter((entry) => entry.type === "required_status_checks") || [];
+  check(blockers, pull.length === 1 && status.length === 1 &&
+    Array.isArray(pull[0]?.parameters?.allowed_merge_methods) &&
+    pull[0].parameters.allowed_merge_methods.includes("merge") &&
+    a.stage?.mergeMethod === "merge" && a.ruleset?.mergeMethod === "merge",
+    "single applicable PR-required rule and explicit permitted merge method unavailable");
+  check(blockers, status.length === 1 &&
+    status[0].parameters?.strict_required_status_checks_policy === true &&
+    status[0].parameters?.required_status_checks?.some((entry) =>
+      entry.context === REQUIRED_CHECK.context &&
+      entry.integration_id === REQUIRED_CHECK.integrationId),
+    "same applicable ruleset strict up-to-date required test/app integration missing");
+  check(blockers, rule && sha256(stable(rule)) === a.ruleset?.digest &&
+    live?.rulesetDigest === a.ruleset?.digest &&
+    sha256(stable(rules)) === a.ruleset?.effectiveDigest &&
+    live?.effectiveRulesetDigest === a.ruleset?.effectiveDigest,
+    "independently observed live selected/effective ruleset digest mismatch");
+  return { classification: blockers.length ? "FAIL" : "LOCAL_PROTECTION_CONTRACT_PASS",
+    blockers, authority: "CALLER_SUPPLIED_SNAPSHOT_NOT_AUTHENTICATED" };
+}
 export function validatePremergeSnapshot(a, live) {
   const blockers = [];
   const l = live || {};
@@ -342,18 +399,30 @@ export function validatePremergeSnapshot(a, live) {
     l.stageCommit?.tree?.sha === a.stage?.tree &&
     eq(l.stageCommit?.parents?.map((parent) => parent.sha), a.stage?.parents),
   "stage S tree/parentage changed");
+  liveMismatch(blockers, l.sourceCustody?.sourceSha === FROZEN_SOURCE.sha &&
+    l.sourceCustody?.historicalCreation === FROZEN_SOURCE.historicalCreation &&
+    l.sourceCustody?.effectiveBaseline === FROZEN_SOURCE.effectiveBaseline &&
+    l.sourceCustody?.packetSha256 === FROZEN_SOURCE.packetSha256 &&
+    l.sourceCustody?.originalPacketBytesVerified === true &&
+    l.sourceCustody?.auditHead === FROZEN_SOURCE.acceptedAuditHead &&
+    l.sourceCustody?.auditReportBlob === FROZEN_SOURCE.acceptedReportBlob &&
+    l.sourceCustody?.auditTarget === FROZEN_SOURCE.sha &&
+    l.sourceCustody?.auditVerdict === "PASS",
+  "immutable original A packet bytes and independent TCW-050 provenance UNVERIFIED");
+  liveMismatch(blockers, l.stageAuthority?.verified === true &&
+    l.stageAuthority?.masterSha === a.master?.sha &&
+    l.stageAuthority?.taskId === a.stage?.authorization?.taskId &&
+    l.stageAuthority?.taskPath === a.stage?.authorization?.taskPath &&
+    l.stageAuthority?.branch === a.stage?.branch &&
+    l.stageAuthority?.pr === a.stage?.pr &&
+    l.stageAuthority?.owner === "Manager",
+  "independently assigned Manager stage task/branch/PR authority UNVERIFIED");
   liveMismatch(blockers, eq(actualPaths(l.sourceFiles), a.source?.files?.slice().sort((x, y) =>
     x.path.localeCompare(y.path))), "original source A blob/mode inventory mismatch");
   liveMismatch(blockers, eq(actualPaths(l.stageChangedFiles), a.stage?.changedFiles?.slice().sort((x, y) =>
     x.path.localeCompare(y.path))), "complete stage S diff or source blob mismatch");
-  liveMismatch(blockers, l.ruleset?.id === a.ruleset?.id &&
-    l.rulesetDigest === a.ruleset?.digest &&
-    l.ruleset?.enforcement === "active" &&
-    l.ruleset?.rules?.some((rule) => rule.type === "required_status_checks" &&
-      rule.parameters?.strict_required_status_checks_policy === true &&
-      rule.parameters?.required_status_checks?.some((c) =>
-        c.context === REQUIRED_CHECK.context && c.integration_id === REQUIRED_CHECK.integrationId)),
-  "active strict protected ruleset/required app or digest mismatch");
+  const protection = validateEffectiveProtection(a, l);
+  blockers.push(...protection.blockers.map((issue) => "live " + issue));
   liveMismatch(blockers, l.ci?.headSha === a.stage?.sha &&
     l.ci?.context === REQUIRED_CHECK.context &&
     l.ci?.integrationId === REQUIRED_CHECK.integrationId &&
