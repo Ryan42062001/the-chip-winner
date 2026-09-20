@@ -39,9 +39,9 @@ Production approved-package-value providers remain EMPTY; live winner/split WITH
 
 | Order | Employee / Role | Status | Current Task / Gate | Next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-046 and TCW-047 routed | Consume fresh TCW-046 Auditor verdict; independently review separate TCW-047 workflow PR/CI and route workflow/security audit before integration. |
-| 2 | Implementation Engineer / Builder — product | WAIT | TCW-034 audit target frozen | Do not commit to or merge PR #147 while independent re-audit runs. |
-| 3 | Independent Auditor / QA | ACTIVATE NOW | TCW-046 fresh third repaired-target re-audit | Read task and immutable packet, verify exact target, produce only two evidence files in one PR with exact-head CI. |
-| 4 | Implementation Engineer / Builder — workflow automation | ACTIVATE IN SEPARATE CHAT | TCW-047 automatic readiness gate | Execute independent workflow task on distinct branch; no impact on TCW-034/TCW-046. |
-| 5 | Strategy / R&D | IDLE | No provider or scoring authority changes | Await separate task routing. |
-| 6 | Troubleshooting & Root Cause Engineer | IDLE | No new reproduced blocker | Activate only upon Manager request. |
+| 1 | Manager / Architect | WAIT | TCW-046 and TCW-047 routed | Consume TCW-046 fresh independent verdict; separately review TCW-047 workflow PR and require independent workflow/security audit before integration. |
+| 2 | Implementation Engineer / Builder | ACTIVATE TCW-047 IN SEPARATE CHAT / TCW-034 WAIT | TCW-047 automated readiness implementation; TCW-034 frozen audit target | Work only on distinct `builder/tcw-047-automated-audit-readiness` branch and workflow scope; do not modify frozen Builder PR #147 or auto-freeze/merge. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No new strategy question | Await separate Manager routing. |
+| 4 | Research & Development (R&D) | IDLE | No approved trade-value provider | Await separate Manager routing. |
+| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-046 fresh third repaired-target re-audit | Independently audit immutable `035c5f5112b7393f9d4f17685792548afa67dd2e`; one evidence PR, no merge. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only upon Manager assignment. |
