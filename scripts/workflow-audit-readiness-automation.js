@@ -218,21 +218,23 @@ function baseResult(task, managerSha) {
     resultSha256: null
   };
 }
-async function runTask(task, manager, managerSha, token, artifacts) {
+async function runTask(task, manager, managerSha, token, artifacts, options = {}) {
+  const readGithub = options.readGithub || ((apiPath) => githubJson(apiPath, token));
+  const originUrl = options.originUrl || "https://github.com/" + REPO + ".git";
   const result = baseResult(task, managerSha);
   const log = [];
   let builder = null;
   try {
     const blockers = validateCandidate(task);
     assert(blockers.length === 0, blockers.join("; "));
-    const remoteBranch = await githubJson("/git/ref/heads/" + task.branch, token);
-    const pr = await githubJson("/pulls/" + task.pr, token);
+    const remoteBranch = await readGithub("/git/ref/heads/" + task.branch);
+    const pr = await readGithub("/pulls/" + task.pr);
     const remote = { refSha: remoteBranch.object?.sha, pr };
     const remoteBlockers = validateRemoteSnapshot(task, remote);
     assert(remoteBlockers.length === 0, remoteBlockers.join("; "));
     builder = mkdtempSync(path.join(os.tmpdir(), "tcw-audit-readiness-"));
     git(builder, ["init", "-q"]);
-    git(builder, ["remote", "add", "origin", "https://github.com/" + REPO + ".git"]);
+    git(builder, ["remote", "add", "origin", originUrl]);
     // Fetch the advertised assigned branch, then pin the exact Manager-recorded SHA.
     try {
       git(builder, ["fetch", "--no-tags", "origin", "refs/heads/" + task.branch],
@@ -256,8 +258,8 @@ async function runTask(task, manager, managerSha, token, artifacts) {
     assert(git(builder, ["rev-parse", "HEAD"]) === task.worker_checkpoint_sha,
       "Builder HEAD changed during readiness execution");
     // Revalidate the two remote refs to reject advancement while the helper executed.
-    const finalBranch = await githubJson("/git/ref/heads/" + task.branch, token);
-    const finalPr = await githubJson("/pulls/" + task.pr, token);
+    const finalBranch = await readGithub("/git/ref/heads/" + task.branch);
+    const finalPr = await readGithub("/pulls/" + task.pr);
     const finalBlockers = validateRemoteSnapshot(task,
       { refSha: finalBranch.object?.sha, pr: finalPr });
     assert(finalBlockers.length === 0,
@@ -352,4 +354,4 @@ async function main() {
 const invoked = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invoked) await main();
 
-export { verifyGitCheckout, overlayCanonicalControlPlane, pathAllowed, digest, resultDigest };
+export { verifyGitCheckout, overlayCanonicalControlPlane, pathAllowed, digest, resultDigest, runTask };
