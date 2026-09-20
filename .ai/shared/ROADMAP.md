@@ -228,7 +228,7 @@ Decision artifact:
 `.ai/manager/evidence/TCW-033_VALUE_SOURCE_DECISION.md`
 
 #### TCW-034 — Trade Winner Engine
-Status: **ACTIVE — BOUNDED SECOND-AUDIT F02-R1 / F04-R1 BUILDER REMEDIATION**
+Status: **AUDIT_READY — THIRD FULL REPAIRED TARGET FROZEN / TCW-046 FRESH AUDIT ACTIVE**
 Primary owner: Builder
 Builder PR: `#147` — DRAFT / UNMERGED
 Failed frozen target / remediation parent: `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
@@ -416,3 +416,10 @@ The accepted TCW-032 contract defines scoring semantics and TCW-033 established 
 ### Second Trade Winner audit disposition — 2026-09-19
 
 TCW-045 concluded FAIL on exact frozen `24be4be45f7fde351c0a6e209353dd2beed8d854`. Evidence PR #157 / workflow #679 PASS was integrated on master `c6ba9b3599e4befa9abce9a958f6a7c45a0245dc` / workflow #680 PASS. Manager accepted F02-R1 (BLOCKING) and F04-R1 (same-pass) and returned only TCW-034 to Builder on existing draft/unmerged PR #147. A fresh FULL final handoff-inclusive repaired head, readiness, immutable freeze and new independent audit are still required; TCW-035 and later tasks remain inactive.
+
+
+### Third repaired Trade Winner target / independent workflow automation — 2026-09-19
+
+TCW-034 Builder PR #147 remains DRAFT / UNMERGED. Exact FULL-tested third immutable target `035c5f5112b7393f9d4f17685792548afa67dd2e`; task-specific readiness PASS (blockers [], readyForManagerFreeze true, packet hash `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`). TCW-046 fresh Independent Auditor re-audit is assigned; TCW-035 and later Trade Analyzer milestones remain inactive.
+
+**Separate operating-system enhancement TCW-047 — Automated Exact-SHA Task Audit-Readiness Gate: ASSIGNED.** Implement a GitHub Actions-based workflow that reads canonical Manager state and immutable Builder SHA, runs existing readiness without manual user checkout, and publishes fail-closed per-task evidence. Distinct Builder branch/scope; independent workflow/security audit mandatory. No auto-freeze, auto-merge, provider approval or retroactive effect on current TCW-046 audit. This enhancement is NOT completed/installed yet.
