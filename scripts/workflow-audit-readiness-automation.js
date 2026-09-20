@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SHA = /^[a-f0-9]{40}$/;
+const HASH = /^[a-f0-9]{64}$/;
 const ID = /^TCW-\d{3}$/;
 const BRANCH = /^builder\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 const READY = new Set(["MANAGER_REVIEW_READY", "AUDIT_READY", "MERGE_READY"]);
@@ -100,7 +101,7 @@ export function validateRemoteSnapshot(task, remote, repository = REPO) {
 export function verifyOriginalPacket(packet, task) {
   assert(packet && typeof packet === "object", "mechanical helper did not emit a JSON packet");
   const { sha256, ...payload } = packet;
-  assert(sha(sha256) && digest(JSON.stringify(payload)) === sha256, "mechanical helper packet SHA256 integrity mismatch");
+  assert(typeof sha256 === "string" && HASH.test(sha256) && digest(JSON.stringify(payload)) === sha256, "mechanical helper packet SHA256 integrity mismatch");
   assert(packet.schema === "TCW_AUDIT_READINESS_V1" && packet.taskId === task.task_id &&
     packet.branch === task.branch && packet.head === task.worker_checkpoint_sha &&
     packet.assignmentMasterSha === task.assignment_master_sha &&
@@ -138,7 +139,8 @@ async function githubJson(apiPath, token) {
       "X-GitHub-Api-Version": "2022-11-28" },
     signal: AbortSignal.timeout(30000)
   });
-  if (!response.ok) fail("GitHub API returned HTTP " + response.status, "INFRA_ERROR");
+  if (!response.ok) fail("GitHub API returned HTTP " + response.status,
+    response.status === 404 ? "FAIL" : "INFRA_ERROR");
   return response.json();
 }
 function verifyGitCheckout(dir, task) {
@@ -221,8 +223,10 @@ async function runTask(task, manager, managerSha, token, artifacts) {
     git(builder, ["init", "-q"]);
     git(builder, ["remote", "add", "origin", "https://github.com/" + REPO + ".git"]);
     // Fetch the advertised assigned branch, then pin the exact Manager-recorded SHA.
-    git(builder, ["fetch", "--no-tags", "origin", "refs/heads/" + task.branch],
-      authenticatedGitEnv(token));
+    try {
+      git(builder, ["fetch", "--no-tags", "origin", "refs/heads/" + task.branch],
+        authenticatedGitEnv(token));
+    } catch { fail("authenticated Git fetch of assigned Builder branch failed", "INFRA_ERROR"); }
     assert(git(builder, ["rev-parse", "FETCH_HEAD"]) === task.worker_checkpoint_sha,
       "Builder branch advanced between GitHub API verification and Git fetch");
     git(builder, ["checkout", "-q", "-B", task.branch, task.worker_checkpoint_sha]);
