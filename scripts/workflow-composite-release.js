@@ -48,14 +48,17 @@ const historicalBaseline = "7ca2953009d37a014e041cc24f4934bfe61b5cad";
 
 export function releaseTuple(attestation) {
   const a = attestation;
+  // Bind *all* immutable source/stage file tuples, exact required-check and
+  // preview evidence, auditor report, distinct owner authorities and rollback
+  // custody, not merely their top-level commit references. State is excluded
+  // because the protected receipt chain advances through the same attempt.
   return {
-    repository: a.repository, attemptId: a.attempt?.id, nonce: a.attempt?.nonce,
-    policyCommit: a.authority?.policy?.commit, masterSha: a.master?.sha,
-    masterTree: a.master?.tree, sourceSha: a.source?.sha, sourcePr: a.source?.pr,
-    sourceBaseline: a.source?.historicalCreationBaseline,
-    stagePr: a.stage?.pr, stageSha: a.stage?.sha, stageTree: a.stage?.tree,
-    stageBase: a.stage?.baseSha, rulesetDigest: a.ruleset?.digest,
-    auditorSha: a.auditor?.evidence?.commit, ownerApprovalSha: a.authority?.installation?.evidence?.commit
+    schema: a.schema, repository: a.repository,
+    attempt: { id: a.attempt?.id, nonce: a.attempt?.nonce,
+      issuedAt: a.attempt?.issuedAt, expiresAt: a.attempt?.expiresAt },
+    source: a.source, master: a.master, stage: a.stage,
+    ruleset: a.ruleset, auditor: a.auditor, authority: a.authority,
+    rollback: a.rollback
   };
 }
 export const tupleDigest = (a) => sha256(stable(releaseTuple(a)));

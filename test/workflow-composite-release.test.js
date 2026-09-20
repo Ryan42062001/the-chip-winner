@@ -115,6 +115,23 @@ const fail = (a, pattern) => {
   assert.equal(out.classification, "FAIL", "fixture unexpectedly passed " + pattern);
   if (pattern) assert.match(out.blockers.join("; "), pattern);
 };
+test("protected attempt tuple binds original/staged blobs, exact-stage CI, approval timing and operator", () => {
+  const baseline = fixture(), originalDigest = baseline.ledger.tupleDigest;
+  assert.equal(originalDigest, tupleDigest(baseline));
+  for (const mutate of [
+    (a) => { a.source.files[0].blob = S("f"); a.stage.changedFiles[0].blob = S("f"); },
+    (a) => { a.stage.ci.checkRunId = 3402; },
+    (a) => { a.stage.preview.sha = S("9"); },
+    (a) => { a.authority.plan.issuedAt = stamp(-580000); },
+    (a) => { a.rollback.operatorId = 15; },
+    (a) => { a.ruleset.id = 22309640; }
+  ]) {
+    const altered = clone(baseline);
+    mutate(altered);
+    assert.notEqual(tupleDigest(altered), originalDigest);
+    fail(altered, /ledger immutable tuple binding mismatch/);
+  }
+});
 test("local positive fixture is CONTRACT ONLY and cannot attest actual GitHub authority", () => {
   const a = fixture();
   assert.equal(REQUIRED_CHECK.integrationId, 15368);

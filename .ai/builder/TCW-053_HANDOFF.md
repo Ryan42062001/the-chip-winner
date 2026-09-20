@@ -30,6 +30,12 @@ The pure local predicates return LOCAL_CONTRACT_PASS or LOCAL_SNAPSHOT_CONTRACT_
 
 Exact stage test and expected_head_sha are not an atomic protected M compare-and-swap. Only separately authorized GitHub merge method with exactly two actual ordered parents M then S, G.tree == audited S.tree, actual merged file inventory and master ref == G may ever satisfy the proposed postmerge contract. Squash/rebase/unchecked GitHub merge preview/old A test never suffice. This implementation makes no GitHub write or release API calls.
 
+## Observed intermediate FULL CI and final commitment
+
+Initial handoff-inclusive implementation checkpoint: c808d6b962acc638be2d19b4454f4bceb972875a, DRAFT Builder PR #182. GitHub Deploy website PR workflow # (actual run 35512391904), test job 106082449601, completed SUCCESS in FULL mode: 490/490 Node tests PASS, 0 FAIL, Workflow V3.2 state audit, dependency install/audit, model evaluation, browser/static smoke, accessibility, readiness, mobile, extension, performance, security, evidence-upload and classifier guardrails SUCCESS. Artifact tcw-ci-evidence-35512391904-1 / ID 10605448639. This is an INTERMEDIATE implementation checkpoint, not the final freeze target.
+
+The final combined code/test/handoff commit extends immutable release-tuple binding to every source and stage file tuple, exact-stage check/preview, actor approval and rollback fields, with targeted negative regression coverage. **A fresh FULL GitHub PR run on that exact final commit is required**; no subsequent docs-only head may replace its freeze target. Manager must verify the final run/job IDs and same-SHA test status before any freeze.
+
 ## Self-validation and remaining Manager gates
 
 Required final evidence: exact final Builder HEAD containing implementation/tests/this handoff, allowed-path diff from 17cb363bf457d02cb0029430b110af002e43dc6a, targeted node --test test/workflow-composite-release.test.js, existing static workflow audit, full npm test and fresh GitHub PR FULL CI at the exact handoff-inclusive SHA. CI evidence and job/run IDs must be published separately after observed completion; no invented mechanical PASS. The original task-specific helper on Builder branch needs canonical Manager task/registry read-only overlay and eligibility reconciliation before a genuine prefreeze readiness run, without committing Manager activation files or pretending the branch was created later.
