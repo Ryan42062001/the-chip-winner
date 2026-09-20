@@ -1,47 +1,39 @@
 # Manager / Architect Handoff
 
-STATUS: TCW-034 THIRD REPAIRED TARGET FROZEN — TCW-046 FRESH AUDIT + TCW-047 SEPARATE READINESS AUTOMATION ASSIGNED
-ROLE: Manager / Architect
+STATUS: TCW-049 PRE-INSTALL PASS ACCEPTED/CLOSED — OWNER-AUTHORIZED EXACT-SHA INSTALLATION BLOCKED BY STRICT UP-TO-DATE REQUIRED CHECK; NEW SHA SYNCHRONIZATION AUTHORITY REQUIRED
+ROLE: Manager / Architect · Canonical Workflow V3.2
 
-## Immutable Trade Winner audit target
+## Verified exact custody and Manager acceptance
 
-Existing Builder PR #147: DRAFT / UNMERGED.
-Exact FULL-tested final Builder head and IMMUTABLE THIRD REPAIRED AUDIT TARGET:
-`035c5f5112b7393f9d4f17685792548afa67dd2e`
+- Audited repaired Builder PR #162 is OPEN / DRAFT / UNMERGED at NEW Manager-frozen exact final implementation AND handoff SHA `7c5bd1add860d1e8ed7bc03717451c7d88a21c50`; same-head FULL Builder #723/run `35484883666`, test `106009319646`: SUCCESS, 489/489 Node tests reported by Builder. Actual Builder creation baseline `7ca2953009d37a014e041cc24f4934bfe61b5cad` unchanged.
+- Historical original independent TCW-048 audit verdict FAIL remains immutable for OLD target `acb63b0c85b98b34fac9af99f00f38553de5670c`. Exact NEW repaired target's audit is independently distinct; `historical_failed_audit_target_sha` preserved.
+- Separate one-time ORIGINAL task-specific mechanical helper run `35485696728`, job `106011526029`: PASS on unchanged new Builder SHA with canonical Manager overlay, original packet SHA256 `74277fd077fd47e117b2071710b0d3fb6667c27bf85c007b5530d39f26794182`, retained artifact 10596844979. Temporary original-helper workflow removed; this was NOT installation/testing of the proposed NEW automatic workflow.
+- Fresh independent TCW-049 Auditor report `.ai/audit/TCW-049_WORKFLOW_SECURITY_REAUDIT.md` on NEW exact target: **PASS ONLY for bounded PRE-INSTALLATION L1–L3 security scope**. F01 frozen verifier/entrypoint+direct attestation, F02 authenticated canonical zero-eligible/static contract, F03 error classification/redaction plus retained read-only/exact-SHA/PR/scope controls challenged. Auditor controlled source-extracted/mocked tests did not exercise a real malicious PR, live token or new default-branch workflow. First-party operational L4 remains NOT ESTABLISHED.
+- Auditor evidence PR #170: one commit `33a4986ab90631c48f701aff21268f11f65b611c`, exactly two unique Auditor evidence files, exact-head workflow #731/run `35486464610`/test `106013656947` SUCCESS (DOCS_ONLY; full app tests skipped). Manager independently ACCEPTED bounded verdict in PR comment `5747323922`, guarded-merged ONLY Auditor evidence #170 into canonical master `d702e40a9ed3f690541b7ab8e0f0616eb051b114`. Independently verified REAL post-merge push workflow #732/run `35486699736`/test `106014296853`: SUCCESS, deploy/production verification SKIPPED for docs-only change.
+- TCW-049 audit-only lifecycle CLOSED: Manager recorded explicit machine-state `VERIFYING_MASTER` closeout and all transition proof at commit `1f28c66a53143ac9e76e4d69285f02777a4abace`, then removed completed task from active-only registry at `b19c394d8a4d12868ad78a09c4a2ec28f6f86344`, and closed its historical task spec. Original Auditor branch creation baseline `93436f250bd38bf97357c342b84a59a02adc28fc`, frozen packet and report remain unchanged. This process does NOT close source TCW-047.
 
-Prior historical failed targets:
-- `a40c8db8f7e6defcecdf58dc2d3ddd81ea88249a`
-- `24be4be45f7fde351c0a6e209353dd2beed8d854`
+## Separate owner-controlled workflow installation
 
-Actual task-specific readiness PASS from unchanged exact Builder SHA with canonical Manager metadata:
-- `blockers: []`
-- `readyForManagerFreeze: true`
-- packet SHA256 `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`
-- assignment baseline `24be4be45f7fde351c0a6e209353dd2beed8d854`
-- PR #147
-- exactly five authorized changed files.
+TCW-047 remains `WAITING_EXTERNAL_EVIDENCE` / `USER_ACTION`: the OWNER DID AUTHORIZE exact old Builder #162 installation, but GitHub strict required-check/up-to-date rule BLOCKED the guarded merge. A new SHA synchronization and fresh exact-head audit/release decision require separate owner authority. This is NOT a new code/audit blocker. Exact owner gate: explicit approval of supervised installation for Builder PR #162 at frozen `7c5bd1add860d1e8ed7bc03717451c7d88a21c50`, acknowledging master Actions workflow with real read-only GitHub token, existing website master-push deployment, release operator and rollback capability. Manager decision/evidence `.ai/manager/evidence/TCW-049_PREINSTALL_AUDIT_ACCEPTANCE_RELEASE_GATE.md` defines fixed scope, re-verification, rollback and mandatory live first-party Actions trial. Until authorization, do NOT mark PR #162 ready, merge, dispatch, or call the new workflow operational. An ambiguous continuation message is not an explicit release-operator/rollback commitment.
 
-Fresh FULL on same head: workflow #692 / run `35477501875`, test `105989175098`: PASS.
-Manager readiness checkpoint master `936b9885ed27d0ec288e749d841d38b44b7a4c4d`: workflow #694 / run `35478099599`: PASS.
-This mechanical PASS is NOT an independent audit verdict or product acceptance.
+After separate explicit authorization: guarded exact-head Builder #162 integration only following fresh master/Builder/PR/FULL/audit/scope/rollback verification; real successful exact-main FULL CI and controlled first-party NEW readiness workflow master-push / valid and invalid dispatch / read-only token / original packet provenance / zero-eligible, real authorized eligible checkpoint, FAIL vs INFRA_ERROR negative artifacts and retained run/job/artifact IDs. Do NOT use TCW-034 in-flight product task as an automatic readiness pilot; its established manual readiness remains authoritative. If a safe eligible pilot or genuine dispatch cannot be executed, record UNVERIFIED and do not declare automation operational.
 
-TCW-034 status: AUDIT_READY. Frozen packet: `.ai/audit/TCW-046_TRADE_WINNER_REAUDIT_PACKET_035c5f51.md`.
-
-## Independent parallel work, separated by branch and scope
-
-TCW-046 (Independent Auditor / QA) is ASSIGNED to fresh re-audit of exact frozen `035c5f5112b7393f9d4f17685792548afa67dd2e`. Branch: `auditor/tcw-046-trade-winner-third-reaudit`. Only two task-specific audit evidence files. No merge.
-
-TCW-047 (Workflow Automation Builder) is ASSIGNED independently to create an automatic GitHub Actions task-specific readiness gate for FUTURE checkpoints. Branch: `builder/tcw-047-automated-audit-readiness`. It must not touch PR #147, change the frozen target, or supply TCW-046 audit evidence. New Actions workflow, standalone runner and deterministic tests only; no changes to Manager machine state or existing authority scripts. The gate is NOT live until implemented, independently audited, accepted and merged; existing proven manual gate remains authoritative for this freeze.
-
-Production approved-package-value providers remain EMPTY; live winner/split WITHHELD. ESPN is read-only. FV-SEASON-01 remains pending. TCW-035 and later product tasks remain inactive.
+Historical trade Builder PR #147 remains DRAFT/UNMERGED at historical product failed target `035c5f5112b7393f9d4f17685792548afa67dd2e`, TCW-034 manual readiness unaffected, TCW-035 inactive, old Auditor PR #165 separately OPEN/UNMERGED. No ESPN writes, product/field-validation changes or automatically delegated merge/freeze authority.
 
 ## Next Activation
 
-| Order | Employee / Role | Status | Current Task / Gate | Next action |
+| Order | Employee / Role | Status | Current task / gate | Next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | WAIT | TCW-046 and TCW-047 routed | Consume TCW-046 fresh independent verdict; separately review TCW-047 workflow PR and require independent workflow/security audit before integration. |
-| 2 | Implementation Engineer / Builder | ACTIVATE TCW-047 IN SEPARATE CHAT / TCW-034 WAIT | TCW-047 automated readiness implementation; TCW-034 frozen audit target | Work only on distinct `builder/tcw-047-automated-audit-readiness` branch and workflow scope; do not modify frozen Builder PR #147 or auto-freeze/merge. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No new strategy question | Await separate Manager routing. |
-| 4 | Research & Development (R&D) | IDLE | No approved trade-value provider | Await separate Manager routing. |
-| 5 | Independent Auditor / QA | ACTIVATE NOW | TCW-046 fresh third repaired-target re-audit | Independently audit immutable `035c5f5112b7393f9d4f17685792548afa67dd2e`; one evidence PR, no merge. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No new reproduced blocker | Activate only upon Manager assignment. |
+| 1 | Manager / Architect | WAIT — NEW SHA SYNCHRONIZATION AUTHORITY | TCW-047 exact-HEAD supervised installation gate, TCW-049 evidence accepted/closed | Original old exact-SHA installation was owner-authorized and GitHub BLOCKED under strict required test/up-to-date policy. Obtain distinct permission to synchronize branch to a NEW SHA and route new full CI/mechanical/freeze/fresh independent audit before a separately authorized new-head install. Until then no merge. |
+| 2 | Implementation Engineer / Builder | WAIT | Repaired TCW-047 final implementation and handoff complete | Preserve existing Builder #162 DRAFT at original exact SHA pending separately authorized master synchronization; fresh FULL and independent exact-NEW-SHA audit before any new installation decision. TCW-034 trade lane independent. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No workflow-release strategy assignment | Await separate Manager work; no TCW-035 activation. |
+| 4 | Research & Development (R&D) | IDLE | No workflow-release research assignment | Await separate Manager work; no ESPN/source write authority. |
+| 5 | Independent Auditor / QA | TCW-049 CLOSED | Independent bounded pre-install PASS evidence integrated | No additional pre-install re-audit absent source changes or reproducible new security defect; distinct live operational proof remains Manager-controlled and may trigger a new audit on actual failure. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No separately evidenced post-install blocker | Route only after a reproducible cross-layer issue is identified. |
+
+
+## MOST RECENT BLOCKING INSTALLATION GATE — 2026-09-19
+
+Original user authorization for exact `7c5bd1add860d1e8ed7bc03717451c7d88a21c50` was VALID and a supervised exact-head guarded merge was ACTUALLY attempted. GitHub API rejected it HTTP 405: `Required status check "test" is expected`. Independently retrieved active Protect Master ruleset #22309639: `strict_required_status_checks_policy:true`, GitHub Actions `test` context, no bypass. Original Builder SHA already has exact test job `106009319646` SUCCESS; the failure is stale branch relative to current master, not a missing historical test. Builder PR #162 restored OPEN/DRAFT/UNMERGED and original SHA unchanged; master `86c5563e10b4107c59374159a09c793cae632a99` had NOT been altered by attempted Builder merge, website deployment or new readiness workflow installation. Blocker evidence: https://github.com/Ryan42062001/the-chip-winner/pull/162#issuecomment-5747421193.
+
+**Do not treat old authorization as approval for a new head.** Need separate owner-approved Builder-branch sync to current master (new head), new exact-head FULL CI, original mechanical gate with latest canonical Manager overlay, NEW frozen packet/new fresh independent workflow/security re-audit, then separate new exact-head supervised integration decision. Preserve original actual Builder branch-creation baseline `7ca2953009d37a014e041cc24f4934bfe61b5cad`, original failed TCW-048 target `acb63b0c85b98b34fac9af99f00f38553de5670c`, accepted TCW-049 PASS explicitly limited to old repaired frozen SHA, original TCW-034 manual readiness/failed product target `035c5f5112b7393f9d4f17685792548afa67dd2e`, PR #147 draft/unmerged, TCW-035 inactive. No branch protection bypass/force push, no fake installed workflow/PASS. Manager task spec and canonical registry carry updated `WAITING_EXTERNAL_EVIDENCE` user-action blocker for this NEW-SHA consent.
