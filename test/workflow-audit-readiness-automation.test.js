@@ -111,18 +111,18 @@ test("original helper packet hash, provenance, scope, and blockers are independe
   assert.deepEqual(verifyOriginalPacket(p, t), []);
   assert.throws(() => verifyOriginalPacket({ ...p, head: SHA("c") }), /integrity/);
   const corrupt = { ...p, changedFiles: ["src/private.txt"] };
-  corrupt.sha256 = digest(JSON.stringify(({ sha256, ...rest }) => rest)(corrupt));
+  corrupt.sha256 = digest(JSON.stringify((({ sha256, ...rest }) => rest)(corrupt)));
   assert.deepEqual(verifyOriginalPacket(corrupt, t), []);
   assert.equal(pathAllowed("src/private.txt", t), false);
   assert.equal(pathAllowed("src/allowed.txt", t), true);
   assert.equal(pathAllowed("src/other.txt", t), false);
   const blocked = { ...p, blockers: ["static guardrail"], readyForManagerFreeze: false };
-  blocked.sha256 = digest(JSON.stringify(({ sha256, ...rest }) => rest)(blocked));
+  blocked.sha256 = digest(JSON.stringify((({ sha256, ...rest }) => rest)(blocked)));
   assert.deepEqual(verifyOriginalPacket(blocked, t), ["static guardrail"]);
   assert.throws(() => verifyOriginalPacket({ ...p, pr: 999 }), /integrity/);
   assert.throws(() => verifyOriginalPacket({ ...p, sha256: "0".repeat(64) }), /integrity/);
   const mismatch = { ...p, pr: 999 };
-  mismatch.sha256 = digest(JSON.stringify(({ sha256, ...rest }) => rest)(mismatch));
+  mismatch.sha256 = digest(JSON.stringify((({ sha256, ...rest }) => rest)(mismatch)));
   assert.throws(() => verifyOriginalPacket(mismatch, t), /provenance/);
 });
 test("real synthetic Git history proves exact branch, ancestor, and changed path safeguards", () => {
@@ -164,6 +164,7 @@ test("canonical Manager metadata overlays stale Builder registry without rewriti
   assert.equal(readFileSync(path.join(f.dir, ".ai/manager/tasks/TCW-101.md"), "utf8"),
     "canonical specification\n");
   assert.equal(runGit(f.dir, "rev-parse", "HEAD"), head);
+  writeFileSync(path.join(f.dir, "src/allowed.txt"), "staged change\\n");
   runGit(f.dir, "add", "src/allowed.txt");
   assert.throws(() => overlayCanonicalControlPlane(manager, f.dir), /staged/);
 });
@@ -207,7 +208,7 @@ test("synthetic master push writes retained NO_ELIGIBLE_TASK result; rejected di
   const noTask = JSON.parse(readFileSync(path.join(output, "summary.json")));
   assert.equal(noTask.outcome, "NO_ELIGIBLE_TASK");
   assert.equal(noTask.checkedTaskCount, 0);
-  assert.equal(noTask.sha256, digest(JSON.stringify(({ sha256, ...rest }) => rest)(noTask)));
+  assert.equal(noTask.sha256, digest(JSON.stringify((({ sha256, ...rest }) => rest)(noTask))));
   const invalid = invoke("--event", "workflow_dispatch", "--task", "TCW-999");
   assert.equal(invalid.status, 2);
   assert.equal(JSON.parse(readFileSync(path.join(output, "summary.json"))).outcome, "FAIL");
