@@ -252,8 +252,18 @@ test("trusted canonical audit precedes NO_ELIGIBLE_TASK and rejects invalid inac
   runGit(dir, "commit", "-qm", "restore valid canonical state");
   const spec = path.join(dir, ".ai/manager/tasks/TCW-047.md");
   before = runGit(dir, "rev-parse", "HEAD");
-  writeFileSync(spec, readFileSync(spec, "utf8").replace(
-    "STATUS: REWORK_REQUIRED", "STATUS: AUDIT_READY"));
+  // The canonical task status legitimately advances during Manager integration.
+  // Always create a different, valid task-spec STATUS to challenge the trusted
+  // validator; a stale hard-coded REWORK_REQUIRED no longer mutates this fixture.
+  const canonicalTask = original.tasks.find((item) => item.task_id === "TCW-047");
+  assert.ok(canonicalTask);
+  const mismatchedStatus = canonicalTask.status === "AUDIT_READY"
+    ? "MANAGER_REVIEW_READY" : "AUDIT_READY";
+  const specContents = readFileSync(spec, "utf8");
+  assert.match(specContents, /^STATUS: [A-Z_]+$/m);
+  assert.notEqual(canonicalTask.status, mismatchedStatus);
+  writeFileSync(spec, specContents.replace(/^STATUS: [A-Z_]+$/m,
+    "STATUS: " + mismatchedStatus));
   runGit(dir, "add", ".");
   runGit(dir, "commit", "-qm", "corrupt inactive canonical task spec");
   const specFail = invoke();
