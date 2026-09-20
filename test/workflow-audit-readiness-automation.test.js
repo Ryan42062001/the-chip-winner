@@ -8,7 +8,8 @@ import test from "node:test";
 import {
   validateCandidate, selectEligibleTasks, validateRemoteSnapshot, verifyOriginalPacket,
   summarizeResults, verifyGitCheckout, overlayCanonicalControlPlane,
-  digest, resultDigest, pathAllowed, runTask
+  digest, resultDigest, pathAllowed, runTask, validateCanonicalState,
+  authenticateTrustedVerifier, TRUSTED_VERIFIER_SHA
 } from "../scripts/workflow-audit-readiness-automation.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -183,37 +184,85 @@ test("workflow aggregate never reports PASS for missing, failed, or infrastructu
   example.blockers.push("tampered");
   assert.notEqual(resultDigest(example), example.resultSha256);
 });
-test("synthetic master push writes retained NO_ELIGIBLE_TASK result; rejected dispatch writes failure artifact", () => {
+test("trusted canonical audit precedes NO_ELIGIBLE_TASK and rejects invalid inactive/root/spec state with artifacts", () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "tcw-047-e2e-"));
   runGit(dir, "init", "-q", "-b", "master");
   runGit(dir, "config", "user.email", "fixture@example.invalid");
   runGit(dir, "config", "user.name", "Fixture");
-  mkdirSync(path.join(dir, ".ai/shared"), { recursive: true });
+  cpSync(path.join(ROOT, ".ai"), path.join(dir, ".ai"), { recursive: true });
+  mkdirSync(path.join(dir, "scripts"), { recursive: true });
+  for (const file of ["scripts/audit-workflow.js", "scripts/workflow-audit-readiness.js", "package.json"]) {
+    cpSync(path.join(ROOT, file), path.join(dir, file));
+  }
   const file = path.join(dir, ".ai/shared/ACTIVE_TASKS.json");
-  writeFileSync(file, JSON.stringify(registry([{ ...task(), status: "ASSIGNED" }])) + "\n");
+  const original = JSON.parse(readFileSync(file, "utf8"));
+  const old = structuredClone(original);
+  old.updated_at_utc = "2025-01-01T00:00:00Z";
+  writeFileSync(file, JSON.stringify(old, null, 2) + "\n");
   runGit(dir, "add", ".");
-  runGit(dir, "commit", "-qm", "previous manager registry");
-  const before = runGit(dir, "rev-parse", "HEAD");
-  writeFileSync(file, JSON.stringify(registry([{ ...task(), status: "IN_PROGRESS" }])) + "\n");
+  runGit(dir, "commit", "-qm", "previous canonical registry");
+  let before = runGit(dir, "rev-parse", "HEAD");
+  writeFileSync(file, JSON.stringify(original, null, 2) + "\n");
   runGit(dir, "add", ".");
-  runGit(dir, "commit", "-qm", "no eligible checkpoint");
-  const current = runGit(dir, "rev-parse", "HEAD");
+  runGit(dir, "commit", "-qm", "canonical registry metadata-only push");
   const env = { ...process.env, GITHUB_REF: "refs/heads/master",
     GITHUB_REPOSITORY: REPO, GITHUB_TOKEN: "synthetic-read-only-token",
     GITHUB_RUN_ID: "987654321", GITHUB_JOB: "exact-sha-readiness" };
   const output = path.join(dir, "evidence");
-  const invoke = (...args) => spawnSync(process.execPath, [SCRIPT, "--manager-sha", current,
-    "--output-dir", output, ...args], { cwd: dir, env, encoding: "utf8" });
-  const none = invoke("--before-sha", before, "--event", "push");
-  assert.equal(none.status, 0, none.stderr);
+  const invoke = (event = "push", id = "") => {
+    const current = runGit(dir, "rev-parse", "HEAD");
+    return spawnSync(process.execPath, [SCRIPT, "--manager-sha", current,
+      "--before-sha", before, "--event", event, "--task", id,
+      "--output-dir", output], { cwd: dir, env, encoding: "utf8" });
+  };
+  const pass = invoke();
+  assert.equal(pass.status, 0, pass.stderr + pass.stdout);
   const noTask = JSON.parse(readFileSync(path.join(output, "summary.json")));
   assert.equal(noTask.outcome, "NO_ELIGIBLE_TASK");
   assert.equal(noTask.checkedTaskCount, 0);
   assert.equal(noTask.sha256, digest(JSON.stringify((({ sha256, ...rest }) => rest)(noTask))));
-  const invalid = invoke("--event", "workflow_dispatch", "--task", "TCW-999");
-  assert.equal(invalid.status, 2);
+  const invalidId = invoke("workflow_dispatch", "TCW-999");
+  assert.equal(invalidId.status, 2);
   assert.equal(JSON.parse(readFileSync(path.join(output, "summary.json"))).outcome, "FAIL");
-  assert.ok(JSON.parse(readFileSync(path.join(output, "global-error.json"))).blockers.length);
+  for (const corruption of [
+    ["root-active-only", (r) => { r.active_only = false; }],
+    ["root-workflow-overlay", (r) => { r.workflow_overlay = "wrong.md"; }],
+    ["inactive-authority", (r) => {
+      const item = r.tasks.find((t) => t.status !== "MANAGER_REVIEW_READY");
+      assert.ok(item);
+      item.merge_authority = "Builder";
+    }]
+  ]) {
+    before = runGit(dir, "rev-parse", "HEAD");
+    const invalid = structuredClone(original);
+    corruption[1](invalid);
+    writeFileSync(file, JSON.stringify(invalid, null, 2) + "\n");
+    runGit(dir, "add", ".");
+    runGit(dir, "commit", "-qm", corruption[0]);
+    const failure = invoke();
+    assert.equal(failure.status, 2, failure.stderr + failure.stdout);
+    const result = JSON.parse(readFileSync(path.join(output, "summary.json")));
+    assert.equal(result.outcome, "FAIL", corruption[0]);
+    const global = JSON.parse(readFileSync(path.join(output, "global-error.json")));
+    assert.equal(global.classification, "FAIL", corruption[0]);
+    assert.match(global.blockers.join(" "), /canonical static registry\/task-spec validation failed/);
+    assert.notEqual(result.outcome, "NO_ELIGIBLE_TASK");
+  }
+  before = runGit(dir, "rev-parse", "HEAD");
+  writeFileSync(file, JSON.stringify(original, null, 2) + "\n");
+  runGit(dir, "add", ".");
+  runGit(dir, "commit", "-qm", "restore valid canonical state");
+  const spec = path.join(dir, ".ai/manager/tasks/TCW-047.md");
+  before = runGit(dir, "rev-parse", "HEAD");
+  writeFileSync(spec, readFileSync(spec, "utf8").replace(
+    "STATUS: REWORK_REQUIRED", "STATUS: AUDIT_READY"));
+  runGit(dir, "add", ".");
+  runGit(dir, "commit", "-qm", "corrupt inactive canonical task spec");
+  const specFail = invoke();
+  assert.equal(specFail.status, 2, specFail.stderr + specFail.stdout);
+  assert.equal(JSON.parse(readFileSync(path.join(output, "summary.json"))).outcome, "FAIL");
+  assert.match(JSON.parse(readFileSync(path.join(output, "global-error.json"))).blockers.join(" "),
+    /task spec STATUS/);
 });
 test("new automation is read-only and never grants merge or freeze authority", () => {
   const workflow = readFileSync(path.join(ROOT, ".github/workflows/task-audit-readiness.yml"), "utf8");
@@ -236,10 +285,7 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
     path.join(source, "scripts/audit-workflow.js"));
   cpSync(path.join(ROOT, "scripts/workflow-audit-readiness.js"),
     path.join(source, "scripts/workflow-audit-readiness.js"));
-  writeFileSync(path.join(source, "package.json"), JSON.stringify({
-    name: "tcw-synthetic-readiness", type: "module", private: true,
-    scripts: { "workflow:audit-readiness": "node scripts/workflow-audit-readiness.js" }
-  }));
+  cpSync(path.join(ROOT, "package.json"), path.join(source, "package.json"));
   writeFileSync(path.join(source, ".ai/shared/ACTIVE_TASKS.json"), '{"staleBuilderRegistry":true}\n');
   writeFileSync(path.join(source, "src/allowed.txt"), "baseline\n");
   runGit(source, "add", ".");
@@ -249,7 +295,7 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
   writeFileSync(path.join(source, "src/allowed.txt"), "implementation\n");
   runGit(source, "add", ".");
   runGit(source, "commit", "-qm", "exact Builder checkpoint");
-  const checkpoint = runGit(source, "rev-parse", "HEAD");
+  let checkpoint = runGit(source, "rev-parse", "HEAD");
   const t = {
     ...task(), title: "Synthetic readiness validation", role_label: "Implementation Engineer / Builder",
     dependency: "INDEPENDENT", execution_mode: "STANDARD_CHAT_HIGH", refresh_mode: "FAST_REFRESH",
@@ -260,6 +306,10 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
   };
   const manager = mkdtempSync(path.join(os.tmpdir(), "tcw-047-manager-e2e-"));
   cpSync(path.join(ROOT, ".ai"), path.join(manager, ".ai"), { recursive: true });
+  mkdirSync(path.join(manager, "scripts"));
+  for (const name of ["scripts/audit-workflow.js", "scripts/workflow-audit-readiness.js", "package.json"]) {
+    cpSync(path.join(ROOT, name), path.join(manager, name));
+  }
   const managerRegistry = JSON.parse(readFileSync(path.join(ROOT, ".ai/shared/ACTIVE_TASKS.json")));
   managerRegistry.tasks = [t];
   writeFileSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json"),
@@ -276,17 +326,22 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
   writeFileSync(specPath, spec);
   const artifacts = mkdtempSync(path.join(os.tmpdir(), "tcw-047-evidence-"));
   const readGithub = async (apiPath) => {
-    if (apiPath.startsWith("/git/ref/heads/")) return { object: { sha: checkpoint } };
+    if (apiPath.startsWith("/git/ref/heads/")) return { object: { sha: t.worker_checkpoint_sha } };
     if (apiPath.startsWith("/pulls/")) return remote(t).pr;
     throw Error("unexpected API URL");
   };
-  const options = { readGithub, originUrl: source };
+  const options = { readGithub, originUrl: source,
+    trustedFiles: (name) => readFileSync(path.join(ROOT, name), "utf8") };
+  assert.equal(authenticateTrustedVerifier(manager, source, options).commit, TRUSTED_VERIFIER_SHA);
+  assert.equal(validateCanonicalState(manager, options).commit, TRUSTED_VERIFIER_SHA);
   const managerSha = SHA("e");
   const pass = await runTask(t, manager, managerSha, "test-token", artifacts, options);
   assert.equal(pass.classification, "PASS", JSON.stringify(pass));
   assert.deepEqual(pass.changedFiles, ["src/allowed.txt"]);
   assert.equal(pass.originalPacketSha256?.length, 64);
   assert.equal(pass.provenance.builderTargetPinnedToExactSha, true);
+  assert.equal(pass.provenance.trustedVerifierAnchorSha, TRUSTED_VERIFIER_SHA);
+  assert.equal(Object.keys(pass.provenance.trustedVerifierFileSha256).length, 3);
   assert.equal(pass.provenance.canonicalControlPlaneOverlaid, true);
   assert.equal(pass.provenance.originalTargetHeadUnchanged, true);
   assert.equal(pass.resultSha256, resultDigest(pass));
@@ -297,11 +352,48 @@ test("isolated synthetic Builder checkout runs the real unchanged mechanical hel
   const failed = await runTask(t, manager, managerSha, "test-token", artifacts, options);
   assert.equal(failed.classification, "FAIL", JSON.stringify(failed));
   assert.equal(failed.originalPacketSha256, null);
-  assert.ok(failed.blockers.length);
+  assert.match(failed.blockers.join(" "), /task spec STATUS/);
   assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "FAIL");
   // A transient/unavailable Git remote is infrastructure, not a mechanical PASS or FAIL.
   const infra = await runTask(t, manager, managerSha, "test-token", artifacts,
     { ...options, originUrl: path.join(manager, "missing-git-remote") });
   assert.equal(infra.classification, "INFRA_ERROR", JSON.stringify(infra));
   assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "INFRA_ERROR");
+  // A local filesystem/process permission error is INFRA_ERROR and its diagnostics are sanitized.
+  const denied = await runTask(t, manager, managerSha, "test-token", artifacts,
+    { ...options, readGithub: async () => {
+      const error = new Error("Bearer test-token credential leaked");
+      error.code = "EACCES";
+      throw error;
+    } });
+  assert.equal(denied.classification, "INFRA_ERROR");
+  assert.doesNotMatch(readFileSync(path.join(artifacts, "TCW-101.json"), "utf8"), /test-token/);
+  // Allow broad future scripts/package scope, but never permit self-verifier tampering.
+  writeFileSync(specPath, spec);
+  t.allowed_path_prefixes = ["src/allowed.txt", "scripts/", "package.json"];
+  t.forbidden_path_prefixes = [];
+  for (const name of ["scripts/workflow-audit-readiness.js", "scripts/audit-workflow.js", "package.json"]) {
+    for (const trustedName of ["scripts/workflow-audit-readiness.js", "scripts/audit-workflow.js", "package.json"]) {
+      writeFileSync(path.join(source, trustedName), readFileSync(path.join(ROOT, trustedName), "utf8"));
+    }
+    const original = readFileSync(path.join(source, name), "utf8");
+    const tampered = name === "package.json" ? JSON.stringify({
+      ...JSON.parse(original), scripts: { ...JSON.parse(original).scripts,
+        "preworkflow:audit-readiness": "node -e \"process.stdout.write(\u0027FAKE PASS\u0027)\"",
+        "workflow:audit-readiness": "node -e \"process.stdout.write(\u0027FAKE PASS\u0027)\"" }
+    }) : original + "\n// malicious verifier returns fabricated PASS packet\n";
+    writeFileSync(path.join(source, name), tampered);
+    runGit(source, "add", ".");
+    runGit(source, "commit", "-qm", "synthetic authorized broad-scope " + name);
+    checkpoint = runGit(source, "rev-parse", "HEAD");
+    t.worker_checkpoint_sha = checkpoint;
+    managerRegistry.tasks = [t];
+    writeFileSync(path.join(manager, ".ai/shared/ACTIVE_TASKS.json"),
+      JSON.stringify(managerRegistry, null, 2) + "\n");
+    const rejected = await runTask(t, manager, managerSha, "test-token", artifacts, options);
+    assert.equal(rejected.classification, "FAIL", name + ": " + JSON.stringify(rejected));
+    assert.match(rejected.blockers.join(" "), /trusted verifier source diverges/);
+    assert.equal(rejected.provenance.originalPacketVerified, false);
+    assert.equal(JSON.parse(readFileSync(path.join(artifacts, "TCW-101.json"))).classification, "FAIL");
+  }
 });
