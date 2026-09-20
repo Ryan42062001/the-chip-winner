@@ -1,6 +1,6 @@
 # TCW-047 — Builder Workflow Automation Handoff
 
-STATUS: IMPLEMENTED CANDIDATE — EXACT-HEAD CI / INDEPENDENT AUDIT NOT YET COMPLETE
+STATUS: IMPLEMENTED CANDIDATE — CODE-HEAD FULL CI PASS; FINAL HANDOFF-HEAD CI / INDEPENDENT AUDIT PENDING
 TASK: TCW-047 — Automated Exact-SHA Task Audit-Readiness Gate
 ROLE: Implementation Engineer / Builder — independent Workflow Automation lane
 EXECUTION MODE: STANDARD_CHAT_HIGH
@@ -32,7 +32,10 @@ Existing workflow validator, mechanical helper, package/lock, .ai/shared/ and .a
 
 Deterministic test fixtures cover active-task selection, concurrent tasks, missing/invalid checkpoint and Manager metadata, wrong status/PR/branch, branch or PR advancement, synthetic Git ancestor/changed-file protections, canonical metadata overlay on older Builder task state, helper packet hash/provenance/blockers, aggregate fail-closed classifications, artifact retention and absence of automated merge/freeze privileges.
 
-PENDING: targeted/full repository CI, exact final-head CI and independent Manager acceptance. The new workflow is not available on the default branch until a Manager-authorized integration; GitHub's workflow_dispatch trigger cannot be considered actually validated solely by this feature branch's YAML or unit tests. Manager must require an actual Actions checkout/provenance/packet exercise after safe installation or separately authorize a bounded test mechanism. In-flight TCW-034/TCW-046 freezes must use existing independently verified procedure.
+Validated code/test checkpoint: `783ec3123429cd88d238022aed88344e89658794`.
+FULL PR #162 GitHub Actions run `35480569465`, test job `105997501171`: SUCCESS. All 488 Node tests passed (0 failed), including the synthetic actual-helper PASS/FAIL/INFRA_ERROR checkout/overlay/provenance/packet test; workflow V3.2 audit, dependency install/audit, model eval, static/browser smoke, accessibility, readiness, mobile, extension, performance and security checks all passed. CI evidence artifact: `tcw-ci-evidence-35480569465-1` (artifact ID `10595497712`). Deployment and production verification skipped on the PR, as expected.
+
+PENDING: final handoff-inclusive exact-head CI and independent Manager acceptance. The new workflow is not available on the default branch until a Manager-authorized integration; GitHub's workflow_dispatch trigger cannot be considered actually validated solely by this feature branch's YAML or unit tests. Manager must require an actual Actions checkout/provenance/packet exercise after safe installation or separately authorize a bounded test mechanism. In-flight TCW-034/TCW-046 freezes must use existing independently verified procedure.
 
 ## Next Activation
 
