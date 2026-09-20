@@ -5,10 +5,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
-  SCHEMA, REPOSITORY, SOURCE_PATHS, REQUIRED_CHECK, FROZEN_SOURCE, sha256, releaseTuple, tupleDigest,
+  SCHEMA, REPOSITORY, SOURCE_PATHS, REQUIRED_CHECK, sha256, releaseTuple, tupleDigest,
   validateLocalContract, validateLedgerTransition, validatePremergeSnapshot,
-  validatePostmergeSnapshot, validateEffectiveProtection, observeStageReadOnly,
-  verifyPremergeReadOnly, verifyPostmergeReadOnly
+  validatePostmergeSnapshot, validateEffectiveProtection, FROZEN_SOURCE,
+  observeStageReadOnly, verifyPremergeReadOnly, verifyPostmergeReadOnly
 } from "../scripts/workflow-composite-release.js";
 
 const S = (letter) => letter.repeat(40), H = (letter) => letter.repeat(64);
@@ -17,25 +17,30 @@ const ACCEPTED_A = "17e5f413f2afd3d743fd28d401f0df421825df2a";
 const EFFECTIVE_BASE = "e0fe6309dc0aaa184bbeef35861f7d49256385b7";
 const PACKET_DIGEST = "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894";
 const AUDIT_HEAD = "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7";
-const stable = (x) => Array.isArray(x) ? "[" + x.map(stable).join(",") + "]" :
-  x && typeof x === "object" ? "{" + Object.keys(x).sort().map((key) =>
-    JSON.stringify(key) + ":" + stable(x[key])).join(",") + "}" : JSON.stringify(x);
-const protectionRule = () => ({
-  id: 22309639, enforcement: "active", target: "branch", source_type: "Repository",
-  source: REPOSITORY.fullName, conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
-  bypass_actors: [], current_user_can_bypass: "never", rules: [
-    { type: "pull_request", parameters: { allowed_merge_methods: ["merge"] } },
-    { type: "required_status_checks", parameters: {
-      strict_required_status_checks_policy: true,
-      required_status_checks: [{ context: "test", integration_id: 15368 }]
-    } }
-  ]
-});
 const stamp = (delta) => new Date(NOW + delta).toISOString();
 const clone = (data) => structuredClone(data);
+const stableFixture = (obj) => Array.isArray(obj) ?
+  "[" + obj.map(stableFixture).join(",") + "]" :
+  obj && typeof obj === "object" ?
+    "{" + Object.keys(obj).sort().map((k) =>
+      JSON.stringify(k) + ":" + stableFixture(obj[k])).join(",") + "}" :
+    JSON.stringify(obj);
+const protectionRule = () => ({
+  id: 22309639, name: "Protect Master", enforcement: "active",
+  target: "branch", source_type: "Repository", source: REPOSITORY.fullName,
+  conditions: { ref_name: { include: ["~DEFAULT_BRANCH"], exclude: [] } },
+  bypass_actors: [], current_user_can_bypass: "never",
+  rules: [
+    { type: "pull_request", parameters: {
+      allowed_merge_methods: ["merge", "squash", "rebase"] } },
+    { type: "required_status_checks", parameters: {
+      strict_required_status_checks_policy: true,
+      required_status_checks: [{ context: "test", integration_id: 15368 }] } }
+  ]
+});
 function files() {
   return SOURCE_PATHS.map((name, i) => ({
-    path: name, mode: "100644", blob: S("abcd"[i])
+    path: name, mode: "100644", blob: FROZEN_SOURCE.fileBlobs[i]
   }));
 }
 function evidence(letter, pr) {
@@ -56,7 +61,7 @@ function fixture() {
     },
     source: {
       repoId: REPOSITORY.id, repoFullName: REPOSITORY.fullName, taskId: "TCW-047",
-      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: ACCEPTED_A, tree: S("1"),
+      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: ACCEPTED_A, tree: FROZEN_SOURCE.tree,
       historicalCreationBaseline: "7ca2953009d37a014e041cc24f4934bfe61b5cad",
       effectiveScopeBaseline: EFFECTIVE_BASE,
       packet: {
@@ -71,11 +76,8 @@ function fixture() {
       repoId: REPOSITORY.id, repoFullName: REPOSITORY.fullName,
       pr: 201, branch: "refs/heads/manager/composite-test-stage", sha: S("c"), tree: S("5"),
       baseSha: S("b"), mergeMethod: "merge", parents: [S("b")],
-      authorization: {
-        taskId: "TCW-099", taskPath: ".ai/manager/tasks/TCW-099.md",
-        taskBlob: S("0"), masterSha: S("b"), pr: 201,
-        branch: "refs/heads/manager/composite-test-stage"
-      },
+      authorization: { taskId: "TCW-999", taskPath: ".ai/manager/tasks/TCW-999.md",
+        masterSha: S("b"), pr: 201, branch: "refs/heads/manager/composite-test-stage" },
       changedFiles: clone(sourceFiles),
       ci: {
         headSha: S("c"), context: "test", integrationId: 15368, appId: 15368,
@@ -88,8 +90,7 @@ function fixture() {
       }
     },
     ruleset: {
-      id: 22309639, digest: sha256(stable(protectionRule())),
-      effectiveDigest: sha256(stable([protectionRule()])), strictUpToDate: true, bypass: false,
+      id: 22309639, digest: H("b"), effectiveDigest: H("c"), strictUpToDate: true, bypass: false,
       mergeMethod: "merge", requiredContext: "test", integrationId: 15368
     },
     auditor: {
@@ -123,6 +124,9 @@ function fixture() {
       state: "OWNER_APPROVED", consumed: false, aborted: false, events: []
     }
   };
+  const rule = protectionRule();
+  a.ruleset.digest = sha256(stableFixture(rule));
+  a.ruleset.effectiveDigest = sha256(stableFixture([rule]));
   a.ledger.tupleDigest = tupleDigest(a);
   a.ledger.events = [
     { state: "PREPARED", commit: S("6"), previousCommit: null, nonce: a.attempt.nonce,
@@ -168,28 +172,18 @@ test("local positive fixture is CONTRACT ONLY and cannot attest actual GitHub au
   assert.notEqual(a.source.sha, a.stage.sha);
   assert.notEqual(a.stage.sha, a.master.sha);
 });
-test("foreign repository and independently frozen source custody fail even after coherent rehash", () => {
+test("foreign repository, source PR/branch/baseline, false original-helper packet and audit fail", () => {
   for (const [mutate, pattern] of [
     [(a) => { a.repository.id = 42; }, /repository/],
-    [(a) => { a.source.repoId = 42; }, /source A differs/],
+    [(a) => { a.source.repoId = 42; }, /source A repository/],
     [(a) => { a.source.pr = 163; }, /source A task/],
     [(a) => { a.source.branch = "auditor/fake"; }, /source A task/],
     [(a) => { a.source.historicalCreationBaseline = a.source.effectiveScopeBaseline; }, /creation/],
     [(a) => { a.source.packet.head = a.stage.sha; }, /original helper/],
     [(a) => { a.source.packet.sha256 = "bad"; }, /original helper/],
     [(a) => { a.source.audit.targetSha = a.stage.sha; }, /exact-A audit/],
-    [(a) => { a.source.audit.verdict = "PASS WITH NON-BLOCKING FINDINGS"; }, /exact-A audit/],
-    [(a) => { a.source.sha = S("9"); a.source.packet.head = a.source.sha;
-      a.source.audit.targetSha = a.source.sha; }, /frozen TCW-050 checkpoint/],
-    [(a) => { a.source.effectiveScopeBaseline = S("9"); }, /effective baseline/],
-    [(a) => { a.source.packet.sha256 = H("9"); }, /immutable TCW-050 digest/],
-    [(a) => { a.source.audit.evidenceCommit = S("9"); }, /accepted exact-A audit/]
-  ]) {
-    const a = fixture(); mutate(a);
-    a.ledger.tupleDigest = tupleDigest(a);
-    a.ledger.events.forEach((event) => { event.tupleDigest = a.ledger.tupleDigest; });
-    fail(a, pattern);
-  }
+    [(a) => { a.source.audit.verdict = "PASS WITH NON-BLOCKING FINDINGS"; }, /exact-A audit/]
+  ]) { const a = fixture(); mutate(a); fail(a, pattern); }
 });
 test("four original Git path-mode-blob tuples and exact whole-stage diff fail closed", () => {
   for (const [mutate, pattern] of [
@@ -209,11 +203,7 @@ test("stage S/M/A confusion, extra merge parents, source baseline and method can
     [(a) => a.stage.parents = [a.master.sha, a.source.sha], /descend directly/],
     [(a) => a.stage.mergeMethod = "squash", /merge method/],
     [(a) => a.ruleset.mergeMethod = "rebase", /ruleset/],
-    [(a) => a.stage.pr = a.source.pr, /Manager assignment|separate Manager-owned/],
-    [(a) => a.stage.branch = "refs/heads/auditor/composite-test-stage", /Manager assignment|Manager-owned/],
-    [(a) => a.stage.branch = "refs/heads/builder/composite-test-stage", /Manager assignment|Manager-owned/],
-    [(a) => a.stage.authorization.taskId = "not-a-task", /separate exact-M Manager assignment/],
-    [(a) => a.stage.authorization.masterSha = S("f"), /separate exact-M Manager assignment/]
+    [(a) => a.stage.pr = a.source.pr, /separate Manager-owned/]
   ]) { const a=fixture();mutate(a);fail(a,pattern); }
 });
 test("exact-S FULL required GitHub app/check-run and required preview cannot use older A/S1", () => {
@@ -290,7 +280,6 @@ test("ledger transitions accept local forward/abort contracts, reject replay/reo
 function liveFixture(a) {
   const srcFiles=a.source.files.map((f)=>({filename:f.path,mode:f.mode,sha:f.blob}));
   const staged=a.stage.changedFiles.map((f)=>({filename:f.path,mode:f.mode,sha:f.blob}));
-  const rule=protectionRule(), rules=[rule];
   return {
     repository: {id:REPOSITORY.id,full_name:REPOSITORY.fullName},
     masterRef:{object:{sha:a.master.sha}}, masterCommit:{sha:a.master.sha,tree:{sha:a.master.tree}},
@@ -305,15 +294,24 @@ function liveFixture(a) {
     },
     stageCommit:{sha:a.stage.sha,tree:{sha:a.stage.tree},parents:[{sha:a.master.sha}]},
     sourceFiles:srcFiles,stageChangedFiles:staged,
-    sourceCustody:{sourceSha:FROZEN_SOURCE.sha,historicalCreation:FROZEN_SOURCE.historicalCreation,
-      effectiveBaseline:FROZEN_SOURCE.effectiveBaseline,packetSha256:FROZEN_SOURCE.packetSha256,
-      originalPacketBytesVerified:true,auditHead:FROZEN_SOURCE.acceptedAuditHead,
-      auditReportBlob:FROZEN_SOURCE.acceptedReportBlob,auditTarget:FROZEN_SOURCE.sha,
-      auditVerdict:"PASS"},
-    stageAuthority:{verified:true,masterSha:a.master.sha,taskId:a.stage.authorization.taskId,
-      taskPath:a.stage.authorization.taskPath,branch:a.stage.branch,pr:a.stage.pr,owner:"Manager"},
-    ruleset:rule,effectiveRuleList:[{id:rule.id}],effectiveRulesets:rules,
-    rulesetDigest:sha256(stable(rule)),effectiveRulesetDigest:sha256(stable(rules)),
+    ruleset:protectionRule(), rulesetDigest:a.ruleset.digest,
+    effectiveRuleList:[{id:22309639}], effectiveRulesets:[protectionRule()],
+    effectiveRulesetDigest:a.ruleset.effectiveDigest,
+    sourceCustody: {
+      sourceSha: FROZEN_SOURCE.sha,
+      historicalCreation: FROZEN_SOURCE.historicalCreation,
+      effectiveBaseline: FROZEN_SOURCE.effectiveBaseline,
+      packetSha256: FROZEN_SOURCE.packetSha256,
+      originalPacketBytesVerified: true, // synthetic LOCAL snapshot ONLY
+      auditHead: FROZEN_SOURCE.acceptedAuditHead,
+      auditReportBlob: FROZEN_SOURCE.acceptedReportBlob,
+      auditTarget: FROZEN_SOURCE.sha, auditVerdict: "PASS"
+    },
+    stageAuthority: {
+      verified:true, masterSha:a.master.sha,taskId:a.stage.authorization.taskId,
+      taskPath:a.stage.authorization.taskPath,branch:a.stage.branch,
+      pr:a.stage.pr,owner:"Manager"
+    },
     ci:clone(a.stage.ci),preview:clone(a.stage.preview),
     auditEvidence:{
       commit:{sha:a.auditor.evidence.commit,tree:{sha:a.auditor.evidence.tree}},
@@ -345,16 +343,9 @@ test("local read-only premerge snapshot checks complete A/S/M/evidence joins, ne
     [(l)=>l.stagePr.head.sha=S("f"),/staged PR/],
     [(l)=>l.stagePr.base.sha=S("f"),/staged PR/],
     [(l)=>l.stageCommit.tree.sha=S("f"),/stage S tree/],
-    [(l)=>l.sourceCustody.originalPacketBytesVerified=false,/packet bytes/],
-    [(l)=>l.sourceCustody.auditHead=S("f"),/TCW-050 provenance/],
-    [(l)=>l.stageAuthority.owner="Auditor",/Manager stage/],
     [(l)=>l.sourceFiles[0].sha=S("f"),/original source A blob/],
     [(l)=>l.stageChangedFiles.push({filename:"evil",mode:"100644",sha:S("f")}),/complete stage S diff/],
     [(l)=>l.rulesetDigest=H("f"),/ruleset/],
-    [(l)=>l.ruleset.rules=l.ruleset.rules.filter((r)=>r.type!=="pull_request"),/PR-required/],
-    [(l)=>l.ruleset.bypass_actors=[{actor_id:12}],/no-bypass/],
-    [(l)=>l.ruleset.current_user_can_bypass="always",/no-bypass/],
-    [(l)=>l.effectiveRulesets.push(clone(l.ruleset)),/partial or cross-ruleset/],
     [(l)=>l.ci.mode="DOCS_ONLY",/FULL test/],
     [(l)=>l.ci.appId=5,/FULL test/],
     [(l)=>l.preview.sha=S("f"),/synthetic merge preview/],
@@ -366,30 +357,6 @@ test("local read-only premerge snapshot checks complete A/S/M/evidence joins, ne
   ]) {
     const changed=clone(live);mutate(changed);
     const out=validatePremergeSnapshot(a,changed);
-    assert.equal(out.classification,"FAIL");
-    assert.match(out.blockers.join("; "),pattern);
-  }
-});
-test("effective protection rejects coherently re-digested weak or cross-ruleset policy", () => {
-  for (const [mutate, pattern] of [
-    [(l) => { l.ruleset.rules = l.ruleset.rules.filter((r) => r.type !== "pull_request"); }, /PR-required/],
-    [(l) => { l.ruleset.bypass_actors = [{ actor_id: 12 }]; }, /no-bypass/],
-    [(l) => { l.ruleset.current_user_can_bypass = "always"; }, /no-bypass/],
-    [(l) => { l.ruleset.rules.find((r) => r.type === "required_status_checks")
-      .parameters.strict_required_status_checks_policy = false; }, /strict up-to-date/],
-    [(l) => { l.ruleset.rules.find((r) => r.type === "required_status_checks")
-      .parameters.required_status_checks[0].integration_id = 7; }, /required test/],
-    [(l) => { l.effectiveRulesets.push(clone(l.ruleset));
-      l.effectiveRuleList.push({ id: l.ruleset.id + 1 }); }, /partial or cross-ruleset/]
-  ]) {
-    const a=fixture(), live=liveFixture(a); mutate(live);
-    live.rulesetDigest=sha256(stable(live.ruleset));
-    live.effectiveRulesetDigest=sha256(stable(live.effectiveRulesets));
-    a.ruleset.digest=live.rulesetDigest;
-    a.ruleset.effectiveDigest=live.effectiveRulesetDigest;
-    a.ledger.tupleDigest=tupleDigest(a);
-    a.ledger.events.forEach((event)=>{event.tupleDigest=a.ledger.tupleDigest;});
-    const out=validateEffectiveProtection(a,live);
     assert.equal(out.classification,"FAIL");
     assert.match(out.blockers.join("; "),pattern);
   }
@@ -454,13 +421,6 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
     app:{id:15368}};
   const previewCommit={sha:a.stage.preview.sha,tree:{sha:a.stage.tree},
     parents:[{sha:a.master.sha},{sha:a.stage.sha}]};
-  const encoded=(sha,content)=>({sha,encoding:"base64",content:Buffer.from(content).toString("base64")});
-  const taskText=[a.stage.authorization.taskId,a.stage.branch,a.stage.pr,a.master.sha].join("\n");
-  const freezeText=[FROZEN_SOURCE.sha,FROZEN_SOURCE.historicalCreation,
-    FROZEN_SOURCE.effectiveBaseline,FROZEN_SOURCE.packetSha256,
-    FROZEN_SOURCE.originalHelperRunId,FROZEN_SOURCE.originalHelperJobId].join("\n");
-  const auditText=[FROZEN_SOURCE.sha,FROZEN_SOURCE.packetSha256,
-    "INDEPENDENT VERDICT: PASS"].join("\n");
   const responses={
     "":live.repository,
     "/git/ref/heads/master":live.masterRef,
@@ -473,7 +433,6 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
     ["/git/commits/"+a.master.sha]:live.masterCommit,
     ["/git/commits/"+a.source.sha]:{sha:a.source.sha,tree:{sha:a.source.tree}},
     ["/rulesets/"+a.ruleset.id]:live.ruleset,
-    "/rulesets?targets=branch&per_page=100":[{id:a.ruleset.id}],
     ["/git/trees/"+a.source.tree+"?recursive=1"]:sourceTree,
     ["/git/trees/"+a.stage.tree+"?recursive=1"]:stageTree,
     ["/pulls/"+a.stage.pr+"/files?per_page=100"]:
@@ -484,23 +443,44 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
       {check_runs:[check]},
     ["/commits/"+a.stage.preview.sha+"/check-runs?check_name=test&per_page=100"]:
       {check_runs:[previewCheck]},
-    ["/git/commits/"+a.stage.preview.sha]:previewCommit,
-    ["/contents/"+a.stage.authorization.taskPath+"?ref="+a.master.sha]:
-      encoded(a.stage.authorization.taskBlob,taskText),
-    ["/contents/.ai/manager/evidence/TCW-047_SYNCED_ORIGINAL_MECHANICAL_FREEZE_17e5f413.md?ref="+
-      FROZEN_SOURCE.trustedCanonicalMaster]:encoded(FROZEN_SOURCE.frozenManagerEvidenceBlob,freezeText),
-    ["/contents/"+FROZEN_SOURCE.acceptedReportPath+"?ref="+FROZEN_SOURCE.acceptedAuditHead]:
-      encoded(FROZEN_SOURCE.acceptedReportBlob,auditText)
+    ["/git/commits/"+a.stage.preview.sha]:previewCommit
   };
-  a.ruleset.digest=sha256(JSON.stringify(live.ruleset, Object.keys(live.ruleset).sort()));
-  // Attestation ruleset digest must be the actual stable GitHub ruleset JSON.
-  a.ruleset.digest=sha256((()=>{const stable=(x)=>Array.isArray(x)?"["+x.map(stable).join(",")+"]":
-    x&&typeof x==="object"?"{"+Object.keys(x).sort().map(k=>JSON.stringify(k)+":"+stable(x[k])).join(",")+"}":
-    JSON.stringify(x);return stable(live.ruleset);})());
-  a.ruleset.effectiveDigest=sha256(stable([live.ruleset]));
+  a.ruleset.digest=sha256(stableFixture(live.ruleset));
+  a.ruleset.effectiveDigest=sha256(stableFixture([live.ruleset]));
   a.ledger.tupleDigest=tupleDigest(a);
   for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
   live.ledgerReceipt.tupleDigest=a.ledger.tupleDigest;
+  const frozen = [FROZEN_SOURCE.sha, FROZEN_SOURCE.historicalCreation,
+    FROZEN_SOURCE.effectiveBaseline, FROZEN_SOURCE.packetSha256].join(" ");
+  const bytes=(str,sha)=>({encoding:"base64",
+    content:Buffer.from(str).toString("base64"),sha});
+  responses["/contents/.ai/manager/evidence/TCW-047_SYNCED_ORIGINAL_MECHANICAL_FREEZE_17e5f413.md?ref="+
+    FROZEN_SOURCE.trustedCanonicalMaster] =
+    bytes(frozen,FROZEN_SOURCE.frozenManagerEvidenceBlob);
+  responses["/contents/"+FROZEN_SOURCE.acceptedReportPath+"?ref="+
+    FROZEN_SOURCE.acceptedAuditHead] =
+    bytes("INDEPENDENT VERDICT: PASS "+FROZEN_SOURCE.sha+" "+
+      FROZEN_SOURCE.packetSha256,FROZEN_SOURCE.acceptedReportBlob);
+  responses["/git/commits/"+FROZEN_SOURCE.acceptedAuditHead] =
+    {sha:FROZEN_SOURCE.acceptedAuditHead};
+  responses["/pulls/"+FROZEN_SOURCE.auditPr] =
+    {head:{sha:FROZEN_SOURCE.acceptedAuditHead},merged:true};
+  responses["/actions/runs/"+FROZEN_SOURCE.originalHelperRunId] =
+    {id:FROZEN_SOURCE.originalHelperRunId,conclusion:"success"};
+  responses["/actions/jobs/"+FROZEN_SOURCE.originalHelperJobId] =
+    {id:FROZEN_SOURCE.originalHelperJobId,
+      run_id:FROZEN_SOURCE.originalHelperRunId,conclusion:"success"};
+  responses["/contents/.ai/shared/ACTIVE_TASKS.json?ref="+a.master.sha] =
+    bytes(JSON.stringify({tasks:[{
+      task_id:a.stage.authorization.taskId,owner:"Manager",
+      merge_authority:"Manager",branch:a.stage.branch.replace("refs/heads/",""),
+      pr:a.stage.pr,task_file:a.stage.authorization.taskPath
+    }]}),S("e"));
+  responses["/contents/"+a.stage.authorization.taskPath+"?ref="+a.master.sha] =
+    bytes("# "+a.stage.authorization.taskId+"\nROLE ROUTING: Manager / Architect\n"+
+      a.stage.branch.replace("refs/heads/","")+"\nPR #"+a.stage.pr,S("f"));
+  responses["/rulesets?includes_parents=true&targets=branch&per_page=100"] =
+    [{id:a.ruleset.id}];
   const read=async(endpoint)=>{
     assert.ok(Object.hasOwn(responses,endpoint),"unexpected read "+endpoint);
     return clone(responses[endpoint]);
@@ -510,19 +490,19 @@ test("read-only GitHub stage observation validates original/stage blobs, FULL ch
   assert.equal(observed.ci.appId,15368);
   assert.equal(observed.preview.conclusion,"success");
   assert.equal(observed.rulesetDigest,a.ruleset.digest);
-  assert.equal(observed.sourceCustody.originalPacketBytesVerified,false);
+  assert.equal(observed.effectiveRulesetDigest,a.ruleset.effectiveDigest);
   assert.equal(observed.stageAuthority.verified,true);
+  assert.equal(observed.sourceCustody.originalPacketBytesVerified,false);
   const local=validatePremergeSnapshot(a,{...observed,
-    sourceCustody:live.sourceCustody,stageAuthority:live.stageAuthority,
     auditEvidence:live.auditEvidence,planEvidence:live.planEvidence,
     installEvidence:live.installEvidence,ledgerReceipt:live.ledgerReceipt,
     actors:live.actors,rollback:live.rollback});
-  assert.equal(local.classification,"LOCAL_SNAPSHOT_CONTRACT_PASS",
-    local.blockers.join("; "));
+  assert.equal(local.classification,"FAIL");
+  assert.match(local.blockers.join("; "),/original A packet bytes.*UNVERIFIED/);
   // Real CLI never accepts this mocked snapshot as a rights/ledger proof.
   const real=await verifyPremergeReadOnly(a,{now:NOW,token:"synthetic-read-only",githubGet:read});
   assert.equal(real.classification,"RELEASE_HOLD");
-  assert.match(real.blockers.join(" "),/packet bytes|rights NOT VERIFIED/);
+  assert.match(real.blockers.join(" "),/packet BYTES\/digest.*UNVERIFIED/);
   for(const [mutate,pattern] of [
     [(v)=>v["/actions/jobs/"+a.stage.ci.jobId].steps.find(s=>
       s.name==="Full unit and contract tests").conclusion="skipped",/FULL test/],
@@ -564,6 +544,119 @@ test("real premerge and postmerge entrypoints cannot be made ready by caller-pro
   assert.ok(forged.blockers.some(x=>/GitHub observation unavailable|truncated/.test(x)));
   assert.equal(forged.liveReadOnly,true);
 });
+
+function rebindSyntheticAttempt(a) {
+  a.ledger.tupleDigest=tupleDigest(a);
+  for(const event of a.ledger.events)event.tupleDigest=a.ledger.tupleDigest;
+  return a;
+}
+test("F01: an independently frozen A Git tree and every original source blob reject coherent substitutions",()=>{
+  const a=fixture();
+  assert.equal(a.source.tree,FROZEN_SOURCE.tree);
+  assert.deepEqual(a.source.files.map((file)=>file.blob),FROZEN_SOURCE.fileBlobs);
+  const altered=fixture();altered.source.tree=S("f");
+  for(let i=0;i<altered.source.files.length;i++){
+    altered.source.files[i].blob=S("abcd"[i]);
+    altered.stage.changedFiles[i].blob=S("abcd"[i]);
+  }
+  rebindSyntheticAttempt(altered);
+  const out=validateLocalContract(altered,{now:NOW});
+  assert.equal(out.classification,"FAIL");
+  assert.match(out.blockers.join("; "),/source A differs from independently frozen|source A original frozen path/);
+});
+test("F01: coherent forged replacement A, packet, effective baseline and unrelated TCW-050 audit remain rejected",()=>{
+  for(const [mutate,pattern] of [
+    [(a)=>{a.source.sha=S("e");a.source.tree=S("f");
+      a.source.packet.head=a.source.sha;a.source.audit.targetSha=a.source.sha;
+      a.source.packet.sha256=H("e");a.source.audit.evidenceCommit=S("d");
+      for(let i=0;i<a.source.files.length;i++){
+        a.source.files[i].blob=S("abcd"[i]);a.stage.changedFiles[i].blob=S("abcd"[i]);}
+    },/source A differs from independently frozen/],
+    [(a)=>{a.source.packet.sha256=H("f");},/original helper packet differs/],
+    [(a)=>{a.source.effectiveScopeBaseline=S("e");},/effective baseline differs/],
+    [(a)=>{a.source.audit.evidenceCommit=S("f");},/TCW-050 accepted exact-A audit/]
+  ]) {
+    const a=rebindSyntheticAttempt(fixture());mutate(a);rebindSyntheticAttempt(a);
+    const out=validateLocalContract(a,{now:NOW});
+    assert.equal(out.classification,"FAIL");
+    assert.match(out.blockers.join("; "),pattern);
+  }
+  const clean=fixture(), mock=liveFixture(clean);
+  mock.sourceCustody.originalPacketBytesVerified=false;
+  assert.match(validatePremergeSnapshot(clean,mock).blockers.join("; "),
+    /original A packet bytes.*UNVERIFIED/);
+});
+test("F02: Manager-looking prefix alone and fake Builder/Auditor stage assignments are not authority",()=>{
+  for(const branch of ["refs/heads/auditor/fake-stage","refs/heads/builder/fake-stage"]) {
+    const a=fixture();
+    a.stage.branch=branch;
+    a.stage.authorization.branch=branch;
+    rebindSyntheticAttempt(a);
+    assert.equal(validateLocalContract(a,{now:NOW}).classification,"FAIL");
+  }
+  const a=fixture(), mock=liveFixture(a);
+  for(const mutate of [
+    (x)=>{x.stageAuthority.owner="Builder";},
+    (x)=>{x.stageAuthority.verified=false;},
+    (x)=>{x.stageAuthority.taskId="TCW-001";},
+    (x)=>{x.stageAuthority.pr=999;}
+  ]) {
+    const altered=clone(mock);mutate(altered);
+    const out=validatePremergeSnapshot(a,altered);
+    assert.equal(out.classification,"FAIL");
+    assert.match(out.blockers.join("; "),/independently assigned Manager stage/);
+  }
+});
+test("F02: effective PR-required/strict-app/no-bypass/merge is one authenticated applicable ruleset",()=>{
+  const a=fixture(), original=liveFixture(a);
+  assert.equal(validateEffectiveProtection(a,original).classification,
+    "LOCAL_PROTECTION_CONTRACT_PASS");
+  for(const [mutate,pattern] of [
+    [(l)=>{l.ruleset.rules=l.ruleset.rules.filter(x=>x.type!=="pull_request");},
+      /PR-required rule/],
+    [(l)=>{l.ruleset.bypass_actors=[{actor_id:17,actor_type:"OrganizationAdmin"}];},
+      /no-bypass actors/],
+    [(l)=>{l.ruleset.current_user_can_bypass="always";},/no-bypass actors/],
+    [(l)=>{l.ruleset.rules[1].parameters.strict_required_status_checks_policy=false;},
+      /strict up-to-date/],
+    [(l)=>{l.ruleset.rules[1].parameters.required_status_checks[0].integration_id=1;},
+      /strict up-to-date/],
+    [(l)=>{l.ruleset.rules[0].parameters.allowed_merge_methods=["squash","rebase"];},
+      /merge method/],
+    [(l)=>{l.ruleset.conditions.ref_name.include=["refs/heads/other"];},
+      /branch scope/]
+  ]) {
+    const altered=clone(original), attest=fixture();
+    mutate(altered);
+    altered.effectiveRulesets=[clone(altered.ruleset)];
+    attest.ruleset.digest=sha256(stableFixture(altered.ruleset));
+    attest.ruleset.effectiveDigest=sha256(stableFixture(altered.effectiveRulesets));
+    rebindSyntheticAttempt(attest);
+    altered.rulesetDigest=attest.ruleset.digest;
+    altered.effectiveRulesetDigest=attest.ruleset.effectiveDigest;
+    const out=validatePremergeSnapshot(attest,altered);
+    assert.equal(out.classification,"FAIL",pattern+" rehashed tuple accepted");
+    assert.match(out.blockers.join("; "),pattern);
+  }
+  for(const mutate of [
+    (l)=>{l.effectiveRuleList.push({id:42});},
+    (l)=>{l.effectiveRulesets.push({...clone(l.ruleset),id:42});},
+    (l)=>{l.effectiveRuleList=null;},
+    (l)=>{l.effectiveRulesets=[{...clone(l.ruleset),id:42}];}
+  ]) {
+    const altered=clone(original);mutate(altered);
+    assert.match(validateEffectiveProtection(a,altered).blockers.join("; "),
+      /complete effective protection list/);
+  }
+  const staleAttestation=fixture();
+  staleAttestation.ruleset.digest=H("f");
+  rebindSyntheticAttempt(staleAttestation);
+  assert.match(validatePremergeSnapshot(staleAttestation,original).blockers.join("; "),
+    /ruleset digest mismatch/);
+  assert.match(validateEffectiveProtection(a,{}).blockers.join("; "),
+    /complete effective protection list/);
+});
+
 test("CLI local PASS stays explicitly local; premerge without trusted token returns HOLD; no writes",()=>{
   const dir=mkdtempSync(path.join(os.tmpdir(),"tcw-053-fixture-"));
   const filepath=path.join(dir,"fixture.json");
