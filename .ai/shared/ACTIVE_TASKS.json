@@ -150,7 +150,7 @@
       "user_action_required": true,
       "blocked_on_tasks": [],
       "blocked_on": [
-        "Product-owner explicit supervised Builder PR #162 installation authorization at frozen 7c5bd1add860d1e8ed7bc03717451c7d88a21c50, with awareness of default-branch Actions/read-only token and existing website master-push deployment plus available rollback operator."
+        "Owner originally authorized supervised installation of exact frozen 7c5bd1add860d1e8ed7bc03717451c7d88a21c50; GitHub active strict master ruleset #22309639 rejected guarded merge HTTP 405 because Builder branch is BEHIND master, despite successful exact-head historical test. A separate owner-approved branch synchronization producing a NEW Builder SHA, then NEW full CI/original mechanical pass/new immutable freeze/fresh independent audit and separate NEW exact-SHA installation release decision is now required. No branch-protection bypass or old audit reuse."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -185,7 +185,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "Independent TCW-049 bounded pre-installation PASS ACCEPTED and evidence-only PR #170 integrated at d702e40a9ed3f690541b7ab8e0f0616eb051b114 (post-merge master #732/run 35486699736/test 106014296853 SUCCESS). Separately AUTHORIZE supervised exact-head Builder PR #162 installation; until owner release authorization PR #162 remains DRAFT/UNMERGED. Then recheck head, four-file scope, full #723, audit, canonical master and rollback; after allowed merge require real new workflow first-party master-push/dispatch/read-token/original-packet/retained-artifact exercise, not original one-off mechanical run. TCW-034 manual readiness and historic failed product SHA preserved; TCW-035 inactive.",
+      "next_gate": "BLOCKED NEW SHA AUTHORITY: Owner-approved exact original installation attempt was rejected 405 required test expected under strict up-to-date branch policy. Exact Builder PR #162 returned to DRAFT, HEAD unchanged 7c5bd1add860d1e8ed7bc03717451c7d88a21c50, canonical master preinstall 86c5563e10b4107c59374159a09c793cae632a99, rollback tree b7e561450838465a024dfd4802cfdde2ee22f5d3. Do NOT bypass ruleset or treat original independent TCW-049 PASS/owner consent as approval for a new SHA. Obtain separate product-owner authority to sync Builder branch with current master; preserve actual creation baseline and historical old FAIL; require new exact-head FULL, original mechanical preflight on canonical metadata and fresh independently frozen exact target/security re-audit, then separate supervised release authorization for NEW SHA and live first-party Actions push/dispatch/token/artifact exercise. Trade #147 and manual TCW-034 unchanged; TCW-035 inactive.",
       "audit_target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -202,6 +202,19 @@
         "auditor_evidence_integration_sha": "d702e40a9ed3f690541b7ab8e0f0616eb051b114",
         "post_merge_run": 35486699736,
         "operational_actions_exercise": "NOT_ESTABLISHED"
+      },
+      "release_attempt": {
+        "owner_authorized_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
+        "premerge_master_sha": "86c5563e10b4107c59374159a09c793cae632a99",
+        "premerge_master_tree": "b7e561450838465a024dfd4802cfdde2ee22f5d3",
+        "result": "BLOCKED_STRICT_REQUIRED_TEST_UP_TO_DATE",
+        "github_ruleset_id": 22309639,
+        "required_check": "test",
+        "prior_exact_head_ci_run": 35484883666,
+        "github_merge_result": "HTTP 405 Required status check test is expected",
+        "builder_head_unchanged": true,
+        "installation_occurred": false,
+        "comment_id": 5747421193
       }
     },
     {
