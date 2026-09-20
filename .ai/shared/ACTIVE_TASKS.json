@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-20T03:10:11.237Z",
+  "updated_at_utc": "2026-09-20T03:22:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -140,16 +140,18 @@
       "title": "Automated Exact-SHA Task Audit-Readiness Gate",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Workflow Automation",
-      "status": "AUDIT_READY",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
+      "blocker_type": "USER_ACTION",
+      "user_action_required": true,
       "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on": [
+        "Product-owner explicit supervised Builder PR #162 installation authorization at frozen 7c5bd1add860d1e8ed7bc03717451c7d88a21c50, with awareness of default-branch Actions/read-only token and existing website master-push deployment plus available rollback operator."
+      ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "7ca2953009d37a014e041cc24f4934bfe61b5cad",
@@ -183,13 +185,24 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "MANAGER-FROZEN NEW exact repaired workflow/security target 7c5bd1add860d1e8ed7bc03717451c7d88a21c50 after independently verified original task-specific mechanical PASS at canonical Manager 93436f250bd38bf97357c342b84a59a02adc28fc (run 35485696728/job 106011526029, original packet SHA256 74277fd077fd47e117b2071710b0d3fb6667c27bf85c007b5530d39f26794182). FRESH independent TCW-049 audits ONLY this new target; historical TCW-048 FAIL at acb63b0c85b98b34fac9af99f00f38553de5670c unchanged. Builder PR #162 DRAFT/UNMERGED; later post-authorized-installation actual Actions exercise required; cannot substitute for manual TCW-034 readiness.",
+      "next_gate": "Independent TCW-049 bounded pre-installation PASS ACCEPTED and evidence-only PR #170 integrated at d702e40a9ed3f690541b7ab8e0f0616eb051b114 (post-merge master #732/run 35486699736/test 106014296853 SUCCESS). Separately AUTHORIZE supervised exact-head Builder PR #162 installation; until owner release authorization PR #162 remains DRAFT/UNMERGED. Then recheck head, four-file scope, full #723, audit, canonical master and rollback; after allowed merge require real new workflow first-party master-push/dispatch/read-token/original-packet/retained-artifact exercise, not original one-off mechanical run. TCW-034 manual readiness and historic failed product SHA preserved; TCW-035 inactive.",
       "audit_target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
       },
-      "historical_failed_audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c"
+      "historical_failed_audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c",
+      "accepted_independent_audit": {
+        "task_id": "TCW-049",
+        "verdict": "PASS",
+        "scope": "BOUNDED_PREINSTALL_L1_L3",
+        "target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
+        "auditor_evidence_pr": 170,
+        "auditor_evidence_head": "33a4986ab90631c48f701aff21268f11f65b611c",
+        "auditor_evidence_integration_sha": "d702e40a9ed3f690541b7ab8e0f0616eb051b114",
+        "post_merge_run": 35486699736,
+        "operational_actions_exercise": "NOT_ESTABLISHED"
+      }
     },
     {
       "task_id": "TCW-048",
@@ -253,7 +266,7 @@
       "title": "Repaired Exact-SHA Audit-Readiness Fresh Independent Workflow / Security Re-Audit",
       "owner": "Auditor",
       "role_label": "Independent Auditor / QA",
-      "status": "ASSIGNED",
+      "status": "VERIFYING_MASTER",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -267,8 +280,8 @@
       "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "93436f250bd38bf97357c342b84a59a02adc28fc",
       "branch": "auditor/tcw-049-readiness-workflow-security-reaudit",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 170,
+      "worker_checkpoint_sha": "33a4986ab90631c48f701aff21268f11f65b611c",
       "worker_slot": "auditor-tcw-049-readiness-workflow-security-reaudit",
       "allowed_path_prefixes": [
         ".ai/audit/TCW-049_WORKFLOW_SECURITY_REAUDIT.md",
@@ -301,10 +314,20 @@
       "audit_target_pr": 162,
       "audit_target_branch": "builder/tcw-047-automated-audit-readiness",
       "audit_target_sha": "7c5bd1add860d1e8ed7bc03717451c7d88a21c50",
-      "next_gate": "FRESH independent Auditor audits only exact NEW frozen 7c5bd1add860d1e8ed7bc03717451c7d88a21c50 against .ai/audit/TCW-049_WORKFLOW_SECURITY_REAUDIT_PACKET_7c5bd1ad.md; output only two dedicated TCW-049 files in one unmerged evidence PR with exact-final-head CI. Manager separately consumes verdict; no Builder merge or automation installation.",
+      "next_gate": "TCW-049 evidence-only audit is accepted, guarded-merged PR #170 at 33a4986ab90631c48f701aff21268f11f65b611c and real master push #732/run 35486699736/test 106014296853 SUCCESS at exact d702e40a9ed3f690541b7ab8e0f0616eb051b114. Final Manager transition may close/remove this audit-only task; its PASS is bounded pre-install source/security scope, NOT installed live Actions proof; TCW-047 remains distinct.",
       "target_advancement": {
         "classification": "NON_OVERLAPPING",
         "checked_at_sha": "93436f250bd38bf97357c342b84a59a02adc28fc"
+      },
+      "integration_sha": "d702e40a9ed3f690541b7ab8e0f0616eb051b114",
+      "post_merge_run": 35486699736,
+      "accepted_preinstall_security_verdict": "PASS",
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "NOT_APPLICABLE",
+        "canary_verification": "NOT_APPLICABLE"
       }
     }
   ]
