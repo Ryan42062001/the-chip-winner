@@ -12,6 +12,10 @@ import {
 
 const S = (letter) => letter.repeat(40), H = (letter) => letter.repeat(64);
 const NOW = Date.parse("2026-09-20T12:00:00Z");
+const ACCEPTED_A = "17e5f413f2afd3d743fd28d401f0df421825df2a";
+const EFFECTIVE_BASE = "e0fe6309dc0aaa184bbeef35861f7d49256385b7";
+const PACKET_DIGEST = "f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894";
+const AUDIT_HEAD = "96a6d6dc9e3eb72cd6b54ad679b63bf23cb45bb7";
 const stamp = (delta) => new Date(NOW + delta).toISOString();
 const clone = (data) => structuredClone(data);
 function files() {
@@ -37,14 +41,14 @@ function fixture() {
     },
     source: {
       repoId: REPOSITORY.id, repoFullName: REPOSITORY.fullName, taskId: "TCW-047",
-      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: S("a"), tree: S("1"),
+      pr: 162, branch: "builder/tcw-047-automated-audit-readiness", sha: ACCEPTED_A, tree: S("1"),
       historicalCreationBaseline: "7ca2953009d37a014e041cc24f4934bfe61b5cad",
-      effectiveScopeBaseline: S("2"),
+      effectiveScopeBaseline: EFFECTIVE_BASE,
       packet: {
-        sha256: H("a"), head: S("a"), pr: 162,
+        sha256: PACKET_DIGEST, head: ACCEPTED_A, pr: 162,
         branch: "builder/tcw-047-automated-audit-readiness", readyForManagerFreeze: true
       },
-      audit: { targetSha: S("a"), verdict: "PASS", evidenceCommit: S("3") },
+      audit: { targetSha: ACCEPTED_A, verdict: "PASS", evidenceCommit: AUDIT_HEAD },
       files: sourceFiles
     },
     master: { sha: S("b"), tree: S("4") },
