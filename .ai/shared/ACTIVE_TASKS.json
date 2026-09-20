@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-20T02:08:31.310Z",
+  "updated_at_utc": "2026-09-20T02:30:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -129,20 +129,24 @@
       "audit_target_pr": 147,
       "audit_target_branch": "builder/tcw-034-trade-winner-engine",
       "audit_target_sha": "035c5f5112b7393f9d4f17685792548afa67dd2e",
-      "next_gate": "Fresh Auditor inspects exact immutable repaired SHA and F02-R1/F04-R1, publishes only two evidence files in one PR and exact-head CI, no merge. Manager consumes verdict."
+      "next_gate": "Fresh Auditor inspects exact immutable repaired SHA and F02-R1/F04-R1, publishes only two evidence files in one PR and exact-head CI, no merge. Manager consumes verdict.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
+      }
     },
     {
       "task_id": "TCW-047",
       "title": "Automated Exact-SHA Task Audit-Readiness Gate",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Workflow Automation",
-      "status": "AUDIT_READY",
+      "status": "REWORK_REQUIRED",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "FAST_REFRESH",
-      "refresh_reason": null,
+      "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
+      "refresh_reason": "Manager independently accepted TCW-048-F01 HIGH/blocking, F02 MEDIUM/blocking and F03 LOW/same-pass at immutable failed workflow audit target acb63b0c85b98b34fac9af99f00f38553de5670c; same-task trust-anchor, canonical zero-task validation and infrastructure-diagnostics repair only.",
       "merge_authority": "Manager",
-      "blocker_type": "NONE",
+      "blocker_type": "AUDIT",
       "user_action_required": false,
       "blocked_on_tasks": [],
       "blocked_on": [],
@@ -179,15 +183,19 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-048 fresh independent workflow/security audit of frozen PR #162 SHA acb63b0c85b98b34fac9af99f00f38553de5670c; Builder PR #162 draft/unmerged; separate post-install Actions exercise before TCW-047 closure. TCW-034 manual readiness unchanged.",
-      "audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c"
+      "next_gate": "Manager-accepted TCW-048 F01/F02/F03 bounded remediation on existing Builder PR #162 from immutable FAILED repair parent acb63b0c85b98b34fac9af99f00f38553de5670c. Fresh final implementation+handoff exact-head FULL CI, Manager readiness/freeze and NEW independent workflow/security re-audit required; NO merge/installation.",
+      "audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
+      }
     },
     {
       "task_id": "TCW-048",
       "title": "Automated Exact-SHA Audit-Readiness Independent Workflow / Security Audit",
       "owner": "Auditor",
       "role_label": "Independent Auditor / QA",
-      "status": "ASSIGNED",
+      "status": "MANAGER_REVIEW_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -201,8 +209,8 @@
       "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "86a7f95217e6152db397ada8039533a7f4722b3a",
       "branch": "auditor/tcw-048-readiness-workflow-security-audit",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 165,
+      "worker_checkpoint_sha": "84ec5e38ac6b027f77c40e6cc47df6f4f8165fb1",
       "worker_slot": "auditor-tcw-048-readiness-workflow-security",
       "allowed_path_prefixes": [
         ".ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT.md",
@@ -233,7 +241,11 @@
       "audit_target_pr": 162,
       "audit_target_branch": "builder/tcw-047-automated-audit-readiness",
       "audit_target_sha": "acb63b0c85b98b34fac9af99f00f38553de5670c",
-      "next_gate": "Fresh independent Auditor checks exact frozen acb63b0c85b98b34fac9af99f00f38553de5670c under .ai/audit/TCW-048_WORKFLOW_SECURITY_AUDIT_PACKET_acb63b0c.md; only two task-scoped evidence files, one unmerged PR and exact final-head CI. Manager consumes verdict before any TCW-047 integration."
+      "next_gate": "Manager independently ACCEPTED F01 HIGH/blocking, F02 MEDIUM/blocking, F03 LOW/same-pass; audit verdict FAIL, exact-head Auditor PR #165 run #714 previously FAILED on inherited assignment classifications. Require new green exact-auditor-head PR CI and green canonical master CI before considering audit evidence integration. Original frozen target remains acb63b0c85b98b34fac9af99f00f38553de5670c.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
+      }
     }
   ]
 }
