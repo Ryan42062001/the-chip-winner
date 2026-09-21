@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T04:01:49.429Z",
+  "updated_at_utc": "2026-09-21T13:21:37.251Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -574,7 +574,7 @@
       "title": "Manager-Owned Exact-Four-Blob Governance Source Projection",
       "owner": "Manager",
       "role_label": "Manager / Architect — Distinct Immutable Governance-Source Projection Custody",
-      "status": "AUDIT_READY",
+      "status": "VERIFYING_MASTER",
       "task_file": ".ai/manager/tasks/TCW-056.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
@@ -622,7 +622,7 @@
       },
       "audit_task": "TCW-058",
       "audit_target_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
-      "next_gate": "Fresh independent exact integrated G 9d51f759/tree 4f29eb56 whole-tree SOURCE/PAGES PASS WITH NON-BLOCKING FINDINGS accepted (F01 original Builder handoff historical-only; F02 REAL Pages publication including script/test under broad existing non-.ai classifier). Auditor evidence PR #198 exact final 51fe0dfc required DOCS_ONLY #800/test 106206147098 SUCCESS, guarded evidence integration d78675cf and genuine master PUSH #801/test 106206890179 SUCCESS. Separate Manager VERIFYING_MASTER state PR #199 merged at 32952946; genuine master PUSH #803/test 106208353186 SUCCESS. TCW-058 independent audit-only task verified completed and removed ONLY from active-only registry via separate Manager closeout; finished dependency edge cleared, current TCW-056 status remains AUDIT_READY and next Manager source-task lifecycle decision is SEPARATE, not automatic source closeout or protected release. Original TCW-053 AUDIT_READY/HARD remains blocked_on_tasks=[TCW-056], PR #182 untouched. Original TCW-047 packet BYTES, external protected actor/nonce ledger/publisher rights, Owner staging/exact-S install, actual separate S/G/exact-S audit, rollback and installed first-party Actions L4 remain RELEASE_HOLD.",
+      "next_gate": "VERIFYING_MASTER — TCW-056 exact protected source G 9d51f759/tree 4f29eb56 integrated under PR #196, genuine G master PUSH #797/test 106201245555 SUCCESS; fresh independent TCW-058 exact-G source/real Pages PASS WITH NON-BLOCKING FINDINGS accepted and evidence merged d78675cf with master #801/test 106206890179 SUCCESS; TCW-058 audit-only closeout #200/master #805 verified and audit task removed. This separate TCW-056 Manager state PR must protected-integrate and genuine new-master PUSH test pass, then Manager independently re-verifies source-task closeout eligibility before any active-registry removal. Original TCW-053 remains AUDIT_READY/HARD blocked_on_tasks=[TCW-056], original Builder PR #182 untouched. TCW-047 staged release/install/ledger/rights/L4 RELEASE_HOLD.",
       "accepted_independent_projection_audit": {
         "audit_task": "TCW-057",
         "verdict": "PASS WITH NON-BLOCKING FINDINGS — SOURCE ONLY",
@@ -701,6 +701,40 @@
         ],
         "pages_artifact_id": 10620606881,
         "source_scope": "EXACT INTEGRATED G MATERIAL DORMANT SOURCE AND PAGES DEPLOYMENT ONLY; NO TCW-047 RELEASE AUTHORITY"
+      },
+      "integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "post_merge_run": 35556576526,
+      "post_merge_test_job": 106201245555,
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "PASS WITH NON-BLOCKING FINDINGS",
+        "canary_verification": "NOT_APPLICABLE",
+        "rationale": "TCW-056 dormant governance source was guarded integrated as exact G under strict protection, genuine G master FULL CI passed, and fresh independent TCW-058 exact-G source/real Pages boundary audit PASS WITH NON-BLOCKING FINDINGS was independently accepted and evidence integrated. TCW-047 protected release remains separate RELEASE_HOLD.",
+        "exact_integrated_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "source_pr": 196,
+        "source_head": "22234e0571802b183573130b517c8289fd265d8f",
+        "source_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+        "source_master_push_run": 35556576526,
+        "source_master_push_test_job": 106201245555,
+        "audit_task": "TCW-058",
+        "auditor_pr": 198,
+        "auditor_final_sha": "51fe0dfc3c724f725adb0112d444c9ed1c61d9e3",
+        "audit_evidence_merge_sha": "d78675cf77ed84c9004e3338c46ecb83d130950c",
+        "audit_evidence_master_push_run": 35558567010,
+        "audit_evidence_master_push_test_job": 106206890179,
+        "accepted_findings": [
+          "TCW-058-F01 LOW HISTORICAL original Builder handoff provenance only",
+          "TCW-058-F02 LOW actual Pages publication/public governance script-test inclusion under inherited broad deploy classifier"
+        ],
+        "pages_deployment": {
+          "artifact_id": 10620606881,
+          "deploy_job": 106201488930,
+          "verify_production_job": 106201526433
+        },
+        "tcw058_audit_only_closeout_master": "112dcacc05cf9dfbf60034cd31a9a609b30a01b1",
+        "tcw058_audit_only_closeout_run": 35559802803
       }
     }
   ]
