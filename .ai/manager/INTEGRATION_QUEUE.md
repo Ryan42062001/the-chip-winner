@@ -335,3 +335,8 @@ TCW-053 enters VERIFYING_MASTER with integration_sha=G, post_merge_run=355565765
 - TCW-059 is research only: distinct authenticated Owner/Manager/Auditor publisher architecture, durable protected nonce/consumption ledger, retained packet-byte custody, separate owner approvals, off-master exact-S Auditor evidence and rollback proof.
 - No staging PR, account/App/credential creation, ledger write, ruleset/permission mutation, workflow install/dispatch, source merge or release is authorized.
 - Manager consumes one explicit verdict: PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS / MANAGER_DECISION_REQUIRED / NO_SAFE_PROTOCOL_FOUND / STALLED_EXTERNAL_ACCESS_REQUIRED.
+
+
+## TCW-059 activation CI remediation — control-plane drift — 2026-09-21
+
+Activation PR #206 merged at `3f0cdcb324a803828987cc7490dd96196cfda8f4`. Master run #818 failed Workflow V3.2 state audit because TCW-059's immutable pre-activation assignment master was seven commits behind and had no target-advancement classification. The intervening activation changed only Manager/shared control-plane files. Remediation records `CONTROL_PLANE_ONLY` and preserves the R&D branch at its original assignment baseline.
