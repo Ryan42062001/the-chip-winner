@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T13:30:05.433Z",
+  "updated_at_utc": "2026-09-21T13:53:39.012Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -356,7 +356,7 @@
       "title": "Bounded Material Composite Protected-Release Governance Implementation",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Bounded Governance / Release-Control Implementation",
-      "status": "AUDIT_READY",
+      "status": "VERIFYING_MASTER",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -410,7 +410,7 @@
       "dormant_read_only_release_guard_only": true,
       "staged_source_pr_creation_authorized": false,
       "installation_authorized": false,
-      "next_gate": "Distinct Manager governance source task TCW-056 fully completed: strict four-blob source integrated at G 9d51f759, genuine G master #797/test 106201245555 SUCCESS, fresh independent TCW-058 exact-G source/real Pages PASS WITH NON-BLOCKING FINDINGS accepted/evidence integrated, TCW-058 audit-only task closed, TCW-056 VERIFYING_MASTER state PR #201/master #807 verified, then separate TCW-056 closeout removed only completed source task and cleared finished dependency edge. TCW-053 remains AUDIT_READY and original Builder PR #182 DRAFT/OPEN/UNMERGED with true creation 17cb... unchanged. Next Manager action is separate independent assessment of TCW-053's own lifecycle, original helper runner-custody limitation, and whether its historical task should close without merging original Builder PR. TCW-047 protected release/staging/install/ledger/rights/L4 remains RELEASE_HOLD.",
+      "next_gate": "VERIFYING_MASTER — original TCW-053 implementation task source A 70e74c56 exact four mode/blob tuples independently verified identical to protected integrated G 9d51f759 via completed distinct Manager task TCW-056; original TCW-055 exact-A source audit PASS accepted; original task-specific mechanical preflight Manager-accepted with explicit runner-custody limitation; later TCW-058 exact-G source/Pages PASS WITH NON-BLOCKING FINDINGS accepted. Original Builder PR #182 remains DRAFT/OPEN/UNMERGED and historical identity preserved. This separate TCW-053 state PR must protected-integrate and genuine master CI pass before independent task removal eligibility review. No TCW-047 stage/install/release authority.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "17cb363bf457d02cb0029430b110af002e43dc6a"
@@ -488,6 +488,60 @@
         "manager_acceptance_comment": 5753193367,
         "evidence_path": ".ai/manager/evidence/TCW-053_ORIGINAL_MECHANICAL_READINESS_MANAGER_ACCEPTANCE_70e74c56.md",
         "no_source_merge_or_release_authority": true
+      },
+      "integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "post_merge_run": 35556576526,
+      "post_merge_test_job": 106201245555,
+      "integration_via_distinct_manager_task": "TCW-056",
+      "original_builder_pr_disposition": "DRAFT_OPEN_UNMERGED_HISTORICAL_SOURCE_IDENTITY_PRESERVED",
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "PASS",
+        "canary_verification": "NOT_APPLICABLE",
+        "rationale": "TCW-053 exact four original Builder implementation blobs/modes at frozen A 70e74c56 were independently verified byte-identical to the four source blobs protected-integrated through distinct Manager task TCW-056 at G 9d51f759. Original TCW-055 exact-A source audit PASS accepted; genuine original task-specific mechanical readiness preflight later Manager-accepted with explicit un-witnessed runner-custody limitation retained. Fresh TCW-058 exact integrated G source/Pages audit also PASS WITH NON-BLOCKING FINDINGS accepted. Original Builder PR #182 remains open/draft/unmerged; G is the integrated checkpoint for exact implementation bytes, not a claim #182 merged. TCW-047 protected release remains RELEASE_HOLD.",
+        "exact_original_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
+        "exact_original_builder_tree": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
+        "true_original_creation_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
+        "original_builder_pr": 182,
+        "original_builder_pr_merged": false,
+        "exact_integrated_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "integrated_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+        "protected_source_pr": 196,
+        "source_master_push_run": 35556576526,
+        "source_master_push_test_job": 106201245555,
+        "source_blob_equivalence": "FOUR_SCOPED_MODE_BLOB_TUPLES_EXACT_MATCH_A_TO_G_NATIVE_GIT_TREES_UNTRUNCATED",
+        "original_source_audit": {
+          "task": "TCW-055",
+          "verdict": "PASS",
+          "auditor_pr": 186,
+          "auditor_final_sha": "c58a649e25603605f6af89c67bd94849856f7634",
+          "evidence_merge_sha": "59f33604a87dd0c02aec6d56a962a629ce701d11",
+          "post_merge_run": 35518336450,
+          "post_merge_test_job": 106097966978
+        },
+        "mechanical_readiness": {
+          "classification": "MANAGER_ACCEPTED_GENUINE_ORIGINAL_TASK_SPECIFIC_PREFLIGHT_WITH_RUN_CUSTODY_LIMIT",
+          "manager_acceptance_comment": 5753193367,
+          "reported_exit_code": 0,
+          "reported_blockers": [],
+          "runner_custody_limit": "WORK_HELPER_REPORTED_EXECUTION_INDEX_READONLY_OVERLAY_AND_NO_WRITES_NOT_MANAGER_WITNESSED_OR_INDEPENDENTLY_ATTESTED"
+        },
+        "integrated_target_audit": {
+          "task": "TCW-058",
+          "verdict": "PASS WITH NON-BLOCKING FINDINGS",
+          "auditor_pr": 198,
+          "auditor_final_sha": "51fe0dfc3c724f725adb0112d444c9ed1c61d9e3",
+          "evidence_merge_sha": "d78675cf77ed84c9004e3338c46ecb83d130950c",
+          "master_push_run": 35558567010,
+          "master_push_test_job": 106206890179
+        },
+        "accepted_low_findings": [
+          "TCW-058-F01 copied original Builder handoff is historical provenance only",
+          "TCW-058-F02 actual Pages publication/public script-test inclusion under inherited broad non-.ai deployment classifier"
+        ],
+        "pages_artifact_id": 10620606881
       }
     },
     {
