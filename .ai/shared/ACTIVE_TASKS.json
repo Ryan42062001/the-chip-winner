@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T02:52:18.525Z",
+  "updated_at_utc": "2026-09-21T03:17:47.723Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -566,21 +566,25 @@
       "merge_authority": "Manager",
       "blocker_type": "NONE",
       "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on_tasks": [
+        "TCW-058"
+      ],
+      "blocked_on": [
+        "TCW-058 fresh independent exact integrated G 9d51f759/tree 4f29eb56 and real Pages publication audit MUST receive independent verdict, Manager acceptance and evidence integration before governance source closeout. Source already protected-merged but is NOT audit-complete or TCW-047 protected release-ready."
+      ],
       "audit_required": true,
       "post_merge_canary_required": false,
       "task_id": "TCW-056",
       "title": "Manager-Owned Exact-Four-Blob Governance Source Projection",
       "owner": "Manager",
       "role_label": "Manager / Architect — Distinct Immutable Governance-Source Projection Custody",
-      "status": "MANAGER_REVIEW_READY",
+      "status": "AUDIT_READY",
       "task_file": ".ai/manager/tasks/TCW-056.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
-      "branch": "manager/tcw-053-governance-source-projection",
-      "pr": 191,
-      "worker_checkpoint_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
+      "branch": "manager/tcw-056-current-master-governance-integration",
+      "pr": 196,
+      "worker_checkpoint_sha": "22234e0571802b183573130b517c8289fd265d8f",
       "worker_slot": "manager-tcw-056-exact-blob-projection",
       "allowed_path_prefixes": [
         ".ai/builder/TCW-053_HANDOFF.md",
@@ -602,14 +606,14 @@
       ],
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b"
+        "checked_at_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c"
       },
       "source_task": "TCW-053",
       "source_builder_pr": 182,
       "source_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
       "source_original_creation_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
-      "exact_immutable_candidate_tree": "d60012c5a81d80a0a7c08584ea05da34e6400109",
-      "candidate_original_parent_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "exact_immutable_candidate_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+      "candidate_original_parent_master_sha": "1e4d15baa095a0e7b3bc336208457b0c701058cd",
       "original_builder_unchanged": true,
       "candidate_owner_scope": "DISTINCT_MANAGER_SOURCE_PROJECTION_NOT_TC047_COMPOSITE_STAGE_S",
       "candidate_ci": {
@@ -620,9 +624,9 @@
         "conclusion": "success",
         "node_tests_passed": 496
       },
-      "audit_task": "TCW-057",
-      "audit_target_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
-      "next_gate": "FROZEN SOURCE ACCEPTED FOR SOURCE-ONLY INDEPENDENT AUDIT: TCW-057 PASS WITH NON-BLOCKING FINDINGS accepted at immutable candidate b55e/tree d60012 and evidence-only #193 integrated on canonical master 95b3ab81; exact candidate FULL #786/test 106186379581 SUCCESS 496/496, accepted F01 LOW original Builder handoff historical provenance labeled separately in Manager evidence without editing source. TCW-056 stays MANAGER_REVIEW_READY (NOT MERGE_READY) because PR #191 remains DRAFT/OPEN/UNMERGED and 1 ahead/12 behind strict protected master. Separate explicit new Manager/Owner authorization and exact-target fresh audit/current FULL test/preview needed for future source-integration route; no rebase/update/merge #191 or old Builder #182, no source governance activation, TCW-047 S/G stage/install or release GO.",
+      "audit_task": "TCW-058",
+      "audit_target_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "next_gate": "DORMANT GOVERNANCE SOURCE now GUARDED-INTEGRATED under strict master as exact G 9d51f759/tree 4f29eb56; PR #196 source head 22234e05 FULL #796/test 106200653577 SUCCESS 496/496; genuine G master PUSH #797/test 106201245555 SUCCESS 496/496. IMPORTANT real GitHub Pages deployment DID occur on #797 via existing any-non-.ai deploy scope: job 106201488930/Pages artifact 10620606881 and production smoke 106201526433 SUCCESS. No .github workflow install or product/UI path changed, but do not claim no Pages deploy. TCW-056 is AUDIT_READY but NOT AUDIT-COMPLETE/MERGE_READY/RELEASE_GO; fresh independent TCW-058 exact integrated G whole-tree/deployment audit required and accepted BEFORE TCW-056/TCW-053 closeout, Workflow V3.2 material control-plane audit gate. Old #191 CLOSED UNMERGED only obsolete proposal (b55e and old TCW-057 accepted audit preserved), original Builder #182 DRAFT OPEN UNMERGED and true original 17cb creation unchanged. TCW-047 retained original packet BYTES, external protected ledger/actor rights, Owner staged-source/exact-S install, real distinct TCW-047 S/G/exact-S audit and first-party installed L4 still RELEASE_HOLD.",
       "accepted_independent_projection_audit": {
         "audit_task": "TCW-057",
         "verdict": "PASS WITH NON-BLOCKING FINDINGS — SOURCE ONLY",
@@ -637,7 +641,107 @@
         "post_merge_test_job": 106195916252,
         "nonblocking_finding": "TCW-057-F01 LOW — copied .ai/builder/TCW-053_HANDOFF.md is HISTORICAL original Builder provenance, NOT current projected task status; canonical separate Manager record labels it",
         "scope": "EXACT_NEW_WHOLE_TREE_SOURCE_ONLY_NO_STRICT_MERGE_OR_RELEASE_AUTHORITY"
-      }
+      },
+      "original_immutable_projection_branch": "manager/tcw-053-governance-source-projection",
+      "original_immutable_projection_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
+      "original_immutable_projection_tree": "d60012c5a81d80a0a7c08584ea05da34e6400109",
+      "original_immutable_projection_pr": 191,
+      "original_immutable_projection_pr_disposition": "CLOSED_UNMERGED_SUPERSEDED_ONLY_BY_PR196__BRANCH_SHA_TREE_HISTORICAL_AUDIT_UNCHANGED",
+      "current_integration_source_branch_creation_baseline": "1e4d15baa095a0e7b3bc336208457b0c701058cd",
+      "source_integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "source_integration_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+      "source_integration_full_pr_ci": {
+        "pr": 196,
+        "head": "22234e0571802b183573130b517c8289fd265d8f",
+        "run": 35556363689,
+        "job": 106200653577,
+        "required_test_app": 15368,
+        "mode": "FULL",
+        "conclusion": "success",
+        "node_tests_passed": 496
+      },
+      "source_integration_master_ci": {
+        "head": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "run": 35556576526,
+        "required_test_job": 106201245555,
+        "conclusion": "success",
+        "node_tests_passed": 496
+      },
+      "actual_pages_deployment": {
+        "occurred": true,
+        "reason": "CURRENT_REPOSITORY_DEPLOYMENT_SCOPE_ANY_NON_AI_PATH",
+        "run": 35556576526,
+        "source_integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "pages_artifact_id": 10620606881,
+        "deploy_job": 106201488930,
+        "deploy_conclusion": "success",
+        "verify_production_job": 106201526433,
+        "verify_production_conclusion": "success",
+        "product_release_reported": "0.9.88",
+        "url": "https://ryan42062001.github.io/the-chip-winner/",
+        "not_tc047_first_party_workflow_installation": true
+      },
+      "audit_status": "PENDING_FRESH_INDEPENDENT_EXACT_INTEGRATED_G_WHOLE_TREE_SECURITY_AND_DEPLOYMENT_AUDIT"
+    },
+    {
+      "task_id": "TCW-058",
+      "title": "Fresh Independent Audit of Strict-Protected Integrated Dormant Governance Source",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA — Fresh Exact Integrated-Target Governance and Deployment-Boundary Audit",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-058.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "branch": "auditor/tcw-058-integrated-governance-source-audit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-058-fresh-integrated-governance-g",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-058_INTEGRATED_GOVERNANCE_SOURCE_AUDIT.md",
+        ".ai/auditor/TCW-058_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/builder/",
+        ".github/",
+        "scripts/",
+        "test/",
+        "src/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-056",
+      "audit_target_pr": 196,
+      "audit_target_branch": "manager/tcw-056-current-master-governance-integration",
+      "audit_target_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "audit_target_tree_sha": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+      "audit_target_type": "ACTUAL_PROTECTED_INTEGRATED_MERGE_G_NOT_OLD_SOURCE_PROJECTION",
+      "actual_integrated_merge_parents": [
+        "1e4d15baa095a0e7b3bc336208457b0c701058cd",
+        "22234e0571802b183573130b517c8289fd265d8f"
+      ],
+      "audit_packet": ".ai/audit/TCW-058_INTEGRATED_GOVERNANCE_SOURCE_AUDIT_PACKET_9d51f759.md",
+      "historical_initial_auditor_branch_creation_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c"
+      },
+      "activation_requires": "Formal Manager assignment PR protected merge and genuine master PUSH CI success, then nonforce FF untouched Auditor branch from historical creation G to exact new canonical assignment master BEFORE any Auditor evidence writing",
+      "next_gate": "FRESH independent exact protected integrated G 9d51f759/tree 4f29eb56 whole-tree control-plane security + ACTUAL GitHub Pages deployment observation audit. Source code four immutable Builder tuples, strict PR #196 FULL #796 and real master PUSH #797/test 106201245555 success, Pages deploy 106201488930 and production smoke 106201526433 success MUST be independently verified; do not misstate deployment as skipped. Auditor branch original creation G and postassignment nonforce sync distinct; no writing until actual Manager assignment master equality. No TCW-056/TCW-053 closeout, no TCW-047 stage/install/release."
     }
   ]
 }
