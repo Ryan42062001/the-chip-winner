@@ -169,3 +169,23 @@ Accepted TCW-058-F01 LOW original Builder copied handoff blob `20315381ee5efdfa0
 | 4 | Research & Development (R&D) | IDLE | No external publisher rights, ledger or Pages-scope task assigned | No staging, credential/ledger mutation or future Pages-policy change. |
 | 5 | Independent Auditor / QA | COMPLETE — ACCEPTED | Fresh TCW-058 exact integrated-G audit evidence already integrated | Preserve independent report/handoff and accepted F01/F02; no extra evidence/source writes required for audit-only closeout. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No current reproducible blocker | No workflow installation, bypass, source rewrite or production change. |
+
+
+## Manager TCW-056 source-task VERIFYING_MASTER routing — 2026-09-21
+
+TCW-056 exact dormant governance source G `9d51f7597e65c12f2c09d9d9c8286af351716b2c`/tree `4f29eb56c5150958df5dd1b9adc638f77160d486` was strictly protected-integrated via PR #196. Source-head FULL #796/test `106200653577` and genuine G master PUSH #797/test `106201245555` SUCCESS 496/496. Fresh independent TCW-058 exact-G source/real Pages boundary PASS WITH NON-BLOCKING FINDINGS accepted; evidence PR #198 merged `d78675cf77ed84c9004e3338c46ecb83d130950c`, master #801/test `106206890179` SUCCESS. Audit-only TCW-058 later separately CLOSED through PR #200/master #805, so completed dependency edge from TCW-056 was cleared. TCW-056 now enters VERIFYING_MASTER with Manager ACCEPTED / source integration PASS / source master PASS / independent audit PASS WITH NON-BLOCKING FINDINGS / canary NOT_APPLICABLE. This source-task state PR itself must protected-integrate and real master PUSH CI pass before separate source-task active-registry removal is considered.
+
+Accepted F01 LOW copied Builder handoff is historical original Builder provenance only. Accepted F02 LOW source G DID publish Pages artifact `10620606881` through inherited ANY non-.ai deployment policy; deploy job `106201488930`, production verification `106201526433` SUCCESS. This historic production distribution is distinct from TCW-047 first-party protected-release workflow installation. No deployment-rule/product/Pages mutation is included in this state transition.
+
+Original TCW-053 remains AUDIT_READY/HARD blocked_on_tasks=[TCW-056], original Builder PR #182 DRAFT/OPEN/UNMERGED `70e74c5612f71ba2808c7309127c14a02a54b765`, true original creation `17cb363bf457d02cb0029430b110af002e43dc6a` untouched. A future verified TCW-056 removal must clear only that completed dependency in the same transaction but must NOT close TCW-053. Original TCW-047 retained packet BYTES, external actor/nonce protected ledger/publisher rights, Owner staged-source/exact-S install, actual separate TCW-047 S/G/exact-S audit, rollback and installed first-party Actions L4 remain RELEASE_HOLD.
+
+## Next Activation — TCW-056 source-task verification
+
+| Order | Employee / role | Status | Current task / gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | ACTIVE | TCW-056 VERIFYING_MASTER source-task state | Guarded-integrate this Manager-only state PR and verify genuine master PUSH test; then independently assess TCW-056 removal eligibility in a separate transaction. |
+| 2 | Implementation Engineer / Builder | WAIT | Original TCW-053 AUDIT_READY/HARD behind TCW-056 | Preserve PR #182 exact original SHA and historical creation; no merge/rewrite. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy task | No product/trade/ESPN changes. |
+| 4 | Research & Development (R&D) | IDLE | No external rights/Pages-policy assignment | No ledger, publisher-rights or deployment-policy mutation. |
+| 5 | Independent Auditor / QA | COMPLETE — ACCEPTED | TCW-058 exact-G audit closed | Preserve report/handoff; no new audit unless a material new target appears. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No blocking defect | No bypass, source rewrite or production change. |
