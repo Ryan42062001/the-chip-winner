@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T17:30:00Z",
+  "updated_at_utc": "2026-09-21T18:47:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -149,10 +149,10 @@
       "blocker_type": "EXTERNAL_EVIDENCE",
       "user_action_required": false,
       "blocked_on_tasks": [
-        "TCW-059"
+        "TCW-060"
       ],
       "blocked_on": [
-        "TCW-059 research must first determine whether the accepted dormant composite-release contract can be satisfied with distinct authenticated Owner/Manager/Auditor publisher identities, protected durable nonce/consumption ledger, retained packet-byte custody and rollback proof. TCW-047 remains WAITING_EXTERNAL_EVIDENCE; no staging source or installation authority."
+        "TCW-059 feasibility research is Manager-accepted and exact research blobs are integrated. TCW-060 setup-only gate now blocks TCW-047: explicit Owner setup authorization, durable packet archival, distinct authenticated principals, protected ledger/evidence refs and independently reviewable external setup remain unperformed. No TCW-047 staging/install/release authority."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -187,7 +187,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-059 R&D external identity/ledger feasibility research first. Manager consumes its explicit verdict before requesting any product-owner staged-source decision. TCW-047 Builder PR #162 remains DRAFT/OPEN/UNMERGED exact 17e5f413 and no workflow installation, ruleset/permission/credential/ledger mutation, staging PR or release is authorized.",
+      "next_gate": "TCW-060 setup-only gate first. Product owner must explicitly authorize setup work; after setup, fresh independent security/workflow audit plus synthetic non-TCW-047 end-to-end PASS are mandatory before any real TCW-047 Owner prestage decision A. PR #162 remains DRAFT/OPEN/UNMERGED at 17e5f413.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -312,8 +312,14 @@
       },
       "external_evidence_research": {
         "task_id": "TCW-059",
-        "assignment_master_sha": "fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952",
-        "branch": "rnd/tcw-059-protected-release-external-evidence-research",
+        "verdict": "PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS",
+        "source_head": "98eb461a4b156fe156ca085b07fe99c7358ef8f0",
+        "source_pr": 208,
+        "source_pr_merged": false,
+        "integration_pr": 209,
+        "integration_sha": "f2f359ac4ba012cfbf72a8818d94f48d750c71b7",
+        "master_run": 35640077518,
+        "master_test_job": 106466974510,
         "staging_authorized": false,
         "installation_authorized": false,
         "credentials_or_ledger_writes_authorized": false
@@ -445,7 +451,7 @@
       "title": "Protected Release External Identity + Ledger Feasibility Research",
       "owner": "R&D",
       "role_label": "Research & Development",
-      "status": "ASSIGNED",
+      "status": "VERIFYING_MASTER",
       "dependency": "INDEPENDENT",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -459,8 +465,8 @@
       "role_handoff": ".ai/rnd/HANDOFF.md",
       "assignment_master_sha": "fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952",
       "branch": "rnd/tcw-059-protected-release-external-evidence-research",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 208,
+      "worker_checkpoint_sha": "98eb461a4b156fe156ca085b07fe99c7358ef8f0",
       "worker_slot": "rnd-protected-release-external-evidence",
       "allowed_path_prefixes": [
         ".ai/rnd/TCW-059_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_RESEARCH.md",
@@ -485,10 +491,84 @@
       ],
       "audit_required": false,
       "post_merge_canary_required": false,
-      "next_gate": "R&D branch remains at assignment baseline fe3ca66c. Manager activation advanced only control-plane state and is classified CONTROL_PLANE_ONLY at 3f0cdcb3. R&D must Fast Refresh canonical state without syncing activation commits into its branch; research remains limited to the two authorized R&D files.",
+      "next_gate": "TCW-059 accepted R&D blobs are integrated at f2f359ac and genuine master run 35640077518/test 106466974510 is SUCCESS. Verify this VERIFYING_MASTER state transaction on master, then remove TCW-059 from active-only state in a separate closeout. Source PR #208 remains CLOSED/UNMERGED historical provenance; integration PR #209 carried exact blobs.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "3f0cdcb324a803828987cc7490dd96196cfda8f4"
+      },
+      "integration_sha": "f2f359ac4ba012cfbf72a8818d94f48d750c71b7",
+      "integration_pr": 209,
+      "post_merge_run": 35640077518,
+      "post_merge_test_job": 106466974510,
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "NOT_APPLICABLE",
+        "canary_verification": "NOT_APPLICABLE",
+        "source_pr": 208,
+        "source_pr_merged": false,
+        "source_head": "98eb461a4b156fe156ca085b07fe99c7358ef8f0",
+        "integration_pr": 209,
+        "research_verdict": "PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS"
+      }
+    },
+    {
+      "task_id": "TCW-060",
+      "title": "Protected Release External Evidence Setup + Packet Custody Gate",
+      "owner": "Manager",
+      "role_label": "Manager / Architect",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "USER_ACTION",
+      "user_action_required": true,
+      "blocked_on_tasks": [],
+      "blocked_on": [
+        "Explicit product-owner authorization is required before any external setup action: packet archive publication, GitHub App/principal creation, credentials, protected ledger/evidence refs or rulesets."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-060.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "f2f359ac4ba012cfbf72a8818d94f48d750c71b7",
+      "branch": null,
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "manager-protected-release-external-setup",
+      "allowed_path_prefixes": [
+        ".ai/manager/evidence/TCW-060_",
+        ".ai/manager/HANDOFF.md",
+        ".ai/manager/INTEGRATION_QUEUE.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/roles/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/builder/",
+        ".github/workflows/task-audit-readiness.yml",
+        "scripts/workflow-composite-release.js",
+        "test/workflow-composite-release.test.js",
+        "src/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "next_gate": "Product owner explicitly authorizes or declines TCW-060 setup-only work. No setup branch or external mutation before that authorization. Setup approval is not TCW-047 staging/install/release approval.",
+      "accepted_upstream": {
+        "task_id": "TCW-059",
+        "verdict": "PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS",
+        "integration_sha": "f2f359ac4ba012cfbf72a8818d94f48d750c71b7",
+        "retained_artifact_id": 10598497668,
+        "retained_artifact_expires_at": "2026-10-04T04:03:59Z",
+        "retained_artifact_zip_sha256": "6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833"
       }
     }
   ]
