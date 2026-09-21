@@ -287,3 +287,23 @@ TCW-047 remains RELEASE_HOLD; PR #162 stays DRAFT/OPEN/UNMERGED.
 | 4 | Research & Development (R&D) | STOP / COMPLETE | TCW-059 accepted | No further R&D writes unless Manager returns a bounded question. |
 | 5 | Independent Auditor / QA | WAIT | Future TCW-060 frozen setup target | Activate only after setup evidence is frozen; independent audit required before downstream observer activation. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only if setup execution encounters a concrete cross-layer blocker. |
+
+
+## TCW-059 verified historical closeout — 2026-09-21
+
+TCW-059 passed its separate VERIFYING_MASTER checkpoint at canonical master `2d449e5bfdcb3a1294a412b1b4f6e9955f6bbf62`, genuine master #826/run `35641106346`, required test `106470357598` SUCCESS. All V3.2 removal predicates are satisfied.
+
+This closeout removes TCW-059 from active-only state and preserves its historical task/evidence. TCW-060 remains the active setup-only Owner authorization gate and TCW-047 remains blocked behind TCW-060.
+
+No external setup action is performed by closeout.
+
+## Next Activation
+
+| Order | Employee / Role | Status | Current gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | WAIT OWNER AUTHORIZATION | TCW-060 setup-only gate | Ask product owner to explicitly authorize or decline TCW-060 setup-only work. No setup branch before approval. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-047 external-evidence hold | Preserve Builder PR #162; no sync, staging, installation or observer implementation. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy gate | Await Manager routing. |
+| 4 | Research & Development (R&D) | CLOSED / IDLE | TCW-059 complete | No further action unless Manager creates a new bounded research task. |
+| 5 | Independent Auditor / QA | WAIT | Future TCW-060 setup target | Activate only after owner-authorized setup is complete and frozen for independent audit. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only for a concrete setup/tooling blocker. |
