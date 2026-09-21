@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T14:20:00Z",
+  "updated_at_utc": "2026-09-21T17:30:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -485,7 +485,11 @@
       ],
       "audit_required": false,
       "post_merge_canary_required": false,
-      "next_gate": "R&D performs read-only external identity/publisher-rights/protected-ledger/packet-custody/rollback feasibility research, writes only the two authorized R&D paths, opens one unmerged R&D PR with exact-head CI, and returns PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS / MANAGER_DECISION_REQUIRED / NO_SAFE_PROTOCOL_FOUND / STALLED_EXTERNAL_ACCESS_REQUIRED. No staging, installation or release authority."
+      "next_gate": "R&D branch remains at assignment baseline fe3ca66c. Manager activation advanced only control-plane state and is classified CONTROL_PLANE_ONLY at 3f0cdcb3. R&D must Fast Refresh canonical state without syncing activation commits into its branch; research remains limited to the two authorized R&D files.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "3f0cdcb324a803828987cc7490dd96196cfda8f4"
+      }
     }
   ]
 }
