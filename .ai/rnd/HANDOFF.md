@@ -1,194 +1,190 @@
-# R&D Handoff — TCW-033 Trade Intelligence Data + ESPN Offer Research
+# R&D Handoff — TCW-059 Protected Release External Identity + Ledger Feasibility Research
 
-Task ID: TCW-033  
+Task ID: TCW-059  
 Role: Research & Development  
-Status: MANAGER_REVIEW_READY — research complete; PR/CI evidence to be verified at exact final head
+Status: MANAGER_REVIEW_READY — research complete; final exact-head CI custody will be recorded externally on PR #208 after this handoff commit
 
-## Verified starting state
+## Verified assignment and live state
 
 - Repository: Ryan42062001/the-chip-winner
-- Canonical master verified live at task start: 3c41a5caab555e7564ce3255947515415fba685e
-- Assigned branch: rnd/tcw-033-trade-intelligence-data-research
-- Branch was verified identical to canonical master before R&D writes.
-- Authorized assignment master recorded by task: 6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc
-- Accepted deployed Trade Analyzer product target: 5362e2bff143a5aef050e160ccb0706a7060fb3d
-- Accepted TCW-032 Strategy integration: 6120dc027dfafc8db9240d70fb9e6c32a8cc2ebc
-- Field validation remains 10 passed / 1 pending.
-- FV-SEASON-01 remains pending; TCW-033 did not alter field-validation state.
+- Current canonical master independently refreshed: 63e87ece2eb38b5d150df25d83bf296f4783f3a1
+- Immutable assignment / historical branch creation master: fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952
+- Assigned branch: rnd/tcw-059-protected-release-external-evidence-research
+- Branch was verified 0 ahead / 0 behind the immutable assignment master before TCW-059 writes.
+- Target advancement: CONTROL_PLANE_ONLY at 3f0cdcb324a803828987cc7490dd96196cfda8f4.
+- The R&D branch was NOT synced, rebased, merged, cherry-picked, or fast-forwarded to current master.
+- R&D PR: #208 — OPEN / UNMERGED.
+- Research artifact commit: bcc37bb100ce7c35106161ebc72901463c68dde1.
+- The exact final R&D head is the PR #208 head after this handoff commit. It is intentionally recorded in the final PR custody comment after exact-head CI, because a file cannot self-embed the SHA of the commit that contains itself.
 
-## Work completed
+## Top-level verdict
 
-- Verified current repository FantasyPros ranking, manual projection, future projection, and generic projection-catalog semantics.
-- Resolved the package-value source question to the required blocking taxonomy.
-- Researched current FantasyPros, FantasyCalc, RedraftCalc, RotoTrade, KeepTradeCut, DynastyProcess/TradeBalancer source semantics, additivity, format conditioning, freshness, identity, operational access, and rights limitations.
-- Bounded a future buy-low/sell-high evidence protocol without mixing market units with projected-point utility.
-- Researched official ESPN pending-offer product behavior plus undocumented read-only pending-transaction evidence.
-- Defined the minimum manual ESPN offer reconstruction fallback.
-- Enumerated league-wide opportunity-matching inputs that are already available versus still missing.
-- Created the complete research artifact at '.ai/rnd/TCW-033_TRADE_INTELLIGENCE_DATA_RESEARCH.md'.
+PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS
 
-## Blocking package-value source verdict
+A supported external-evidence architecture exists, but no real TCW-047 release attempt is safe yet. The dormant TCW-053 observer intentionally RELEASE_HOLDs the external actor/ledger/approval/rollback and retained-byte gates. Manager must authorize a separate setup/activation implementation, and that exact implementation must be independently audited and synthetically exercised before requesting one real TCW-047 staged-source authorization.
 
-**MANAGER_DECISION_REQUIRED**
+## Recommended identity architecture
 
-No source simultaneously cleared semantics, additivity, league conditioning, identity, freshness, stable documented access, and production rights without a Manager policy choice.
+- Owner: existing human GitHub account Ryan42062001, durable user ID 312284033, using a dedicated Owner Approval GitHub App user-access-token path for durable user+app attribution.
+- Manager: separate dedicated GitHub App installation with its own app/installation identity.
+- Auditor: separate dedicated GitHub App installation with its own app/installation identity.
+- Optional infrastructure validator: separate expected-source App/integration for ledger validation; it is not a substitute for Owner, Manager, or Auditor.
+- Same-account ChatGPT role switching, multiple GITHUB_TOKEN workflows, deploy keys, and multiple PATs for Ryan42062001 do not satisfy the accepted three-principal separation.
 
-### Best bounded candidates
+## Recommended ledger architecture
 
-1. **FantasyPros weekly redraft Trade Value Chart — primary short-path candidate for manual/browser-local use only.**
-   - Current redraft trade-value semantics.
-   - Strong historical FantasyPros football precedent for additive package math.
-   - Current chart has base, 2QB and TEP values.
-   - No documented current trade-value API endpoint.
-   - Current site/API terms materially constrain reuse/redistribution/competition.
-   - Do not scrape or bundle data without authorization.
+Use a same-repository, off-master, protected release-ledger branch with a dedicated future ruleset:
 
-2. **FantasyCalc — strongest potential programmatic market candidate if current rights/API authority are confirmed.**
-   - Market values derived from 1M+ real trades.
-   - Redraft, league size, PPR and QB-format conditioning.
-   - Community tooling indicates ESPN IDs and an undocumented values endpoint.
-   - Stable official API contract and production-use rights remain unverified.
+- PR required;
+- strict required validator check;
+- expected validator App/integration;
+- no bypass;
+- deletion blocked;
+- force/non-fast-forward blocked;
+- ledger merge method restricted to merge.
 
-3. **RedraftCalc — strongest published semantic/additivity fit if licensed access is available.**
-   - Provider explicitly says values mirror auction budgets and add like budgets.
-   - Supports PPR family, 1QB/SF, TEP, and league sizes.
-   - Proprietary; no verified API/ESPN-ID/rights contract.
+Each transition should use an event-anchor commit followed by a receipt commit so the receipt blob never claims its own Git commit SHA. The verifier derives receiptCommit and receiptBlob from Git after publication. Strict up-to-date ledger PRs serialize transitions and make a racing second terminal transition stale and rejectable. Consumed/aborted nonces remain terminal forever.
 
-R&D recommends Manager either approve a narrowly bounded manual/local FantasyPros source contract, seek explicit programmatic authority from FantasyCalc/RedraftCalc, or keep package winner/split withheld.
+The accepted immutable tuple includes both Owner authority records, so this ledger is a release-consumption state machine after the complete evidence tuple exists, not the mechanism that gathers those approvals.
 
-## Current rankings/projections boundary
+## Retained TCW-047 packet-byte custody conclusion
 
-Current TCW inputs **can** support:
-- current/future roster utility;
-- lineup impact;
-- source-separated team needs/depth;
-- connected-league replacement/VORP when explicitly derived;
-- ROS/playoff context with existing completeness rules.
+Historical artifact 10598497668 is STILL RETAINED and independently retrievable.
 
-Current TCW inputs **cannot** by themselves support:
-- additive market/package asset value;
-- 57/43 relative package asset-value share;
-- YOU WIN / FAIR TRADE / THEY WIN;
-- offer-acceptance probability;
-- buy-low/sell-high labels.
+Verified live values:
 
-Ordinal FantasyPros rank, SOS stars, projected points, ECR-vs-ADP, and generic 'restOfSeasonValue' are not promoted to trade-value authority.
+- workflow: 35488171554
+- job: 106018254992
+- artifact: 10598497668
+- size: 8,150 bytes
+- expired: false
+- expires: 2026-10-04T04:03:59Z
+- GitHub artifact ZIP digest: 6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833
+- independently downloaded ZIP SHA-256: 6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833
+- raw original-packet.json SHA-256: d4189773aae9e40a5ac7729390c45c74f7f630d51b2a6b3ee56b0183e6a5b932
+- historical helper canonical packet digest: f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894
 
-## Buy-low / sell-high verdict
+The f6d... digest is the helper’s canonical pre-sha-field JSON digest, not the raw pretty-printed JSON file hash. TCW-059 reproduced it from the retained bytes.
 
-**OPPORTUNITY_UNVERIFIED**
+Required future custody action: before October 4, separately authorize archival of the exact ZIP bytes with both the ZIP digest and internal packet digest. GitHub immutable-release assets are a strong GitHub-native copy; an independently administered WORM/object-lock copy is recommended as a second custody domain. If the Actions artifact expires before exact-byte archival, reconstructed bytes must never be represented as the historical artifact.
 
-A future protocol is feasible only after:
-- an approved market-value source with historical/current values exists;
-- Strategy/Manager approve a market change window and threshold;
-- complete forward roster-utility evidence meets confidence/coverage gates.
+## Owner approval mechanism
 
-Recommended comparison is directional and source-separated:
-- MARKET_DOWN_UTILITY_UP
-- MARKET_UP_UTILITY_DOWN
-- MARKET_AND_UTILITY_ALIGNED
-- INSUFFICIENT_EVIDENCE
+Two human Owner decisions remain mandatory.
 
-Do not subtract or ratio market-value units against projected points. Do not promise price convergence or future performance.
+A. Prestage creation capability:
+- precompute exact S locally from frozen M and the exact four A blobs without publishing a GitHub stage ref;
+- Owner publishes prestage capability C0 binding nonce, M, intended branch, exact S/tree/files, rollback operator, and expiry;
+- after Manager creates only that exact stage ref/PR, the short-lived Owner Approval App automatically emits C1 sealing the actual stage PR to C0, with no new discretion;
+- final authority.plan evidence points to C1 while C1 proves C0 predated stage creation.
 
-## ESPN offer-read classification
+B. Exact-S installation authorization:
+- after exact-S FULL CI, preview, Auditor PASS, rollback proof, and ruleset verification;
+- Owner separately publishes C2 binding repository, nonce, M, stage PR/branch, exact S/tree/files, audit evidence/verdict, CI/check provenance, ruleset digest, rollback operator, expiry, and C0/C1 digest;
+- C2 must be a distinct immutable evidence commit/blob/ref/PR from C1.
 
-- ESPN pending-offer UI/state lifecycle: **OFFICIALLY SUPPORTED**.
-- Undocumented 'mPendingTransactions' fantasy view: **OBSERVED BUT FRAGILE** in community evidence.
-- Pending-trade item shape: **OBSERVED AND REPRODUCIBLE in community basketball evidence; INFERRED for current 2026 football**.
-- Reliable automatic current-football ingestion in TCW: **UNKNOWN / NOT ESTABLISHED**.
-- Current TCW companion support for pending offers: **VERIFIED ABSENT**.
+Mutable chat, free-form comments, or dismissible PR review alone are not machine-consumed authority.
 
-### Manual fallback
+## Exact-S Auditor publication design
 
-Until current football read-only ingestion is field-proven:
-- select received/sent offer;
-- select counterparty ESPN team;
-- select outgoing/incoming players from current ESPN rosters so stable ESPN IDs are used;
-- optionally record ESPN-displayed expiry/review deadline;
-- require user confirmation that the offer was observed pending now;
-- record observation time;
-- label as MANUAL ESPN OFFER RECONSTRUCTION;
-- invalidate when roster ownership no longer matches;
-- expose no accept/decline/propose/write action.
+The Auditor App publishes a whole-tree exact-S report on an off-master same-repository Auditor ref and opens an evidence PR. The report binds S and S.tree but does not attempt to contain its own future commit SHA. After publication, the composite attestation records the observed evidence commit/tree/blob/ref/path/PR. Immediately before release, Manager independently re-fetches all of those objects plus publisher identity and confirms the ref still points to the exact evidence commit. No master advancement occurs, so publishing the audit does not stale S.
 
-## League-wide matching prerequisites
+## Rollback model
 
-Already substantially available:
-- all returned ESPN teams and rosters;
-- ESPN player/team IDs and ownership;
-- supported lineup settings including FLEX/OP;
-- roster/position limits;
-- current/future projections with compatibility and identity gates;
-- available-player replacement context;
-- deterministic roster consequence logic.
+Rollback is forward-only under current protected master:
 
-Still missing/insufficient:
-- Manager-approved package asset-value source;
-- manager preferences/untouchables;
-- any acceptance-probability authority;
-- reviewed trade-deadline/review rule normalization for opportunity legality;
-- guaranteed complete free-agent universe;
-- current automatic pending-offer contract;
-- cross-source freshness alignment for value/projection/ESPN states.
+- keep unexpected G as evidence;
+- if G does not have exactly two ordered parents [M,S], G.tree=S.tree, and live master=G, do NOT write RELEASED;
+- write terminal ABORTED after authenticated incident evidence;
+- create rollback branch from live master;
+- revert/restore through a normal protected PR;
+- run required test from integration 15368;
+- merge only through protected PR flow;
+- verify resulting master/tree and post-merge CI.
 
-## Exact unresolved Manager decisions
+Recommended rollback operator is the Manager GitHub App or separately designated Manager-operated principal, never the Auditor.
 
-1. Approve or reject FantasyPros weekly redraft values as a user-supplied manual/local-only source.
-2. Decide whether the provider-defined current FantasyPros base scoring assumptions are sufficient or whether exact PPR-family source conditioning is mandatory.
-3. Decide whether to pursue explicit FantasyCalc or RedraftCalc programmatic licensing/access.
-4. Decide whether TCW-034 must remain wholly blocked until source approval, or whether source-agnostic fail-closed plumbing may be separately activated while value output remains disabled.
-5. For later work, decide whether Strategy should formalize directional market-vs-utility divergence.
-6. Decide whether a future field/research task should reproduce 'mPendingTransactions' against a real current ESPN football offer.
+## Ruleset compatibility conclusion
 
-## TCW-034 readiness
+Current Protect Master #22309639 remains compatible with the dormant contract:
 
-**REMAINS BLOCKED.**
+- ACTIVE;
+- PR required;
+- strict required status test;
+- integration ID 15368;
+- no bypass actors;
+- current-user bypass never;
+- merge, squash, and rebase generally permitted.
 
-TCW-033 provides enough evidence for Manager to make the source-authority decision. R&D does not make that decision and does not activate Builder.
+The contract is stricter procedurally and requires an explicit future merge-method attempt plus postmerge G topology verification. Manager can use the merge API with sha=S and merge_method=merge, then inspect actual G. A future master-ruleset change that permits only merge is optional defense in depth, not mandatory for the accepted contract. TCW-059 changed no ruleset.
 
-## Evidence produced
+## Current dormant implementation blocker
 
-- '.ai/rnd/TCW-033_TRADE_INTELLIGENCE_DATA_RESEARCH.md'
-- Current provider/official documentation and source terms linked inside the research artifact.
-- Exact repository semantic inventory.
-- Manual ESPN offer reconstruction contract.
-- Value-source comparison and failure rules.
+The current integrated TCW-053 live observer intentionally cannot authorize a release even if external setup exists:
 
-## Files updated
+- observeFrozenSourceCustody currently sets originalPacketBytesVerified=false;
+- verifyPremergeReadOnly intentionally adds external actor, ledger, Owner, Auditor, rollback, and packet-byte blockers;
+- verifyPostmergeReadOnly intentionally holds pending authenticated postmerge evidence.
 
-Authorized scope only:
-- '.ai/rnd/TCW-033_TRADE_INTELLIGENCE_DATA_RESEARCH.md'
-- '.ai/rnd/HANDOFF.md'
+Therefore a separately authorized implementation must add authenticated observers for these external facts without deleting or weakening any fail-closed predicate. That activation implementation requires a fresh independent material workflow/security audit.
 
-No production code, tests, scripts, config, workflow, Manager/Strategy state, package files, ESPN integration, or field-validation state changed.
+## Unresolved external setup actions
 
-## Blocking issues
+1. Product Owner / Manager authorizes setup only, not TCW-047 staging.
+2. Archive artifact 10598497668 exact bytes before 2026-10-04.
+3. Enable immutable releases if chosen for one custody copy.
+4. Create/select distinct Owner Approval, Manager, and Auditor authenticated principals.
+5. Pin durable numeric actor/App/installation IDs.
+6. Configure least-privilege App permissions.
+7. Establish private-key vault/rotation/revocation handling.
+8. Create protected off-master Owner/Auditor evidence-ref policy.
+9. Create protected same-repo release-ledger branch/ruleset.
+10. Create expected-source independent ledger validator.
+11. Protect stage/evidence refs sufficiently to preserve role separation.
+12. Implement authenticated artifact-byte, actor-rights, approval, Auditor, ledger, rollback, and postmerge observers.
+13. Independently audit the exact activation implementation.
+14. Run a synthetic non-TCW-047 end-to-end exercise including concurrency, replay, stale S, moved ref, wrong actor, wrong merge method, ABORTED, credential revocation, and rollback.
+15. Only after that PASS return to Owner for the real decision A.
 
-- No R&D research blocker remains.
-- Manager source approval remains the hard gate before generic TCW-034 package winner/split behavior may activate.
+## Exact Manager decision required next
 
-## Recommended next role
+Review PR #208 and its exact-head CI. If accepted, authorize a separate protected-release external-evidence setup/activation task with no TCW-047 staging authority. Require exact-byte archival before artifact expiry and require an independent audit plus synthetic end-to-end PASS before any real staged-source decision.
 
-Manager / Architect.
+TCW-047 remains WAITING_EXTERNAL_EVIDENCE. Builder PR #162 remains DRAFT / OPEN / UNMERGED at 17e5f413f2afd3d743fd28d401f0df421825df2a.
 
-## Exact next action
+## Authorized changed-file inventory
 
-Manager reviews the TCW-033 PR and exact-head CI, then selects or rejects the package-value source path. Only Manager may activate TCW-034.
+Exactly two authorized R&D paths after this handoff commit:
+
+1. .ai/rnd/TCW-059_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_RESEARCH.md
+2. .ai/rnd/HANDOFF.md
+
+No other repository path is authorized or intentionally changed.
+
+## No-action confirmation
+
+NO TCW-047 stage branch/PR was created.  
+NO Builder PR #162 change occurred.  
+NO R&D sync/rebase/merge to canonical master occurred.  
+NO GitHub account/App/credential/token was created.  
+NO ledger or approval record was written.  
+NO ruleset/branch protection was changed.  
+NO TCW-047 workflow was installed or dispatched.  
+NO PR was merged.  
+NO product/ESPN/trade source was modified.  
+NO staging/install/release authority is claimed.
 
 ## Next Activation dashboard
 
-| Order | Employee / Role | Status | Current gate | Next action |
+| Order | Employee / Role | Status | Project / gate | Next action |
 | ---: | --- | --- | --- | --- |
-| 1 | Manager / Architect | ACTIVATE AFTER R&D CI PASS | TCW-033 source authority | Review verdict, source rights/semantics, PR scope and exact-head CI; decide TCW-034 routing. |
-| 2 | Implementation Engineer / Builder | WAIT | TCW-034 blocked | Do not implement until Manager explicitly activates. |
-| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | TCW-032 closed | Re-activate only if Manager requests a new threshold/divergence policy decision. |
-| 4 | Research & Development | STOP AFTER HANDOFF | TCW-033 complete | No additional work unless Manager returns a bounded research question. |
-| 5 | Independent Auditor / QA | IDLE | No TCW-034 frozen target | Await downstream implementation audit routing. |
-| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only on Manager routing. |
+| 1 | Manager / Architect | ACTIVATE AFTER EXACT-HEAD CI | TCW-059 review | Independently review PR #208, verdict, artifact custody, actor model, ledger design, and exact-head CI. Decide whether to authorize setup-only activation work. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-047 WAITING_EXTERNAL_EVIDENCE | Keep PR #162 frozen at 17e5f413...; no staging/install work. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No TCW-059 strategy gate | No action unless Manager routes a policy question. |
+| 4 | Research & Development | STOP AFTER HANDOFF | TCW-059 complete | No further branch writes after final handoff unless Manager returns a bounded research question. |
+| 5 | Independent Auditor / QA | WAIT | Future activation audit | Do not treat this research or future green implementation CI as an audit verdict. Activate only after Manager freezes a setup/activation target. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No execution blocker | Activate only for a reproduced setup/CI/tooling blocker under Manager scope. |
 
-## Checkpoint / SHA
+## Dynamic custody note
 
-- Canonical master verified: 3c41a5caab555e7564ce3255947515415fba685e
-- Research artifact commit: b1c33bf3f0280397c4cb0505a8687817260d4ea9
-- Exact final R&D branch head: verify live after this handoff commit.
+PR #208 and exact-head CI identifiers cannot be self-embedded into the same commit whose SHA/run they identify without creating a recursive publication problem. The final immutable branch head, changed-file proof, exact-head run/job/conclusion, and complete handoff dashboard are therefore also recorded as a top-level PR #208 custody comment after the final handoff commit and its CI complete.
