@@ -364,8 +364,12 @@
       "merge_authority": "Manager",
       "blocker_type": "NONE",
       "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on_tasks": [
+        "TCW-056"
+      ],
+      "blocked_on": [
+        "TCW-056 distinct Manager-owned governance projection must be independently audited and receive separate explicit Manager integration/closeout decision before original TCW-053 source task can complete. This HARD edge serializes the overlapping four-file source write scope; original Builder branch/PR/creation baseline/AUDIT_READY remain immutable and no original Builder worker writes are authorized."
+      ],
       "task_file": ".ai/manager/tasks/TCW-053.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
@@ -410,7 +414,7 @@
       "dormant_read_only_release_guard_only": true,
       "staged_source_pr_creation_authorized": false,
       "installation_authorized": false,
-      "next_gate": "AUDIT_READY ONLY: Manager accepted Work Helper-reported original unmodified TCW-053 task-specific helper exit 0, blockers [], readyForManagerFreeze true on immutable Builder 70e74c56 (tree 96ac9a74), original true 17cb363b baseline, actual original helper blob b628b3..., canonical overlay pre-decision master b44e3658 .ai tree 75cd2a..., independently reproduced compact embedded packet SHA ff03c6..., 605-byte pretty packet SHA 72f168..., 715-byte stdout SHA eee771..., while explicitly NOT independently witnessing runner/index/overlay permissions or retrieving original raw runner archive. Full Manager disposition in .ai/manager/evidence/TCW-053_ORIGINAL_MECHANICAL_READINESS_MANAGER_ACCEPTANCE_70e74c56.md and Builder PR #182 comment 5753193367. TCW-055 independent SOURCE-ONLY PASS accepted and evidence integrated. Source PR #182 DRAFT/OPEN/UNMERGED at historic PR base eed9dbb... behind canonical master: separate Manager-controlled historically faithful up-to-date protected-source integration plan/authorization required before MERGE_READY or source merge. Do NOT rewrite true Builder creation baseline/import later Manager commits, merge #182/#162/#147/old Auditor #184, create stage, install readiness, alter rulesets/ledger/permissions or dispatch. TCW-047 original packet BYTES, external actor/nonce protected ledger/rights, actual S/G exact-S independent audit, owner stage/install consents, production/rollback/first-party L4 remain UNVERIFIED/RELEASE_HOLD.",
+      "next_gate": "ORIGINAL SOURCE AUDIT_READY only: authenticated original helper packet consistency accepted and independent TCW-055 bounded source-only PASS at frozen Builder A 70e74c56. Separate Owner-authorized new TCW-056 Manager source-projection at b55e2833/source PR #191 has exact four original Builder blobs and one parent old canonical master 497cac01, but is DISTINCT new whole-tree identity. TCW-057 independent exact-new-target audit assigned; TCW-053 HARD serialized behind TCW-056 to forbid concurrent four-file source writes, never supersede/close #182 or rewrite historical 17cb creation. No source MERGE_READY/integration/release granted. Strict protected-master check after Manager assignment may leave frozen candidate #191 behind; stop and escalate separately rather than mutate frozen target. TCW-047 packet archive bytes/external protected actor/nonce ledger/publisher rights/actual S/G/Owner staging/install/Actions L4 RELEASE_HOLD.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "17cb363bf457d02cb0029430b110af002e43dc6a"
@@ -553,6 +557,129 @@
         "TCW-054-F01_MEDIUM_BLOCKING_ACCEPTED",
         "TCW-054-F02_MEDIUM_BLOCKING_ACCEPTED"
       ]
+    },
+    {
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "task_id": "TCW-056",
+      "title": "Manager-Owned Exact-Four-Blob Governance Source Projection",
+      "owner": "Manager",
+      "role_label": "Manager / Architect — Distinct Immutable Governance-Source Projection Custody",
+      "status": "MANAGER_REVIEW_READY",
+      "task_file": ".ai/manager/tasks/TCW-056.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "branch": "manager/tcw-053-governance-source-projection",
+      "pr": 191,
+      "worker_checkpoint_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
+      "worker_slot": "manager-tcw-056-exact-blob-projection",
+      "allowed_path_prefixes": [
+        ".ai/builder/TCW-053_HANDOFF.md",
+        ".ai/shared/WORKFLOW_V3_2.md",
+        "scripts/workflow-composite-release.js",
+        "test/workflow-composite-release.test.js"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/ACTIVE_TASKS.json",
+        ".ai/manager/",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".github/",
+        "src/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b"
+      },
+      "source_task": "TCW-053",
+      "source_builder_pr": 182,
+      "source_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
+      "source_original_creation_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
+      "exact_immutable_candidate_tree": "d60012c5a81d80a0a7c08584ea05da34e6400109",
+      "candidate_original_parent_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "original_builder_unchanged": true,
+      "candidate_owner_scope": "DISTINCT_MANAGER_SOURCE_PROJECTION_NOT_TC047_COMPOSITE_STAGE_S",
+      "candidate_ci": {
+        "pr": 191,
+        "run": 35551280863,
+        "job": 106186379581,
+        "mode": "FULL",
+        "conclusion": "success",
+        "node_tests_passed": 496
+      },
+      "audit_task": "TCW-057",
+      "audit_target_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
+      "next_gate": "Exact four-blob NEW Manager-owned candidate #191 b55e2833 / tree d60012c5 frozen; FULL #786 job 106186379581 SUCCESS at exact candidate. Manager-controlled canonical assignment and genuine master CI BEFORE separate fresh TCW-057 independent whole-tree audit. PR #191 remains DRAFT/UNMERGED, original Builder #182 untouched. Future strict protected current master may be ahead because Manager routing PR advances master; no automatic rebase/update/merge, no MERGE_READY/release."
+    },
+    {
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "task_id": "TCW-057",
+      "title": "Fresh Independent Exact-Projection Whole-Tree Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA — Fresh Exact-New-Whole-Tree Governance Source Projection Audit",
+      "status": "ASSIGNED",
+      "task_file": ".ai/manager/tasks/TCW-057.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "branch": "auditor/tcw-057-governance-projection-reaudit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-057-fresh-exact-projection",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-057_GOVERNANCE_PROJECTION_INDEPENDENT_AUDIT.md",
+        ".ai/auditor/TCW-057_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/builder/",
+        ".github/",
+        "scripts/",
+        "test/",
+        "src/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_target_task": "TCW-056",
+      "audit_target_pr": 191,
+      "audit_target_branch": "manager/tcw-053-governance-source-projection",
+      "audit_target_sha": "b55e2833a6350877419bf30d862954339e5a8d2e",
+      "audit_target_tree_sha": "d60012c5a81d80a0a7c08584ea05da34e6400109",
+      "audit_packet": ".ai/audit/TCW-057_GOVERNANCE_PROJECTION_INDEPENDENT_AUDIT_PACKET_b55e2833.md",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b"
+      },
+      "historical_initial_auditor_branch_creation_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "activation_requires": "Manager assignment guarded merge/master PUSH CI SUCCESS and controlled nonforce sync of untouched independent Auditor branch to canonical assignment master before any evidence write",
+      "next_gate": "FRESH independent exact-new-commit b55e2833/d60012 whole-tree review, TCW-056 Manager source PR #191 exact FULL #786 test 106186379581 SUCCESS. Auditor branch CREATED untouched at original historical 497cac01; worker_checkpoint_sha intentionally NULL pending separate Manager NONFORCE FAST-FORWARD to eventual guarded Manager assignment integration master after real master PUSH CI. Do NOT claim original creation SHA is current Auditor checkout after sync. Verify exact canonical branch/head before any evidence write; record actual checkpoint after sync via Manager-owned registry evidence if required. No candidate source merge or release.",
+      "initial_auditor_branch_creation_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "checkpoint_status": "PENDING_NONFORCE_SYNC_AFTER_GENUINE_CANONICAL_ASSIGNMENT_MASTER_PUSH_CI"
     }
   ]
 }
