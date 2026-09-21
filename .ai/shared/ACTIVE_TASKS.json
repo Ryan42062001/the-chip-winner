@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T03:15:39.977Z",
+  "updated_at_utc": "2026-09-21T03:17:47.723Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -566,8 +566,12 @@
       "merge_authority": "Manager",
       "blocker_type": "NONE",
       "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
+      "blocked_on_tasks": [
+        "TCW-058"
+      ],
+      "blocked_on": [
+        "TCW-058 fresh independent exact integrated G 9d51f759/tree 4f29eb56 and real Pages publication audit MUST receive independent verdict, Manager acceptance and evidence integration before governance source closeout. Source already protected-merged but is NOT audit-complete or TCW-047 protected release-ready."
+      ],
       "audit_required": true,
       "post_merge_canary_required": false,
       "task_id": "TCW-056",
