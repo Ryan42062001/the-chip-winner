@@ -433,3 +433,11 @@ Owner: Research & Development (R&D)
 TCW-053's dormant fail-closed governance implementation is integrated/audited/closed, but TCW-047 remains blocked on real external release evidence rather than source code. TCW-059 researches whether the project can establish distinct authenticated Owner/Manager/Auditor GitHub publishers, a protected durable nonce/consumption ledger, retained packet-byte custody, separate owner stage/install approval records, immutable off-master exact-S audit publication and rollback proof without weakening strict master protection.
 
 This task does **not** authorize a staged source PR, GitHub account/App/credential creation, ledger writes, ruleset changes, TCW-047 workflow installation or protected release. Manager must consume the research verdict before asking the product owner for any specific future staging authorization.
+
+
+#### TCW-060 — Protected Release External Evidence Setup + Packet Custody Gate
+Status: **WAITING_EXTERNAL_EVIDENCE — OWNER SETUP AUTHORIZATION REQUIRED**
+
+Manager accepted TCW-059's `PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS` research verdict. TCW-060 is the non-release setup gate for durable archival of retained artifact `10598497668`, distinct authenticated Owner/Manager/Auditor principals, protected off-master evidence refs, protected release ledger, expected-source validator and credential/incident policy.
+
+No setup branch or external mutation is authorized until the product owner explicitly approves TCW-060 setup-only work. That approval is not TCW-047 staging, installation or release consent. After setup, fresh independent workflow/security audit and a synthetic non-TCW-047 end-to-end PASS are mandatory before any real TCW-047 Owner prestage decision.
