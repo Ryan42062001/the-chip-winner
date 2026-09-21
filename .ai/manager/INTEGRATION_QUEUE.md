@@ -340,3 +340,16 @@ TCW-053 enters VERIFYING_MASTER with integration_sha=G, post_merge_run=355565765
 ## TCW-059 activation CI remediation — control-plane drift — 2026-09-21
 
 Activation PR #206 merged at `3f0cdcb324a803828987cc7490dd96196cfda8f4`. Master run #818 failed Workflow V3.2 state audit because TCW-059's immutable pre-activation assignment master was seven commits behind and had no target-advancement classification. The intervening activation changed only Manager/shared control-plane files. Remediation records `CONTROL_PLANE_ONLY` and preserves the R&D branch at its original assignment baseline.
+
+
+## TCW-059 accepted research integration / TCW-060 Owner gate — 2026-09-21
+
+- TCW-059 source PR #208: CLOSED / UNMERGED, immutable source head `98eb461a4b156fe156ca085b07fe99c7358ef8f0`.
+- Exact accepted blobs integrated by Manager PR #209.
+- Canonical integration SHA: `f2f359ac4ba012cfbf72a8818d94f48d750c71b7`.
+- Genuine master #824/run `35640077518`; required test `106466974510` SUCCESS; deploy/verify-production SKIPPED.
+- Verdict accepted: `PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS`.
+- TCW-059 transitions to VERIFYING_MASTER; separate closeout still required.
+- TCW-060 is setup-only, WAITING_EXTERNAL_EVIDENCE / USER_ACTION. No branch yet.
+- Highest-priority authorized-after-approval action: archive exact artifact `10598497668` bytes before `2026-10-04T04:03:59Z`.
+- TCW-047 remains WAITING_EXTERNAL_EVIDENCE and now blocks on TCW-060; no staging/install/release.
