@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T13:53:39.012Z",
+  "updated_at_utc": "2026-09-21T14:05:45Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -148,11 +148,9 @@
       "merge_authority": "Manager",
       "blocker_type": "EXTERNAL_EVIDENCE",
       "user_action_required": false,
-      "blocked_on_tasks": [
-        "TCW-053"
-      ],
+      "blocked_on_tasks": [],
       "blocked_on": [
-        "Owner NOW authorized separately bounded TCW-053 material governance IMPLEMENTATION and its OWN fresh independent workflow/control-plane audit ONLY. Await TCW-053 independently frozen executable exact-head candidate, separate fresh audit and Manager acceptance before any protocol activation. Future staged SOURCE PR creation and later exact-stage installation still require distinct owner approvals; existing Builder #162 and trade #147 remain DRAFT/UNMERGED."
+        "TCW-053 historical governance prerequisite is complete/closed. Remaining EXTERNAL_EVIDENCE release hold is independent: protected actor/nonce/consumption ledger and distinct publisher rights are unestablished; retained packet bytes, Owner staged-source approval, exact-S installation consent, real TCW-047 S/G/exact-S audit, rollback and installed first-party Actions L4 remain unverified/unauthorized."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -187,7 +185,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-053 separate read-only dormant composite-release governance implementation and future fresh independent exact-implementation audit authorized/assigned. TCW-052-F01/F02 LOW only for DOCUMENTARY design, required BLOCKING executable protocol activation. Source TCW-047 remains OPEN/UNINSTALLED; no stage source branch/PR, no new readiness workflow on master, no protected ruleset changes. After accepted TCW-053 implementation and fresh independent audit, Manager separately assesses protocol activation and asks owner before ANY staged source PR; later independently audited exact stage S needs ANOTHER owner installation authorization. Original A 17e5f413... / PR #162 draft/unmerged and trade #147 unchanged.",
+      "next_gate": "TCW-053 prerequisite COMPLETE/CLOSED with exact implementation bytes protected-integrated at G 9d51f759, original exact-A TCW-055 PASS and exact-G TCW-058 PASS WITH NON-BLOCKING FINDINGS accepted, and TCW-053 state master #814/test 106365375994 SUCCESS. Dependency edge cleared only. TCW-047 remains WAITING_EXTERNAL_EVIDENCE and original Builder PR #162 DRAFT/OPEN/UNMERGED. Manager must separately assess protocol activation/external actor-ledger-publisher-rights evidence before requesting any new Owner staged-source permission; separate exact-S installation consent and fresh real S/G audit remain mandatory. No automatic stage/install/release.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -291,7 +289,24 @@
         "material_governance_implementation_authorized": true,
         "material_governance_implementation_active": false,
         "material_governance_task": "TCW-053",
-        "material_governance_scope": "DORMANT_READ_ONLY_VERSIONED_ATTESTATION_PERMISSION_NONCE_REPLAY_EXACT_MERGE_GUARDS_AND_FRESH_IMPLEMENTATION_AUDIT_ONLY"
+        "material_governance_scope": "DORMANT_READ_ONLY_VERSIONED_ATTESTATION_PERMISSION_NONCE_REPLAY_EXACT_MERGE_GUARDS_AND_FRESH_IMPLEMENTATION_AUDIT_ONLY",
+        "material_governance_implementation_completed": true,
+        "material_governance_task_closed": true,
+        "material_governance_integrated_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "operational_protocol_activation": false
+      },
+      "material_governance_task_completion": {
+        "task_id": "TCW-053",
+        "status": "CLOSED_ON_CLOSEOUT_INTEGRATION",
+        "original_builder_pr": 182,
+        "original_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
+        "protected_source_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "state_transition_pr": 203,
+        "state_merge_sha": "fae7cd74bad04d55fbf5537d55eaaa48e8ecc94a",
+        "state_master_push_run": 35609680472,
+        "state_master_push_test_job": 106365375994,
+        "operational_protocol_activation": false,
+        "release_authority": "RELEASE_HOLD"
       }
     },
     {
@@ -349,199 +364,6 @@
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "2f81a42034021afe2306478101956fedeacdf8cf"
-      }
-    },
-    {
-      "task_id": "TCW-053",
-      "title": "Bounded Material Composite Protected-Release Governance Implementation",
-      "owner": "Builder",
-      "role_label": "Implementation Engineer / Builder — Bounded Governance / Release-Control Implementation",
-      "status": "VERIFYING_MASTER",
-      "dependency": "HARD",
-      "execution_mode": "STANDARD_CHAT_HIGH",
-      "refresh_mode": "FAST_REFRESH",
-      "refresh_reason": null,
-      "merge_authority": "Manager",
-      "blocker_type": "NONE",
-      "user_action_required": false,
-      "blocked_on_tasks": [],
-      "blocked_on": [],
-      "task_file": ".ai/manager/tasks/TCW-053.md",
-      "role_handoff": ".ai/builder/HANDOFF.md",
-      "assignment_master_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
-      "branch": "builder/tcw-053-composite-release-governance",
-      "pr": 182,
-      "worker_checkpoint_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
-      "worker_slot": "builder-tcw-053-composite-release-governance",
-      "allowed_path_prefixes": [
-        ".ai/shared/WORKFLOW_V3_2.md",
-        "scripts/workflow-composite-release.js",
-        "test/workflow-composite-release.test.js",
-        "scripts/audit-workflow.js",
-        "test/workflow-audit.test.js",
-        ".ai/builder/TCW-053_HANDOFF.md"
-      ],
-      "forbidden_path_prefixes": [
-        ".ai/shared/ACTIVE_TASKS.json",
-        ".ai/manager/",
-        ".ai/audit/",
-        ".ai/auditor/",
-        ".ai/builder/HANDOFF.md",
-        ".github/",
-        "scripts/workflow-audit-readiness.js",
-        "scripts/workflow-manager-transition.js",
-        "src/",
-        "extensions/",
-        "config/",
-        "package.json",
-        "package-lock.json"
-      ],
-      "audit_required": true,
-      "post_merge_canary_required": false,
-      "actual_historical_builder_creation_baseline_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
-      "original_assignment_master_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
-      "source_audit_design_target_sha": "c7b0923f5dfcf0a1e7ce5ac3b7d301b4de96cd75",
-      "source_audit_design_verdict": "PASS WITH NON-BLOCKING FINDINGS — DOCUMENTARY DESIGN ONLY",
-      "accepted_findings_to_implement": [
-        "TCW-052-F01",
-        "TCW-052-F02"
-      ],
-      "material_implementation_authorized": true,
-      "dormant_read_only_release_guard_only": true,
-      "staged_source_pr_creation_authorized": false,
-      "installation_authorized": false,
-      "next_gate": "VERIFYING_MASTER — original TCW-053 implementation task source A 70e74c56 exact four mode/blob tuples independently verified identical to protected integrated G 9d51f759 via completed distinct Manager task TCW-056; original TCW-055 exact-A source audit PASS accepted; original task-specific mechanical preflight Manager-accepted with explicit runner-custody limitation; later TCW-058 exact-G source/Pages PASS WITH NON-BLOCKING FINDINGS accepted. Original Builder PR #182 remains DRAFT/OPEN/UNMERGED and historical identity preserved. This separate TCW-053 state PR must protected-integrate and genuine master CI pass before independent task removal eligibility review. No TCW-047 stage/install/release authority.",
-      "target_advancement": {
-        "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "17cb363bf457d02cb0029430b110af002e43dc6a"
-      },
-      "audit_target_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
-      "exact_implementation_tree_sha": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
-      "manager_review_freeze": {
-        "classification": "SOURCE_REVIEW_ONLY_CONDITIONAL__REPAIRED_FOR_FRESH_TCW055",
-        "exact_head": "70e74c5612f71ba2808c7309127c14a02a54b765",
-        "reported_tree_sha": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
-        "tree_independent_native_verification": "PENDING_TCW055_AUDITOR",
-        "pr": 182,
-        "true_creation_and_source_diff_base": "17cb363bf457d02cb0029430b110af002e43dc6a",
-        "original_builder_diff_paths": [
-          ".ai/shared/WORKFLOW_V3_2.md",
-          "scripts/workflow-composite-release.js",
-          "test/workflow-composite-release.test.js",
-          ".ai/builder/TCW-053_HANDOFF.md"
-        ],
-        "remediation_delta_exact_paths": [
-          "scripts/workflow-composite-release.js",
-          "test/workflow-composite-release.test.js"
-        ],
-        "full_ci_run": 35517031364,
-        "full_ci_job": 106094607548,
-        "ci_tests_passed": 496,
-        "ci_artifact_id": 10607202937,
-        "original_task_specific_mechanical_run": "WORK_HELPER_REPORTED_GENUINE_ORIGINAL_RUN_ACCEPTED_WITH_RUN_CUSTODY_LIMIT",
-        "original_task_specific_packet": "GIVEN_FULL_PACKET_MANAGER_RECOMPUTED_BOTH_SHA256_DISTINCT_FROM_INDEPENDENT_RAW_RUNNER_ARCHIVE",
-        "read_only_canonical_overlay_required": true,
-        "external_protected_nonce_ledger": "NOT_ESTABLISHED",
-        "authenticated_distinct_owner_manager_auditor_publisher_rights": "NOT_ESTABLISHED",
-        "actual_stage_s": "NOT_CREATED",
-        "real_protected_release": "RELEASE_HOLD",
-        "future_additional_identity_ledger_scope_owner_authorized": false,
-        "source_audit_verdict": "TCW-055_PASS_BOUNDED_DORMANT_READONLY_ONLY"
-      },
-      "mechanical_status": "ORIGINAL_TCW053_TASK_SPECIFIC_PASS_ACCEPTED__WORK_HELPER_RUN_CUSTODY_REPORTED",
-      "protocol_activation_status": "RELEASE_HOLD__DORMANT_ONLY",
-      "historical_failed_tcw054_audit_target_sha": "324e5fe91d3749e882cd1aceb5ec2a4a73163123",
-      "historical_failed_tcw054_audit_tree_sha": "2c8147a0dfe945124e0acbd2cf338e31b9b2e9e2",
-      "accepted_repaired_source_audit": {
-        "audit_task": "TCW-055",
-        "verdict": "PASS — BOUNDED DORMANT/READ-ONLY SOURCE ONLY",
-        "frozen_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
-        "native_tree_sha": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
-        "auditor_pr": 186,
-        "auditor_final_sha": "c58a649e25603605f6af89c67bd94849856f7634",
-        "manager_acceptance_comment": 5750593995,
-        "evidence_integration_sha": "59f33604a87dd0c02aec6d56a962a629ce701d11",
-        "post_merge_run": 35518336450,
-        "post_merge_test_job": 106097966978,
-        "scope": "SOURCE_ONLY_NO_MECHANICAL_OR_RELEASE_AUTHORITY"
-      },
-      "original_mechanical_readiness": {
-        "classification": "ACCEPTED_ORIGINAL_TASK_SPECIFIC_MECHANICAL_PREFLIGHT_NOT_INDEPENDENT_RUNNER_ATTESTATION",
-        "command": "npm run workflow:audit-readiness -- --task TCW-053",
-        "helper_source_sha": "b628b3f6a334ad36e5f71235b78d88dd35f7d9e6",
-        "exact_builder_head": "70e74c5612f71ba2808c7309127c14a02a54b765",
-        "exact_builder_tree": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
-        "historical_assignment_master": "17cb363bf457d02cb0029430b110af002e43dc6a",
-        "canonical_overlay_master": "b44e36580090e596e4a78a0842b3115ae216e040",
-        "canonical_ai_tree_sha": "75cd2a1f9e67509a0e6cc1d161e53ff5d1cec502",
-        "canonical_registry_blob_sha": "0b94c059fd18e0c399054c6da54241ae79726ea8",
-        "canonical_task_blob_sha": "036650362c3c55d6f1476d31addc6d6101f01261",
-        "reported_exit_code": 0,
-        "reported_blockers": [],
-        "reported_ready_for_manager_freeze": true,
-        "embedded_canonical_packet_sha256": "ff03c6eee4568020221a82152fa6574898b8e6af3b048aa761060d2e2821d0c1",
-        "reconstructed_packet_bytes_length": 605,
-        "reconstructed_packet_bytes_sha256": "72f16828fbeadb51734959d8e86d15aca7b364c836fda8cb9aad4936ccae5f79",
-        "reconstructed_stdout_bytes_length": 715,
-        "reconstructed_stdout_sha256": "eee771fdc5b44c73f2e29f379f319e10826402c2b8e6772996339a36705397f5",
-        "run_custody_limit": "WORK_HELPER_REPORTED_EXECUTION_INDEX_READONLY_OVERLAY_AND_NO_WRITES_NOT_MANAGER_WITNESSED_OR_INDEPENDENTLY_ATTESTED",
-        "manager_acceptance_comment": 5753193367,
-        "evidence_path": ".ai/manager/evidence/TCW-053_ORIGINAL_MECHANICAL_READINESS_MANAGER_ACCEPTANCE_70e74c56.md",
-        "no_source_merge_or_release_authority": true
-      },
-      "integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
-      "post_merge_run": 35556576526,
-      "post_merge_test_job": 106201245555,
-      "integration_via_distinct_manager_task": "TCW-056",
-      "original_builder_pr_disposition": "DRAFT_OPEN_UNMERGED_HISTORICAL_SOURCE_IDENTITY_PRESERVED",
-      "closeout_evidence": {
-        "manager_verdict": "ACCEPTED",
-        "integration_verification": "PASS",
-        "master_verification": "PASS",
-        "audit_verdict": "PASS",
-        "canary_verification": "NOT_APPLICABLE",
-        "rationale": "TCW-053 exact four original Builder implementation blobs/modes at frozen A 70e74c56 were independently verified byte-identical to the four source blobs protected-integrated through distinct Manager task TCW-056 at G 9d51f759. Original TCW-055 exact-A source audit PASS accepted; genuine original task-specific mechanical readiness preflight later Manager-accepted with explicit un-witnessed runner-custody limitation retained. Fresh TCW-058 exact integrated G source/Pages audit also PASS WITH NON-BLOCKING FINDINGS accepted. Original Builder PR #182 remains open/draft/unmerged; G is the integrated checkpoint for exact implementation bytes, not a claim #182 merged. TCW-047 protected release remains RELEASE_HOLD.",
-        "exact_original_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
-        "exact_original_builder_tree": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
-        "true_original_creation_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
-        "original_builder_pr": 182,
-        "original_builder_pr_merged": false,
-        "exact_integrated_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
-        "integrated_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
-        "protected_source_pr": 196,
-        "source_master_push_run": 35556576526,
-        "source_master_push_test_job": 106201245555,
-        "source_blob_equivalence": "FOUR_SCOPED_MODE_BLOB_TUPLES_EXACT_MATCH_A_TO_G_NATIVE_GIT_TREES_UNTRUNCATED",
-        "original_source_audit": {
-          "task": "TCW-055",
-          "verdict": "PASS",
-          "auditor_pr": 186,
-          "auditor_final_sha": "c58a649e25603605f6af89c67bd94849856f7634",
-          "evidence_merge_sha": "59f33604a87dd0c02aec6d56a962a629ce701d11",
-          "post_merge_run": 35518336450,
-          "post_merge_test_job": 106097966978
-        },
-        "mechanical_readiness": {
-          "classification": "MANAGER_ACCEPTED_GENUINE_ORIGINAL_TASK_SPECIFIC_PREFLIGHT_WITH_RUN_CUSTODY_LIMIT",
-          "manager_acceptance_comment": 5753193367,
-          "reported_exit_code": 0,
-          "reported_blockers": [],
-          "runner_custody_limit": "WORK_HELPER_REPORTED_EXECUTION_INDEX_READONLY_OVERLAY_AND_NO_WRITES_NOT_MANAGER_WITNESSED_OR_INDEPENDENTLY_ATTESTED"
-        },
-        "integrated_target_audit": {
-          "task": "TCW-058",
-          "verdict": "PASS WITH NON-BLOCKING FINDINGS",
-          "auditor_pr": 198,
-          "auditor_final_sha": "51fe0dfc3c724f725adb0112d444c9ed1c61d9e3",
-          "evidence_merge_sha": "d78675cf77ed84c9004e3338c46ecb83d130950c",
-          "master_push_run": 35558567010,
-          "master_push_test_job": 106206890179
-        },
-        "accepted_low_findings": [
-          "TCW-058-F01 copied original Builder handoff is historical provenance only",
-          "TCW-058-F02 actual Pages publication/public script-test inclusion under inherited broad non-.ai deployment classifier"
-        ],
-        "pages_artifact_id": 10620606881
       }
     },
     {

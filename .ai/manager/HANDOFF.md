@@ -229,3 +229,21 @@ TCW-053 enters VERIFYING_MASTER with integration_sha=G, post_merge_run=355565765
 | 4 | Research & Development (R&D) | IDLE | No external rights or Pages-policy task | No ledger/publisher/deployment-policy mutation. |
 | 5 | Independent Auditor / QA | COMPLETE — accepted source evidence | TCW-055 exact-A PASS and TCW-058 exact-G PASS WITH NON-BLOCKING FINDINGS retained | No new target unless source bytes or operational scope change. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No blocker | No bypass or production action. |
+
+
+## Manager verified closeout routing — TCW-053 CLOSED on integration; TCW-047 dependency cleared only (2026-09-21)
+
+TCW-053 pre-closeout master `fae7cd74bad04d55fbf5537d55eaaa48e8ecc94a` independently satisfied all Workflow V3.2 removal predicates. Manager state PR #203 exact head `03dfac1bd4d31559ffcfd630fe2399d2d1e4bc8a` latest FULL #813/run `35609427309`/test `106364527661` SUCCESS, guarded merge `fae7cd74bad04d55fbf5537d55eaaa48e8ecc94a`, genuine master PUSH #814/run `35609680472`/required test `106365375994` SUCCESS; deploy/verify-production SKIPPED. Original Builder PR #182 remains DRAFT/OPEN/UNMERGED exact `70e74c5612f71ba2808c7309127c14a02a54b765`, tree `96ac9a74b8e45e84400eb63b6b0ea3732256b9c7`, true creation `17cb363bf457d02cb0029430b110af002e43dc6a`.
+
+This closeout removes only TCW-053 from active-only state and clears TCW-047's completed active dependency edge in the same transaction. TCW-047 remains WAITING_EXTERNAL_EVIDENCE / RELEASE_HOLD. No staged-source PR, first-party workflow install/dispatch, protected ledger/rights change, Builder #162 merge, Pages/product mutation or release GO.
+
+## Next Activation — after TCW-053 verified closeout
+
+| Order | Employee / role | Status | Current task / gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | ACTIVE | TCW-053 closeout verification, then TCW-047 external-evidence/protocol-activation assessment | Guarded-integrate this closeout only after exact-head required test success; verify genuine post-closeout master PUSH. Then separately assess TCW-047; do not stage/install/release by implication. |
+| 2 | Implementation Engineer / Builder | HOLD / PRESERVE | TCW-047 PR #162 and historical TCW-053 PR #182 | No source writes or merges; preserve both historical/frozen Builder identities until separate Manager authority. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy task | No product/trade/ESPN action from governance closeout. |
+| 4 | Research & Development (R&D) | IDLE | External rights/ledger evidence not assigned | No actor/ledger/publisher/deployment-policy mutation without a new bounded task. |
+| 5 | Independent Auditor / QA | COMPLETE FOR TCW-053 | TCW-055 exact-A PASS + TCW-058 exact-G PASS WITH NON-BLOCKING FINDINGS retained | No new audit target unless TCW-047 operational/staged source changes. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No closeout blocker | No bypass or production action. |
