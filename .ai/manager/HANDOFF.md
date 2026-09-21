@@ -265,3 +265,25 @@ Manager activated research-only TCW-059 from exact assignment master `fe3ca66c89
 | 4 | Research & Development (R&D) | ACTIVATE NOW | TCW-059 Protected Release External Identity + Ledger Feasibility Research | Execute the assigned read-only research, write only two R&D files, open one unmerged PR, pass exact-head CI, return explicit verdict. |
 | 5 | Independent Auditor / QA | IDLE | No new operational/stage target | Await a future exact staged/material target only if Manager later authorizes one. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced implementation blocker | Activate only if R&D identifies a concrete cross-layer technical blocker requiring diagnosis. |
+
+
+## TCW-059 accepted / TCW-060 setup-only Owner gate — 2026-09-21
+
+TCW-059 exact R&D evidence is protected-integrated at `f2f359ac4ba012cfbf72a8818d94f48d750c71b7`; master run `35640077518` / required test `106466974510` SUCCESS. Manager accepts `PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS` as research evidence only.
+
+Historical artifact `10598497668` is still live and expires `2026-10-04T04:03:59Z`; exact-byte durable archival is the highest-priority setup action once authorized.
+
+TCW-060 is created as a distinct setup-only gate in `WAITING_EXTERNAL_EVIDENCE / USER_ACTION`. No TCW-060 branch exists yet. The product owner must explicitly authorize setup before Manager creates principals/Apps/credentials, publishes an archive, creates protected ledger/evidence refs/rulesets, or performs any external mutation.
+
+TCW-047 remains RELEASE_HOLD; PR #162 stays DRAFT/OPEN/UNMERGED.
+
+## Next Activation
+
+| Order | Employee / Role | Status | Current gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | WAIT OWNER AUTHORIZATION | TCW-060 setup-only gate | After explicit Owner approval, create fresh Manager setup branch and execute only approved packet-custody / external-evidence setup. |
+| 2 | Implementation Engineer / Builder | WAIT | TCW-047 external-evidence hold | Preserve PR #162; no sync, staging, installation or observer implementation yet. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy gate | Await Manager routing. |
+| 4 | Research & Development (R&D) | STOP / COMPLETE | TCW-059 accepted | No further R&D writes unless Manager returns a bounded question. |
+| 5 | Independent Auditor / QA | WAIT | Future TCW-060 frozen setup target | Activate only after setup evidence is frozen; independent audit required before downstream observer activation. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only if setup execution encounters a concrete cross-layer blocker. |
