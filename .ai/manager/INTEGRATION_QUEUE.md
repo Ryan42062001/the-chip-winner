@@ -353,3 +353,14 @@ Activation PR #206 merged at `3f0cdcb324a803828987cc7490dd96196cfda8f4`. Master 
 - TCW-060 is setup-only, WAITING_EXTERNAL_EVIDENCE / USER_ACTION. No branch yet.
 - Highest-priority authorized-after-approval action: archive exact artifact `10598497668` bytes before `2026-10-04T04:03:59Z`.
 - TCW-047 remains WAITING_EXTERNAL_EVIDENCE and now blocks on TCW-060; no staging/install/release.
+
+
+## TCW-059 verified research closeout — 2026-09-21
+
+- TCW-059 VERIFYING_MASTER state PR #210 merged at `2d449e5bfdcb3a1294a412b1b4f6e9955f6bbf62`.
+- Genuine state master #826/run `35641106346`; required test `106470357598` SUCCESS; deploy/verify-production SKIPPED.
+- All V3.2 removal predicates pass.
+- Closeout removes TCW-059 from active-only state and marks its historical task CLOSED.
+- TCW-060 remains WAITING_EXTERNAL_EVIDENCE / USER_ACTION with no branch.
+- TCW-047 remains WAITING_EXTERNAL_EVIDENCE and blocked on TCW-060.
+- No external setup, packet publication, App/credential creation, ledger/ruleset mutation, staging, installation or release.
