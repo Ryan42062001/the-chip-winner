@@ -646,7 +646,7 @@
       "assignment_master_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
       "branch": "auditor/tcw-057-governance-projection-reaudit",
       "pr": null,
-      "worker_checkpoint_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "worker_checkpoint_sha": null,
       "worker_slot": "auditor-tcw-057-fresh-exact-projection",
       "allowed_path_prefixes": [
         ".ai/audit/TCW-057_GOVERNANCE_PROJECTION_INDEPENDENT_AUDIT.md",
@@ -677,7 +677,9 @@
       },
       "historical_initial_auditor_branch_creation_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
       "activation_requires": "Manager assignment guarded merge/master PUSH CI SUCCESS and controlled nonforce sync of untouched independent Auditor branch to canonical assignment master before any evidence write",
-      "next_gate": "FRESH independent exact-new-commit b55e2833/d60012 whole-tree review, TCW-056 Manager source PR #191 exact FULL #786 test 106186379581 SUCCESS, original Builder #182 frozen and TCW-055 source-only scope cannot transfer. Auditor assigned but may not write before Manager control-plane protected integration/master-push CI and nonforce initial Auditor branch sync to canonical task assignment master. No source merge, no release."
+      "next_gate": "FRESH independent exact-new-commit b55e2833/d60012 whole-tree review, TCW-056 Manager source PR #191 exact FULL #786 test 106186379581 SUCCESS. Auditor branch CREATED untouched at original historical 497cac01; worker_checkpoint_sha intentionally NULL pending separate Manager NONFORCE FAST-FORWARD to eventual guarded Manager assignment integration master after real master PUSH CI. Do NOT claim original creation SHA is current Auditor checkout after sync. Verify exact canonical branch/head before any evidence write; record actual checkpoint after sync via Manager-owned registry evidence if required. No candidate source merge or release.",
+      "initial_auditor_branch_creation_sha": "497cac0147d789b897281a0fc228aa4bbcef5c1b",
+      "checkpoint_status": "PENDING_NONFORCE_SYNC_AFTER_GENUINE_CANONICAL_ASSIGNMENT_MASTER_PUSH_CI"
     }
   ]
 }
