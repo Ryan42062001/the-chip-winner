@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T14:05:45Z",
+  "updated_at_utc": "2026-09-21T14:20:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -148,9 +148,11 @@
       "merge_authority": "Manager",
       "blocker_type": "EXTERNAL_EVIDENCE",
       "user_action_required": false,
-      "blocked_on_tasks": [],
+      "blocked_on_tasks": [
+        "TCW-059"
+      ],
       "blocked_on": [
-        "TCW-053 historical governance prerequisite is complete/closed. Remaining EXTERNAL_EVIDENCE release hold is independent: protected actor/nonce/consumption ledger and distinct publisher rights are unestablished; retained packet bytes, Owner staged-source approval, exact-S installation consent, real TCW-047 S/G/exact-S audit, rollback and installed first-party Actions L4 remain unverified/unauthorized."
+        "TCW-059 research must first determine whether the accepted dormant composite-release contract can be satisfied with distinct authenticated Owner/Manager/Auditor publisher identities, protected durable nonce/consumption ledger, retained packet-byte custody and rollback proof. TCW-047 remains WAITING_EXTERNAL_EVIDENCE; no staging source or installation authority."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -185,7 +187,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-053 prerequisite COMPLETE/CLOSED with exact implementation bytes protected-integrated at G 9d51f759, original exact-A TCW-055 PASS and exact-G TCW-058 PASS WITH NON-BLOCKING FINDINGS accepted, and TCW-053 state master #814/test 106365375994 SUCCESS. Dependency edge cleared only. TCW-047 remains WAITING_EXTERNAL_EVIDENCE and original Builder PR #162 DRAFT/OPEN/UNMERGED. Manager must separately assess protocol activation/external actor-ledger-publisher-rights evidence before requesting any new Owner staged-source permission; separate exact-S installation consent and fresh real S/G audit remain mandatory. No automatic stage/install/release.",
+      "next_gate": "TCW-059 R&D external identity/ledger feasibility research first. Manager consumes its explicit verdict before requesting any product-owner staged-source decision. TCW-047 Builder PR #162 remains DRAFT/OPEN/UNMERGED exact 17e5f413 and no workflow installation, ruleset/permission/credential/ledger mutation, staging PR or release is authorized.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -307,6 +309,14 @@
         "state_master_push_test_job": 106365375994,
         "operational_protocol_activation": false,
         "release_authority": "RELEASE_HOLD"
+      },
+      "external_evidence_research": {
+        "task_id": "TCW-059",
+        "assignment_master_sha": "fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952",
+        "branch": "rnd/tcw-059-protected-release-external-evidence-research",
+        "staging_authorized": false,
+        "installation_authorized": false,
+        "credentials_or_ledger_writes_authorized": false
       }
     },
     {
@@ -429,6 +439,53 @@
         "TCW-054-F01_MEDIUM_BLOCKING_ACCEPTED",
         "TCW-054-F02_MEDIUM_BLOCKING_ACCEPTED"
       ]
+    },
+    {
+      "task_id": "TCW-059",
+      "title": "Protected Release External Identity + Ledger Feasibility Research",
+      "owner": "R&D",
+      "role_label": "Research & Development",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [],
+      "task_file": ".ai/manager/tasks/TCW-059.md",
+      "role_handoff": ".ai/rnd/HANDOFF.md",
+      "assignment_master_sha": "fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952",
+      "branch": "rnd/tcw-059-protected-release-external-evidence-research",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "rnd-protected-release-external-evidence",
+      "allowed_path_prefixes": [
+        ".ai/rnd/TCW-059_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_RESEARCH.md",
+        ".ai/rnd/HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/strategy/",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/builder/",
+        ".github/",
+        "src/",
+        "test/",
+        "scripts/",
+        "config/",
+        "extensions/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "next_gate": "R&D performs read-only external identity/publisher-rights/protected-ledger/packet-custody/rollback feasibility research, writes only the two authorized R&D paths, opens one unmerged R&D PR with exact-head CI, and returns PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS / MANAGER_DECISION_REQUIRED / NO_SAFE_PROTOCOL_FOUND / STALLED_EXTERNAL_ACCESS_REQUIRED. No staging, installation or release authority."
     }
   ]
 }
