@@ -423,3 +423,13 @@ TCW-045 concluded FAIL on exact frozen `24be4be45f7fde351c0a6e209353dd2beed8d854
 TCW-034 Builder PR #147 remains DRAFT / UNMERGED. Exact FULL-tested third immutable target `035c5f5112b7393f9d4f17685792548afa67dd2e`; task-specific readiness PASS (blockers [], readyForManagerFreeze true, packet hash `750892a305cab589a6c3e904f39488189382542a4a9070ab25fa1a148043c1df`). TCW-046 fresh Independent Auditor re-audit is assigned; TCW-035 and later Trade Analyzer milestones remain inactive.
 
 **Separate operating-system enhancement TCW-047 — Automated Exact-SHA Task Audit-Readiness Gate: ASSIGNED.** Implement a GitHub Actions-based workflow that reads canonical Manager state and immutable Builder SHA, runs existing readiness without manual user checkout, and publishes fail-closed per-task evidence. Distinct Builder branch/scope; independent workflow/security audit mandatory. No auto-freeze, auto-merge, provider approval or retroactive effect on current TCW-046 audit. This enhancement is NOT completed/installed yet.
+
+
+#### TCW-059 — Protected Release External Identity + Ledger Feasibility Research
+Status: **ASSIGNED — RESEARCH ONLY**
+
+Owner: Research & Development (R&D)
+
+TCW-053's dormant fail-closed governance implementation is integrated/audited/closed, but TCW-047 remains blocked on real external release evidence rather than source code. TCW-059 researches whether the project can establish distinct authenticated Owner/Manager/Auditor GitHub publishers, a protected durable nonce/consumption ledger, retained packet-byte custody, separate owner stage/install approval records, immutable off-master exact-S audit publication and rollback proof without weakening strict master protection.
+
+This task does **not** authorize a staged source PR, GitHub account/App/credential creation, ledger writes, ruleset changes, TCW-047 workflow installation or protected release. Manager must consume the research verdict before asking the product owner for any specific future staging authorization.

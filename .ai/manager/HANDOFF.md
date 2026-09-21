@@ -247,3 +247,21 @@ This closeout removes only TCW-053 from active-only state and clears TCW-047's c
 | 4 | Research & Development (R&D) | IDLE | External rights/ledger evidence not assigned | No actor/ledger/publisher/deployment-policy mutation without a new bounded task. |
 | 5 | Independent Auditor / QA | COMPLETE FOR TCW-053 | TCW-055 exact-A PASS + TCW-058 exact-G PASS WITH NON-BLOCKING FINDINGS retained | No new audit target unless TCW-047 operational/staged source changes. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No closeout blocker | No bypass or production action. |
+
+
+## TCW-059 activation — protected release external identity + ledger research (2026-09-21)
+
+TCW-053 is canonically CLOSED at master `fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952`. TCW-047 remains `WAITING_EXTERNAL_EVIDENCE`; original Builder PR #162 stays DRAFT/OPEN/UNMERGED at `17e5f413f2afd3d743fd28d401f0df421825df2a`. No staging source, installation or release authority has been granted.
+
+Manager activated research-only TCW-059 from exact assignment master `fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952` on branch `rnd/tcw-059-protected-release-external-evidence-research`. R&D owns only `.ai/rnd/TCW-059_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_RESEARCH.md` and `.ai/rnd/HANDOFF.md`. It must research distinct authenticated GitHub actor/publisher identities, protected durable nonce/consumption ledger, retained original packet-byte custody, owner approval records, exact-S Auditor publication, rollback proof and current ruleset compatibility. No external write/setup action is authorized.
+
+## Next Activation — TCW-059 external-evidence research
+
+| Order | Employee / role | Status | Current task / gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | WAIT FOR R&D | TCW-047 external-evidence architecture | Consume TCW-059 verdict and decide whether a specific owner staging request is supportable; do not stage/install/release now. |
+| 2 | Implementation Engineer / Builder | HOLD | TCW-047 PR #162 historical audited source | No source writes, sync, merge or workflow installation. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy task | No product/trade recommendation-policy action. |
+| 4 | Research & Development (R&D) | ACTIVATE NOW | TCW-059 Protected Release External Identity + Ledger Feasibility Research | Execute the assigned read-only research, write only two R&D files, open one unmerged PR, pass exact-head CI, return explicit verdict. |
+| 5 | Independent Auditor / QA | IDLE | No new operational/stage target | Await a future exact staged/material target only if Manager later authorizes one. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced implementation blocker | Activate only if R&D identifies a concrete cross-layer technical blocker requiring diagnosis. |

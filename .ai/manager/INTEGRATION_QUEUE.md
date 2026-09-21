@@ -325,3 +325,13 @@ TCW-053 enters VERIFYING_MASTER with integration_sha=G, post_merge_run=355565765
 - Closeout removes only TCW-053 from active-only registry and preserves historical task evidence. Original Builder PR #182 stays DRAFT/OPEN/UNMERGED exact `70e74c5612f71ba2808c7309127c14a02a54b765` / tree `96ac9a74b8e45e84400eb63b6b0ea3732256b9c7` / true creation `17cb363bf457d02cb0029430b110af002e43dc6a`.
 - TCW-047 completed dependency edge on TCW-053 is cleared atomically to avoid a dangling active-task reference. TCW-047 remains WAITING_EXTERNAL_EVIDENCE / RELEASE_HOLD; Builder PR #162 stays DRAFT/OPEN/UNMERGED and first-party readiness workflow remains uninstalled.
 - Still NOT established/authorized: retained packet-byte authentication, protected actor/nonce/consumption ledger, distinct publisher rights, Owner staged-source approval, exact-S installation consent, real TCW-047 S/G/exact-S audit, rollback, installed first-party Actions L4. No stage/install/merge/release or new Pages/product deployment.
+
+
+## TCW-059 — EXTERNAL IDENTITY / LEDGER FEASIBILITY RESEARCH ACTIVATED — 2026-09-21
+
+- Canonical assignment master: `fe3ca66c8905afea8302ae6d6aca0ae7ffeb0952`.
+- Research branch: `rnd/tcw-059-protected-release-external-evidence-research`, created exactly from assignment master before R&D writes.
+- TCW-047 remains WAITING_EXTERNAL_EVIDENCE; Builder PR #162 DRAFT/OPEN/UNMERGED at exact audited `17e5f413f2afd3d743fd28d401f0df421825df2a`.
+- TCW-059 is research only: distinct authenticated Owner/Manager/Auditor publisher architecture, durable protected nonce/consumption ledger, retained packet-byte custody, separate owner approvals, off-master exact-S Auditor evidence and rollback proof.
+- No staging PR, account/App/credential creation, ledger write, ruleset/permission mutation, workflow install/dispatch, source merge or release is authorized.
+- Manager consumes one explicit verdict: PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS / MANAGER_DECISION_REQUIRED / NO_SAFE_PROTOCOL_FOUND / STALLED_EXTERNAL_ACCESS_REQUIRED.
