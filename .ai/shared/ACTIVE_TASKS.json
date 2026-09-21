@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T13:30:05.433Z",
+  "updated_at_utc": "2026-09-21T13:49:00Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -356,7 +356,7 @@
       "title": "Bounded Material Composite Protected-Release Governance Implementation",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder — Bounded Governance / Release-Control Implementation",
-      "status": "AUDIT_READY",
+      "status": "VERIFYING_MASTER",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -410,7 +410,7 @@
       "dormant_read_only_release_guard_only": true,
       "staged_source_pr_creation_authorized": false,
       "installation_authorized": false,
-      "next_gate": "Distinct Manager governance source task TCW-056 fully completed: strict four-blob source integrated at G 9d51f759, genuine G master #797/test 106201245555 SUCCESS, fresh independent TCW-058 exact-G source/real Pages PASS WITH NON-BLOCKING FINDINGS accepted/evidence integrated, TCW-058 audit-only task closed, TCW-056 VERIFYING_MASTER state PR #201/master #807 verified, then separate TCW-056 closeout removed only completed source task and cleared finished dependency edge. TCW-053 remains AUDIT_READY and original Builder PR #182 DRAFT/OPEN/UNMERGED with true creation 17cb... unchanged. Next Manager action is separate independent assessment of TCW-053's own lifecycle, original helper runner-custody limitation, and whether its historical task should close without merging original Builder PR. TCW-047 protected release/staging/install/ledger/rights/L4 remains RELEASE_HOLD.",
+      "next_gate": "VERIFYING_MASTER — Manager independently accepted historical TCW-053 source-task satisfaction without merging original PR #182 because protected master contains the exact four frozen Builder blobs via distinct Manager TCW-056 integration G 9d51f759; genuine G master #797/test 106201245555 SUCCESS; original exact source TCW-055 PASS and fresh exact integrated-G TCW-058 PASS WITH NON-BLOCKING FINDINGS accepted. Mechanical preflight remains accepted with explicit runner-custody limitation. This Manager-only state PR must pass exact-head required CI and genuine postmerge master PUSH verification; only then may a separate closeout remove TCW-053. TCW-047 staging/install/ledger/rights/rollback/installed-L4 remains RELEASE_HOLD.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "17cb363bf457d02cb0029430b110af002e43dc6a"
@@ -488,6 +488,42 @@
         "manager_acceptance_comment": 5753193367,
         "evidence_path": ".ai/manager/evidence/TCW-053_ORIGINAL_MECHANICAL_READINESS_MANAGER_ACCEPTANCE_70e74c56.md",
         "no_source_merge_or_release_authority": true
+      },
+      "integration_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+      "post_merge_run": 35556576526,
+      "post_merge_test_job": 106201245555,
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "PASS WITH NON-BLOCKING FINDINGS",
+        "canary_verification": "NOT_APPLICABLE",
+        "rationale": "Historical TCW-053 implementation is source-complete without merging original Builder PR #182 because current protected master carries all four exact frozen Builder blobs through separately authorized Manager source task TCW-056/PR #196 at G 9d51f759. Original exact source passed independent TCW-055; actual integrated G and Pages boundary passed fresh TCW-058 with non-blocking LOW findings. Accepted original mechanical preflight retains an un-witnessed runner-custody limitation and grants no external attestation or release authority.",
+        "original_builder_pr": 182,
+        "original_builder_sha": "70e74c5612f71ba2808c7309127c14a02a54b765",
+        "original_builder_tree": "96ac9a74b8e45e84400eb63b6b0ea3732256b9c7",
+        "original_builder_creation_sha": "17cb363bf457d02cb0029430b110af002e43dc6a",
+        "original_builder_pr_disposition": "DRAFT_OPEN_UNMERGED_HISTORICAL__DO_NOT_MERGE_FOR_CLOSEOUT",
+        "exact_integrated_g": "9d51f7597e65c12f2c09d9d9c8286af351716b2c",
+        "exact_integrated_tree": "4f29eb56c5150958df5dd1b9adc638f77160d486",
+        "source_master_push_run": 35556576526,
+        "source_master_push_test_job": 106201245555,
+        "exact_source_blob_match_current_master": true,
+        "original_source_audit": {
+          "task": "TCW-055",
+          "verdict": "PASS",
+          "target_sha": "70e74c5612f71ba2808c7309127c14a02a54b765"
+        },
+        "integrated_source_audit": {
+          "task": "TCW-058",
+          "verdict": "PASS WITH NON-BLOCKING FINDINGS",
+          "target_sha": "9d51f7597e65c12f2c09d9d9c8286af351716b2c"
+        },
+        "original_mechanical": {
+          "verdict": "ACCEPTED_ORIGINAL_TASK_SPECIFIC_MECHANICAL_PREFLIGHT",
+          "custody_limit": "RUN_NOT_MANAGER_WITNESSED_OR_INDEPENDENTLY_ATTESTED"
+        },
+        "release_authority": "RELEASE_HOLD__NO_TCW047_STAGE_INSTALL_LEDGER_RIGHTS_ROLLBACK_OR_INSTALLED_L4"
       }
     },
     {
