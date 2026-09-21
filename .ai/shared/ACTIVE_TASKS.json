@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T02:35:00Z",
+  "updated_at_utc": "2026-09-21T02:46:27.582Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
