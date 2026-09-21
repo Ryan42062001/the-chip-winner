@@ -189,3 +189,23 @@ Original TCW-053 remains AUDIT_READY/HARD blocked_on_tasks=[TCW-056], original B
 | 4 | Research & Development (R&D) | IDLE | No external rights/Pages-policy assignment | No ledger, publisher-rights or deployment-policy mutation. |
 | 5 | Independent Auditor / QA | COMPLETE — ACCEPTED | TCW-058 exact-G audit closed | Preserve report/handoff; no new audit unless a material new target appears. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No blocking defect | No bypass, source rewrite or production change. |
+
+
+## Manager source-task closeout — TCW-056 complete, original Builder remains open (2026-09-21)
+
+Distinct Manager governance-source task TCW-056 completed strict protected integration at G `9d51f7597e65c12f2c09d9d9c8286af351716b2c`, genuine G master #797/test `106201245555` SUCCESS; fresh independent TCW-058 exact-G source/real Pages PASS WITH NON-BLOCKING FINDINGS accepted/evidence integrated; audit-only TCW-058 separately closed; TCW-056 then entered VERIFYING_MASTER through PR #201 merge `9fdf73548060be678642a7e400599d2c9f52c40d`, genuine master PUSH #807/run `35605664447`/test `106352001149` SUCCESS, deploy/verify-production SKIPPED. Workflow V3.2 source-task closeout predicates independently verified PASS before this separate active-only removal.
+
+This closeout removes ONLY completed TCW-056 from active-only registry and clears TCW-053's finished dependency edge on it to avoid an invalid dangling reference. Original TCW-053 stays AUDIT_READY; original Builder PR #182 remains DRAFT/OPEN/UNMERGED exact `70e74c5612f71ba2808c7309127c14a02a54b765`, tree `96ac9a74b8e45e84400eb63b6b0ea3732256b9c7`, true original creation `17cb363bf457d02cb0029430b110af002e43dc6a`. No automatic original Builder closeout or merge. Next Manager action is a separate assessment of TCW-053's own historical lifecycle and original helper runner-custody limitation.
+
+Accepted F01 LOW copied Builder handoff remains historical provenance only. Accepted F02 LOW source G's actual Pages publication remains historical fact: deploy job `106201488930`, artifact `10620606881`, verify-production `106201526433` SUCCESS. This closeout is .ai-only and must not trigger another Pages deploy or alter deployment policy. TCW-047 retained packet BYTES, protected external actor/nonce/consumption ledger and distinct publisher rights, Owner stage/exact-S installation consent, separate TCW-047 S/G/exact-S independent audit, rollback and installed first-party Actions L4 remain RELEASE_HOLD.
+
+## Next Activation — after TCW-056 source-task closeout
+
+| Order | Employee / role | Status | Current task / gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | ACTIVE | Separate TCW-056 guarded closeout then TCW-053 lifecycle assessment | Verify this closeout PR/master CI; confirm only TCW-056 removed and TCW-053 stays AUDIT_READY. Then independently assess TCW-053's own closeout semantics without merging PR #182. |
+| 2 | Implementation Engineer / Builder | WAIT | Original TCW-053 / PR #182 | Preserve original frozen SHA, true historical creation and unmerged status; no new Builder writes. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy task | No product/trade/ESPN action. |
+| 4 | Research & Development (R&D) | IDLE | No rights/ledger/deployment-policy task | No external rights or Pages-policy mutation. |
+| 5 | Independent Auditor / QA | COMPLETE | TCW-058 exact-G audit accepted and closed | Preserve accepted report/handoff; no new target. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No blocker | No bypass or production change. |
