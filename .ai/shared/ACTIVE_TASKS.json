@@ -540,7 +540,7 @@
         "Independently accessible authenticated read-only GitHub installation record, selected-repository inventory and permission matrix for ALL FOUR ORIGINAL TCW Apps 5025170/163636367, 5025352/163636443, 5025359/163636491, 5025364/163636540 not currently exposed by connected integration; owner screenshots are supporting only. Owner must provide safe delegated read-only first-party access; no keys/tokens shared. Auditor cannot claim F01 verified or PASS before this channel exists."
       ],
       "task_file": ".ai/manager/tasks/TCW-061.md",
-      "role_handoff": ".ai/auditor/TCW-061_HANDOFF.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "3c9d83796f9dc7e55c94ab599772dc97a2dc7946",
       "branch": "auditor/tcw-061-external-setup-evidence-reaudit",
       "pr": null,
@@ -578,7 +578,7 @@
       "historical_failed_audit_pr": 213,
       "historical_failed_audit_sha": "22e8c677d6e550d049cfe64a3f2fe2f3b06384b0",
       "historical_failed_audit_ci_run": 35675826603,
-      "next_gate": "WAIT — Manager must obtain independently authenticated read-only original four-App metadata channel, integrate this control-plane assignment after genuine FULL PR CI and post-merge master verification, then separately activate a FRESH Auditor. Auditor writes only its exact two evidence Markdown paths and opens one distinct DRAFT/OPEN/UNMERGED TCW-061 PR; exact-head required test must genuinely pass. No TCW-047 release authority."
+      "next_gate": "WAIT — Current generic Auditor handoff exists at .ai/auditor/HANDOFF.md solely to satisfy pre-activation registry schema. Future fresh TCW-061 Auditor owns a distinct .ai/auditor/TCW-061_HANDOFF.md within exactly two audit evidence files; when the future audit PR is separately Manager reviewed, reconcile task-specific handoff metadata. Manager must first integrate control-plane FULL CI/post-merge master and obtain authenticated original four-App metadata before fresh Auditor activation; no TCW-047 release authority."
     }
   ]
 }
