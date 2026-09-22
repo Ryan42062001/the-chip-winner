@@ -307,3 +307,25 @@ No external setup action is performed by closeout.
 | 4 | Research & Development (R&D) | CLOSED / IDLE | TCW-059 complete | No further action unless Manager creates a new bounded research task. |
 | 5 | Independent Auditor / QA | WAIT | Future TCW-060 setup target | Activate only after owner-authorized setup is complete and frozen for independent audit. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only for a concrete setup/tooling blocker. |
+
+
+## TCW-060 owner-authorized external setup frozen for independent audit — 2026-09-22
+
+Owner-authorized setup was performed from canonical base `3c9d83796f9dc7e55c94ab599772dc97a2dc7946` on `manager/tcw-060-external-evidence-setup`. Historical packet artifact `10598497668` and the private Drive custody copy ID `1XCxazBEIse_yx2XUuOlT8Mjbpq-6gnO8` were verified at identical ZIP SHA-256 `6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833`; raw packet SHA-256 `d4189773aae9e40a5ac7729390c45c74f7f630d51b2a6b3ee56b0183e6a5b932`, embedded helper digest `f6d59762e3696f91696408e5312013481fb1dc5e9dd24d1ee469b1f590f96894`.
+
+Four distinct selected-repository Apps now exist: Owner `5025170`/installation `163636367`; Manager `5025352`/`163636443`; Auditor `5025359`/`163636491`; Validator `5025364`/`163636540`. Validator has Checks write but no Contents write. Keys were generated outside Git, separately AES-256 encrypted and archived in restricted Drive; Owner confirmed plaintext PEM cleanup. No secret material is recorded here.
+
+Protected refs are `owner/protected-release-approvals`, `auditor/protected-release-audits`, `manager/protected-release-evidence`, and `manager/protected-release-ledger`. Active evidence ruleset `23797129` protects the first three; active ledger ruleset `23797924` protects the exact ledger ref with PR-required, merge-only, deletion/non-fast-forward denial, no bypass/current-user bypass, strict required check `tcw-release-ledger-validator` pinned to App `5025364`. Neutral setup registration check `106576817728` has NO RELEASE AUTHORITY.
+
+Evidence: `.ai/manager/evidence/TCW-060_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_SETUP.md`. Fresh independent workflow/security audit is mandatory before Manager acceptance. Validator/observer production implementation, Owner App authenticated publication proof and a synthetic non-TCW-047 exercise remain future gates. TCW-047 PR #162 remains DRAFT/OPEN/UNMERGED exact `17e5f413f2afd3d743fd28d401f0df421825df2a`; no stage, nonce, ledger transition, workflow install/dispatch, merge, deployment or release occurred.
+
+## Next Activation — TCW-060 setup audit
+
+| Order | Employee / Role | Status | Current task / gate | Next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | FREEZE / WAIT AUDIT | TCW-060 exact setup evidence | Open evidence-only PR, obtain exact-head CI, then consume a fresh independent setup audit; do not self-accept. |
+| 2 | Implementation Engineer / Builder | HOLD | Future authenticated observer/validator implementation | No implementation until independent TCW-060 setup verdict and a separate Manager task. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No strategy task | No product/trade action. |
+| 4 | Research & Development (R&D) | CLOSED / IDLE | TCW-059 accepted feasibility research | No further work unless separately assigned. |
+| 5 | Independent Auditor / QA | ACTIVATE AFTER EXACT EVIDENCE HEAD + CI | Fresh TCW-060 external setup audit | Independently verify exact live identities, permissions, custody, refs, rulesets and release holds; write only audit-owned evidence. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No current blocker | Activate only for a concrete audit/setup defect. |
