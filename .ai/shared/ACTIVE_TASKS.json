@@ -538,7 +538,7 @@
         "NONE — bounded original four-App setup-evidence independent audit was accepted and integrated; separate explicit TCW-061 task closeout/active-registry removal remains pending."
       ],
       "task_file": ".ai/manager/tasks/TCW-061.md",
-      "role_handoff": ".ai/auditor/TCW-061_HANDOFF.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "3c9d83796f9dc7e55c94ab599772dc97a2dc7946",
       "branch": "auditor/tcw-061-external-setup-evidence-reaudit",
       "pr": 215,
@@ -580,7 +580,8 @@
       "integration_sha": "9ca61907e445e2a101dc20d8de59dee6299f0e13",
       "post_merge_run": 35680912029,
       "post_merge_test_job": 106597467150,
-      "accepted_bounded_verdict": "PASS WITH CONTINUING OPERATIONAL RELEASE HOLDS — original setup F01 evidence only; Manager decision PR #215 comment 5770509986"
+      "accepted_bounded_verdict": "PASS WITH CONTINUING OPERATIONAL RELEASE HOLDS — original setup F01 evidence only; Manager decision PR #215 comment 5770509986",
+      "accepted_auditor_handoff": ".ai/auditor/TCW-061_HANDOFF.md"
     },
     {
       "task_id": "TCW-062",
@@ -668,7 +669,7 @@
         "NONE for fresh TCW-063 independent evidence publication. Accepted TCW-063-F01 MEDIUM stale task-state finding requires separately reviewed and CI-validated Manager reconciliation before task closeout."
       ],
       "task_file": ".ai/manager/tasks/TCW-063.md",
-      "role_handoff": ".ai/auditor/TCW-063_HANDOFF.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
       "assignment_master_sha": "760cea810878c7e67b4b73124fde1aaf60002233",
       "branch": "auditor/tcw-063-tcw-062-integrated-control-plane-audit",
       "pr": 219,
@@ -719,7 +720,8 @@
       "post_merge_run": 35684027532,
       "post_merge_test_job": 106606929074,
       "accepted_bounded_verdict": "PASS WITH NON-BLOCKING FINDINGS",
-      "accepted_finding": "TCW-063-F01 MEDIUM — stale canonical task-state requires independently reviewed separate Manager reconciliation"
+      "accepted_finding": "TCW-063-F01 MEDIUM — stale canonical task-state requires independently reviewed separate Manager reconciliation",
+      "accepted_auditor_handoff": ".ai/auditor/TCW-063_HANDOFF.md"
     },
     {
       "task_id": "TCW-065",
