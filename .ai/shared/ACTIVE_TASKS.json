@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-22T03:51:06.736Z",
+  "updated_at_utc": "2026-09-22T04:01:24.278Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -781,6 +781,70 @@
       "target_advancement": {
         "classification": "OVERLAPPING_RISK",
         "checked_at_sha": "15305d719197445fd33b10af500386c0d29dd3f7"
+      }
+    },
+    {
+      "task_id": "TCW-066",
+      "title": "Fresh Independent TCW-065 Canonical State Reconciliation Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [
+        "Formal Auditor execution requires Manager registration PR genuine FULL exact-head CI/guarded merge/new master FULL success and a separate Manager activation; frozen TCW-065 material audit target must not change."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-066.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+      "branch": "auditor/tcw-066-tcw-065-integrated-task-state-audit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-066-integrated-task-state-audit",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-066_TCW-065_CANONICAL_STATE_RECONCILIATION_AUDIT.md",
+        ".ai/auditor/TCW-066_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/builder/",
+        ".ai/audit/TCW-061_TCW-060_EXTERNAL_SETUP_EVIDENCE_REAUDIT.md",
+        ".ai/audit/TCW-063_TCW-062_INTEGRATED_CONTROL_PLANE_AUDIT.md",
+        ".ai/auditor/TCW-061_HANDOFF.md",
+        ".ai/auditor/TCW-063_HANDOFF.md",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-065",
+      "audit_target_pr": 221,
+      "audit_target_branch": "master",
+      "audit_target_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+      "audit_target_tree": "b3c4dccd7b5210f12b086eee50fc4fde218c8b88",
+      "original_candidate_failed_run": 35684718256,
+      "original_candidate_failed_job": 106608984021,
+      "corrected_pr_run": 35684799585,
+      "corrected_pr_test_job": 106609219031,
+      "final_master_run": 35685019544,
+      "final_master_test_job": 106609883995,
+      "next_gate": "After separate Manager review of TCW-066 registration EXACT HEAD, genuine required FULL CI and guarded merge, and NEW successful master FULL test, activate FRESH separate Independent Auditor/QA chat on safely master-aligned empty assigned Auditor branch. Audit IMMUTABLE TCW-065 integrated target 250f7e5246fce4aaa403fee3df2a952da45c55b8 / tree b3c4dccd7b5210f12b086eee50fc4fde218c8b88, own exactly two task-specific Auditor evidence Markdown files, open ONE DRAFT/OPEN/UNMERGED TCW-066 Auditor PR only after Manager registration PR merged. Preserve original failed #221 CI and release holds.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8"
       }
     }
   ]
