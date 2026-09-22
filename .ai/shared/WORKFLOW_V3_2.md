@@ -47,6 +47,10 @@ Minimum normal context:
 
 Importance alone is not a Full Refresh reason.
 
+### Pre-merge assignment-staleness projection
+
+For a pull-request CI run, the active-task assignment-age gate evaluates the checked-out candidate merge-preview `HEAD`, **not** merely unchanged `origin/master`. If the checkout is the one-parent PR branch head rather than a synthetic merge commit, the gate conservatively projects one additional protected merge commit. This catches a task that would cross the existing three-commit threshold **only after** an otherwise green PR is merged. A missing required `target_advancement` classification fails the PR; an existing classification remains an explicit Manager recheck warning, never automatic acceptance. The original assignment SHA is immutable historical custody. The separate genuine post-merge canonical-master required `test` remains mandatory; PR CI is not its substitute.
+
 ## 3. Active-only machine state, blocker semantics, and task schema
 
 `.ai/shared/ACTIVE_TASKS.json` uses schema version 3 and is active-only. CLOSED history belongs in task specs, PRs, evidence, handoffs, decisions, commits, and Git history.
