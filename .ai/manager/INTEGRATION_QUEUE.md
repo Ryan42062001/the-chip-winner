@@ -364,3 +364,15 @@ Activation PR #206 merged at `3f0cdcb324a803828987cc7490dd96196cfda8f4`. Master 
 - TCW-060 remains WAITING_EXTERNAL_EVIDENCE / USER_ACTION with no branch.
 - TCW-047 remains WAITING_EXTERNAL_EVIDENCE and blocked on TCW-060.
 - No external setup, packet publication, App/credential creation, ledger/ruleset mutation, staging, installation or release.
+
+
+## TCW-060 external setup evidence queue — 2026-09-22
+
+- Canonical setup base and Manager branch creation: `3c9d83796f9dc7e55c94ab599772dc97a2dc7946`, `manager/tcw-060-external-evidence-setup`.
+- Evidence-only repository scope: `.ai/manager/evidence/TCW-060_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_SETUP.md`, `.ai/manager/HANDOFF.md`, `.ai/manager/INTEGRATION_QUEUE.md`.
+- Packet custody: artifact `10598497668`; Drive ID `1XCxazBEIse_yx2XUuOlT8Mjbpq-6gnO8`; exact ZIP SHA-256 `6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833`.
+- Distinct Apps/installations: Owner `5025170`/`163636367`; Manager `5025352`/`163636443`; Auditor `5025359`/`163636491`; Validator `5025364`/`163636540`.
+- Protected evidence ruleset `23797129`; protected strict ledger ruleset `23797924`; both active, exact targets, deletion/non-fast-forward prohibited, PR/merge-only, bypass list empty/current user cannot bypass. Ledger required check is pinned to Validator App `5025364`.
+- Neutral setup check `106576817728` registered the Validator expected source only; it is not transition or release evidence.
+- Next gate: evidence-only Manager PR and exact-head FULL CI, then FRESH Independent Auditor / QA review. Manager must not self-accept.
+- Still held: production observer/validator implementation, Owner App authenticated publication proof, synthetic non-TCW-047 exercise and every real TCW-047 stage/nonce/ledger/install/merge/deploy/release action.
