@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-22T01:50:51Z",
+  "updated_at_utc": "2026-09-22T02:57:40.161Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -579,6 +579,56 @@
       "historical_failed_audit_sha": "22e8c677d6e550d049cfe64a3f2fe2f3b06384b0",
       "historical_failed_audit_ci_run": 35675826603,
       "next_gate": "WAIT — Current generic Auditor handoff exists at .ai/auditor/HANDOFF.md solely to satisfy pre-activation registry schema. Future fresh TCW-061 Auditor owns a distinct .ai/auditor/TCW-061_HANDOFF.md within exactly two audit evidence files; when the future audit PR is separately Manager reviewed, reconcile task-specific handoff metadata. Manager must first integrate control-plane FULL CI/post-merge master and obtain authenticated original four-App metadata before fresh Auditor activation; no TCW-047 release authority."
+    },
+    {
+      "task_id": "TCW-062",
+      "title": "Frozen TCW-060 Setup Evidence Exact-Blob Integration Candidate",
+      "owner": "Manager",
+      "role_label": "Manager / Architect",
+      "status": "ASSIGNED",
+      "dependency": "INDEPENDENT",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [
+        "No execution blocker for bounded preparation; any protected integration is separately Manager-review and CI-gated. TCW-060 source #212 and TCW-047 release remain held."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-062.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "9ca61907e445e2a101dc20d8de59dee6299f0e13",
+      "branch": "manager/tcw-062-setup-evidence-exact-blob-integration",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "manager-tcw-062-setup-evidence-exact-blob-integration",
+      "allowed_path_prefixes": [
+        ".ai/manager/evidence/TCW-060_PROTECTED_RELEASE_EXTERNAL_EVIDENCE_SETUP.md",
+        ".ai/manager/tasks/TCW-062.md",
+        ".ai/shared/ACTIVE_TASKS.json"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/manager/HANDOFF.md",
+        ".ai/manager/INTEGRATION_QUEUE.md",
+        ".ai/manager/tasks/TCW-060.md",
+        ".ai/manager/tasks/TCW-061.md",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/builder/",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "config/",
+        "extensions/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "next_gate": "DRAFT proposal only: verify exact original #212 evidence Git blob, preserve current handoff/queue and all current task entries, obtain genuine exact-final-head FULL CI, then separate Manager review and a separate protected merge decision. If later integrated, verify post-merge master test and obtain fresh independent material-control-plane audit before closeout. No TCW-060 closure or TCW-047 release authorization."
     }
   ]
 }
