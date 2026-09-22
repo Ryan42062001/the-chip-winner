@@ -628,7 +628,11 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "DRAFT proposal only: verify exact original #212 evidence Git blob, preserve current handoff/queue and all current task entries, obtain genuine exact-final-head FULL CI, then separate Manager review and a separate protected merge decision. If later integrated, verify post-merge master test and obtain fresh independent material-control-plane audit before closeout. No TCW-060 closure or TCW-047 release authorization."
+      "next_gate": "DRAFT proposal only: verify exact original #212 evidence Git blob, preserve current handoff/queue and all current task entries, obtain genuine exact-final-head FULL CI, then separate Manager review and a separate protected merge decision. If later integrated, verify post-merge master test and obtain fresh independent material-control-plane audit before closeout. No TCW-060 closure or TCW-047 release authorization.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "f955c937b61c22cc15c6eb5393e70981ddcf5619"
+      }
     }
   ]
 }
