@@ -294,17 +294,34 @@ function gitCommitCount(fromSha,targetRef,cwd=process.cwd()) {
     return Number(execFileSync("git",["rev-list","--count",`${fromSha}..${targetRef}`],{cwd,encoding:"utf8"}).trim());
   } catch { return null; }
 }
-export function checkAssignmentStaleness(registry,{rootDir=process.cwd(),threshold=3,targetRef="HEAD"}={}) {
+export function checkAssignmentStaleness(registry,{rootDir=process.cwd(),threshold=3,targetRef="HEAD",projectedMergeCommits=0}={}) {
   const errors=[]; const warnings=[];
   for (const task of registry?.tasks || []) {
     if (!ACTIVE_STALE_STATUSES.has(task.status)) continue;
-    const count=gitCommitCount(task.assignment_master_sha,targetRef,rootDir);
-    if (count === null) { warnings.push(`${task.task_id}: assignment drift unavailable; perform Fast Refresh manually`); continue; }
+    const actualCount=gitCommitCount(task.assignment_master_sha,targetRef,rootDir);
+    if (actualCount === null) { warnings.push(`${task.task_id}: assignment drift unavailable; perform Fast Refresh manually`); continue; }
+    const count=actualCount+projectedMergeCommits;
     if (count <= threshold) continue;
     if (!task.target_advancement) errors.push(`${task.task_id}: assignment is ${count} commits behind target; refresh/update or classify target advancement`);
     else warnings.push(`${task.task_id}: assignment is ${count} commits behind target; recheck ${task.target_advancement.classification} before merge`);
   }
   return { errors,warnings };
+}
+
+// GitHub Actions normally checks out refs/pull/N/merge for pull_request events.
+// Check that merge-preview HEAD, not origin/master (which excluded PR commits).
+// If an alternate checkout supplies the one-parent PR head, conservatively
+// project the additional protected merge commit before applying the same gate.
+function isMergePreviewCheckout(rootDir) {
+  try {
+    const headAndParents=execFileSync("git",["rev-list","--parents","-n","1","HEAD"],{cwd:rootDir,encoding:"utf8"}).trim().split(/\s+/);
+    return headAndParents.length>=3;
+  } catch { return false; }
+}
+
+export function checkCandidateAssignmentStaleness(registry,{rootDir=process.cwd(),threshold=3,isPullRequest=false}={}) {
+  const projectedMergeCommits=isPullRequest && !isMergePreviewCheckout(rootDir) ? 1 : 0;
+  return checkAssignmentStaleness(registry,{rootDir,threshold,targetRef:"HEAD",projectedMergeCommits});
 }
 
 async function fetchOpenPullRequests(repository) {
@@ -321,8 +338,8 @@ async function main() {
   const shape=validateRegistryShape(registry);
   const fileErrors=await validateRegistryFiles(registry,rootDir);
   const ciMode=process.argv.includes("--ci");
-  const targetRef=process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : "HEAD";
-  const stale=ciMode ? checkAssignmentStaleness(registry,{rootDir,targetRef}) : {errors:[],warnings:[]};
+  const isPullRequest=process.env.GITHUB_ACTIONS === "true" && Boolean(process.env.GITHUB_BASE_REF);
+  const stale=ciMode ? checkCandidateAssignmentStaleness(registry,{rootDir,isPullRequest}) : {errors:[],warnings:[]};
   const errors=[...shape.errors,...fileErrors,...stale.errors]; const warnings=[...shape.warnings,...stale.warnings];
   if (ciMode && process.env.GITHUB_REPOSITORY) {
     try { const duplicate=detectDuplicateTaskPullRequests(await fetchOpenPullRequests(process.env.GITHUB_REPOSITORY)); errors.push(...duplicate.errors); warnings.push(...duplicate.warnings); }

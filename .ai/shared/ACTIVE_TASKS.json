@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-22T03:12:00Z",
+  "updated_at_utc": "2026-09-22T03:31:30.135Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -696,6 +696,64 @@
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
         "checked_at_sha": "760cea810878c7e67b4b73124fde1aaf60002233"
+      }
+    },
+    {
+      "task_id": "TCW-064",
+      "title": "Pre-Merge Assignment-Staleness CI Projection Guard",
+      "owner": "Manager",
+      "role_label": "Manager / Architect",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [
+        "TCW-062"
+      ],
+      "blocked_on": [
+        "Draft-PR preparation is authorized; protected integration is serialized behind independent TCW-063 audit of TCW-062 and separate Manager review. No TCW-060/061/062/047 state reconciliation in this candidate."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-064.md",
+      "role_handoff": ".ai/manager/HANDOFF.md",
+      "assignment_master_sha": "669cac89008ab3c33ade25febbe6d1b18993c410",
+      "branch": "manager/tcw-064-premerge-assignment-drift-guard",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "manager-tcw-064-premerge-assignment-drift",
+      "allowed_path_prefixes": [
+        ".ai/manager/tasks/TCW-064.md",
+        ".ai/shared/ACTIVE_TASKS.json",
+        "scripts/audit-workflow.js",
+        "test/workflow-audit.test.js",
+        ".ai/shared/WORKFLOW_V3_2.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/manager/HANDOFF.md",
+        ".ai/manager/INTEGRATION_QUEUE.md",
+        ".ai/manager/tasks/TCW-060.md",
+        ".ai/manager/tasks/TCW-061.md",
+        ".ai/manager/tasks/TCW-062.md",
+        ".ai/manager/tasks/TCW-063.md",
+        ".ai/audit/",
+        ".ai/auditor/",
+        ".ai/builder/",
+        ".github/",
+        "src/",
+        "extensions/",
+        "config/",
+        "package.json",
+        "package-lock.json"
+      ],
+      "audit_required": true,
+      "post_merge_canary_required": false,
+      "next_gate": "DRAFT isolated workflow-improvement PR only while TCW-063 independently audits frozen TCW-062 target. Verify bounded premerge drift fixture, genuine exact-head FULL CI, then STOP; no protected integration before separately consuming TCW-063 verdict, resolving any overlap, new Manager exact-head decision and independent material-workflow audit. TCW-047 release HOLD unchanged.",
+      "target_advancement": {
+        "classification": "OVERLAPPING_RISK",
+        "checked_at_sha": "669cac89008ab3c33ade25febbe6d1b18993c410"
       }
     }
   ]
