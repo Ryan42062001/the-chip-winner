@@ -364,3 +364,14 @@ Activation PR #206 merged at `3f0cdcb324a803828987cc7490dd96196cfda8f4`. Master 
 - TCW-060 remains WAITING_EXTERNAL_EVIDENCE / USER_ACTION with no branch.
 - TCW-047 remains WAITING_EXTERNAL_EVIDENCE and blocked on TCW-060.
 - No external setup, packet publication, App/credential creation, ledger/ruleset mutation, staging, installation or release.
+
+
+## TCW-061 — distinct re-audit control-plane integration (2026-09-22 UTC)
+
+Manager control-plane branch `manager/tcw-061-reaudit-activation` created from independently verified canonical `3c9d83796f9dc7e55c94ab599772dc97a2dc7946`; separate waiting Auditor branch `auditor/tcw-061-external-setup-evidence-reaudit` created and compared identical to that baseline. Control-plane integration is NOT Auditor activation or a release disposition.
+
+Historical #212 source exact `a28f7054435cd9eb1db2526f92e1b0ae2aa003bf` / tree `f12be2dcb609d4d50cde99d79301069eba2045c7` remains DRAFT/OPEN/UNMERGED; original Auditor #213 exact `22e8c677d6e550d049cfe64a3f2fe2f3b06384b0` / tree `314b0571d02f60867dc8a235bc2cff62842c8340` historically FAILED independent setup verification and its required CI job `106582034906` FAILED duplicate-open-PR guard. Separate Manager archival decision comment `5770098819` preceded administrative CLOSED/UNMERGED transition of #213, preserving original Task-ID/head/report/findings/failed CI. No bypass or merge of #212.
+
+Control-plane candidate integrates distinct task spec `.ai/manager/tasks/TCW-061.md`, amended active-only registry, corrected historical TCW-060 task state, Manager handoff and this queue; must pass genuine FULL PR CI (JSON machine-state changed), Manager review of exact files and integration under protected master rules, then genuine post-merge FULL master CI. NO assignment activation or green run may be claimed before observed.
+
+F01 remains BLOCKING pending independent first-party read-only authenticated original four-App installation/selected-repo/permissions API retrieval; owner installation screenshots are corroborating, not sufficient. F02 publisher-role enforcement operational hold and F03 custody-assurance limitation remain. TCW-061 stays WAITING_EXTERNAL_EVIDENCE until the metadata channel exists and Manager separately activates fresh Auditor. Later Auditor writes exactly two audit-owned files only, opens separate DRAFT/OPEN/UNMERGED TCW-061 PR and obtains actual exact-head CI. No new protected App/ruleset/credential/ledger mutation or TCW-047 stage, installation, workflow dispatch, nonce, Builder #162 change, merge, deployment or release.
