@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
+  checkCandidateAssignmentStaleness,
   detectDuplicateTaskPullRequests,
   validateNextActivationDashboard,
   validateRegistryShape
@@ -176,4 +181,52 @@ test("Next Activation rejects a missing canonical role row", () => {
 test("worker handoffs cannot self-authorize ACTIVATE NOW", () => {
   assert.match(validateNextActivationDashboard(dashboard("ACTIVATE NOW"), { label: "Builder handoff" }).join("\n"), /worker handoff cannot use ACTIVATE NOW/);
   assert.deepEqual(validateNextActivationDashboard(dashboard("ACTIVATE NOW"), { label: "Manager handoff", allowActivateNow: true }), []);
+});
+
+test("PR assignment-drift gate projects one merge commit for a branch-head checkout", () => {
+  const rootDir = mkdtempSync(join(tmpdir(), "tcw-premerge-staleness-"));
+  const git = (...args) => execFileSync("git", args, { cwd: rootDir, encoding: "utf8" }).trim();
+  try {
+    git("init", "-q", "-b", "master");
+    git("config", "user.name", "TCW workflow test");
+    git("config", "user.email", "workflow-test@example.invalid");
+    writeFileSync(join(rootDir, "fixture.txt"), "baseline\\n");
+    git("add", "fixture.txt");
+    git("commit", "-qm", "baseline");
+    const baseline = git("rev-parse", "HEAD");
+    const assigned = registry({ assignment_master_sha: baseline });
+
+    git("checkout", "-qb", "candidate");
+    for (let i = 1; i <= 3; i++) {
+      writeFileSync(join(rootDir, "fixture.txt"), `candidate ${i}\\n`);
+      git("add", "fixture.txt");
+      git("commit", "-qm", `candidate ${i}`);
+    }
+
+    assert.deepEqual(checkCandidateAssignmentStaleness(assigned, { rootDir, isPullRequest: false }).errors, []);
+    assert.match(
+      checkCandidateAssignmentStaleness(assigned, { rootDir, isPullRequest: true }).errors.join("\\n"),
+      /TCW-010: assignment is 4 commits behind target/
+    );
+    const classified = registry({
+      assignment_master_sha: baseline,
+      target_advancement: { classification: "OVERLAPPING_RISK", checked_at_sha: baseline }
+    });
+    assert.deepEqual(checkCandidateAssignmentStaleness(classified, { rootDir, isPullRequest: true }).errors, []);
+    assert.match(checkCandidateAssignmentStaleness(classified, { rootDir, isPullRequest: true }).warnings.join("\\n"), /recheck OVERLAPPING_RISK/);
+
+    git("checkout", "-q", "master");
+    git("merge", "--no-ff", "-qm", "synthetic PR merge preview", "candidate");
+    // A two-parent checkout already includes the merge commit: do not count it twice.
+    assert.match(
+      checkCandidateAssignmentStaleness(assigned, { rootDir, isPullRequest: true }).errors.join("\\n"),
+      /TCW-010: assignment is 4 commits behind target/
+    );
+    assert.doesNotMatch(
+      checkCandidateAssignmentStaleness(assigned, { rootDir, isPullRequest: true }).errors.join("\\n"),
+      /assignment is 5 commits/
+    );
+  } finally {
+    rmSync(rootDir, { recursive: true, force: true });
+  }
 });
