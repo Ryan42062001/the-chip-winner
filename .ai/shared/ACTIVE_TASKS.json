@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-21T18:55:00Z",
+  "updated_at_utc": "2026-09-22T01:50:51Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -152,7 +152,7 @@
         "TCW-060"
       ],
       "blocked_on": [
-        "TCW-059 feasibility research is Manager-accepted and exact research blobs are integrated. TCW-060 setup-only gate now blocks TCW-047: explicit Owner setup authorization, durable packet archival, distinct authenticated principals, protected ledger/evidence refs and independently reviewable external setup remain unperformed. No TCW-047 staging/install/release authority."
+        "TCW-060 source setup and historical independent audit remain unaccepted: F01 direct authenticated original-App metadata missing; F02 authenticated publisher-role operational hold; F03 credential-custody observability limit. Fresh distinct TCW-061 audit WAITING_EXTERNAL_EVIDENCE. Original Builder PR #162 DRAFT/OPEN/UNMERGED frozen at 17e5f413f2afd3d743fd28d401f0df421825df2a; no TCW-047 stage/install/release authority."
       ],
       "task_file": ".ai/manager/tasks/TCW-047.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
@@ -187,7 +187,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-060 setup-only gate first. Product owner must explicitly authorize setup work; after setup, fresh independent security/workflow audit plus synthetic non-TCW-047 end-to-end PASS are mandatory before any real TCW-047 Owner prestage decision A. PR #162 remains DRAFT/OPEN/UNMERGED at 17e5f413.",
+      "next_gate": "TCW-060 fresh independent TCW-061 evidence re-audit and separate Manager acceptance, plus later independently audited observer/validator and synthetic non-TCW-047 exercise and separate Owner Decisions A/B. Release hold continues; no PR #162 mutation, stage, nonce, ledger, workflow dispatch/install, merge/deploy/release.",
       "audit_target_sha": "17e5f413f2afd3d743fd28d401f0df421825df2a",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
@@ -457,18 +457,20 @@
       "refresh_mode": "FAST_REFRESH",
       "refresh_reason": null,
       "merge_authority": "Manager",
-      "blocker_type": "USER_ACTION",
-      "user_action_required": true,
-      "blocked_on_tasks": [],
+      "blocker_type": "EXTERNAL_EVIDENCE",
+      "user_action_required": false,
+      "blocked_on_tasks": [
+        "TCW-061"
+      ],
       "blocked_on": [
-        "Explicit product-owner authorization is required before any external setup action: packet archive publication, GitHub App/principal creation, credentials, protected ledger/evidence refs or rulesets."
+        "Original TCW-060 setup PR #212 is DRAFT/OPEN/UNMERGED at frozen a28f7054; independent historical TCW-060 Auditor #213 FAIL preserved at 22e8c677, closed UNMERGED under separately recorded Manager decision comment 5770098819 (historical required CI 106582034906 FAILURE). Fresh TCW-061 independent current original-App authenticated installation/repository-selection/permission evidence and separate Manager audit acceptance are missing; owner screenshots are corroboration only. F02 operational publisher-attribution hold and F03 custody-assurance limitation remain. No TCW-047 release authority."
       ],
       "task_file": ".ai/manager/tasks/TCW-060.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
-      "assignment_master_sha": "f2f359ac4ba012cfbf72a8818d94f48d750c71b7",
-      "branch": null,
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "assignment_master_sha": "3c9d83796f9dc7e55c94ab599772dc97a2dc7946",
+      "branch": "manager/tcw-060-external-evidence-setup",
+      "pr": 212,
+      "worker_checkpoint_sha": "a28f7054435cd9eb1db2526f92e1b0ae2aa003bf",
       "worker_slot": "manager-protected-release-external-setup",
       "allowed_path_prefixes": [
         ".ai/manager/evidence/TCW-060_",
@@ -494,7 +496,7 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "Product owner explicitly authorizes or declines TCW-060 setup-only work. No setup branch or external mutation before that authorization. Setup approval is not TCW-047 staging/install/release approval.",
+      "next_gate": "TCW-061 independent authenticated four-original-App metadata re-audit, and subsequent separate Manager disposition. PR #212 remains frozen/unmerged, historical Auditor PR #213 remains CLOSED/UNMERGED with FAIL and failed CI. Do not stage/install/release TCW-047.",
       "accepted_upstream": {
         "task_id": "TCW-059",
         "verdict": "PROTOCOL_FEASIBLE_WITH_SEPARATE_OWNER_ACTIONS",
@@ -502,7 +504,81 @@
         "retained_artifact_id": 10598497668,
         "retained_artifact_expires_at": "2026-10-04T04:03:59Z",
         "retained_artifact_zip_sha256": "6b28875a0fef1e655da33d692f13692066e4ec8674844fdbcd3e3326e0ac7833"
+      },
+      "historical_audit": {
+        "pr": 213,
+        "head_sha": "22e8c677d6e550d049cfe64a3f2fe2f3b06384b0",
+        "tree_sha": "314b0571d02f60867dc8a235bc2cff62842c8340",
+        "verdict": "FAIL_INDEPENDENT_EXACT_SETUP_VERIFICATION_INCOMPLETE",
+        "ci_run": 35675826603,
+        "required_test_job": 106582034906,
+        "ci_conclusion": "FAILURE",
+        "collision_resolution_comment_id": 5770098819,
+        "pr_state": "CLOSED_UNMERGED",
+        "findings": [
+          "F01_MEDIUM_BLOCKING",
+          "F02_MEDIUM_OPERATIONAL_HOLD",
+          "F03_LOW_CUSTODY_ASSURANCE_LIMITATION"
+        ]
       }
+    },
+    {
+      "task_id": "TCW-061",
+      "title": "Fresh Independent TCW-060 External Setup Evidence Re-Audit",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "WAITING_EXTERNAL_EVIDENCE",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "EXTERNAL_EVIDENCE",
+      "user_action_required": true,
+      "blocked_on_tasks": [],
+      "blocked_on": [
+        "Independently accessible authenticated read-only GitHub installation record, selected-repository inventory and permission matrix for ALL FOUR ORIGINAL TCW Apps 5025170/163636367, 5025352/163636443, 5025359/163636491, 5025364/163636540 not currently exposed by connected integration; owner screenshots are supporting only. Owner must provide safe delegated read-only first-party access; no keys/tokens shared. Auditor cannot claim F01 verified or PASS before this channel exists."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-061.md",
+      "role_handoff": ".ai/auditor/TCW-061_HANDOFF.md",
+      "assignment_master_sha": "3c9d83796f9dc7e55c94ab599772dc97a2dc7946",
+      "branch": "auditor/tcw-061-external-setup-evidence-reaudit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-tcw-061-external-setup-evidence-reaudit",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-061_TCW-060_EXTERNAL_SETUP_EVIDENCE_REAUDIT.md",
+        ".ai/auditor/TCW-061_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/builder/",
+        ".github/",
+        "scripts/",
+        "src/",
+        "test/",
+        "config/",
+        "extensions/",
+        "package.json",
+        "package-lock.json",
+        ".ai/audit/TCW-060_PROTECTED_RELEASE_EXTERNAL_SETUP_INDEPENDENT_AUDIT.md",
+        ".ai/auditor/TCW-060_HANDOFF.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-060",
+      "audit_target_pr": 212,
+      "audit_target_branch": "manager/tcw-060-external-evidence-setup",
+      "audit_target_sha": "a28f7054435cd9eb1db2526f92e1b0ae2aa003bf",
+      "audit_target_tree": "f12be2dcb609d4d50cde99d79301069eba2045c7",
+      "historical_failed_audit_pr": 213,
+      "historical_failed_audit_sha": "22e8c677d6e550d049cfe64a3f2fe2f3b06384b0",
+      "historical_failed_audit_ci_run": 35675826603,
+      "next_gate": "WAIT — Manager must obtain independently authenticated read-only original four-App metadata channel, integrate this control-plane assignment after genuine FULL PR CI and post-merge master verification, then separately activate a FRESH Auditor. Auditor writes only its exact two evidence Markdown paths and opens one distinct DRAFT/OPEN/UNMERGED TCW-061 PR; exact-head required test must genuinely pass. No TCW-047 release authority."
     }
   ]
 }
