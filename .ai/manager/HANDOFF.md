@@ -307,3 +307,27 @@ No external setup action is performed by closeout.
 | 4 | Research & Development (R&D) | CLOSED / IDLE | TCW-059 complete | No further action unless Manager creates a new bounded research task. |
 | 5 | Independent Auditor / QA | WAIT | Future TCW-060 setup target | Activate only after owner-authorized setup is complete and frozen for independent audit. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No reproduced blocker | Activate only for a concrete setup/tooling blocker. |
+
+
+## TCW-060 historical FAIL disposition / distinct TCW-061 evidence-gated activation — 2026-09-22 UTC
+
+STATUS: MANAGER CONTROL-PLANE INTEGRATION PENDING | TASK: TCW-061 | ROLE: Independent Auditor / QA (FRESH, NOT RUNNABLE YET) | BRANCH: `auditor/tcw-061-external-setup-evidence-reaudit` | INITIAL VERIFIED BASE: `3c9d83796f9dc7e55c94ab599772dc97a2dc7946` | AUDITOR PR/HEAD: NONE / NONE.
+
+Manager independently verified PR #212 setup source DRAFT/OPEN/UNMERGED at frozen head `a28f7054435cd9eb1db2526f92e1b0ae2aa003bf`, tree `f12be2dcb609d4d50cde99d79301069eba2045c7`; source run `35675003586` / test `106579544837` SUCCESS DOCS_ONLY only. Historical PR #213 exact independent report/handoff is irrevocably FAIL with F01 MEDIUM/BLOCKING, F02 MEDIUM OPERATIONAL HOLD and F03 LOW CUSTODY-ASSURANCE limitation, head `22e8c677d6e550d049cfe64a3f2fe2f3b06384b0`, tree `314b0571d02f60867dc8a235bc2cff62842c8340`, run `35675826603` / required test `106582034906` FAILURE. Before the administrative transition, Manager explicitly decided and recorded comment `5770098819` on #213 to close historical Auditor PR #213 without merge solely to resolve duplicate-open-TCW-060 PR guard; original report, Task-ID, immutable head, findings and failed CI are preserved. #212 remains frozen OPEN/UNMERGED; closing #213 is NOT accepting setup or revising verdict.
+
+New owner screenshots report four original selected-repo Apps 5025170/163636367, 5025352/163636443, 5025359/163636491, 5025364/163636540 with only Ryan42062001/the-chip-winner and stated permission matrices including Validator no Contents write. They were not independently inspected in this Manager chat and do not replace original-App authenticated API evidence. Connected GitHub installation enumeration returned DIFFERENT integration 155093219 only. GitHub read-only first-party metadata channel for all four ORIGINAL App installation IDs, exact selected repository inventories and actual permissions must first be made independently available in an authorized session (no keys, passwords, JWTs or tokens exposed). Preserve F02 separate role-publisher operational hold and F03 bounded credential assurance limitation.
+
+TCW-061 canonical task: `.ai/manager/tasks/TCW-061.md`; waiting registry entry: `.ai/shared/ACTIVE_TASKS.json`. AUDITOR ALLOWED WRITES EXACTLY `.ai/audit/TCW-061_TCW-060_EXTERNAL_SETUP_EVIDENCE_REAUDIT.md` and `.ai/auditor/TCW-061_HANDOFF.md`, on dedicated branch only after verified owner-approved read-only metadata access and separate Manager fresh-Auditor activation. No Auditor PR or head has been created. Manager control-plane PR must first genuinely pass required FULL CI, be Manager reviewed/merged under protected workflow, and obtain post-merge canonical-master test SUCCESS before any task is characterized as integrated. The Auditor's later two-file evidence PR must have its own genuine exact-head required check and remain DRAFT/OPEN/UNMERGED for Manager consumption.
+
+TCW-047 remains WAITING_EXTERNAL_EVIDENCE / RELEASE_HOLD. Builder PR #162 remains DRAFT/OPEN/UNMERGED frozen `17e5f413f2afd3d743fd28d401f0df421825df2a`. No changes to Apps, keys, permissions, rulesets, protected refs, ledger, source, staged PR, workflow installation/dispatch, real nonce, release, deployment or Owner Decisions A/B authorized.
+
+## Next Activation — TCW-061 evidence-gated control-plane routing
+
+| Order | Employee / Role | Status | Current Task / Gate | Copy/paste activation prompt / next action |
+| ---: | --- | --- | --- | --- |
+| 1 | Manager / Architect | ACTIVE | TCW-061 control-plane integration / authenticated original-App evidence | Verify exact Manager PR head, allowed diff and genuine required FULL CI; merge only after independently satisfying governance, verify post-merge master CI, obtain independent safe read-only original-App metadata channel; then separately activate fresh Auditor. No TCW-047 release authority. |
+| 2 | Implementation Engineer / Builder | BLOCKED | TCW-047 PR #162 / protected-release hold | Preserve frozen #162 and no sync, stage, installation, workflow dispatch, nonce/ledger, observer/validator implementation or release without separate authority. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | IDLE | No TCW-061 strategy assignment | No trade, lineup or product recommendation-policy modifications. |
+| 4 | Research & Development (R&D) | IDLE | TCW-059 historical accepted research | No new research or external account action unless separately assigned. |
+| 5 | Independent Auditor / QA | WAIT | TCW-061 / original four-App authenticated metadata channel and control-plane integration | Do not start independent audit, write two-file evidence PR or claim F01/PASS while required direct API evidence inaccessible; fresh chat after Manager gate only. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | Possible read-only original-App metadata access blocker | Activate only if Manager assigns a bounded reproducible metadata-access diagnostic; no credential or ruleset mutations. |
