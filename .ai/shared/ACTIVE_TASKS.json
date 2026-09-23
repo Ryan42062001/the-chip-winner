@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-23T20:18:32.573Z",
+  "updated_at_utc": "2026-09-23T20:30:00.000Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -738,7 +738,7 @@
       "user_action_required": false,
       "blocked_on_tasks": [],
       "blocked_on": [
-        "Original TCW-065 PR #221 and separate TCW-066 independent Auditor evidence PR #223 are merged and separately post-merge verified. TCW-066-F01 LOW self-task metadata reconciliation is underway in distinct Manager R1 candidate; TCW-061/062/063 closeouts and TCW-064 #220 remain separate. No TCW-060/047 release authority."
+        "Original TCW-065 #221, independent audit #223 and Manager R1 #224 are accepted/integrated and separately FULL master-verified. This R2 records truthful R1 custody and machine closeout evidence; TCW-065 remains VERIFYING_MASTER until a separate Manager removal review after R2's new FULL master CI. TCW-061/062/063/066 closeouts, TCW-060/047 protected-release holds and distinct draft TCW-064 #220 are unchanged."
       ],
       "task_file": ".ai/manager/tasks/TCW-065.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
@@ -769,11 +769,11 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-066-F01 LOW accepted: independently review R1's ONLY TCW-065 self-entry/spec metadata and exact final FULL required PR test; require separate Manager expected-head guarded merge and NEW exact-master FULL required test before any further TCW-065 lifecycle transition or CLOSE/removal. Original #221 merged at 250f7e5246fce4aaa403fee3df2a952da45c55b8, independent TCW-066 audit PR #223 merged at df54e75e552b6fbd3412840d88a25fa16c52fef5. TCW-061/062/063 separate VERIFYING_MASTER closeouts, TCW-066 separate lifecycle review, TCW-060/047 release holds and TCW-064 #220 frozen remain unchanged.",
+      "next_gate": "Review distinct R2 self-task receipt/closeout-evidence candidate's exact TWO-file diff, genuine FULL exact-head PR CI and guarded protected merge. Require a genuinely NEW successful exact-R2-integration-master PUSH FULL test and separate Manager closeout/removal decision using workflow:transition fail-closed eligibility. Do not remove TCW-065 or any other task in R2. Original seven-file audit target 250f7e5246fce4aaa403fee3df2a952da45c55b8 unchanged; TCW-066-F01 self-task metadata remedy is only closeout-eligible after R2 integration/master verification. No TCW-060/047 release authority.",
       "target_advancement": {
         "classification": "OVERLAPPING_RISK",
-        "checked_at_sha": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
-        "reviewed_scope": "Original 15305d7 assignment to current df54e75 master advances 14 commits; overlap limited to authorized Manager task-state/spec plus separate TCW-066 audit evidence. Review is R1 Manager-only metadata custody; no implicit source/release authorization."
+        "checked_at_sha": "a5d726b794817451e115cb1514917d05b2f69a17",
+        "reviewed_scope": "Original TCW-065 assignment 15305d719197445fd33b10af500386c0d29dd3f7 to R2 base a5d726b794817451e115cb1514917d05b2f69a17 includes explicitly reviewed Manager-only task-spec/registry overlap, independent Auditor evidence and no new production or protected-release authority. R2 modifies only TCW-065 self-object/top-level timestamp plus its task spec."
       },
       "integration_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
       "post_merge_run": 35685019544,
@@ -799,7 +799,39 @@
         "branch": "manager/tcw-065-r1-post-audit-lifecycle-reconciliation",
         "starting_master_sha": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
         "scope": "ONLY TCW-065 object and TCW-065 task spec; no other registry task modification",
-        "status": "DRAFT_CANDIDATE_NOT_INTEGRATED"
+        "status": "INTEGRATED_MASTER_VERIFIED",
+        "r1_pr": 224,
+        "r1_final_head": "0948eae18948fec06e4cb128640305df80e78509",
+        "r1_native_tree": "4fcfa85bcd3313e5ab16b11fa4fd92b18b2edf04",
+        "r1_pr_full_run": 35915141379,
+        "r1_pr_required_test_job": 107364619233,
+        "r1_integration_master": "a5d726b794817451e115cb1514917d05b2f69a17",
+        "r1_master_full_run": 35915658658,
+        "r1_master_required_test_job": 107366345812,
+        "manager_integration_authorization_comment": 5802327320,
+        "manager_verification_receipt_comment": 5802370407
+      },
+      "closeout_evidence": {
+        "manager_verdict": "ACCEPTED",
+        "integration_verification": "PASS",
+        "master_verification": "PASS",
+        "audit_verdict": "PASS WITH NON-BLOCKING FINDINGS",
+        "canary_verification": "NOT_APPLICABLE",
+        "original_material_target": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+        "original_integration_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+        "original_post_merge_run": 35685019544,
+        "original_post_merge_required_test_job": 106609883995,
+        "independent_audit_pr": 223,
+        "independent_audit_accepted_comment": 5771211435,
+        "independent_evidence_integration_master": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
+        "independent_evidence_master_run": 35800876656,
+        "independent_evidence_required_test_job": 106990691088,
+        "accepted_finding": "TCW-066-F01 LOW: self-task metadata correction R1 integrated and master verified; final machine receipt R2 pending separate guarded integration and new master CI before removal.",
+        "r1_integrated_sha": "a5d726b794817451e115cb1514917d05b2f69a17",
+        "r1_post_merge_full_run": 35915658658,
+        "r1_post_merge_required_test_job": 107366345812,
+        "manager_r1_verification_comment": 5802370407,
+        "removal_authorized": false
       }
     },
     {
