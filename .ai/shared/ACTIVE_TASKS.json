@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-22T04:01:24.278Z",
+  "updated_at_utc": "2026-09-23T20:18:32.573Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -728,7 +728,7 @@
       "title": "Bounded Accepted-Evidence Canonical Task-State Reconciliation",
       "owner": "Manager",
       "role_label": "Manager / Architect",
-      "status": "ASSIGNED",
+      "status": "VERIFYING_MASTER",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "FAST_REFRESH",
@@ -736,28 +736,20 @@
       "merge_authority": "Manager",
       "blocker_type": "NONE",
       "user_action_required": false,
-      "blocked_on_tasks": [
-        "TCW-062",
-        "TCW-063"
-      ],
+      "blocked_on_tasks": [],
       "blocked_on": [
-        "Serialize Manager registry updates against TCW-062/063 verification and keep separate draft TCW-064 #220 unmerged until separately refreshed/reviewed."
+        "Original TCW-065 PR #221 and separate TCW-066 independent Auditor evidence PR #223 are merged and separately post-merge verified. TCW-066-F01 LOW self-task metadata reconciliation is underway in distinct Manager R1 candidate; TCW-061/062/063 closeouts and TCW-064 #220 remain separate. No TCW-060/047 release authority."
       ],
       "task_file": ".ai/manager/tasks/TCW-065.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "15305d719197445fd33b10af500386c0d29dd3f7",
       "branch": "manager/tcw-065-accepted-evidence-state-reconciliation",
-      "pr": null,
-      "worker_checkpoint_sha": null,
+      "pr": 221,
+      "worker_checkpoint_sha": "32cd588da84753a63045a19714ad01a5014569d3",
       "worker_slot": "manager-tcw-065-accepted-evidence-state-reconciliation",
       "allowed_path_prefixes": [
         ".ai/manager/tasks/TCW-065.md",
-        ".ai/shared/ACTIVE_TASKS.json",
-        ".ai/manager/tasks/TCW-047.md",
-        ".ai/manager/tasks/TCW-060.md",
-        ".ai/manager/tasks/TCW-061.md",
-        ".ai/manager/tasks/TCW-062.md",
-        ".ai/manager/tasks/TCW-063.md"
+        ".ai/shared/ACTIVE_TASKS.json"
       ],
       "forbidden_path_prefixes": [
         ".ai/audit/",
@@ -777,10 +769,37 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "DRAFT new TCW-065 Manager state-reconciliation candidate on current master only: verify exact seven-path scope/status-evidence fidelity, independent exact-head FULL test success, and separate Manager protected integration decision. After actual merge NEW canonical-master FULL test SUCCESS required before state correction accepted. Fresh independent material-control-plane audit required before TCW-065 CLOSED; no closeout of TCW-060/061/062/063/047 by implication. TCW-064 #220 remains frozen/unmerged.",
+      "next_gate": "TCW-066-F01 LOW accepted: independently review R1's ONLY TCW-065 self-entry/spec metadata and exact final FULL required PR test; require separate Manager expected-head guarded merge and NEW exact-master FULL required test before any further TCW-065 lifecycle transition or CLOSE/removal. Original #221 merged at 250f7e5246fce4aaa403fee3df2a952da45c55b8, independent TCW-066 audit PR #223 merged at df54e75e552b6fbd3412840d88a25fa16c52fef5. TCW-061/062/063 separate VERIFYING_MASTER closeouts, TCW-066 separate lifecycle review, TCW-060/047 release holds and TCW-064 #220 frozen remain unchanged.",
       "target_advancement": {
         "classification": "OVERLAPPING_RISK",
-        "checked_at_sha": "15305d719197445fd33b10af500386c0d29dd3f7"
+        "checked_at_sha": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
+        "reviewed_scope": "Original 15305d7 assignment to current df54e75 master advances 14 commits; overlap limited to authorized Manager task-state/spec plus separate TCW-066 audit evidence. Review is R1 Manager-only metadata custody; no implicit source/release authorization."
+      },
+      "integration_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+      "post_merge_run": 35685019544,
+      "post_merge_test_job": 106609883995,
+      "historical_first_failed_pr_run": 35684718256,
+      "historical_first_failed_pr_test_job": 106608984021,
+      "corrected_final_pr_run": 35684799585,
+      "corrected_final_pr_test_job": 106609219031,
+      "accepted_independent_control_plane_audit": {
+        "task_id": "TCW-066",
+        "verdict": "PASS WITH NON-BLOCKING FINDINGS",
+        "material_target_sha": "250f7e5246fce4aaa403fee3df2a952da45c55b8",
+        "material_target_tree": "b3c4dccd7b5210f12b086eee50fc4fde218c8b88",
+        "auditor_pr": 223,
+        "auditor_final_head": "0a09cabcbf57a7cf2c6ccf52dd691b161b6a6569",
+        "evidence_integration_master": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
+        "evidence_master_full_run": 35800876656,
+        "evidence_master_test_job": 106990691088,
+        "accepted_finding": "TCW-066-F01 LOW OPEN — original TCW-065 self-task metadata stale; R1 candidate is a separate Manager correction, not automatically audited, merged, or closed."
+      },
+      "lifecycle_reconciliation": {
+        "revision": "R1",
+        "branch": "manager/tcw-065-r1-post-audit-lifecycle-reconciliation",
+        "starting_master_sha": "df54e75e552b6fbd3412840d88a25fa16c52fef5",
+        "scope": "ONLY TCW-065 object and TCW-065 task spec; no other registry task modification",
+        "status": "DRAFT_CANDIDATE_NOT_INTEGRATED"
       }
     },
     {
