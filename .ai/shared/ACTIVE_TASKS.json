@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-24T04:11:19.156Z",
+  "updated_at_utc": "2026-09-24T20:41:44.671Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,24 +26,22 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "REWORK_REQUIRED",
+      "status": "MANAGER_REVIEW_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
       "refresh_reason": "Manager ACCEPTED independent TCW-068-F02-R3 and TCW-068-F02-R4 MEDIUM/BLOCKING on immutable historical FAILED fourth target e63b198d089a7cd8259f6a30ff77236f8d68bb28; bounded SAME-TASK viable-vs-structural fragility and missing/malformed kickoff evidence remediation ONLY.",
       "merge_authority": "Manager",
-      "blocker_type": "TECHNICAL",
+      "blocker_type": "NONE",
       "user_action_required": false,
       "blocked_on_tasks": [],
-      "blocked_on": [
-        "Accepted original independent TCW-068 FAIL — REMEDIATION REQUIRED, F02-R3/R4 MEDIUM/BLOCKING; original PR #238 Manager comment 5807445613. Distinct TCW-067 R3 canonical reconciliation exact-head FULL/guarded merge/new master FULL must succeed before existing Builder activation."
-      ],
+      "blocked_on": [],
       "task_file": ".ai/manager/tasks/TCW-034.md",
       "role_handoff": ".ai/builder/HANDOFF.md",
       "assignment_master_sha": "24be4be45f7fde351c0a6e209353dd2beed8d854",
       "branch": "builder/tcw-034-trade-winner-engine",
       "pr": 147,
-      "worker_checkpoint_sha": "e63b198d089a7cd8259f6a30ff77236f8d68bb28",
+      "worker_checkpoint_sha": "22838ac515152db32789e97850f25e1e4576cb82",
       "worker_slot": "builder-trade-winner-engine",
       "allowed_path_prefixes": [
         "src/domain/trade-analyzer.js",
@@ -75,11 +73,11 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "AFTER TCW-067 R3 exact-head FULL PR CI/guarded ordinary protected merge/new exact-master PUSH FULL required test SUCCESS, Builder resumes EXISTING TCW-034 branch/PR #147 from immutable historic FAILED fourth e63b198d089a7cd8259f6a30ff77236f8d68bb28. Fix ONLY accepted F02-R3 mixed locked-high structural candidate masking only materially weaker verified feasible low replacement SCARCE_THIN and F02-R4 absent/malformed kickoff false KNOWN_LEGAL same-week usability. Keep structural/future horizon, UNKNOWN instead of fabricated ESPN universal block, RB/FLEX/OP, complete/partial roster rules, direct/conditional drop and previous F01/F02-R1/F02-R2/F03/F04-R1. Require ONE NEW code+regressions+Builder handoff final exact head FULL CI, separate Manager checkpoint, genuine same-head task-specific mechanical PASS, NEW separately frozen target/DISTINCT fresh independent Auditor before source merge. Original #147/#238/#163 unmerged, TCW-035 inactive, Level-4 not established.",
+      "next_gate": "ONLY AFTER distinct Manager TCW-067 R4 3-file checkpoint PR own genuine FULL exact-head CI, guarded ordinary protected merge and genuine NEW exact-master PUSH FULL required test SUCCESS, obtain REAL original task-specific npm run workflow:audit-readiness -- --task TCW-034 on UNCHANGED existing Builder branch HEAD 22838ac515152db32789e97850f25e1e4576cb82 with current canonical Manager-owned registry/spec worktree overlay. Require authentic TCW_AUDIT_READINESS_V1 task/branch/HEAD/checkpoint/assignmentMasterSha 24be4be45f7fde351c0a6e209353dd2beed8d854/PR 147, EXACT original FIVE authorized cumulative files, blockers [], readyForManagerFreeze true and independently recomputed native SHA256. If missing/fail HOLD; do not freeze/route fresh Auditor. Only after genuine PASS separately freeze NEW immutable repaired target 22838ac515152db32789e97850f25e1e4576cb82 in another Manager-only controlled PR and commission DISTINCT FRESH independent audit; historical FAILED FOURTH audit_target_sha e63b198d089a7cd8259f6a30ff77236f8d68bb28 remains frozen until that separate freeze. Never merge Builder #147, historical Auditor #238/#163 or authorize Level-4, TCW-035, provider or protected release.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "e5ac839e620370c46aa7e4c818d457f09431599d",
-        "reviewed_scope": "R3 original Auditor evidence #238 and Builder #147 immutable source untouched; accepted fourth FAIL and historical target retained while only Manager-owned machine-state changes."
+        "checked_at_sha": "75ae22a7b97ee5153288f485ac3bcd065d3dc8e7",
+        "reviewed_scope": "Exact new Builder 22838ac515152db32789e97850f25e1e4576cb82 derived 2 commits from immutable failed fourth e63b198d089a7cd8259f6a30ff77236f8d68bb28, exactly 3 previously authorized source/test/handoff paths; one shared Manager checkpoint-only transaction. No independent audit verdict or new frozen target established."
       },
       "audit_target_sha": "e63b198d089a7cd8259f6a30ff77236f8d68bb28"
     },
@@ -545,7 +543,7 @@
       "task_file": ".ai/manager/tasks/TCW-067.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "5bd96fd6ffa74e97d75ff8a92c97509f52a812c9",
-      "branch": "manager/tcw-067-r3-tcw-068-fail-consumption",
+      "branch": "manager/tcw-067-r4-tcw-034-new-checkpoint",
       "pr": null,
       "worker_checkpoint_sha": null,
       "worker_slot": "manager-tcw067-audit-consumption-state-reconciliation",
@@ -579,11 +577,11 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-067 R3 exact-four-file Manager-only reconciliation, own exact-final-head FULL PR required test SUCCESS, separate expected-head ordinary guarded protected merge, genuinely NEW exact-master PUSH FULL required test SUCCESS; ONLY THEN route existing TCW-034 same-task F02-R3/R4 Builder repair. Original #147/#238/#163 untouched/unmerged; TCW-067 own independent material control-plane audit/closeout pending.",
+      "next_gate": "TCW-067 R4 Manager-only new Builder checkpoint reconciliation: exact-three-file FULL PR required CI, separate guarded ordinary protected merge and genuinely NEW exact-master FULL required test SUCCESS; then REAL original TCW-034 task-specific mechanical readiness PASS on unchanged Builder 22838ac515152db32789e97850f25e1e4576cb82 with latest canonical Manager state. No new frozen target/fresh Auditor activation without that receipt. TCW-067 own independent material control-plane audit/closeout remain separate.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "e5ac839e620370c46aa7e4c818d457f09431599d",
-        "reviewed_scope": "R3 original accepted TCW-068 evidence consumed, machine state only; immutable fourth Builder product SHA and old independent Auditor report/packet unchanged."
+        "checked_at_sha": "75ae22a7b97ee5153288f485ac3bcd065d3dc8e7",
+        "reviewed_scope": "R4 updates only existing TCW-034 worker checkpoint/status and TCW-067 own branch/gates; all six other active task records, original Auditor #238/#163 and failed historical audit target unchanged."
       }
     },
     {
