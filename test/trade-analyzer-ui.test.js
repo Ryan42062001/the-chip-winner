@@ -27,6 +27,9 @@ function result(overrides = {}) {
     playoffs: { label: "Playoff weeks 15, 16", status: "UNKNOWN", source: "External", horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", rows: [], reason: "Incomplete coverage." },
     reasons: ["Current-week supported direction: UPGRADE."],
     limitations: ["Playoff window: incomplete."],
+    packageValue: { status: "WITHHELD", winner: "WITHHELD", displayedSplit: null, reasons: ["NO_APPROVED_COMPARABLE_VALUE_SOURCE"], sourceResults: [] },
+    doNothing: { userDecision: "IMPROVES", recommendation: "CONSIDER", severeGap: false, materialBenefits: ["CURRENT_WEEK_UPGRADE"], materialCosts: [] },
+    confidence: { userDecision: { claimConfidence: "MODERATE" } },
     transactionActions: [],
     ...overrides
   };
@@ -46,7 +49,28 @@ test("Trade Analyzer result keeps proposal, evidence, roster, source, horizons, 
   assert.match(html, /replacement quality is unknown, not weak or empty/);
   assert.match(html, /READ ONLY/);
   assert.match(html, /No ESPN trade mutation/);
-  assert.match(html, /There is no trade score, winner percentage, confidence percentage, acceptance probability, or ESPN transaction action/);
+  assert.match(html, /Package value unavailable/);
+  assert.match(html, /No approved package-value source is configured/);
+  assert.match(html, /YOUR ROSTER IMPACT · VS DO NOTHING/);
+  assert.match(html, /IMPROVES/);
+  assert.match(html, /No displayed package split is a probability/);
+});
+
+test("TCW-034 package winner presentation is separate from roster impact and labels split as asset value, not probability", () => {
+  const html = renderTradeAnalysisResult(result({
+    packageValue: {
+      status: "READY", winner: "YOU_WIN", sourceId: "synthetic-approved-fixture", sourceVersion: "v1",
+      asOf: "2026-09-19T12:00:00Z", unit: "synthetic units",
+      displayedSplit: { incoming: 60, outgoing: 40, label: "60/40", nearFairnessBoundary: false },
+      reasons: [], sourceResults: []
+    },
+    doNothing: { userDecision: "WORSENS", recommendation: "DO_NOT_PROCEED", severeGap: true, materialBenefits: ["CURRENT_WEEK_UPGRADE"], materialCosts: ["DANGEROUS_POSITIONAL_FRAGILITY"] }
+  }), snapshot, escapeHtml);
+  assert.match(html, /YOU WIN/);
+  assert.match(html, /60\/40 received\/sent/);
+  assert.match(html, /relative package asset value, not win probability/);
+  assert.match(html, /WORSENS/);
+  assert.match(html, /DO_NOT_PROCEED/);
 });
 
 test("TCW-031 result identifies both ESPN teams and the exact hypothetical package in all analysis states", () => {
