@@ -330,6 +330,116 @@ test("TCW-034 F02 replacement numeric withholds without a feasible acquisition p
   assert.equal(missingProjection.replacementScarcity.replacementProjectionOrNull, null);
 });
 
+test("TCW-046-F02-R2 current-week explicitly locked and kickoff-passed waiver RB/FLEX/OP cannot supply verified numeric recovery", () => {
+  const cases = [
+    { slot: "RB", starter: "RB", bench: "RB", incoming: "WR", waiver: "RB" },
+    { slot: "FLEX", starter: "WR", bench: "RB", incoming: "QB", waiver: "RB" },
+    { slot: "OP", starter: "QB", bench: "QB", incoming: "DST", waiver: "QB" }
+  ];
+  for (const scenario of cases) {
+    const make = (candidateExtra, size = 3) => snap({
+      players: [
+        player("a", scenario.starter, 20),
+        player("c", scenario.bench, 9),
+        player("x", scenario.incoming, 6),
+        player("fa", scenario.waiver, 8, candidateExtra)
+      ],
+      mine: [entry("a", scenario.slot), entry("c", "BE")],
+      other: [entry("x", "BE")],
+      size,
+      lineupSlots: [{ slot: scenario.slot, count: 1 }, { slot: "BE", count: 1 }],
+      availablePlayers: ["fa"]
+    });
+    const unlocked = analyze(make({ gameTime: "2026-09-19T18:00:00Z", locked: false }), proposal(["c"], ["x"]));
+    assert.deepEqual(unlocked.replacementScarcity.eligibleSlots, [scenario.slot], scenario.slot);
+    const unlockedDemand = unlocked.replacementScarcity.positionalAndFLEXOPDemand[0];
+    assert.deepEqual(unlockedDemand.eligibleCandidateIds, ["fa"], scenario.slot);
+    assert.deepEqual(unlockedDemand.feasibleCandidateIds, ["fa"], scenario.slot);
+    assert.equal(unlockedDemand.acquisitionPathStatus, "KNOWN_LEGAL", scenario.slot);
+    assert.equal(unlocked.replacementScarcity.replacementProjectionOrNull, 8, scenario.slot);
+    assert.equal(unlocked.depth.materialDepthEvidence.replacementQualityCost, true, scenario.slot);
+    for (const [lockKind, extra] of [
+      ["explicit player lock", { locked: true, gameTime: "2026-09-19T18:00:00Z" }],
+      ["kickoff before analysis", { locked: false, gameTime: "2026-09-19T11:00:00Z" }]
+    ]) {
+      const label = scenario.slot + " / " + lockKind;
+      const locked = analyze(make(extra), proposal(["c"], ["x"]));
+      const demand = locked.replacementScarcity.positionalAndFLEXOPDemand[0];
+      assert.equal(locked.replacement.status, "READY", label);
+      assert.deepEqual(locked.replacementScarcity.candidateIds, ["fa"], label);
+      assert.deepEqual(demand.eligibleCandidateIds, ["fa"], label);
+      assert.deepEqual(demand.feasibleCandidateIds, [], label);
+      assert.equal(demand.acquisitionPathStatus, "UNKNOWN", label);
+      assert.equal(locked.replacementScarcity.replacementProjectionOrNull, null, label);
+      assert.match(locked.replacementScarcity.reason, /verified direct-add path/i, label);
+      assert.equal(locked.depth.materialDepthEvidence.replacementQualityCost, false, label);
+      assert.equal(locked.depth.fragility.state, "UNKNOWN", label);
+      assert.notEqual(locked.depth.fragility.state, "DANGEROUS", label);
+      assert.equal(locked.packageValue.status, "WITHHELD", label);
+      assert.equal(locked.packageValue.winner, "WITHHELD", label);
+      assert.equal(locked.packageValue.displayedSplit, null, label);
+      assert.deepEqual(locked.validation.transactionActions, [], label);
+      assert.deepEqual(locked.transactionActions, [], label);
+      assert.equal(locked.replacement.structuralCandidates[0].playerId, "fa", label);
+      assert.equal(locked.replacement.candidates[0].playerId, "fa", label);
+      assert.equal(locked.currentWeek.actionability, unlocked.currentWeek.actionability, label);
+      assert.equal(locked.bye.status, unlocked.bye.status, label);
+      assert.deepEqual(locked.bye.rows, unlocked.bye.rows, label);
+      assert.equal(locked.depth.contingency.post.maxUncoveredAfterLoss,
+        unlocked.depth.contingency.post.maxUncoveredAfterLoss, label);
+      // A complete, currently full roster still requires an explicit,
+      // hypothetical drop; it does not restore locked-candidate usability.
+      const conditional = analyze(make(extra, 2), proposal(["c"], ["x"]));
+      assert.equal(conditional.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus, "UNKNOWN", label);
+      assert.deepEqual(conditional.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds, [], label);
+      assert.equal(conditional.replacementScarcity.replacementProjectionOrNull, null, label);
+      assert.equal(conditional.depth.materialDepthEvidence.replacementQualityCost, false, label);
+      assert.notEqual(conditional.depth.fragility.state, "DANGEROUS", label);
+      assert.deepEqual(conditional.validation.transactionActions, [], label);
+    }
+    const futureConditional = analyze(make({ gameTime: "2026-09-19T18:00:00Z", locked: false }, 2),
+      proposal(["c"], ["x"]));
+    assert.equal(futureConditional.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,
+      "CONDITIONAL", scenario.slot);
+    assert.deepEqual(futureConditional.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,
+      [], scenario.slot);
+    assert.equal(futureConditional.replacementScarcity.replacementProjectionOrNull, null, scenario.slot);
+    assert.equal(futureConditional.depth.materialDepthEvidence.replacementQualityCost, false, scenario.slot);
+  }
+});
+
+test("TCW-046-F02-R2 locked waiver candidates fail closed under absent and partial roster rules while retaining future context", () => {
+  for (const [description, rules] of [
+    ["absent", undefined],
+    ["partial size", { size: 3 }],
+    ["partial positions", { positionLimits: [] }],
+    ["malformed limit", { size: 3, positionLimits: [{ position: "RB", limit: null }] }]
+  ]) {
+    const snapshot = snap({
+      players: [
+        player("a", "RB", 20), player("c", "RB", 9), player("x", "WR", 6),
+        player("fa", "RB", 8, { locked: true })
+      ],
+      mine: [entry("a", "RB"), entry("c", "BE")],
+      other: [entry("x", "BE")],
+      size: 3, availablePlayers: ["fa"]
+    });
+    if (rules === undefined) delete snapshot.league.rosterRules;
+    else snapshot.league.rosterRules = rules;
+    const result = analyze(snapshot, proposal(["c"], ["x"]));
+    assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].eligibleCandidateIds,
+      ["fa"], description);
+    assert.deepEqual(result.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds,
+      [], description);
+    assert.equal(result.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus,
+      "UNKNOWN", description);
+    assert.equal(result.replacementScarcity.replacementProjectionOrNull, null, description);
+    assert.equal(result.depth.materialDepthEvidence.replacementQualityCost, false, description);
+    assert.notEqual(result.depth.fragility.state, "DANGEROUS", description);
+    assert.deepEqual(result.validation.transactionActions, [], description);
+  }
+});
+
 test("TCW-045-F02-R1 missing and partial roster settings never authorize numeric direct-add replacement or material quality cost", () => {
   const make = () => snap({
     players: [player("a","RB",20),player("c","RB",9),player("x","WR",6),player("faR","RB",8)],

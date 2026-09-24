@@ -346,6 +346,14 @@ function verifiedAcquisitionRosterState(snapshot, entries, players) {
 }
 
 function hasKnownLegalAcquisitionPath(snapshot, postEntries, candidate, players, now = Date.now()) {
+  // Preserve the waiver listing as structural/future-week context. Generic
+  // roster room does NOT verify this locked/kicked-off candidate can fill a
+  // CURRENT-WEEK lineup need, regardless of whether ESPN permits a later add.
+  const currentWeekLock = getLineupLockReason(null, candidate, now);
+  if (currentWeekLock) return Object.freeze({
+    status: "UNKNOWN", requiresExplicitDrop: false, conditionalDropPlayerId: null,
+    reason: `Current-week replacement usability is unverified: ${currentWeekLock} This does not determine whether ESPN permits a later acquisition.`
+  });
   const candidateEntry = { playerId: candidate.id, lineupSlot: "BE" };
   const direct = verifiedAcquisitionRosterState(snapshot, [...postEntries, candidateEntry], players);
   if (direct.status === "KNOWN_LEGAL") return Object.freeze({ status: "KNOWN_LEGAL", requiresExplicitDrop: false, conditionalDropPlayerId: null, reason: null });
