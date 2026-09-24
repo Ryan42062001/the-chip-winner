@@ -671,8 +671,8 @@ function replacementScarcityContract({ snapshot, postEntries, replacement, depth
       feasibleCandidateIds: freezeList(feasible.map((player) => player.id).sort()),
       acquisitionPathStatus: !ready || replacement?.acquisitionCapacity?.status !== "available" ? "UNKNOWN"
         : feasible.length ? "KNOWN_LEGAL"
-          : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players, now).status === "UNKNOWN") ? "UNKNOWN"
-            : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players, now).requiresExplicitDrop) ? "CONDITIONAL" : "KNOWN_BLOCKED"
+          : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players, now).requiresExplicitDrop) ? "CONDITIONAL"
+            : eligible.some((player) => hasKnownLegalAcquisitionPath(snapshot, postEntries, player, players, now).status === "UNKNOWN") ? "UNKNOWN" : "KNOWN_BLOCKED"
     });
   });
   const feasibleProjected = verifiedCurrentWeekDirectCandidates(

@@ -494,6 +494,20 @@ test("TCW-068-F02-R3 mixed high structural-only and low direct feasible replacem
     assert.equal(full.depth.fragility.state, "UNKNOWN", scenario.slot);
     assert.equal(full.depth.materialDepthEvidence.replacementQualityCost, false, scenario.slot);
     assert.deepEqual(full.validation.transactionActions, [], scenario.slot);
+    // Known CONDITIONAL unlocked-low route takes priority over unrelated
+    // high structural UNKNOWN in both path/fragility and slot status.
+    const fullOnlyLow = make({ locked: true }, 2);
+    fullOnlyLow.availablePlayers = ["low"];
+    const onlyLowConditional = analyze(fullOnlyLow, proposal(["c"], ["x"]));
+    assert.equal(onlyLowConditional.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus, "CONDITIONAL", scenario.slot);
+    assert.deepEqual(onlyLowConditional.replacementScarcity.positionalAndFLEXOPDemand[0].feasibleCandidateIds, [], scenario.slot);
+    assert.equal(onlyLowConditional.replacementScarcity.replacementProjectionOrNull, null, scenario.slot);
+    assert.equal(onlyLowConditional.depth.fragility.state, "UNKNOWN", scenario.slot);
+    const fullOnlyUnknown = make({ locked: true }, 2);
+    fullOnlyUnknown.availablePlayers = ["high"];
+    const unknownOnly = analyze(fullOnlyUnknown, proposal(["c"], ["x"]));
+    assert.equal(unknownOnly.replacementScarcity.positionalAndFLEXOPDemand[0].acquisitionPathStatus, "UNKNOWN", scenario.slot);
+    assert.notEqual(unknownOnly.depth.fragility.state, "DANGEROUS", scenario.slot);
     const partial = make({ locked: true });
     partial.league.rosterRules = { size: 3 };
     const unresolved = analyze(partial, proposal(["c"], ["x"]));

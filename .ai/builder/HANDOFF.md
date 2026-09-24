@@ -112,3 +112,8 @@ Protected master verified at assignment: `75ae22a7b97ee5153288f485ac3bcd065d3dc8
 | 4 | Research & Development (R&D) | WAIT | No live package-value provider approval. |
 | 5 | Independent Auditor / QA | WAIT | Original TCW-068 fourth and TCW-046 third FAILs remain immutable; fresh assignment only by Manager after freeze. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | Manager only routes a separate reproducible blocker. |
+
+
+### Initial F02-R3/R4 synthetic CI correction (transparent historical run)
+
+The FIRST new intermediate repair head `b55919498bf9b3d5d43b24a8e20edb7d600237e0` ran genuine FULL PR CI `36022858024` / required test `107711874014` and FAILED 1/550 unit tests (549 passed): a new mixed-pool FULL-roster fixture expected CONDITIONAL while the existing per-slot status gave UNKNOWN precedence over a genuinely available conditional low route. F02-R4 targeted missing/malformed kickoff regression PASSED in that run. This final bounded refinement aligns per-slot conditional-vs-unknown priority with the existing replacementPathState conditional candidate selection while preserving direct/numeric withholding, and adds same-roster only-low CONDITIONAL / only-unknown UNKNOWN controls. Do not cite the failed intermediate as a final PASS or rewrite the historical frozen fourth FAIL. A separate NEW genuinely FULL exact-final-head CI remains required; publish its observed identifiers on the PR without a post-CI handoff-only commit.
