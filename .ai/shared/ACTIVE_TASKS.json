@@ -2,7 +2,7 @@
   "schema_version": 3,
   "workflow_version": "V3.2",
   "workflow_overlay": ".ai/shared/WORKFLOW_V3_2.md",
-  "updated_at_utc": "2026-09-24T03:19:25.306Z",
+  "updated_at_utc": "2026-09-24T03:48:16.491Z",
   "canonical_branch": "master",
   "manager_owned": true,
   "active_only": true,
@@ -26,7 +26,7 @@
       "title": "Trade Winner Engine",
       "owner": "Builder",
       "role_label": "Implementation Engineer / Builder",
-      "status": "MANAGER_REVIEW_READY",
+      "status": "AUDIT_READY",
       "dependency": "HARD",
       "execution_mode": "STANDARD_CHAT_HIGH",
       "refresh_mode": "BOUNDED_REMEDIATION_REFRESH",
@@ -73,13 +73,13 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": true,
-      "next_gate": "NEW Builder candidate e63b198d089a7cd8259f6a30ff77236f8d68bb28/tree 8c9d3c0d131991a380dce08048e95648d2fee141 FULL run 35950315139/test 107477236780 SUCCESS; historical failed immutable audit target 035c5f5112b7393f9d4f17685792548afa67dd2e remains unchanged. AFTER TCW-067 R1 guarded Manager checkpoint integration/new exact-master FULL SUCCESS, run GENUINE original task-specific workflow:audit-readiness on unchanged Builder branch/HEAD e63b198d089a7cd8259f6a30ff77236f8d68bb28 using live canonical manager registry and task specs; require TCW_AUDIT_READINESS_V1, matching task/branch/HEAD/checkpoint/assignmentMasterSha/PR, exactly five authorized cumulative paths, blockers [] and readyForManagerFreeze true plus packet SHA256. If missing/fails HOLD, do not freeze or route new Auditor. Only after PASS separately freeze NEW immutable repaired target and route DISTINCT fresh independent re-audit. Do not merge Builder #147/Auditor #163 or activate TCW-035/Level-4/release.",
+      "next_gate": "After TCW-067 R2 Manager mechanically qualified NEW target freeze/TCW-068 auditor routing PR genuine exact-final-head FULL CI, guarded ordinary protected merge and NEW exact-master PUSH FULL required test SUCCESS, TCW-068 FRESH independent Auditor inspects EXACT immutable e63b198d089a7cd8259f6a30ff77236f8d68bb28/tree 8c9d3c0d131991a380dce08048e95648d2fee141 on original Builder PR #147 DRAFT/OPEN/UNMERGED. Actual TCW-034 task-specific mechanical PASS sha256 d73fd4978b99e08715e0514b538b0eb7cf25132b1e637871ac4652b820d8afde verified Manager receipt #147 comment 5807194786; original historical FAILED TCW-046 target 035c5f5112b7393f9d4f17685792548afa67dd2e remains frozen separately on original Auditor #163 unmerged. TCW-068 exactly two independent evidence files/new draft PR, exact-head CI and Manager separate finding consumption. Do not merge original Builder #147 or original Auditor #163, activate TCW-035 or claim ESPN Level-4.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "95a4528dac9a983d20e6fa0d95708cfb7c7c87be",
-        "reviewed_scope": "Exact new Builder one-commit source/test/handoff diff is distinct from live canonical Manager-only advancement; old audit target preserved."
+        "checked_at_sha": "91d1fbc07dce1088f9231ee439ed11d266f0890b",
+        "reviewed_scope": "Actual owner-run task-specific helper PASS independently hash-checked and exact new Builder branch/head/tree/full CI separately verified; Manager R2 freeze/route changes only control-plane, original Builder PR #147 source head unmodified."
       },
-      "audit_target_sha": "035c5f5112b7393f9d4f17685792548afa67dd2e"
+      "audit_target_sha": "e63b198d089a7cd8259f6a30ff77236f8d68bb28"
     },
     {
       "task_id": "TCW-046",
@@ -543,7 +543,7 @@
       "task_file": ".ai/manager/tasks/TCW-067.md",
       "role_handoff": ".ai/manager/HANDOFF.md",
       "assignment_master_sha": "5bd96fd6ffa74e97d75ff8a92c97509f52a812c9",
-      "branch": "manager/tcw-067-r1-trade-winner-checkpoint",
+      "branch": "manager/tcw-067-r2-tcw-034-freeze-tcw-068-route",
       "pr": null,
       "worker_checkpoint_sha": null,
       "worker_slot": "manager-tcw067-audit-consumption-state-reconciliation",
@@ -551,7 +551,9 @@
         ".ai/shared/ACTIVE_TASKS.json",
         ".ai/manager/tasks/TCW-034.md",
         ".ai/manager/tasks/TCW-046.md",
-        ".ai/manager/tasks/TCW-067.md"
+        ".ai/manager/tasks/TCW-067.md",
+        ".ai/manager/tasks/TCW-068.md",
+        ".ai/manager/evidence/TCW-068_TRADE_WINNER_F02_R2_REAUDIT_PACKET_e63b198d.md"
       ],
       "forbidden_path_prefixes": [
         "src/",
@@ -575,11 +577,71 @@
       ],
       "audit_required": true,
       "post_merge_canary_required": false,
-      "next_gate": "TCW-067 R1 own 3-file Manager checkpoint transaction exact-head FULL PR/guarded merge/new master FULL first. Then obtain genuine task-specific TCW-034 mechanical audit-readiness PASS on unchanged new e63b198d089a7cd8259f6a30ff77236f8d68bb28; separate freeze and fresh independent product audit only after qualified PASS. TCW-067 own independent material control-plane audit and closeout pending.",
+      "next_gate": "R2 Manager exact-five-file freeze/new fresh Auditor TCW-068 routing PR FULL exact-head success, separate guarded merge and NEW exact-master PUSH FULL; only then Manager activate independent TCW-068 on precreated branch auditor/tcw-068-trade-winner-f02-r2-fresh-reaudit at original assignment master 91d1fbc07dce1088f9231ee439ed11d266f0890b. TCW-067 own independent material control-plane audit and later closeout remain separately pending.",
       "target_advancement": {
         "classification": "CONTROL_PLANE_ONLY",
-        "checked_at_sha": "95a4528dac9a983d20e6fa0d95708cfb7c7c87be",
-        "reviewed_scope": "Manager R1 checkpoint-only continuation; all five unrelated task records identical."
+        "checked_at_sha": "91d1fbc07dce1088f9231ee439ed11d266f0890b",
+        "reviewed_scope": "Pre-R2 master and all frozen product/audit heads independently checked. R2 Manager freeze adds only owned task spec, frozen packet and machine registry; no Builder or Auditor original PR change."
+      }
+    },
+    {
+      "task_id": "TCW-068",
+      "title": "Fresh Fourth Independent Re-Audit of TCW-034 F02-R2 Locked Waiver Repair",
+      "owner": "Auditor",
+      "role_label": "Independent Auditor / QA",
+      "status": "ASSIGNED",
+      "dependency": "HARD",
+      "execution_mode": "STANDARD_CHAT_HIGH",
+      "refresh_mode": "FAST_REFRESH",
+      "refresh_reason": null,
+      "merge_authority": "Manager",
+      "blocker_type": "NONE",
+      "user_action_required": false,
+      "blocked_on_tasks": [],
+      "blocked_on": [
+        "Execution is gated on separately verified Manager TCW-067 R2 freeze/routing PR guarded protected merge and genuine NEW exact-master PUSH FULL required test SUCCESS; auditor branch was precreated from exact pre-routing canonical master and must NOT start early."
+      ],
+      "task_file": ".ai/manager/tasks/TCW-068.md",
+      "role_handoff": ".ai/auditor/HANDOFF.md",
+      "assignment_master_sha": "91d1fbc07dce1088f9231ee439ed11d266f0890b",
+      "branch": "auditor/tcw-068-trade-winner-f02-r2-fresh-reaudit",
+      "pr": null,
+      "worker_checkpoint_sha": null,
+      "worker_slot": "auditor-trade-winner-f02-r2-fourth-reaudit",
+      "allowed_path_prefixes": [
+        ".ai/audit/TCW-068_TRADE_WINNER_F02_R2_REAUDIT.md",
+        ".ai/auditor/TCW-068_HANDOFF.md"
+      ],
+      "forbidden_path_prefixes": [
+        ".ai/shared/",
+        ".ai/manager/",
+        ".ai/roles/",
+        ".ai/strategy/",
+        ".ai/rnd/",
+        ".ai/builder/",
+        ".github/",
+        "src/",
+        "test/",
+        "scripts/",
+        "config/",
+        "extensions/",
+        "package.json",
+        "package-lock.json",
+        ".ai/audit/TCW-046_TRADE_WINNER_ENGINE_REAUDIT.md",
+        ".ai/auditor/TCW-046_HANDOFF.md",
+        ".ai/audit/TCW-046_TRADE_WINNER_REAUDIT_PACKET_035c5f51.md"
+      ],
+      "audit_required": false,
+      "post_merge_canary_required": false,
+      "audit_target_task": "TCW-034",
+      "audit_target_pr": 147,
+      "audit_target_branch": "builder/tcw-034-trade-winner-engine",
+      "audit_target_sha": "e63b198d089a7cd8259f6a30ff77236f8d68bb28",
+      "next_gate": "Only AFTER Manager TCW-067 R2 freeze/route PR guarded merge and genuinely NEW exact-master PUSH FULL SUCCESS, FRESH independent Auditor reviews NEW immutable TCW-034 exact e63b198d089a7cd8259f6a30ff77236f8d68bb28/tree 8c9d3c0d131991a380dce08048e95648d2fee141, original independent TCW-046 historical failed target 035c5f5112b7393f9d4f17685792548afa67dd2e and accepted F02-R2, packet .ai/manager/evidence/TCW-068_TRADE_WINNER_F02_R2_REAUDIT_PACKET_e63b198d.md. Publish exactly two task-specific Auditor evidence files on existing assigned branch in ONE new DRAFT/OPEN/UNMERGED PR with genuine exact-head CI and independent verdict. No source/audit history mutation or merge.",
+      "target_advancement": {
+        "classification": "CONTROL_PLANE_ONLY",
+        "checked_at_sha": "91d1fbc07dce1088f9231ee439ed11d266f0890b",
+        "reviewed_scope": "Auditor branch created on verified pre-routing master; Manager R2 prospective advancement restricted to explicit task metadata and audit packet, not frozen Builder source; Auditor must independently recheck before audit."
       }
     }
   ]
