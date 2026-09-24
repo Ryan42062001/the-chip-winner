@@ -87,3 +87,28 @@ This Builder handoff is committed in the SAME NEW CODE+TEST+HANDOFF checkpoint f
 | 4 | Research & Development (R&D) | WAIT | No source-provider task | Production provider set stays EMPTY. |
 | 5 | Independent Auditor / QA | WAIT | New fresh task after Manager freeze | Original TCW-046 PR #163 retains historical failed third-target audit; cannot be retargeted. |
 | 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | No separate blocker | Only Manager may route a separately scoped reproducible failure. |
+
+
+## TCW-034 — bounded fourth-audit F02-R3 / F02-R4 same-task repair (2026-09-24)
+
+STATUS: NEW CODE+REGRESSION+HANDOFF CANDIDATE; separate exact-final-head FULL CI and Manager mechanical gate required.
+Protected master verified at assignment: `75ae22a7b97ee5153288f485ac3bcd065d3dc8e7`; genuine NEW master PUSH FULL `35954857358` / required test `107490895024` SUCCESS. Manager separate finding acceptance original Auditor PR #238 comment `5807445613`; Manager R3 activation receipt PR #239 comment `5807574094` and exact Builder route PR #147 comment `5807581059`. Historical immutable FAILED fourth product target and this bounded repair's direct parent `e63b198d089a7cd8259f6a30ff77236f8d68bb28` / native tree `8c9d3c0d131991a380dce08048e95648d2fee141`; original third FAILED target `035c5f5112b7393f9d4f17685792548afa67dd2e` separately preserved. Original independent Auditor evidence PRs #238/#163 retain their own immutable original FAIL and remain draft/open/unmerged.
+
+**F02-R3:** Current-week fragility now uses the same independently checked direct candidate pool as replacement path, numeric scarcity and supported replacement-quality: complete same-snapshot/week, verified roster constraints and capacity, applicable slot/demand, candidate-specific unlock/future kickoff and no hypothetical drop. The high-ranked structural-only locked/unknown candidate never masks a materially weaker only feasible low same-position waiver candidate. Preserve descriptive structural/future waiver listing, real independent contingency and bye effects, unknown/conditional acquisition and genuine higher unlocked/direct positive.
+
+**F02-R4:** A candidate-specific ESPN `gameTime` must establish a valid unambiguous future kickoff (full ISO date/time plus Z or explicit valid numeric offset, real calendar date) and no explicit player lock before any CURRENT-WEEK `KNOWN_LEGAL` route. Omitted/null/invalid/malformed/date-only/timezone-free/ambiguous/exact-or-past kickoff return `UNKNOWN` usability, not proof of universal ESPN add prohibition, `KNOWN_BLOCKED` or fabricated `DANGEROUS`. No alternate authoritative positive eligibility signal is approved in this bounded lane. Separate structural/future descriptions remain.
+
+**Tests:** Full intact `analyzeTrade` integration cases on RB/FLEX/OP for mixed locked-high/verified-low vs only-low vs genuinely unlocked-high with direct/full roster conditional-drop and incomplete rules; missing/null/invalid/ambiguous/exact/past/future kickoff, explicit-lock conflict, source/market withholding and read-only `transactionActions:[]`. Earlier F01/F02-R1/F02-R2/F03/F04-R1 left intact. Only `src/domain/trade-analyzer.js`, `test/trade-winner-integration.test.js`, this final `.ai/builder/HANDOFF.md` changed from immutable fourth failed parent; original Builder branch and PR #147 preserved, NO Manager/audit/workflow/provider/config/ESPN code change.
+
+**EVIDENCE & GATES:** Code, tests and this handoff must be included TOGETHER in a single new exact-final-head genuinely FULL PR test success; subsequent handoff-only SHA cannot substitute. Record actual SHA/tree/full run/job in Manager return and PR comment AFTER independently verifying live GitHub, without changing branch head. Canonical TCW-034 remains REWORK_REQUIRED and original failed checkpoint/target until separate Manager reconciliation; task-specific original `workflow:audit-readiness -- --task TCW-034` has NOT been run against new candidate and no new independent Auditor PASS/Level-4 ESPN UAT claimed. Manager reconciles, genuinely executes mechanical helper against unchanged new HEAD, independently freezes new target and activates DISTINCT fresh independent audit. Do not merge Builder #147, original Auditor #238/#163 or activate TCW-035. TCW-060/047 external evidence RELEASE_HOLD, source #212/#162/#220 unmerged, F02 publisher/observer/validator attribution hold and F03 custody limitation remain OPEN; production trade value source EMPTY, live winner/split WITHHELD, FV-SEASON-01 pending, no staged/release/deploy/transaction action.
+
+### F02-R3/R4 Next Activation
+
+| Order | Employee / Role | Status | Current Task / Next action |
+| ---: | --- | --- | --- |
+| 1 | Manager / Architect | RECOMMEND TO MANAGER after exact-head FULL PASS | Independently review new code/tests/handoff/SHA/tree/diff/CI and historical custody; reconcile TCW-034 checkpoint/status in Manager-only protected lane; obtain genuine same-head original mechanical PASS, freeze NEW immutable target and commission DISTINCT fresh independent audit. |
+| 2 | Implementation Engineer / Builder | COMPLETE after FULL PASS | Leave existing PR #147 DRAFT/OPEN/UNMERGED and new head unchanged. |
+| 3 | In-Season Strategy & Decision Intelligence Analyst | WAIT | Preserve accepted TCW-032 scope. |
+| 4 | Research & Development (R&D) | WAIT | No live package-value provider approval. |
+| 5 | Independent Auditor / QA | WAIT | Original TCW-068 fourth and TCW-046 third FAILs remain immutable; fresh assignment only by Manager after freeze. |
+| 6 | Troubleshooting & Root Cause Engineer — on-demand | IDLE | Manager only routes a separate reproducible blocker. |
