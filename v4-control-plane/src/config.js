@@ -24,18 +24,23 @@ export const DEFAULT_CONFIG = Object.freeze({
   },
 });
 
-export function validateConfig(input) {
+export function validateConfig(input, observedRepository) {
   if (!input || input.schema_version !== 1 || input.mode !== "V3_COMPAT_SHADOW" ||
       typeof input.repository !== "string" || !Array.isArray(input.canonical_state_paths) || input.canonical_state_paths.length === 0) {
     throw new ControlPlaneError("CONFIG_INVALID", "Configuration does not satisfy the V4 compatibility schema");
+  }
+  if (!observedRepository?.repository || input.repository !== observedRepository.repository) {
+    throw new ControlPlaneError("REPOSITORY_MISMATCH", "Configured repository identity contradicts observed Git custody", {
+      expected: input.repository, observed: observedRepository?.repository || null,
+    });
   }
   const canonical = [...new Set(input.canonical_state_paths.map(normalizeRepositoryPath))].sort();
   return { ...input, canonical_state_paths: canonical };
 }
 
 export function loadConfig(repository, configPath) {
-  if (!configPath) return validateConfig(structuredClone(DEFAULT_CONFIG));
-  try { return validateConfig(JSON.parse(readFileSync(resolve(repository.root, configPath), "utf8"))); }
+  if (!configPath) return validateConfig(structuredClone(DEFAULT_CONFIG), repository);
+  try { return validateConfig(JSON.parse(readFileSync(resolve(repository.root, configPath), "utf8")), repository); }
   catch (error) {
     if (error instanceof ControlPlaneError) throw error;
     throw new ControlPlaneError("CONFIG_INVALID", "Configuration could not be loaded", { cause: error.message });

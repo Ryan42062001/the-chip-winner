@@ -18,10 +18,11 @@ export function observeTrackedInvariants(repository) {
 export function validateState(state, observed) {
   if (!state || state.schema_version !== 1 || state.mode !== "V3_COMPAT_SHADOW" ||
       !Number.isInteger(state.state_version) || state.state_version < 1 || !SHA.test(state.canonical_commit_sha || "") ||
-      !state.canonical_manifest || !state.tracked_invariants) {
+      typeof state.repository !== "string" || state.repository.length === 0 || !state.canonical_manifest || !state.tracked_invariants) {
     throw new ControlPlaneError("SCHEMA_INVALID", "Proposed STATE.json is malformed");
   }
   const contradictions = [];
+  if (state.repository !== observed.repository.repository) contradictions.push("repository");
   if (state.canonical_commit_sha !== observed.repository.commit_sha) contradictions.push("canonical_commit_sha");
   if (state.canonical_manifest.canonical_manifest_sha256 !== observed.canonical_manifest_sha256) contradictions.push("canonical_manifest_sha256");
   for (const key of ["worker_checkpoint_sha", "audit_target_sha"]) {
