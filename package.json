@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "start": "node scripts/dev-server.js",
-    "test": "node scripts/audit-workflow.js --ci && node --test",
+    "test": "node --test",
+    "check:fast": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/smoke-static.js",
+    "check:full": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/smoke-trade-analyzer.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js && node scripts/audit-mobile.js && node scripts/field-validation-status.js",
+    "check": "npm run check:full",
     "eval:model": "node scripts/run-model-evals.js",
     "projections:fantasypros": "node scripts/download-fantasypros-projections.js",
     "players:fantasypros": "node scripts/download-fantasypros-player-directory.js",
@@ -17,18 +20,13 @@
     "smoke": "node scripts/smoke-static.js",
     "smoke:browser": "node scripts/smoke-browser.js && node scripts/smoke-trade-analyzer.js",
     "smoke:production": "node scripts/smoke-production.js",
-    "audit:workflow": "node scripts/audit-workflow.js",
-    "workflow:user-actions": "node scripts/workflow-user-actions.js",
-    "workflow:audit-readiness": "node scripts/workflow-audit-readiness.js",
-    "workflow:transition": "node scripts/workflow-manager-transition.js",
     "audit:a11y": "node scripts/audit-accessibility.js",
     "audit:mobile": "node scripts/audit-mobile.js",
     "audit:extension": "node scripts/audit-extension.js",
     "audit:readiness": "node scripts/audit-readiness.js",
     "audit:dependencies": "npm audit --audit-level=high",
     "audit:performance": "node scripts/audit-performance.js",
-    "security": "node scripts/security-scan.js",
-    "check": "node --check src/app.js && node --check src/domain/recommendations.js && node scripts/audit-workflow.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/smoke-trade-analyzer.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js && node scripts/audit-mobile.js && node scripts/field-validation-status.js"
+    "security": "node scripts/security-scan.js"
   },
   "engines": {
     "node": ">=20"

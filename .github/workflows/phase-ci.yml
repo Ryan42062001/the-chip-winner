@@ -1,0 +1,71 @@
+name: Phase CI
+
+on:
+  push: {}
+  pull_request:
+    branches: [master]
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Validation mode
+        required: true
+        default: full
+        type: choice
+        options: [fast, full]
+
+permissions:
+  contents: read
+
+jobs:
+  fast-ci:
+    name: FAST CI
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'fast')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify exact checkout
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Validate Speed Workflow V2.1 contract
+        run: python3 .github/scripts/validate_phase_workflow.py
+      - name: Install dependencies
+        run: npm ci
+      - name: FAST application validation
+        run: npm run check:fast
+
+  full-phase-ci:
+    name: FULL PHASE CI
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'full-phase-ci') ||
+      (github.event_name == 'workflow_dispatch' && inputs.mode == 'full')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Verify exact checkout
+        env:
+          EXPECTED_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Validate Speed Workflow V2.1 contract
+        run: python3 .github/scripts/validate_phase_workflow.py
+      - name: Install dependencies
+        run: npm ci
+      - name: FULL application validation
+        run: npm run check:full
+      - name: Dependency audit
+        run: npm audit --audit-level=high

@@ -63,6 +63,13 @@ npm run audit:performance
 
 Production releases and safe rollback are documented in [`docs/deployment.md`](docs/deployment.md).
 
+
+## Development workflow
+
+Active development uses [Speed Workflow V2.1](docs/WORKFLOW.md): one coherent phase branch/PR, push-based FAST CI, whole-phase preview, deliberate exact-head FULL CI, risk-based phase audit, explicit merge authorization, and separate manual production deployment. Retired V3/V4 governance evidence is preserved under [docs/history/workflow-v3-v4](docs/history/workflow-v3-v4/README.md).
+
+The next planned V2.1 product phase is **TCW-P01 — Trade Winner Engine Stabilization & Integration**. Historical Trade Winner PR #147 is preserved as source evidence and will not be merged directly because it is substantially behind current master.
+
 ## Current capabilities
 
 - Responsive weekly roster dashboard with starters, bench, matchup, projections, freshness, and coverage

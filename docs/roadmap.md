@@ -1,3 +1,5 @@
+> **Workflow governance note — Speed Workflow V2.1:** Active development governance now lives in `.ai/CURRENT_PHASE.md` and `docs/WORKFLOW.md`. The older TCW task-state/control-plane passages retained throughout this roadmap are historical evidence and must not be interpreted as active assignments, merge gates, or current workflow authority. Retired V3/V4 artifacts are preserved under `docs/history/workflow-v3-v4/`.
+
 # The Chip Winner Product Roadmap
 
 ## Product goal
