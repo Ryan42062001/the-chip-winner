@@ -155,3 +155,20 @@ test("production UI exposes a first-class Trade Analyzer route and editable mult
   assert.match(source, /CURRENT_WEEK_STABILITY/);
   assert.match(source, /FUTURE_UPSIDE/);
 });
+
+test("TCW-P01 result groups the decision and preserves inspectable details without repeating the proposal", () => {
+  const html = renderTradeAnalysisResult(result(), snapshot, escapeHtml);
+  assert.equal((html.match(/<h3>Trade Summary<\/h3>/g) || []).length, 1);
+  assert.equal((html.match(/<dt>Send<\/dt>/g) || []).length, 1);
+  assert.match(html, /<h3>Impact Details<\/h3>/);
+  assert.match(html, /<summary><strong>Current week<\/strong>/);
+  assert.match(html, /<summary><strong>Depth<\/strong>/);
+  assert.match(html, /<summary><strong>Replacement<\/strong>/);
+  assert.match(html, /<summary><strong>Bye<\/strong>/);
+  assert.match(html, /<summary>Evidence &amp; Limitations<\/summary>/);
+  assert.match(html, /<strong>READ ONLY<\/strong>/);
+  assert.equal((html.match(/<article class="panel trade-decision"/g) || []).length, 1);
+  assert.match(html, /Unavailable horizons/);
+  assert.match(html, /Incomplete coverage/);
+  assert.match(html, /External/);
+});
