@@ -168,6 +168,7 @@ test("TCW-P01 result groups the decision and preserves inspectable details witho
   assert.match(html, /<summary>Evidence &amp; Limitations<\/summary>/);
   assert.match(html, /<strong>READ ONLY<\/strong>/);
   assert.equal((html.match(/<article class="panel trade-decision"/g) || []).length, 1);
+  assert.match(html, /<summary><strong>Rest of season<\/strong>/);
   assert.match(html, /<summary><strong>Playoff window<\/strong>/);
   assert.match(html, /Incomplete coverage/);
   assert.match(html, /External/);
