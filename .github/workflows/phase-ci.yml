@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   fast-ci:
-    name: FAST CI
+    name: test
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'fast')
     runs-on: ubuntu-latest
     steps:
