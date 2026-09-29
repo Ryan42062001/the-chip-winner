@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "node scripts/dev-server.js",
     "start": "node scripts/dev-server.js",
-    "test": "node --test",
-    "check:fast": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/smoke-static.js",
-    "check:full": "node --check src/app.js && node --check src/domain/recommendations.js && node --test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/smoke-trade-analyzer.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js && node scripts/audit-mobile.js && node scripts/field-validation-status.js",
+    "test": "node scripts/run-active-tests.js",
+    "check:fast": "node --check src/app.js && node --check src/domain/recommendations.js && npm test && node scripts/smoke-static.js",
+    "check:full": "node --check src/app.js && node --check src/domain/recommendations.js && npm test && node scripts/run-model-evals.js && node scripts/security-scan.js && node scripts/audit-extension.js && node scripts/audit-performance.js && node scripts/smoke-static.js && node scripts/smoke-browser.js && node scripts/smoke-trade-analyzer.js && node scripts/audit-accessibility.js && node scripts/audit-readiness.js && node scripts/audit-mobile.js && node scripts/field-validation-status.js",
     "check": "npm run check:full",
     "eval:model": "node scripts/run-model-evals.js",
     "projections:fantasypros": "node scripts/download-fantasypros-projections.js",
