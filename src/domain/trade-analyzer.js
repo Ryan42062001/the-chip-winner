@@ -803,9 +803,9 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
       : `The opposing team would exceed its known ESPN ${item.position} position limit by ${item.excess}; no opponent drop is modeled.`);
     return Object.freeze({ contractVersion: "TCW_032_V1", analysisState: "ROSTER_ACTION_REQUIRED", ...resultBase(snapshot, teamId, proposal?.partnerTeamId, objective, outgoing, incoming, drops, now), packageValue,
       doNothing: withheldDoNothing(roster.entries, null, reasons.join(" ")),
-      validation: Object.freeze({ identity: "VERIFIED", uniqueOwnership: "VERIFIED", userRosterLegality: resolvedRules.status.toUpperCase(), opponentRosterLegality: "ACTION_REQUIRED", unresolvedRules: freezeList(reasons), currentWeekActionability: "UNKNOWN", readOnly: true, transactionActions: freezeList([]) }),
+      validation: Object.freeze({ identity: "VERIFIED", uniqueOwnership: "VERIFIED", userRosterLegality: resolvedRules.violations.length ? "ACTION_REQUIRED" : resolvedRules.status.toUpperCase(), opponentRosterLegality: "ACTION_REQUIRED", unresolvedRules: freezeList(reasons), currentWeekActionability: "UNKNOWN", readOnly: true, transactionActions: freezeList([]) }),
       roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null,
-      rosterSpace: Object.freeze({ opponent: Object.freeze({ status: "ACTION_REQUIRED", ...opponentRules }), conditionalFollowUpAddsExcluded: true }),
+      rosterSpace: Object.freeze({ opponent: Object.freeze({ ...opponentRules, status: "ACTION_REQUIRED" }), conditionalFollowUpAddsExcluded: true }),
       conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No opposing-team follow-up action is chosen or modeled."]) });
   }
   if (directRules.violations.length && (!drops.length || resolvedRules.violations.length)) {
@@ -821,7 +821,7 @@ export function analyzeTrade(snapshot, teamId, proposal, options = {}) {
       doNothing: withheldDoNothing(roster.entries, null, reasons.join(" ")),
       validation: Object.freeze({ identity: "VERIFIED", uniqueOwnership: "VERIFIED", userRosterLegality: resolvedRules.status.toUpperCase(), opponentRosterLegality: opponentRules.status.toUpperCase(), unresolvedRules: freezeList(reasons), currentWeekActionability: "UNKNOWN", readOnly: true, transactionActions: freezeList([]) }),
       roster: rosterConsequences, directPostTradeEntries: freezeList(directEntries), resolvedPostTradeEntries: null,
-      rosterSpace: Object.freeze({ opponent: Object.freeze({ status: "UNKNOWN", ...opponentRules }), conditionalFollowUpAddsExcluded: true }),
+      rosterSpace: Object.freeze({ opponent: Object.freeze({ ...opponentRules, status: opponentRules.status.toUpperCase() }), conditionalFollowUpAddsExcluded: true }),
       conclusion: "INSUFFICIENT_EVIDENCE", reasons: freezeList(reasons), limitations: freezeList(["No roster consequence is finalized without complete applicable ESPN roster rules."]) });
   }
 

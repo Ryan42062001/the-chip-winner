@@ -96,6 +96,7 @@ test("reciprocal opponent size and position violations require explicit action, 
   const size = analyze(snapshot(), proposal(["a", "b"], ["x"]));
   assert.equal(size.analysisState, "ROSTER_ACTION_REQUIRED");
   assert.equal(size.validation.opponentRosterLegality, "ACTION_REQUIRED");
+  assert.equal(size.rosterSpace.opponent.status, "ACTION_REQUIRED");
   assert.ok(size.rosterSpace.opponent.violations.some((item) => item.kind === "ROSTER_SIZE"));
   assert.equal(size.doNothing.recommendation, "NOT_ENOUGH_EVIDENCE");
   assert.equal(size.resolvedPostTradeEntries, null);
