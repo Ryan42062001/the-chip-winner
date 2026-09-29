@@ -1,6 +1,6 @@
 # Current Phase
 
-State: FREEZE_READY
+State: REMEDIATING
 
 ## Identity
 
