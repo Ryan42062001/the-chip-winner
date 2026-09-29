@@ -1,6 +1,6 @@
 # Current Phase
 
-State: BUILDING
+State: PREVIEW_READY
 
 ## Identity
 
