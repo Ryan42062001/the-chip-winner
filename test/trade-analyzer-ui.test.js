@@ -162,13 +162,31 @@ test("TCW-P01 result groups the decision and preserves inspectable details witho
   assert.equal((html.match(/<dt>Send<\/dt>/g) || []).length, 1);
   assert.match(html, /<h3>Impact Details<\/h3>/);
   assert.match(html, /<summary><strong>Current week<\/strong>/);
-  assert.match(html, /<summary><strong>Depth<\/strong>/);
-  assert.match(html, /<summary><strong>Replacement<\/strong>/);
-  assert.match(html, /<summary><strong>Bye<\/strong>/);
+  assert.match(html, /<summary><strong>Depth &amp; Contingency<\/strong>/);
+  assert.match(html, /<summary><strong>Replacement Context<\/strong>/);
+  assert.match(html, /<summary><strong>Bye Effects<\/strong>/);
   assert.match(html, /<summary>Evidence &amp; Limitations<\/summary>/);
   assert.match(html, /<strong>READ ONLY<\/strong>/);
   assert.equal((html.match(/<article class="panel trade-decision"/g) || []).length, 1);
-  assert.match(html, /Unavailable horizons/);
+  assert.match(html, /<summary><strong>Playoff window<\/strong>/);
   assert.match(html, /Incomplete coverage/);
   assert.match(html, /External/);
+});
+
+
+test("TCW-P01 mobile result offers one summary, collapsed evidence, and labeled stacked table cells", async () => {
+  const html = renderTradeAnalysisResult(result(), snapshot, escapeHtml);
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(html, /<div class="trade-primary">/);
+  assert.match(html, /Objective: balanced/);
+  assert.doesNotMatch(html, /class="quality fresh">BALANCED/);
+  assert.match(html, /<details class="trade-impact-item" data-trade-current-week>/);
+  assert.doesNotMatch(html, /<details class="trade-impact-item"[^>]*open/);
+  assert.match(html, /<td data-label="Source">/);
+  assert.match(html, /<td data-label="Before">/);
+  assert.match(html, /<td data-label="Delta">/);
+  assert.match(styles, /@media\(max-width:600px\)[\s\S]*\.trade-impact-body thead\{display:none\}/);
+  assert.match(styles, /\.trade-impact-body td:before\{content:attr\(data-label\)/);
+  assert.match(styles, /\.trade-impact-body \.table-wrap\{overflow:visible/);
+  assert.match(html, /class="trade-mobile-technical"/);
 });
