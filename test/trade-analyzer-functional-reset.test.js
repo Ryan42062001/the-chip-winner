@@ -18,7 +18,7 @@ function snapshot({ size = 2, missingProjection = false } = {}) {
       id: "league", name: "Trade Counterparty Fixture", season: 2026, scoringType: "PPR",
       receptionScoring: { family: "ppr", pointsPerReception: 1 },
       lineupSlots: [{ slot: "RB", count: 1 }, { slot: "BE", count: 2 }],
-      rosterRules: { size, positionLimits: [] }, playoffWeeks: [],
+      rosterRules: { size, positionLimits: [{ position: "RB", limit: -1 }] }, playoffWeeks: [],
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },
     teams: [

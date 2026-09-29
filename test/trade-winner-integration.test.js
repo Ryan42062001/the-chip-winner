@@ -19,7 +19,7 @@ function snap({ players, mine, other, size = mine.filter((item) => item.lineupSl
     meta: { kind: "live-companion", capturedAt: "2026-09-19T12:20:00Z", projectionsSource: "ESPN" },
     league: { id: "league", name: "TCW-034 Fixture", season: 2026, scoringType: "PPR",
       receptionScoring: { family: "ppr", pointsPerReception: 1 }, lineupSlots,
-      rosterRules: { size, positionLimits: [] }, playoffWeeks,
+      rosterRules: { size, positionLimits: [...new Set(players.map((item) => item.position))].map((position) => ({ position, limit: -1 })) }, playoffWeeks,
       ...(Array.isArray(restOfSeasonWeeks) ? { restOfSeasonWeeks } : {}),
       waiver },
     teams: [

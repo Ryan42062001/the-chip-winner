@@ -1,4 +1,6 @@
 export const PRODUCTION_TRADE_VALUE_SOURCES = Object.freeze([]);
+// Accept at most one minute of upstream clock skew; a larger future vintage is not fresh evidence.
+const MAX_FUTURE_SKEW_MS = 60_000;
 
 function freezeList(items) { return Object.freeze(items); }
 function normalizedText(value) { return typeof value === "string" ? value.trim() : ""; }
@@ -57,11 +59,23 @@ export function inspectTradeValueSource(source, snapshot, assetIds, { now = Date
   const teamCount = Array.isArray(snapshot?.teams) ? snapshot.teams.length : null;
   if (league.teamCount != null && teamCount != null && Number(league.teamCount) !== teamCount) reasons.push("LEAGUE_SIZE_INCOMPATIBLE");
 
-  const asOfMs = Date.parse(asOf);
+  const fields = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/.exec(asOf);
+  const offset = fields?.[7];
+  const validOffset = offset === "Z" || (offset && Number(offset.slice(1, 3)) <= 14
+    && Number(offset.slice(4, 6)) < 60 && (Number(offset.slice(1, 3)) < 14 || Number(offset.slice(4, 6)) === 0));
+  const calendar = fields ? new Date(Date.UTC(Number(fields[1]), Number(fields[2]) - 1, Number(fields[3]))) : null;
+  const validCalendar = fields && Number(fields[1]) >= 100 && Number(fields[2]) >= 1 && Number(fields[2]) <= 12
+    && Number(fields[3]) >= 1 && Number(fields[3]) <= 31 && Number(fields[4]) <= 23
+    && Number(fields[5]) <= 59 && Number(fields[6]) <= 59
+    && Number.isFinite(calendar.getTime()) && calendar.toISOString().slice(0, 10) === asOf.slice(0, 10);
+  const asOfMs = fields && validOffset && validCalendar ? Date.parse(asOf) : NaN;
   const maxAgeMs = Number(source?.maxAgeMs);
   let freshness = { status: "INVALID", ageMs: null, maxAgeMs: Number.isFinite(maxAgeMs) ? maxAgeMs : null };
-  if (!Number.isFinite(asOfMs) || !Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
+  if (!Number.isFinite(asOfMs) || !Number.isFinite(Number(now)) || !Number.isFinite(maxAgeMs) || maxAgeMs <= 0) {
     reasons.push("FRESHNESS_POLICY_INVALID");
+  } else if (asOfMs - Number(now) > MAX_FUTURE_SKEW_MS) {
+    freshness = { status: "INVALID", ageMs: null, maxAgeMs };
+    reasons.push("SOURCE_FUTURE_DATED");
   } else {
     const ageMs = Math.max(0, Number(now) - asOfMs);
     freshness = { status: ageMs <= maxAgeMs ? "FRESH" : "STALE", ageMs, maxAgeMs };
