@@ -7,6 +7,7 @@ function signed(value) {
 
 function playerName(playerMap, id) { return playerMap.get(id)?.name || id || "Unavailable"; }
 function playerList(items) { return items.length ? items.map((item) => item.name).join(", ") : "None"; }
+function decisionLabel(value) { return value === "INSUFFICIENT_EVIDENCE" ? "Insufficient evidence" : value; }
 function freshnessText(item) {
   const status = item?.freshness?.status || "unknown";
   return `${status}${item?.capturedAt ? ` · captured ${item.capturedAt}` : " · capture time unavailable"}`;
@@ -26,7 +27,7 @@ function decisionSummary(result, escapeHtml) {
   const ready = value?.status === "READY";
   const decision = result.doNothing;
   const decisionTitle = decision?.userDecision || "WITHHELD";
-  return `<article class="panel trade-decision"><div class="trade-decision-head"><div><p class="eyebrow">DECISION SUMMARY</p><h3>${escapeHtml(result.conclusion || "Analysis withheld")}</h3></div><span class="quality ${result.analysisState === "READY" ? "fresh" : "aging"}">${escapeHtml(result.analysisState)}</span></div>
+  return `<article class="panel trade-decision"><div class="trade-decision-head"><div><p class="eyebrow">DECISION SUMMARY</p><h3>${escapeHtml(decisionLabel(result.conclusion || "Analysis withheld"))}</h3></div><span class="quality ${result.analysisState === "READY" ? "fresh" : "aging"}">${escapeHtml(decisionLabel(result.analysisState))}</span></div>
     <p class="trade-status">${escapeHtml(result.evidenceState || "STRUCTURAL_ONLY")} · ${escapeHtml(result.currentWeek?.actionability || "Read-only hypothetical")}</p>
     <div class="trade-decision-facts"><div><small>PACKAGE VALUE · INDEPENDENT</small><strong>${escapeHtml(ready ? value.winner.replaceAll("_", " ") : "Package value unavailable")}</strong><span>${escapeHtml(value?.status || "WITHHELD")}</span></div><div><small>YOUR ROSTER IMPACT · VS DO NOTHING</small><strong>${escapeHtml(decisionTitle)}</strong><span>${escapeHtml(decision?.recommendation || "NOT_ENOUGH_EVIDENCE")}</span></div><div><small>CONFIDENCE / EVIDENCE</small><strong>${escapeHtml(result.confidence?.userDecision?.claimConfidence || "WITHHELD")}</strong><span>${escapeHtml(result.evidenceState || "STRUCTURAL_ONLY")}</span></div><div><small>ESPN ACTION</small><strong>${result.readOnly ? "READ ONLY" : "—"}</strong><span>No ESPN trade mutation</span></div></div>
     <p class="data-note trade-package-note">${escapeHtml(ready ? "Comparable approved additive asset-value evidence is complete." : packageValueReason(result))}</p>
