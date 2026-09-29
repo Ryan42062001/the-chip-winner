@@ -1,0 +1,383 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  classifyTradeValueShare,
+  evaluatePackageValue,
+  packageValueConfidence,
+  TRADE_VALUE_FAIRNESS
+} from "../src/domain/trade-value-engine.js";
+import {
+  createSyntheticApprovedTradeValueSource,
+  PRODUCTION_TRADE_VALUE_SOURCES
+} from "../src/domain/trade-value-source.js";
+
+const NOW = Date.parse("2026-09-19T12:30:00Z");
+const snapshot = {
+  league: { season: 2026, scoringType: "PPR" },
+  teams: [{ id: "mine" }, { id: "other" }],
+  players: [
+    { id: "a", projection: 99, restOfSeasonValue: 999, rank: 1 },
+    { id: "b", projection: 88, restOfSeasonValue: 888, rank: 2 },
+    { id: "x", projection: 77, restOfSeasonValue: 777, rank: 3 },
+    { id: "y", projection: 66, restOfSeasonValue: 666, rank: 4 }
+  ]
+};
+
+function source(values, overrides = {}) {
+  return createSyntheticApprovedTradeValueSource({
+    asOf: "2026-09-19T12:00:00Z",
+    teamCount: 2,
+    values,
+    ...overrides
+  });
+}
+
+function evaluate(values, outgoing = ["a"], incoming = ["x"], overrides = {}) {
+  return evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: outgoing,
+    incomingPlayerIds: incoming,
+    sources: [source(values, overrides)],
+    now: NOW
+  });
+}
+
+test("TCW-034 fairness band is inclusive at exact 45 and 55 using unrounded share", () => {
+  assert.deepEqual(TRADE_VALUE_FAIRNESS, { inclusiveLower: 45, inclusiveUpper: 55 });
+
+  const lower = evaluate({ a: 55, x: 45 });
+  assert.equal(lower.incomingShare, 45);
+  assert.equal(lower.winner, "FAIR_TRADE");
+
+  const upper = evaluate({ a: 45, x: 55 });
+  assert.equal(upper.incomingShare, 55);
+  assert.equal(upper.winner, "FAIR_TRADE");
+
+  assert.equal(classifyTradeValueShare(45), "FAIR_TRADE");
+  assert.equal(classifyTradeValueShare(55), "FAIR_TRADE");
+});
+
+test("TCW-034 55.01 is YOU_WIN even when presentation rounding still looks 55/45", () => {
+  const result = evaluate({ a: 44.99, x: 55.01 });
+  assert.equal(result.winner, "YOU_WIN");
+  assert.equal(result.incomingShare, 55.01);
+  assert.equal(result.displayedSplit.label, "55/45");
+  assert.equal(result.displayedSplit.nearFairnessBoundary, true);
+});
+
+test("TCW-034 below 45 is THEY_WIN and zero-valued side remains explicit rather than missing", () => {
+  assert.equal(evaluate({ a: 56, x: 44 }).winner, "THEY_WIN");
+
+  const allIncoming = evaluate({ a: 0, x: 25 });
+  assert.equal(allIncoming.status, "READY");
+  assert.equal(allIncoming.incomingShare, 100);
+  assert.equal(allIncoming.outgoingShare, 0);
+  assert.equal(allIncoming.winner, "YOU_WIN");
+
+  const zeroZero = evaluate({ a: 0, x: 0 });
+  assert.equal(zeroZero.status, "WITHHELD");
+  assert.equal(zeroZero.winner, "WITHHELD");
+});
+
+test("TCW-034 live production provider set is empty and package value is withheld", () => {
+  assert.deepEqual(PRODUCTION_TRADE_VALUE_SOURCES, []);
+  const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], now: NOW });
+  assert.equal(result.status, "WITHHELD");
+  assert.equal(result.winner, "WITHHELD");
+  assert.equal(result.incomingShare, null);
+  assert.equal(result.displayedSplit, null);
+  assert.deepEqual(result.reasons, ["NO_APPROVED_COMPARABLE_VALUE_SOURCE"]);
+});
+
+test("TCW-034 values present in an unapproved source do not create authority", () => {
+  const unapproved = source({ a: 40, x: 60 }, {
+    authority: { managerApproved: false, trustedConfiguration: false }
+  });
+  const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [unapproved], now: NOW });
+  assert.equal(result.status, "WITHHELD");
+  assert.equal(result.winner, "WITHHELD");
+  assert.match(result.reasons.join(" "), /SOURCE_NOT_MANAGER_APPROVED/);
+});
+
+test("TCW-034 stale source fails closed", () => {
+  const stale = source({ a: 40, x: 60 }, {
+    asOf: "2026-09-01T00:00:00Z",
+    maxAgeMs: 60 * 60 * 1000
+  });
+  const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [stale], now: NOW });
+  assert.equal(result.status, "WITHHELD");
+  assert.match(result.reasons.join(" "), /SOURCE_STALE/);
+});
+
+test("TCW-034 incompatible scoring/mode/season fails closed", () => {
+  for (const incompatible of [
+    source({ a: 40, x: 60 }, { league: { season: 2026, scoringType: "HALF_PPR", teamCount: 2 } }),
+    source({ a: 40, x: 60 }, { mode: "DYNASTY" }),
+    source({ a: 40, x: 60 }, { league: { season: 2025, scoringType: "PPR", teamCount: 2 } })
+  ]) {
+    const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [incompatible], now: NOW });
+    assert.equal(result.status, "WITHHELD");
+    assert.equal(result.winner, "WITHHELD");
+  }
+});
+
+test("TCW-034 missing ambiguous error invalid and mixed-vintage assets are never coerced to zero", () => {
+  const cases = [
+    source({ a: 40 }),
+    source({ a: 40, x: { status: "AMBIGUOUS" } }),
+    source({ a: 40, x: { status: "ERROR" } }),
+    source({ a: 40, x: Number.NaN }),
+    source({ a: 40, x: Number.POSITIVE_INFINITY }),
+    source({ a: 40, x: -1 }),
+    source({ a: 40, x: { status: "READY", value: 60, asOf: "2026-09-18T12:00:00Z" } })
+  ];
+  for (const item of cases) {
+    const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [item], now: NOW });
+    assert.equal(result.status, "WITHHELD");
+    assert.equal(result.incomingTotal, null);
+    assert.equal(result.winner, "WITHHELD");
+  }
+});
+
+test("TCW-034 unequal packages sum every mapped asset on the common source", () => {
+  const result = evaluate({ a: 25, b: 20, x: 60 }, ["a", "b"], ["x"]);
+  assert.equal(result.status, "READY");
+  assert.equal(result.outgoingTotal, 45);
+  assert.equal(result.incomingTotal, 60);
+  assert.equal(result.winner, "YOU_WIN");
+
+  const reverse = evaluate({ a: 55, x: 25, y: 20 }, ["a"], ["x", "y"]);
+  assert.equal(reverse.outgoingTotal, 55);
+  assert.equal(reverse.incomingTotal, 45);
+  assert.equal(reverse.winner, "FAIR_TRADE");
+});
+
+test("TCW-034 relevant approved source disagreement withholds generic winner without averaging", () => {
+  const theyWin = source({ a: 56, x: 44 }, { sourceId: "approved-a", primary: true });
+  const youWin = source({ a: 43, x: 57 }, { sourceId: "approved-b", primary: false });
+  const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [theyWin, youWin], now: NOW });
+
+  assert.equal(result.status, "SOURCE_DISAGREEMENT");
+  assert.equal(result.winner, "WITHHELD");
+  assert.equal(result.incomingShare, null);
+  assert.deepEqual(result.sourceResults.map((row) => row.winner).sort(), ["THEY_WIN", "YOU_WIN"]);
+});
+
+test("TCW-034 agreeing sources require one designated primary and are never averaged", () => {
+  const primary = source({ a: 40, x: 60 }, { sourceId: "approved-a", primary: true });
+  const supporting = source({ a: 35, x: 65 }, { sourceId: "approved-b", primary: false });
+  const result = evaluatePackageValue({ snapshot, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [primary, supporting], now: NOW });
+  assert.equal(result.status, "READY");
+  assert.equal(result.winner, "YOU_WIN");
+  assert.equal(result.incomingShare, 60);
+
+  const noPrimary = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a: 40, x: 60 }, { sourceId: "approved-a", primary: false }),
+      source({ a: 35, x: 65 }, { sourceId: "approved-b", primary: false })
+    ],
+    now: NOW
+  });
+  assert.equal(noPrimary.status, "WITHHELD");
+  assert.match(noPrimary.reasons.join(" "), /DESIGNATED_PRIMARY_SOURCE_REQUIRED/);
+});
+
+test("TCW-034 F04 one approved source is capped at MODERATE package confidence", () => {
+  const result = evaluate({ a: 40, x: 60 });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "READY");
+  assert.equal(confidence.claimConfidence, "MODERATE");
+  assert.deepEqual(confidence.independentEvidenceGroups, ["synthetic-approved-fixture"]);
+});
+
+test("TCW-034 F04 duplicate or derivative source rows do not manufacture HIGH confidence", () => {
+  const duplicate = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"same-source", primary:true, independenceGroup:"shared-origin" }),
+      source({ a:40, x:60 }, { sourceId:"same-source", primary:false, independenceGroup:"shared-origin" })
+    ],
+    now: NOW
+  });
+  assert.equal(duplicate.status, "READY");
+  assert.equal(packageValueConfidence(duplicate).claimConfidence, "MODERATE");
+  assert.deepEqual(packageValueConfidence(duplicate).independentEvidenceGroups, ["shared-origin"]);
+
+  const derivative = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"source-a", primary:true, independenceGroup:"shared-origin" }),
+      source({ a:38, x:62 }, {
+        sourceId:"source-a-derivative",
+        primary:false,
+        independenceGroup:"shared-origin",
+        provenance:{ derivativeOf:"source-a" }
+      })
+    ],
+    now: NOW
+  });
+  assert.equal(derivative.status, "READY");
+  assert.equal(packageValueConfidence(derivative).claimConfidence, "MODERATE");
+});
+
+test("TCW-034 F04 HIGH requires two Manager-authorized genuinely independent agreeing groups on one scale", () => {
+  const result = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:35, x:65 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b" })
+    ],
+    now: NOW
+  });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "READY");
+  assert.equal(result.winner, "YOU_WIN");
+  assert.equal(confidence.claimConfidence, "HIGH");
+  assert.deepEqual(confidence.independentEvidenceGroups, ["origin-a","origin-b"]);
+
+  const notManagerApprovedAsIndependent = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:40, x:60 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:35, x:65 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b", independentEvidenceApproved:false })
+    ],
+    now: NOW
+  });
+  assert.equal(notManagerApprovedAsIndependent.status, "READY");
+  assert.equal(packageValueConfidence(notManagerApprovedAsIndependent).claimConfidence, "MODERATE");
+});
+
+test("TCW-045-F04-R1 derivative with a conflicting declared group cannot raise independent package confidence", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"origin-a",primary:true,independenceGroup:"group-a"}),
+      source({a:38,x:62},{sourceId:"derivative-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"origin-a"}})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a"]);
+});
+
+test("TCW-045-F04-R1 derivative chains and cycles never manufacture extra independent roots", () => {
+  const chain=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"root-group"}),
+      source({a:39,x:61},{sourceId:"child-b",primary:false,independenceGroup:"root-group",provenance:{derivativeOf:"root-a"}}),
+      source({a:38,x:62},{sourceId:"grandchild-c",primary:false,independenceGroup:"root-group",provenance:{derivativeOf:"child-b"}})
+    ]
+  });
+  assert.equal(chain.status,"READY");
+  assert.equal(packageValueConfidence(chain).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(chain).independentEvidenceGroups,["root-group"]);
+
+  const cycle=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"cycle-a",primary:true,independenceGroup:"group-a",provenance:{derivativeOf:"cycle-b"}}),
+      source({a:39,x:61},{sourceId:"cycle-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"cycle-a"}})
+    ]
+  });
+  assert.equal(cycle.status,"READY");
+  assert.equal(packageValueConfidence(cycle).claimConfidence,"MODERATE");
+});
+
+test("TCW-045-F04-R1 missing or ambiguous origin must not confer HIGH confidence", () => {
+  const missing=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"orphan-b",primary:false,independenceGroup:"group-b",provenance:{derivativeOf:"not-present"}})
+    ]
+  });
+  assert.equal(missing.status,"READY");
+  assert.equal(packageValueConfidence(missing).claimConfidence,"MODERATE");
+
+  const ambiguous=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"same",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"same",primary:false,independenceGroup:"group-b"}),
+      source({a:38,x:62},{sourceId:"child",primary:false,independenceGroup:"group-c",provenance:{derivativeOf:"same"}})
+    ]
+  });
+  assert.equal(ambiguous.status,"READY");
+  assert.equal(packageValueConfidence(ambiguous).claimConfidence,"MODERATE");
+});
+
+test("TCW-045-F04-R1 two truly independent Manager-approved roots still support HIGH", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"first-root",primary:true,independenceGroup:"group-a"}),
+      source({a:38,x:62},{sourceId:"second-root",primary:false,independenceGroup:"group-b"})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"HIGH");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a","group-b"]);
+});
+
+test("TCW-034 ranking projection ROS ADP waiver-style numeric fields never become package value", () => {
+  const enriched = {
+    ...snapshot,
+    players: snapshot.players.map((player) => ({
+      ...player,
+      adp: 1,
+      waiverScore: 100,
+      vorp: 999,
+      sosStars: 5
+    }))
+  };
+  const result = evaluatePackageValue({ snapshot: enriched, outgoingPlayerIds: ["a"], incomingPlayerIds: ["x"], sources: [], now: NOW });
+  assert.equal(result.status, "WITHHELD");
+  assert.equal(result.incomingTotal, null);
+  assert.equal(result.winner, "WITHHELD");
+});
+
+
+test("TCW-034 F04 source disagreement keeps generic confidence WITHHELD even for independent groups", () => {
+  const result = evaluatePackageValue({
+    snapshot,
+    outgoingPlayerIds: ["a"],
+    incomingPlayerIds: ["x"],
+    sources: [
+      source({ a:56, x:44 }, { sourceId:"independent-a", primary:true, independenceGroup:"origin-a" }),
+      source({ a:43, x:57 }, { sourceId:"independent-b", primary:false, independenceGroup:"origin-b" })
+    ],
+    now: NOW
+  });
+  const confidence = packageValueConfidence(result);
+  assert.equal(result.status, "SOURCE_DISAGREEMENT");
+  assert.equal(result.winner, "WITHHELD");
+  assert.equal(result.incomingShare, null);
+  assert.equal(confidence.claimConfidence, "WITHHELD");
+  assert.deepEqual(confidence.independentEvidenceGroups, []);
+});
+
+test("TCW-045-F04-R1 a contradictory derivative cannot add independence even beside two genuine roots", () => {
+  const result=evaluatePackageValue({
+    snapshot,outgoingPlayerIds:["a"],incomingPlayerIds:["x"],now:NOW,
+    sources:[
+      source({a:40,x:60},{sourceId:"root-a",primary:true,independenceGroup:"group-a"}),
+      source({a:39,x:61},{sourceId:"root-b",primary:false,independenceGroup:"group-b"}),
+      source({a:38,x:62},{sourceId:"contradictory-derivative",primary:false,independenceGroup:"group-c",provenance:{derivativeOf:"root-a"}})
+    ]
+  });
+  assert.equal(result.status,"READY");
+  assert.equal(packageValueConfidence(result).claimConfidence,"MODERATE");
+  assert.deepEqual(packageValueConfidence(result).independentEvidenceGroups,["group-a","group-b"]);
+});
