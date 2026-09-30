@@ -19,9 +19,15 @@ Add a trustworthy package-value source path and an evidence-aware Trade Winner a
 
 ## Source authority gate
 
-The production approved provider set is currently empty.
+The production approved provider set remains empty.
 
-Historical TCW-033 research found useful candidates but did not approve any automated provider for production authority. Before implementation may enable live numeric package value, this phase must re-validate current source options and obtain an explicit Manager source decision covering:
+**Manager source decision: APPROVED — bounded FantasyCalc manual/local redraft value path only.**
+
+Decision artifact: `docs/product/TCW-P03_SOURCE_DECISION.md`
+
+Automated FantasyCalc API ingestion, scraping, bundled provider datasets, and redistribution remain NOT APPROVED. The approved implementation path is user-supplied browser-local value evidence attached directly to the already-selected ESPN trade assets.
+
+Historical TCW-033 research found useful candidates but did not approve any automated provider for production authority. Fresh TCW-P03 review has now resolved the bounded source path under these requirements:
 
 - provider/source identity;
 - acquisition mode and operational contract;
@@ -36,7 +42,7 @@ Historical TCW-033 research found useful candidates but did not approve any auto
 - missing / ambiguous / zero / invalid-value behavior;
 - provenance and any derivative-source relationship.
 
-If no source can be truthfully approved, the phase must stop at the source gate rather than substitute projections, rankings, ADP, ROS rank, VORP, waiver value, or arbitrary user-entered numbers.
+The source gate is cleared only for the bounded manual/local FantasyCalc contract. No other source may be enabled without a new Manager source decision. Projections, rankings, ADP, ROS rank, VORP, waiver value, and arbitrary unsourced numbers remain prohibited substitutes.
 
 ## Scope
 
@@ -87,9 +93,9 @@ When package value is WITHHELD or SOURCE_DISAGREEMENT:
 
 ## Ordered implementation objectives
 
-1. Fresh source research / re-validation.
-2. Manager source-authority decision.
-3. Adapter/import implementation only after source approval.
+1. Fresh source research / re-validation — COMPLETE.
+2. Manager source-authority decision — COMPLETE: bounded FantasyCalc manual/local path approved.
+3. Implement manual/local value entry keyed directly to selected ESPN player IDs plus source-profile metadata.
 4. Package-value integration with exact fail-closed metadata contract.
 5. Advantage visualization.
 6. Focused synthetic and adversarial source/value tests.
@@ -162,7 +168,7 @@ Audit emphasis:
 
 ## Exit criteria
 
-- Manager-approved source decision is recorded.
+- Manager-approved source decision is recorded in `docs/product/TCW-P03_SOURCE_DECISION.md`.
 - Approved source path, if any, satisfies the source contract.
 - Advantage visualization obeys the READY / WITHHELD / disagreement contract.
 - Owner preview is approved.
