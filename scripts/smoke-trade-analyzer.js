@@ -108,7 +108,11 @@ try {
   await page.getByRole("button", { name: "Analyze proposed trade" }).click();
   await page.locator("#trade-results-title").waitFor();
   await page.getByText(/No ESPN trade mutation/i).waitFor();
-  await page.getByText(/There is no trade score/i).waitFor();
+  await page.locator(".trade-decision").getByText("Package value unavailable", { exact: true }).waitFor();
+  await page.locator(".trade-decision").getByText(/No approved package-value source is configured/i).waitFor();
+  await page.locator(".trade-decision").getByText(/YOUR ROSTER IMPACT/i).waitFor();
+  const livePackageText = await page.locator(".trade-decision-facts > div").first().innerText();
+  if (/YOU WIN|FAIR TRADE|THEY WIN|\b\d{1,3}\/\d{1,3}\b/.test(livePackageText)) throw new Error("Live Trade Analyzer exposed a winner or numeric split without an approved package-value source.");
 
   await page.locator('[data-trade-remove="outgoingPlayerIds"]').first().click();
   if (await page.locator('[data-trade-remove="outgoingPlayerIds"]').count() !== 0) throw new Error("Trade Analyzer did not remove the outgoing player during proposal editing.");
@@ -116,7 +120,7 @@ try {
   if (await page.locator('[data-trade-remove="outgoingPlayerIds"]').count() !== 1) throw new Error("Trade Analyzer could not re-add an outgoing player after editing.");
   await page.getByRole("button", { name: "Analyze proposed trade" }).click();
   await page.locator("#trade-results-title").waitFor();
-  await page.getByText("My team", { exact: true }).first().waitFor();
+  await page.locator(".trade-summary").getByText(/MY TEAM/i).waitFor();
   await page.locator(".trade-results").getByText(opposing.name, { exact: true }).waitFor();
   await page.locator("#trade-incoming-select").waitFor();
 

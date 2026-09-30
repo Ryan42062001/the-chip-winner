@@ -1,13 +1,13 @@
 # Current Phase
 
-State: PLANNED
+State: FREEZE_READY
 
 ## Identity
 
 - Phase: TCW-P01 — Trade Winner Engine Stabilization & Integration
 - Product owner: Ryan
-- Phase branch: `phase/tcw-p01-trade-winner-stabilization` (create after workflow migration closes)
-- Activation baseline: canonical `master` after Speed Workflow V2.1 migration
+- Phase branch: `phase/tcw-p01-trade-winner-stabilization`
+- Activation baseline: `b765ccb21cfca2bd8957fafe5bb30f8b96f46545` (canonical `master` at TCW-P01 activation)
 - Historical source checkpoint: PR #147 / `22838ac515152db32789e97850f25e1e4576cb82`
 - Risk: MEDIUM
 - Production deployment: NOT AUTHORIZED by phase merge

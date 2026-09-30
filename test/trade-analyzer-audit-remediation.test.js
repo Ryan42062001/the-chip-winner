@@ -27,7 +27,7 @@ function snapshot({
   mine,
   other = [],
   size = mine.filter((item) => item.lineupSlot !== "IR").length,
-  positionLimits = [],
+  positionLimits = null,
   lineupSlots = null,
   availablePlayers = [],
   playoffWeeks = [],
@@ -46,7 +46,7 @@ function snapshot({
       scoringType: "PPR",
       receptionScoring: { family: "ppr", pointsPerReception: 1 },
       lineupSlots: lineupSlots || [{ slot: "RB", count: 1 }, { slot: "BE", count: Math.max(0, mine.filter((item) => item.lineupSlot === "BE").length) }],
-      rosterRules: { size, positionLimits },
+      rosterRules: { size, positionLimits: positionLimits ?? [...new Set(players.map((item) => item.position))].map((position) => ({ position, limit: -1 })) },
       playoffWeeks,
       waiver
     },
@@ -84,7 +84,7 @@ function externalInputs(snap, weeks, pointsFor) {
   };
 }
 
-function rbByeGap({ availablePlayers = ["fa"], extras = [], waiver, acquisitions, positionLimits = [] } = {}) {
+function rbByeGap({ availablePlayers = ["fa"], extras = [], waiver, acquisitions, positionLimits = null } = {}) {
   return snapshot({
     players: [
       player("a", "RB", 20, { byeWeek: 8 }),

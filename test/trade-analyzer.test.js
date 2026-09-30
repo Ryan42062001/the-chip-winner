@@ -21,7 +21,7 @@ function player(id, position, projection, extra = {}) {
 
 function entry(playerId, lineupSlot, extra = {}) { return { playerId, lineupSlot, ...extra }; }
 
-function snapshot({ players, mine, other = [], size = mine.filter((item) => item.lineupSlot !== "IR").length, positionLimits = [], lineupSlots = null, availablePlayers = [], includeAvailability = true, playoffWeeks = [], currentWeek = 5 } = {}) {
+function snapshot({ players, mine, other = [], size = mine.filter((item) => item.lineupSlot !== "IR").length, positionLimits = null, lineupSlots = null, availablePlayers = [], includeAvailability = true, playoffWeeks = [], currentWeek = 5 } = {}) {
   const configured = lineupSlots || [
     { slot: "RB", count: 1 },
     { slot: "BE", count: Math.max(0, mine.filter((item) => item.lineupSlot === "BE").length) }
@@ -38,7 +38,7 @@ function snapshot({ players, mine, other = [], size = mine.filter((item) => item
       scoringType: "PPR",
       receptionScoring: { family: "ppr", pointsPerReception: 1 },
       lineupSlots: configured,
-      rosterRules: { size, positionLimits },
+      rosterRules: { size, positionLimits: positionLimits ?? [...new Set(players.map((item) => item.position))].map((position) => ({ position, limit: -1 })) },
       playoffWeeks,
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },

@@ -27,6 +27,9 @@ function result(overrides = {}) {
     playoffs: { label: "Playoff weeks 15, 16", status: "UNKNOWN", source: "External", horizonDelta: null, meanWeeklyDelta: null, direction: "UNKNOWN", rows: [], reason: "Incomplete coverage." },
     reasons: ["Current-week supported direction: UPGRADE."],
     limitations: ["Playoff window: incomplete."],
+    packageValue: { status: "WITHHELD", winner: "WITHHELD", displayedSplit: null, reasons: ["NO_APPROVED_COMPARABLE_VALUE_SOURCE"], sourceResults: [] },
+    doNothing: { userDecision: "IMPROVES", recommendation: "CONSIDER", severeGap: false, materialBenefits: ["CURRENT_WEEK_UPGRADE"], materialCosts: [] },
+    confidence: { userDecision: { claimConfidence: "MODERATE" } },
     transactionActions: [],
     ...overrides
   };
@@ -46,7 +49,28 @@ test("Trade Analyzer result keeps proposal, evidence, roster, source, horizons, 
   assert.match(html, /replacement quality is unknown, not weak or empty/);
   assert.match(html, /READ ONLY/);
   assert.match(html, /No ESPN trade mutation/);
-  assert.match(html, /There is no trade score, winner percentage, confidence percentage, acceptance probability, or ESPN transaction action/);
+  assert.match(html, /Package value unavailable/);
+  assert.match(html, /No approved package-value source is configured/);
+  assert.match(html, /YOUR ROSTER IMPACT · VS DO NOTHING/);
+  assert.match(html, /IMPROVES/);
+  assert.match(html, /No displayed package split is a probability/);
+});
+
+test("TCW-034 package winner presentation is separate from roster impact and labels split as asset value, not probability", () => {
+  const html = renderTradeAnalysisResult(result({
+    packageValue: {
+      status: "READY", winner: "YOU_WIN", sourceId: "synthetic-approved-fixture", sourceVersion: "v1",
+      asOf: "2026-09-19T12:00:00Z", unit: "synthetic units",
+      displayedSplit: { incoming: 60, outgoing: 40, label: "60/40", nearFairnessBoundary: false },
+      reasons: [], sourceResults: []
+    },
+    doNothing: { userDecision: "WORSENS", recommendation: "DO_NOT_PROCEED", severeGap: true, materialBenefits: ["CURRENT_WEEK_UPGRADE"], materialCosts: ["DANGEROUS_POSITIONAL_FRAGILITY"] }
+  }), snapshot, escapeHtml);
+  assert.match(html, /YOU WIN/);
+  assert.match(html, /60\/40 received\/sent/);
+  assert.match(html, /relative package asset value, not win probability/);
+  assert.match(html, /WORSENS/);
+  assert.match(html, /DO_NOT_PROCEED/);
 });
 
 test("TCW-031 result identifies both ESPN teams and the exact hypothetical package in all analysis states", () => {
@@ -130,4 +154,40 @@ test("production UI exposes a first-class Trade Analyzer route and editable mult
   assert.match(source, /BALANCED/);
   assert.match(source, /CURRENT_WEEK_STABILITY/);
   assert.match(source, /FUTURE_UPSIDE/);
+});
+
+test("TCW-P01 result groups the decision and preserves inspectable details without repeating the proposal", () => {
+  const html = renderTradeAnalysisResult(result(), snapshot, escapeHtml);
+  assert.equal((html.match(/<h3>Trade Summary<\/h3>/g) || []).length, 1);
+  assert.equal((html.match(/<dt>Send<\/dt>/g) || []).length, 1);
+  assert.match(html, /<h3>Impact Details<\/h3>/);
+  assert.match(html, /<summary><strong>Current week<\/strong>/);
+  assert.match(html, /<summary><strong>Depth &amp; Contingency<\/strong>/);
+  assert.match(html, /<summary><strong>Replacement Context<\/strong>/);
+  assert.match(html, /<summary><strong>Bye Effects<\/strong>/);
+  assert.match(html, /<summary>Evidence &amp; Limitations<\/summary>/);
+  assert.match(html, /<strong>READ ONLY<\/strong>/);
+  assert.equal((html.match(/<article class="panel trade-decision"/g) || []).length, 1);
+  assert.match(html, /<summary><strong>Rest of season<\/strong>/);
+  assert.match(html, /<summary><strong>Playoff window<\/strong>/);
+  assert.match(html, /Incomplete coverage/);
+  assert.match(html, /External/);
+});
+
+
+test("TCW-P01 mobile result offers one summary, collapsed evidence, and labeled stacked table cells", async () => {
+  const html = renderTradeAnalysisResult(result(), snapshot, escapeHtml);
+  const styles = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(html, /<div class="trade-primary">/);
+  assert.match(html, /Objective: balanced/);
+  assert.doesNotMatch(html, /class="quality fresh">BALANCED/);
+  assert.match(html, /<details class="trade-impact-item" data-trade-current-week>/);
+  assert.doesNotMatch(html, /<details class="trade-impact-item"[^>]*open/);
+  assert.match(html, /<td data-label="Source">/);
+  assert.match(html, /<td data-label="Before">/);
+  assert.match(html, /<td data-label="Delta">/);
+  assert.match(styles, /@media\(max-width:600px\)[\s\S]*\.trade-impact-body thead\{display:none\}/);
+  assert.match(styles, /\.trade-impact-body td:before\{content:attr\(data-label\)/);
+  assert.match(styles, /\.trade-impact-body \.table-wrap\{overflow:visible/);
+  assert.match(html, /class="trade-mobile-technical"/);
 });

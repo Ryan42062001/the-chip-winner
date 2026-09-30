@@ -24,7 +24,7 @@ function baseSnapshot() {
       scoringType: "PPR",
       receptionScoring: { family: "ppr", pointsPerReception: 1 },
       lineupSlots: [{ slot: "QB", count: 1 }, { slot: "RB", count: 1 }, { slot: "BE", count: 4 }],
-      rosterRules: { size: 6, positionLimits: [{ position: "QB", limit: 1 }, { position: "RB", limit: 1 }] },
+      rosterRules: { size: 6, positionLimits: [{ position: "QB", limit: 1 }, { position: "RB", limit: 1 }, { position: "WR", limit: -1 }] },
       playoffWeeks: [],
       waiver: { acquisitionLimit: -1, matchupAcquisitionLimit: -1 }
     },
@@ -66,7 +66,7 @@ test("combined finite position violations expose the determinable minimum explic
 
 test("snapshot, current source, and replacement context preserve capture and freshness metadata", () => {
   const snapshot = baseSnapshot();
-  snapshot.league.rosterRules.positionLimits = [];
+  snapshot.league.rosterRules.positionLimits = [{ position: "QB", limit: -1 }, { position: "RB", limit: -1 }, { position: "WR", limit: -1 }];
   const result = analyzeTrade(snapshot, "mine", {
     partnerTeamId: "other",
     outgoingPlayerIds: ["w1"],
@@ -87,7 +87,7 @@ test("snapshot, current source, and replacement context preserve capture and fre
 
 test("complete future rows retain pre and post optimized starter assignments", () => {
   const snapshot = baseSnapshot();
-  snapshot.league.rosterRules.positionLimits = [];
+  snapshot.league.rosterRules.positionLimits = [{ position: "QB", limit: -1 }, { position: "RB", limit: -1 }, { position: "WR", limit: -1 }];
   const externalCapturedAt = new Date().toISOString();
   const ids = ["q1", "r1", "w1", "r2"];
   const identityMap = new Map(ids.map((id) => [`ext-${id}`, id]));
