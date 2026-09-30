@@ -219,6 +219,12 @@ try {
   await page.locator(".external-comparison").getByText(/FantasyPros manual CSV/).waitFor();
   await page.locator(".external-comparison").getByText(/Comparison withheld/).waitFor();
   await page.locator('a[data-section="season"]').click();
+  const seasonOrder = await page.locator("#app-content").evaluate((root) =>
+    [...root.querySelectorAll(".season-intelligence-board, .plan-boundary, .plan-depth, .plan-advanced")]
+      .map((element) => element.classList.contains("season-intelligence-board") ? "core" : element.classList.contains("plan-boundary") ? "boundary" : element.classList.contains("plan-depth") ? "depth" : "advanced"));
+  if (seasonOrder.join(",") !== "core,boundary,depth,advanced") throw new Error(`Season Plan reading order changed: ${seasonOrder.join(",")}`);
+  if (await page.locator(".season-sos-card").count() !== 1 || await page.locator(".plan-advanced > .season-sos-card").count() !== 1) throw new Error("FantasyPros SOS was not placed after roster depth.");
+  if (await page.locator(".season-sos-card details[open]").count()) throw new Error("Player-level SOS should start collapsed.");
   const playoffWeek = page.locator('[data-playoff-week="15"]');
   await playoffWeek.focus(); await playoffWeek.press("Space");
   await page.waitForFunction(() => document.querySelector('[data-playoff-week="15"]')?.checked === true);
@@ -240,6 +246,9 @@ try {
   await mobilePage.locator('a[data-section="waivers"]').click();
   await mobilePage.getByRole("heading", { name: "Waiver Wire", level: 2 }).waitFor();
   await menu.click(); await mobilePage.locator('a[data-section="season"]').click();
+  const mobileSeasonOverflow = await mobilePage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  if (mobileSeasonOverflow > 2) throw new Error(`Mobile Season Plan clips horizontally by ${mobileSeasonOverflow}px.`);
+  if (await mobilePage.locator(".season-core-grid").evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length) !== 1) throw new Error("Mobile Season Plan did not collapse to one column.");
   const mobilePlayoffWeek = mobilePage.locator('[data-playoff-week="16"]');
   await mobilePlayoffWeek.check();
   await mobilePage.waitForFunction(() => document.querySelector('[data-playoff-week="16"]')?.checked === true);

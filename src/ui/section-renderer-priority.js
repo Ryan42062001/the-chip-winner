@@ -141,9 +141,16 @@ export function createSectionRenderer(deps) {
     }
     const panel = priorityPanel(deps, base) || seasonIntelligencePanel(deps);
     if (panel) {
+      const seasonBoundary = context.state?.section === "season" ? deps.content.querySelector(".plan-boundary") : null;
       const firstDivider = deps.content.querySelector(".section-divider");
-      if (firstDivider) firstDivider.before(panel);
+      if (seasonBoundary) seasonBoundary.before(panel);
+      else if (firstDivider) firstDivider.before(panel);
       else deps.content.append(panel);
+      if (context.state?.section === "season") {
+        const sos = panel.querySelector(".season-sos-card");
+        const advanced = deps.content.querySelector(".plan-advanced");
+        if (sos && advanced) advanced.insertBefore(sos, advanced.querySelector(".plan-advanced-grid"));
+      }
     }
     return result;
   };

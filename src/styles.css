@@ -121,3 +121,19 @@ main { min-width:0; }.topbar { min-height:90px; background:rgba(255,255,255,.82)
   .trade-evidence-body ol,.trade-evidence-body ul{padding-left:20px}
   .trade-results .panel,.trade-impact-body,.trade-evidence-body{overflow-wrap:anywhere}
 }
+/* Season Plan follows document order at every width; rows share one grid rather than independent columns. */
+.season-intelligence-board,.plan-depth,.plan-advanced{min-width:0;margin-bottom:22px}
+.season-core-grid,.plan-advanced-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.season-core-grid>.panel,.plan-advanced-grid>.panel{min-width:0}
+.season-core-grid>.panel:last-child{grid-column:1/-1}
+.plan-boundary{margin-bottom:22px}
+.plan-groups{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.plan-advanced>.season-sos-card{margin-bottom:14px}
+.plan-disclosure{min-width:0;margin-top:14px}
+.plan-disclosure>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--green);font-size:11px;font-weight:800;overflow-wrap:anywhere}
+.plan-disclosure>summary:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.plan-disclosure-body{min-width:0;margin-top:10px}
+.plan-secondary>.plan-advanced-grid{margin-top:14px}
+.season-intelligence-board .plan-row,.plan-advanced .plan-row,.plan-week,.plan-scenario{min-width:0;overflow-wrap:anywhere}
+.season-intelligence-board .plan-row span,.plan-advanced .plan-row span{min-width:0}
+@media(max-width:760px){.season-core-grid,.plan-advanced-grid,.plan-groups{grid-template-columns:minmax(0,1fr)}.season-core-grid>.panel:last-child{grid-column:auto}.season-intelligence-board .plan-row,.plan-advanced .plan-row{display:block}.season-intelligence-board .plan-row span,.plan-advanced .plan-row span{margin-top:4px}.season-intelligence-board .panel-head,.plan-advanced .panel-head{flex-wrap:wrap}}

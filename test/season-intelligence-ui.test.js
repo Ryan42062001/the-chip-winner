@@ -68,6 +68,24 @@ test("season intelligence UI keeps FantasyPros SOS optional and explicit", () =>
   assert.match(html, /does not scrape or invent strength-of-schedule ratings/);
 });
 
+test("season intelligence presents core cards in document order and keeps player SOS expandable", () => {
+  const value = intelligence({
+    scheduleStrength: {
+      status: "ready", ratedRosterPlayers: 1, totalRosterPlayers: 1,
+      starterSummary: { favorable: 1, neutral: 0, difficult: 0, rated: 1, total: 1 },
+      items: [{ playerName: "<Alpha>", position: "RB", seasonStars: 4, seasonBand: "favorable", playoffStars: 3, playoffBand: "neutral" }],
+      methodology: "FantasyPros imported advisory only"
+    }
+  });
+  const html = renderSeasonPlayoffIntelligence(value, snapshot);
+  const markers = ["CORE SEASON / PLAYOFF INTELLIGENCE", "BYE COVERAGE", "PLAYOFF OPPONENTS", "PLAYOFF PROJECTION WINDOW"];
+  assert.deepEqual(markers.map((marker) => html.indexOf(marker)), [...markers.map((marker) => html.indexOf(marker))].sort((a, b) => a - b));
+  assert.match(html, /<div class="season-core-grid">/);
+  assert.match(html, /<details class="plan-disclosure"><summary>Player-level FantasyPros SOS/);
+  assert.match(html, /&lt;Alpha&gt;/);
+  assert.match(html, /FantasyPros imported advisory only/);
+});
+
 test("section renderer wires season intelligence through the wrapper instead of bloating the base renderer", async () => {
   const wrapper = await readFile(new URL("../src/ui/section-renderer-priority.js", import.meta.url), "utf8");
   const base = await readFile(new URL("../src/ui/section-renderer-base.js", import.meta.url), "utf8");
@@ -76,4 +94,6 @@ test("section renderer wires season intelligence through the wrapper instead of 
   assert.match(wrapper, /state\?\.section !== "season"/);
   assert.match(wrapper, /espnPlayoffWeeks \|\|/);
   assert.doesNotMatch(base, /buildSeasonPlayoffIntelligence/);
+  assert.match(base, /plan-boundary.*plan-depth.*plan-advanced/s);
+  assert.match(wrapper, /advanced\.insertBefore\(sos/);
 });
