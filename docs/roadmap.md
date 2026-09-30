@@ -28,8 +28,8 @@ The product should prefer an honest **not available / insufficient evidence** st
 
 | Priority | Work | State | Outcome |
 | --- | --- | --- | --- |
-| **NOW** | **Release 1.0 Field Validation** | **Active evidence gate** | Close the remaining real-world validation evidence before the Release 1.0 decision |
-| **NEXT** | **Trade Winner value source & advantage visualization** | **Source-gated planning** | Add an approved compatible package-value source, then an evidence-aware trade advantage meter that stays neutral when trustworthy value evidence is unavailable |
+| **NOW** | **Trade Winner value source & advantage visualization** | **TCW-P03 active / source-gated** | Approve a defensible redraft package-value source, then add an evidence-aware trade advantage meter that stays neutral when trustworthy value evidence is unavailable |
+| **NEXT** | **Release 1.0 decision** | **Deferred by owner** | Revisit product-ready / production-release designation only after additional product work is complete |
 | **ONGOING** | Weekly projection coverage | Seasonal accumulation | Expand complete multiweek and playoff analysis without weakening identity or completeness rules |
 | **LATER** | Trusted injury/news ecosystem | Gated | Add timely external availability context with licensing, timestamps, provenance, and privacy review |
 | **LATER** | Notifications | Gated | Opt-in, deduplicated, quiet-hours-aware decision alerts |
@@ -106,9 +106,9 @@ A future trade-advantage meter should move toward either side only when an appro
 
 ---
 
-## Current gate — Release 1.0 field validation
+## Completed gate — Release 1.0 field validation
 
-Automatable production-readiness engineering is substantially complete. Release 1.0 still depends on evidence from real environments.
+Automatable production-readiness engineering and the scoped real-environment field registry are complete at 11/11 passed. Ryan has explicitly deferred the Release 1.0/product-ready decision while additional product work continues.
 
 The field-validation registry in `config/field-validation.json` tracks the required checks. The current gate covers:
 
