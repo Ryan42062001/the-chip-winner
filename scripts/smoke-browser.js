@@ -273,6 +273,7 @@ try {
   const baseSnapshot = await (await fetch(`${origin}/src/data/sample-espn-snapshot.json`)).json();
 
   const validIr = await openIrSeasonPlan(browser, baseSnapshot);
+  await validIr.page.locator(".plan-disclosures > details").filter({ hasText: /Waiver & scenario planning/ }).locator("summary").click();
   await validIr.page.getByText(/move David Njoku to IR · no drop/i).first().waitFor();
   await validIr.page.getByText(/Add Hardening Receiver · move David Njoku to IR · no drop/i).waitFor();
   await validIr.page.getByText(/Selected horizon: \+/).waitFor();
@@ -280,8 +281,10 @@ try {
   await validIr.context.close();
 
   const incompleteIr = await openIrSeasonPlan(browser, baseSnapshot, { omitProjectionId: "p13" });
+  await incompleteIr.page.locator(".plan-disclosures > details").filter({ hasText: /Future projections & coverage/ }).locator("summary").click();
   await incompleteIr.page.getByText("Week 7 · blocked", { exact: true }).waitFor();
   await incompleteIr.page.getByText(/Baseline roster projection coverage is incomplete/).first().waitFor();
+  await incompleteIr.page.locator(".plan-disclosures > details").filter({ hasText: /Waiver & scenario planning/ }).locator("summary").click();
   await incompleteIr.page.getByText(/move David Njoku to IR · no drop/i).first().waitFor();
   if (incompleteIr.pageErrors.length) throw new Error(`IR incomplete-coverage browser errors: ${incompleteIr.pageErrors.join(" | ")}`);
   await incompleteIr.context.close();
