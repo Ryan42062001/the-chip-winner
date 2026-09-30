@@ -1,6 +1,6 @@
 # Current Phase
 
-State: PREVIEW_READY
+State: PUNCH_LIST
 
 ## Identity
 
