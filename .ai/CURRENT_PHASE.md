@@ -1,6 +1,6 @@
 # Current Phase
 
-State: BUILDING
+State: PUNCH_LIST
 
 ## Identity
 
@@ -23,6 +23,7 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 - Validate bye-week intelligence against real roster/player state.
 - Validate partial versus complete future-projection behavior and confirm incomplete windows remain withheld.
 - Preserve FantasyPros SOS as an independent imported overlay rather than an ESPN fact.
+- Apply one bounded presentation-only Season Plan organization cleanup based on Ryan's real-browser review: remove the fragmented/masonry-like desktop flow, reduce dead space, restore clear reading order, and use progressive disclosure for dense evidence without changing season/playoff calculations or source semantics.
 - Record only concise privacy-safe evidence in `config/field-validation.json`.
 - Run the Release 1.0 field registry checks and normal V2.1 validation after evidence is accepted.
 
@@ -32,7 +33,7 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 - ESPN lineup, waiver, add/drop, or trade writes.
 - New provider integrations or package-value sources.
 - Trade Winner value-meter work.
-- Changing season/playoff algorithms merely to make the field check pass.
+- Changing season/playoff algorithms, provider contracts, recommendation logic, or evidence semantics merely to make the field check pass.
 - Broadening or repopulating retired historical field-check items not present in the active registry.
 - Production deployment or Release 1.0 labeling before the exact release candidate separately satisfies the release/deployment gates.
 
@@ -41,12 +42,13 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 1. Preserve the current one-pending-item field registry as the source of truth.
 2. Prepare a minimal owner verification script for `FV-SEASON-01`.
 3. Ryan exercises the Season Plan / relevant real-league surfaces read-only and reports the observed states.
-4. Compare the observations with the expected fail-closed behavior and current ESPN/local-fallback boundaries.
-5. If the result is acceptable, update only `FV-SEASON-01` to `passed` with privacy-safe evidence.
-6. Run `npm run field:status` and `npm run field:status -- --require-complete` plus normal FAST validation.
-7. Complete whole-phase preview, Phase Sync, exact-head FULL validation, and LOW-risk audit-skip review if the diff remains evidence-only.
-8. Merge only after Ryan explicitly authorizes the exact approved candidate.
-9. Complete Closure Sync and closure FAST; production deployment remains separate.
+4. Address the owner-observed Season Plan organization issue with presentation-only UI/CSS changes and focused regression coverage; preserve every source/fail-closed behavior.
+5. Return to owner preview and compare the cleaned-up presentation plus real observations with the expected fail-closed behavior and current ESPN/local-fallback boundaries.
+6. If the result is acceptable, update only `FV-SEASON-01` to `passed` with privacy-safe evidence.
+7. Run `npm run field:status` and `npm run field:status -- --require-complete` plus normal FAST validation.
+8. Complete whole-phase preview, Phase Sync, exact-head FULL validation, and LOW-risk audit-skip review if the final code changes remain presentation-only and do not alter security/data-integrity/provider boundaries.
+9. Merge only after Ryan explicitly authorizes the exact approved candidate.
+10. Complete Closure Sync and closure FAST; production deployment remains separate.
 
 ## Acceptance criteria
 
@@ -56,6 +58,10 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 - Bye intelligence matches the real roster/player state that is actually available.
 - Partial future-projection coverage is visibly partial/withheld; complete supported coverage may produce the corresponding aggregates.
 - FantasyPros SOS remains independently attributed and does not masquerade as ESPN playoff evidence.
+- Desktop Season Plan has a clear top-to-bottom hierarchy instead of long independent columns: primary season/playoff intelligence first, roster depth second, and advanced planning/source detail lower or progressively disclosed.
+- The long player-level FantasyPros SOS list does not dominate a narrow center column; summary is primary and player detail remains inspectable on demand.
+- Current-week scenarios, projection provenance, coverage matrix, multiweek baseline, and waiver-impact evidence remain available but no longer compete visually with the core season/playoff decision surfaces.
+- Desktop avoids large orphaned blank regions caused by uneven columns; responsive/mobile flow remains single-column and readable with no horizontal clipping.
 - No private league snapshot, cookie, token, member name, private sync URL, or credential is committed.
 - The active field registry reaches 11/11 passed only if the real evidence is acceptable.
 - No ESPN mutation path or production-deployment behavior is changed.
@@ -66,11 +72,11 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 - Field registry: `npm run field:status`.
 - Release 1.0 evidence gate: `npm run field:status -- --require-complete` after and only after the item is legitimately passed.
 - FULL PHASE CI: deliberate exact-head validation before freeze/merge.
-- If any product implementation is required, re-evaluate risk and add focused regression coverage before continuing.
+- Presentation-only Season Plan implementation remains LOW risk; add focused DOM/browser/reflow regression coverage. Any domain/provider/security/data-integrity change requires explicit risk re-evaluation before continuing.
 
 ## Human preview requirements
 
-- Ryan reviews the Season Plan and any directly relevant league/setup surface against the real ESPN league.
+- Ryan reviews the cleaned-up Season Plan and any directly relevant league/setup surface against the real ESPN league.
 - The UI must make authoritative ESPN state, labeled local fallback, imported projection evidence, and unavailable/partial states understandable without hidden inference.
 - Any unexpected or misleading result blocks passage of `FV-SEASON-01`.
 
@@ -95,5 +101,5 @@ Ryan performs the `FV-SEASON-01` check in his real read-only ESPN environment. D
 
 - Any real-world observation that contradicts current season/playoff logic or source labeling.
 - Any need to infer or manufacture missing ESPN state to make the checklist pass.
-- Any code change beyond evidence/docs bookkeeping without explicit risk re-evaluation.
+- Any code change beyond the explicitly authorized Season Plan presentation-only cleanup without explicit risk re-evaluation.
 - Any ESPN write-path implication, credential/cookie exposure, destructive action, or production-deploy implication without separate authorization.
