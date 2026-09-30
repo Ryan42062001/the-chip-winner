@@ -1,6 +1,6 @@
 # Current Phase
 
-State: PREVIEW_READY
+State: FREEZE_READY
 
 ## Identity
 
@@ -83,6 +83,16 @@ Close the one remaining Release 1.0 field-validation item, `FV-SEASON-01 — Rea
 ## Owner-only verification
 
 Ryan performs the `FV-SEASON-01` check in his real read-only ESPN environment. Do not share or commit ESPN credentials, cookies, private league snapshots, member names, or private mobile-sync links. Capture only privacy-safe observations needed to establish playoff-week/fallback behavior, playoff-opponent availability, bye coverage, and partial/full future-projection behavior.
+
+## Phase Sync evidence
+
+- Whole-phase Season Plan visual preview: APPROVED by Ryan at candidate `b12f5a506e0ca9250ab918391da57e86c2a42fd1`.
+- Owner-only `FV-SEASON-01` verification: COMPLETE. ESPN's real playoff bracket confirmed Round 1 in NFL Week 15 and the Championship in NFL Week 16; the app's matching local fallback preserved source separation and failed closed for missing opponent/bye/projection evidence.
+- Field registry evidence commit: `a917fb9e321ffd95f7f4ab4809158734c51af927`.
+- Field registry status: 11/11 passed; no pending, blocked, or failed items remain.
+- Evidence FAST: run `36656092840` — SUCCESS with 494/494 active tests.
+- Phase remains LOW risk: product changes are presentation-only Season Plan organization plus field-evidence bookkeeping; no domain/provider/security/data-integrity/ESPN-write/deployment behavior changed.
+- Next authorized action: deliberate exact-head FULL PHASE CI. Production deployment remains NOT AUTHORIZED.
 
 ## Exit criteria
 
