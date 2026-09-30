@@ -28,8 +28,8 @@ The product should prefer an honest **not available / insufficient evidence** st
 
 | Priority | Work | State | Outcome |
 | --- | --- | --- | --- |
-| **NOW** | **TCW-P01 — Trade Winner Engine Stabilization & Integration** | **BUILDING** on PR #245 | Trustworthy, sourced, fail-closed trade analysis integrated with the current product |
-| **NEXT** | **Release 1.0 Field Validation** | Evidence gate remains open | Prove the existing read-only product across real ESPN, mobile, accessibility, recovery, sync, waiver, and season states |
+| **NOW** | **Release 1.0 Field Validation** | **Active evidence gate** | Close the remaining real-world validation evidence before the Release 1.0 decision |
+| **NEXT** | **Trade Winner value source & advantage visualization** | **Source-gated planning** | Add an approved compatible package-value source, then an evidence-aware trade advantage meter that stays neutral when trustworthy value evidence is unavailable |
 | **ONGOING** | Weekly projection coverage | Seasonal accumulation | Expand complete multiweek and playoff analysis without weakening identity or completeness rules |
 | **LATER** | Trusted injury/news ecosystem | Gated | Add timely external availability context with licensing, timestamps, provenance, and privacy review |
 | **LATER** | Notifications | Gated | Opt-in, deduplicated, quiet-hours-aware decision alerts |
@@ -63,45 +63,50 @@ The product remains deliberately read-only with respect to ESPN transactions.
 
 ---
 
-## Current execution phase — TCW-P01 Trade Winner
+## Recently completed — TCW-P01 Trade Winner
 
-**Goal:** deliver trustworthy trade analysis without reviving retired Workflow V3/V4 machinery or weakening the product's evidence boundaries.
+**Status:** CLOSED under Speed Workflow V2.1.
 
-Historical implementation source is preserved in closed PR #147 at exact checkpoint:
+PR #245 integrated the Trade Winner engine onto the current product from the historical source checkpoint preserved in closed PR #147:
 
 `22838ac515152db32789e97850f25e1e4576cb82`
 
-TCW-P01 must port only the still-relevant product/test behavior onto the current architecture.
+The final independently audited target was:
 
-### Required product outcome
+`50ef275affc82e06e1a0f6a0e72c01a0fc1c10e0`
 
-Trade Winner should:
+It merged to canonical master as:
 
-- validate that analyzed players belong to the connected league and retain stable identity provenance;
-- compare trade impact using compatible, inspectable inputs rather than a single opaque winner score;
-- distinguish a genuinely viable trade from a numerically attractive but structurally invalid outcome;
-- fail closed when required kickoff/lock evidence is missing, malformed, or untrusted;
-- keep value/projection provenance visible;
-- preserve current lineup, waiver, projection, companion, mobile-sync, and read-only boundaries;
-- remain understandable on desktop and phone;
-- withhold unsupported conclusions rather than converting missing data into certainty.
+`8e3ac9d26f91d4c3c6837063a9e14724b81aabc7`
 
-### Outside TCW-P01
+### Delivered outcome
 
-The current phase does **not** authorize:
+Trade Winner now:
+
+- validates proposal ownership and stable ESPN player identity;
+- separates package-value evidence from roster consequences;
+- fails closed when package-value, kickoff/lock, roster-rule, or reciprocal legality evidence is incomplete;
+- distinguishes structurally viable trades from trades requiring additional roster action;
+- evaluates reciprocal opponent roster-size and position-limit consequences without inventing an opponent drop;
+- preserves source, version, timestamp, freshness, unit, compatibility, and limitation details;
+- remains read-only with no ESPN transaction path;
+- provides a compact desktop/mobile decision-first experience with supporting evidence available by progressive disclosure.
+
+### Persistent boundaries
+
+The completed phase does **not** authorize:
 
 - ESPN trade submission or any other ESPN mutation;
 - production deployment;
-- new external projection providers;
-- restoration of retired V3/V4 control-plane or protected-release machinery;
-- broad Release 1.0 field-validation expansion;
-- unsupported multi-team or league-rule assumptions.
+- unapproved external value/projection providers;
+- restoration of retired V3/V4 control-plane machinery;
+- unsupported winner claims when trustworthy package-value evidence is unavailable.
 
-More advanced trade capabilities may follow only after TCW-P01 proves the core trade engine and interaction model.
+A future trade-advantage meter should move toward either side only when an approved compatible package-value source supports the comparison. Without that evidence, it should remain neutral and explicitly show value unavailable.
 
 ---
 
-## Next gate — Release 1.0 field validation
+## Current gate — Release 1.0 field validation
 
 Automatable production-readiness engineering is substantially complete. Release 1.0 still depends on evidence from real environments.
 
@@ -209,15 +214,16 @@ Already implemented:
 - optional imported SOS context;
 - advanced waiver/future scenario analysis.
 
-Current work:
+Recently completed:
 
-- TCW-P01 Trade Winner.
+- TCW-P01 Trade Winner core analysis and responsive decision experience.
 
 Future possibilities:
 
 - opponent roster needs;
 - recent add/drop patterns;
 - standings and playoff leverage;
+- approved package-value sourcing and an evidence-aware trade advantage visualization;
 - additional trade planning only where league settings and evidence support it;
 - calibrated probabilities only if a separately reviewed model and data contract justify them.
 
