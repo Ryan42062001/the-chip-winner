@@ -135,6 +135,17 @@ Ryan reviews the Trade Analyzer using the real read-only ESPN league and verifie
 - source/provenance/limitations remain inspectable;
 - mobile presentation is compact and readable.
 
+## Owner-only verification
+
+Ryan will perform the real-league read-only Trade Analyzer preview after an approved value source path is integrated. Verification must confirm:
+- the displayed source and as-of/version information match the authorized source configuration;
+- every proposed asset in the tested trade has an explicit source-backed value before a directional meter appears;
+- the meter is neutral and says `Value unavailable` when a value is missing, stale, incompatible, or otherwise withheld;
+- package-value direction does not overwrite or masquerade as actual roster-impact/recommendation logic;
+- no ESPN action is submitted and no credentials/private payloads are committed.
+
+If the approved source uses a manual/local acquisition path, Ryan's private local source data remains outside the public repository; only privacy-safe source metadata and behavior evidence may be recorded.
+
 ## Audit
 
 MEDIUM risk requires one fresh independent phase audit after exact-head FULL passes.
