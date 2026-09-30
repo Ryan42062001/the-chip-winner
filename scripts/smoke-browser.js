@@ -283,8 +283,8 @@ try {
   const incompleteIr = await openIrSeasonPlan(browser, baseSnapshot, { omitProjectionId: "p13" });
   await incompleteIr.page.locator(".plan-disclosures > details > summary").filter({ hasText: /Future projections & coverage/ }).click();
   await incompleteIr.page.getByText("Week 7 · blocked", { exact: true }).waitFor();
+  await incompleteIr.page.locator(".plan-disclosures > details > summary").filter({ hasText: /Waiver & scenario planning/ }).click();
   await incompleteIr.page.getByText(/Baseline roster projection coverage is incomplete/).first().waitFor();
-  await incompleteIr.page.locator(".plan-disclosures > details").filter({ hasText: /Waiver & scenario planning/ }).locator("summary").click();
   await incompleteIr.page.getByText(/move David Njoku to IR · no drop/i).first().waitFor();
   if (incompleteIr.pageErrors.length) throw new Error(`IR incomplete-coverage browser errors: ${incompleteIr.pageErrors.join(" | ")}`);
   await incompleteIr.context.close();
