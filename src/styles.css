@@ -137,3 +137,42 @@ main { min-width:0; }.topbar { min-height:90px; background:rgba(255,255,255,.82)
 .season-intelligence-board .plan-row,.plan-advanced .plan-row,.plan-week,.plan-scenario{min-width:0;overflow-wrap:anywhere}
 .season-intelligence-board .plan-row span,.plan-advanced .plan-row span{min-width:0}
 @media(max-width:760px){.season-core-grid,.plan-advanced-grid,.plan-groups{grid-template-columns:minmax(0,1fr)}.season-core-grid>.panel:last-child{grid-column:auto}.season-intelligence-board .plan-row,.plan-advanced .plan-row{display:block}.season-intelligence-board .plan-row span,.plan-advanced .plan-row span{margin-top:4px}.season-intelligence-board .panel-head,.plan-advanced .panel-head{flex-wrap:wrap}}
+/* Season Outlook uses one primary surface; evidence and roster players open on demand. */
+.season-intelligence-board{margin-bottom:14px}
+.season-outlook{padding:18px 20px;border:1px solid #cbded2;background:linear-gradient(135deg,#f5faf6,#fff 60%)}
+.season-outlook-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.season-outlook-heading h3{font:800 21px Manrope;margin:3px 0 0}
+.season-outlook-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--line)}
+.season-outlook-item{min-width:0;display:grid;align-content:start;gap:4px;padding:12px 14px 10px 0;overflow-wrap:anywhere}
+.season-outlook-item+ .season-outlook-item{padding-left:14px;border-left:1px solid var(--line)}
+.season-outlook-item>span{font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.season-outlook-item>strong{font:800 13px Manrope;color:var(--green)}
+.season-outlook-item>strong.outlook-attention{color:var(--amber)}
+.season-outlook-item>small{font-size:10px;line-height:1.4;color:var(--muted)}
+.season-outlook-sos{grid-column:1/-1;border-top:1px solid var(--line);border-left:0!important;padding:11px 0 0!important;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.season-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;margin-top:12px}
+.season-evidence-grid>.panel{min-width:0;box-shadow:none;border:1px solid var(--line)}
+.season-outlook-controls:not(:has(.horizon-picker)){display:none}
+.season-outlook-controls,.season-evidence{margin-top:8px}
+.plan-depth{margin-bottom:16px}
+.plan-section-intro{margin:0 0 10px;color:var(--muted);font-size:11px}
+.plan-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start}
+.plan-depth-group{min-width:0;border:1px solid var(--line);border-radius:9px;background:white}
+.plan-depth-group>summary{cursor:pointer;min-height:54px;display:grid;grid-template-columns:auto 1fr;gap:3px 9px;align-content:center;padding:9px 12px;list-style:none}
+.plan-depth-group>summary::-webkit-details-marker{display:none}
+.plan-depth-group>summary:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.plan-depth-group>summary strong{grid-row:1/3;align-self:center;font:800 17px Manrope;color:var(--green)}
+.plan-depth-group>summary span{font-size:11px;font-weight:700}
+.plan-depth-group>summary small{font-size:10px;color:var(--muted)}
+.plan-depth-group>summary:after{content:'⌄';grid-column:3;grid-row:1/3;align-self:center;color:var(--green)}
+.plan-depth-group[open]>summary:after{content:'⌃'}
+.plan-depth-group .plan-players{padding:0 12px 10px;border-top:1px solid var(--line)}
+.plan-disclosures{display:grid;gap:7px}
+.plan-disclosures>.plan-disclosure{margin:0;background:#fff;border:1px solid var(--line);border-radius:9px}
+.plan-disclosures>.plan-disclosure>summary{border:0;font-size:12px;padding:12px 16px}
+.plan-disclosures>.plan-disclosure>.plan-disclosure-body{padding:2px 17px 18px;margin:0;overflow-wrap:anywhere}
+.plan-disclosures h3{font:800 12px Manrope;margin:20px 0 9px;padding-top:12px;border-top:1px solid var(--line)}
+.plan-disclosures h3:first-child{margin-top:4px;padding-top:0;border-top:0}
+.plan-disclosures .panel{box-shadow:none;border:1px solid var(--line);margin-top:8px}
+@media(max-width:900px){.season-outlook-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.season-outlook-item:nth-child(3){border-left:0;padding-left:0}.season-outlook-item:nth-child(n+3):not(.season-outlook-sos){border-top:1px solid var(--line)}.plan-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.season-outlook{padding:16px}.season-outlook-heading{flex-wrap:wrap}.season-outlook-grid,.season-evidence-grid,.plan-groups{grid-template-columns:minmax(0,1fr)}.season-outlook-item,.season-outlook-item+ .season-outlook-item,.season-outlook-item:nth-child(3){border-left:0;border-top:1px solid var(--line);padding:10px 0}.season-outlook-item:first-child{border-top:0}.season-outlook-sos{display:grid;gap:4px}.season-evidence-grid .panel-head{flex-wrap:wrap}.plan-depth-group>summary{min-height:54px}}

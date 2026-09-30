@@ -219,16 +219,29 @@ try {
   await page.locator(".external-comparison").getByText(/FantasyPros manual CSV/).waitFor();
   await page.locator(".external-comparison").getByText(/Comparison withheld/).waitFor();
   await page.locator('a[data-section="season"]').click();
+  await page.evaluate(() => window.scrollTo(0, 0));
   const seasonOrder = await page.locator("#app-content").evaluate((root) =>
-    [...root.querySelectorAll(".season-intelligence-board, .plan-boundary, .plan-depth, .plan-advanced")]
-      .map((element) => element.classList.contains("season-intelligence-board") ? "core" : element.classList.contains("plan-boundary") ? "boundary" : element.classList.contains("plan-depth") ? "depth" : "advanced"));
-  if (seasonOrder.join(",") !== "core,boundary,depth,advanced") throw new Error(`Season Plan reading order changed: ${seasonOrder.join(",")}`);
-  if (await page.locator(".season-sos-card").count() !== 1 || await page.locator(".plan-advanced > .season-sos-card").count() !== 1) throw new Error("FantasyPros SOS was not placed after roster depth.");
+    [...root.querySelectorAll(".season-intelligence-board, .plan-depth, .plan-advanced")]
+      .map((element) => element.classList.contains("season-intelligence-board") ? "outlook" : element.classList.contains("plan-depth") ? "depth" : "advanced"));
+  if (seasonOrder.join(",") !== "outlook,depth,advanced") throw new Error(`Season Plan reading order changed: ${seasonOrder.join(",")}`);
+  if (await page.locator(".plan-boundary").count()) throw new Error("Season Plan retained a duplicate playoff-boundary card.");
+  if (await page.locator(".season-outlook-grid .season-outlook-item").count() !== 5) throw new Error("Season Outlook did not render all five summary facts.");
+  if (await page.locator(".plan-depth-group").count() < 2) throw new Error("Compact position summaries are missing.");
+  if (await page.locator(".plan-depth-group[open], .plan-disclosures > details[open], .season-evidence[open]").count()) throw new Error("Season Plan secondary details should start collapsed.");
+  const depthTop = await page.locator(".plan-depth").evaluate((element) => element.getBoundingClientRect().top);
+  if (depthTop > 900) throw new Error(`Roster Depth begins below the initial desktop viewport at ${depthTop}px.`);
+  await page.locator(".season-evidence > summary").click();
+  await page.locator(".season-sos-card").waitFor();
   if (await page.locator(".season-sos-card details[open]").count()) throw new Error("Player-level SOS should start collapsed.");
+  await page.locator(".season-evidence > summary").click();
+  await page.locator(".season-outlook-controls > summary").click();
   const playoffWeek = page.locator('[data-playoff-week="15"]');
   await playoffWeek.focus(); await playoffWeek.press("Space");
   await page.waitForFunction(() => document.querySelector('[data-playoff-week="15"]')?.checked === true);
   if (await playoffWeek.isChecked() === false) throw new Error("Keyboard playoff-week selection did not persist.");
+  await page.setViewportSize({ width: 720, height: 900 });
+  const reflowOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  if (reflowOverflow > 2) throw new Error(`Season Plan 200%-equivalent reflow clips horizontally by ${reflowOverflow}px.`);
   if (pageErrors.length) throw new Error(`Browser page errors: ${pageErrors.join(" | ")}`);
   await desktop.close();
 
@@ -248,7 +261,8 @@ try {
   await menu.click(); await mobilePage.locator('a[data-section="season"]').click();
   const mobileSeasonOverflow = await mobilePage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (mobileSeasonOverflow > 2) throw new Error(`Mobile Season Plan clips horizontally by ${mobileSeasonOverflow}px.`);
-  if (await mobilePage.locator(".season-core-grid").evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length) !== 1) throw new Error("Mobile Season Plan did not collapse to one column.");
+  if (await mobilePage.locator(".season-outlook-grid").evaluate((grid) => getComputedStyle(grid).gridTemplateColumns.split(" ").length) !== 1) throw new Error("Mobile Season Outlook did not collapse to one column.");
+  await mobilePage.locator(".season-outlook-controls > summary").click();
   const mobilePlayoffWeek = mobilePage.locator('[data-playoff-week="16"]');
   await mobilePlayoffWeek.check();
   await mobilePage.waitForFunction(() => document.querySelector('[data-playoff-week="16"]')?.checked === true);

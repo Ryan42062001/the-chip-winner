@@ -147,9 +147,9 @@ export function createSectionRenderer(deps) {
       else if (firstDivider) firstDivider.before(panel);
       else deps.content.append(panel);
       if (context.state?.section === "season") {
-        const sos = panel.querySelector(".season-sos-card");
-        const advanced = deps.content.querySelector(".plan-advanced");
-        if (sos && advanced) advanced.insertBefore(sos, advanced.querySelector(".plan-advanced-grid"));
+        const controls = seasonBoundary?.querySelector(".horizon-picker");
+        if (controls) panel.querySelector(".season-outlook-controls")?.append(controls);
+        seasonBoundary?.remove();
       }
     }
     return result;

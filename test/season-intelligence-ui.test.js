@@ -39,7 +39,7 @@ const snapshot = { players: [{ id: "p1", name: "<Alpha>", position: "RB" }] };
 
 test("season intelligence UI escapes source values and labels source separation", () => {
   const html = renderSeasonPlayoffIntelligence(intelligence(), snapshot);
-  assert.match(html, /Source separation/);
+  assert.match(html, /Season Outlook/);
   assert.match(html, /ESPN owns league state and fantasy opponents/);
   assert.match(html, /&lt;Alpha&gt;/);
   assert.match(html, /&lt;Rival&gt;/);
@@ -68,7 +68,7 @@ test("season intelligence UI keeps FantasyPros SOS optional and explicit", () =>
   assert.match(html, /does not scrape or invent strength-of-schedule ratings/);
 });
 
-test("season intelligence presents core cards in document order and keeps player SOS expandable", () => {
+test("season outlook keeps five primary facts compact and detailed evidence collapsed", () => {
   const value = intelligence({
     scheduleStrength: {
       status: "ready", ratedRosterPlayers: 1, totalRosterPlayers: 1,
@@ -78,9 +78,12 @@ test("season intelligence presents core cards in document order and keeps player
     }
   });
   const html = renderSeasonPlayoffIntelligence(value, snapshot);
-  const markers = ["CORE SEASON / PLAYOFF INTELLIGENCE", "BYE COVERAGE", "PLAYOFF OPPONENTS", "PLAYOFF PROJECTION WINDOW"];
-  assert.deepEqual(markers.map((marker) => html.indexOf(marker)), [...markers.map((marker) => html.indexOf(marker))].sort((a, b) => a - b));
-  assert.match(html, /<div class="season-core-grid">/);
+  for (const label of ["Playoff boundary", "Bye coverage", "ESPN playoff opponents", "Playoff projections", "FantasyPros SOS · independent advisory"]) assert.match(html, new RegExp(label));
+  assert.match(html, /ESPN league setting/);
+  assert.match(html, /1\/2 weeks reported/);
+  assert.match(html, /1\/2 usable · aggregate withheld/);
+  assert.match(html, /<details class="plan-disclosure season-evidence"><summary>Playoff, bye and FantasyPros evidence/);
+  assert.doesNotMatch(html, /<details[^>]* open/);
   assert.match(html, /<details class="plan-disclosure"><summary>Player-level FantasyPros SOS/);
   assert.match(html, /&lt;Alpha&gt;/);
   assert.match(html, /FantasyPros imported advisory only/);
@@ -95,5 +98,7 @@ test("section renderer wires season intelligence through the wrapper instead of 
   assert.match(wrapper, /espnPlayoffWeeks \|\|/);
   assert.doesNotMatch(base, /buildSeasonPlayoffIntelligence/);
   assert.match(base, /plan-boundary.*plan-depth.*plan-advanced/s);
-  assert.match(wrapper, /advanced\.insertBefore\(sos/);
+  assert.match(base, /<details class="plan-depth-group">/);
+  assert.match(base, /Future projections & coverage.*Waiver & scenario planning.*Source & diagnostic details/s);
+  assert.match(wrapper, /season-outlook-controls/);
 });
