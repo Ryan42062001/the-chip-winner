@@ -93,9 +93,11 @@
       "id": "FV-SEASON-01",
       "area": "season-playoff",
       "title": "Real playoff and bye intelligence states",
-      "status": "pending",
-      "evidence": [],
-      "notes": "Validate ESPN playoff-week boundaries or labeled local fallback, fantasy playoff opponents, bye coverage, and partial/full future projection behavior against real league state."
+      "status": "passed",
+      "evidence": [
+        "2026-09-29: Owner-operated real ESPN playoff bracket showed Round 1 in NFL Week 15 and the league championship in NFL Week 16. In the read-only local TCW-P02 Season Plan, the matching local fallback Weeks 15 and 16 were explicitly labeled as a Local browser setting that does not change ESPN; bye coverage remained Partial evidence when bye facts were incomplete; ESPN playoff-opponent coverage reported 0/2 weeks with Weeks 15 and 16 explicitly missing rather than inferred; playoff projections reported 0/2 usable with aggregate withheld and both weeks blocked because complete mapped future projection coverage was unavailable; FantasyPros SOS remained independently attributed; regular-season ESPN schedule facts remained source-separated."
+      ],
+      "notes": "Passed using real ESPN playoff-bracket confirmation for Weeks 15-16 plus owner-operated read-only TCW-P02 validation of local fallback labeling, partial bye evidence, missing-opponent withholding, incomplete-projection withholding, and FantasyPros source separation. No ESPN transaction or private authenticated payload was committed."
     },
     {
       "id": "FV-RECOVERY-01",
