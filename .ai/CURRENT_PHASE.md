@@ -1,6 +1,6 @@
 # Current Phase
 
-State: PREVIEW_READY
+State: PUNCH_LIST
 
 ## Identity
 
@@ -151,6 +151,29 @@ Ryan will perform the real-league read-only Trade Analyzer preview after an appr
 - no ESPN action is submitted and no credentials/private payloads are committed.
 
 If the approved source uses a manual/local acquisition path, Ryan's private local source data remains outside the public repository; only privacy-safe source metadata and behavior evidence may be recorded.
+
+## Manager punch list — UI-01 source-profile usability
+
+Exact reviewed candidate: `965eb54f6759c30c2d95e179cf505a62fb2a93be`
+
+Blocking finding:
+
+The current bounded FantasyCalc path requires `snapshot.league.tePremium` to be an explicit boolean before package value can become READY. The browser smoke itself currently validates the resulting `ESPN_TE_PREMIUM_UNRESOLVED` withheld state. For ordinary ESPN captures where an explicit TE-premium boolean is not available, the owner can enter complete FantasyCalc values but the Trade Advantage meter can never leave `Value unavailable`.
+
+Required remediation:
+
+- preserve fail-closed behavior;
+- do not assume missing ESPN TE-premium means false;
+- add a clearly labeled, browser-local, league+season-scoped owner confirmation for the league TE-premium setting when ESPN does not authoritatively provide it;
+- this local confirmation must be distinct from the FantasyCalc provider profile selection and must say it does not change ESPN;
+- compare the FantasyCalc TE-premium profile against ESPN when ESPN is authoritative, otherwise against the explicit local league confirmation;
+- without ESPN authority or local confirmation, remain WITHHELD;
+- changing/clearing the local league confirmation must invalidate stale analysis and incompatible captures;
+- no network/API/provider expansion;
+- add focused tests for ESPN-authoritative true/false, local fallback true/false, no confirmation => WITHHELD, profile mismatch => WITHHELD, and league/season scoping;
+- update browser smoke so it proves both the unresolved fail-closed path and a fully READY manual FantasyCalc path.
+
+No other product/domain expansion is authorized by this punch list.
 
 ## Audit
 
