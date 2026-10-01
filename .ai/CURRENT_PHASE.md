@@ -1,6 +1,6 @@
 # Current Phase
 
-State: PUNCH_LIST
+State: PREVIEW_READY
 
 ## Identity
 
@@ -153,6 +153,10 @@ Ryan will perform the real-league read-only Trade Analyzer preview after an appr
 If the approved source uses a manual/local acquisition path, Ryan's private local source data remains outside the public repository; only privacy-safe source metadata and behavior evidence may be recorded.
 
 ## Manager punch list — UI-01 source-profile usability
+
+Builder remediation status: **COMPLETE — PREVIEW_READY; Manager review and Ryan visual preview pending.**
+
+The remediation preserves ESPN authority, adds only a league+season-scoped local browser confirmation when ESPN is unresolved, keeps that confirmation separate from the FantasyCalc provider profile, and invalidates stale analysis on change/clear. FULL, freeze, merge, and deployment remain unauthorized.
 
 Exact reviewed candidate: `965eb54f6759c30c2d95e179cf505a62fb2a93be`
 

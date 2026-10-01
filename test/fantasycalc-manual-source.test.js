@@ -9,7 +9,7 @@ const AS_OF = new Date(NOW).toISOString();
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 function snapshot(overrides = {}) {
   return {
-    league: { season: 2026, scoringType: "H2H_POINTS", receptionScoring: { family: "ppr", pointsPerReception: 1 }, tePremium: false,
+    league: { id: "league-a", season: 2026, scoringType: "H2H_POINTS", receptionScoring: { family: "ppr", pointsPerReception: 1 }, tePremium: false,
       lineupSlots: [{ slot: "QB", count: 1 }, { slot: "RB", count: 2 }, { slot: "BE", count: 4 }], ...overrides.league },
     teams: Array.from({ length: overrides.teamCount || 10 }, (_, i) => ({ id: String(i) })),
     players: [{ id: "a", position: "RB" }, { id: "b", position: "WR" }, { id: "x", position: "RB" }, { id: "k", position: "K" }]
@@ -28,10 +28,11 @@ function capture(values, overrides = {}) {
 }
 function evaluate(values, options = {}) {
   const snap = options.snapshot || snapshot();
-  const source = createFantasyCalcManualSource(snap, options.capture || capture(values));
+  const source = createFantasyCalcManualSource(snap, options.capture || capture(values), options.leagueTePremiumConfirmation || null);
   return evaluatePackageValue({ snapshot: snap, outgoingPlayerIds: options.outgoing || ["a"], incomingPlayerIds: options.incoming || ["x"], sources: [source], now: options.now || NOW });
 }
 function reason(result, pattern) { assert.equal(result.status, "WITHHELD"); assert.match(result.reasons.join(" "), pattern); assert.equal(result.displayedSplit, null); }
+const confirmation = (tePremium, leagueId = "league-a", season = 2026) => ({ tePremium, leagueId, season });
 
 test("manual FantasyCalc share uses exact math with inclusive fair boundaries and symmetric direction", () => {
   for (const [send, receive, expected] of [[50,50,"FAIR_TRADE"],[55,45,"FAIR_TRADE"],[45,55,"FAIR_TRADE"],[44.99,55.01,"YOU_WIN"],[55.01,44.99,"THEY_WIN"]]) {
@@ -80,6 +81,76 @@ test("profile compatibility is strict for PPR, team count, QB format and TE prem
   reason(evaluate({ a:20, x:30 }, { snapshot:snapshot({ league:{ receptionScoring:{ family:"custom", pointsPerReception:0.25 } } }) }), /ESPN_PPR_PROFILE_UNRESOLVED/);
   reason(evaluate({ a:20, x:30 }, { snapshot:snapshot({ league:{ lineupSlots:[] } }) }), /ESPN_QB_PROFILE_UNRESOLVED/);
   reason(evaluate({ a:20, x:30 }, { snapshot:snapshot({ league:{ tePremium:null } }) }), /ESPN_TE_PREMIUM_UNRESOLVED/);
+});
+
+test("ESPN authoritative TE-premium true and false override conflicting local fallback", () => {
+  const trueSnapshot = snapshot({ league:{ tePremium:true } });
+  const trueResult = evaluate({}, {
+    snapshot:trueSnapshot,
+    capture:capture({ a:20, x:30 }, { profile:{ tePremium:true } }),
+    leagueTePremiumConfirmation:confirmation(false)
+  });
+  assert.equal(trueResult.status, "READY");
+  const falseResult = evaluate({ a:20, x:30 }, { leagueTePremiumConfirmation:confirmation(true) });
+  assert.equal(falseResult.status, "READY");
+});
+
+test("local league TE-premium fallback accepts explicit true and false only when ESPN is unresolved", () => {
+  const unresolved = snapshot({ league:{ tePremium:null } });
+  assert.equal(evaluate({}, {
+    snapshot:unresolved,
+    capture:capture({ a:20, x:30 }, { profile:{ tePremium:true } }),
+    leagueTePremiumConfirmation:confirmation(true)
+  }).status, "READY");
+  assert.equal(evaluate({ a:20, x:30 }, {
+    snapshot:unresolved,
+    leagueTePremiumConfirmation:confirmation(false)
+  }).status, "READY");
+});
+
+test("no ESPN TE-premium authority and no local confirmation stays withheld", () => {
+  reason(evaluate({ a:20, x:30 }, { snapshot:snapshot({ league:{ tePremium:null } }) }), /ESPN_TE_PREMIUM_UNRESOLVED/);
+});
+
+test("local league TE-premium/profile mismatch stays withheld", () => {
+  reason(evaluate({ a:20, x:30 }, {
+    snapshot:snapshot({ league:{ tePremium:null } }),
+    leagueTePremiumConfirmation:confirmation(true)
+  }), /TE_PREMIUM_INCOMPATIBLE/);
+});
+
+test("local league TE-premium fallback is isolated by ESPN league id and season", () => {
+  const unresolved = snapshot({ league:{ tePremium:null } });
+  const matchingCapture = capture({ a:20, x:30 }, { profile:{ tePremium:true } });
+  reason(evaluate({}, {
+    snapshot:unresolved,
+    capture:matchingCapture,
+    leagueTePremiumConfirmation:confirmation(true, "league-b", 2026)
+  }), /ESPN_TE_PREMIUM_UNRESOLVED/);
+  reason(evaluate({}, {
+    snapshot:unresolved,
+    capture:matchingCapture,
+    leagueTePremiumConfirmation:confirmation(true, "league-a", 2027)
+  }), /ESPN_TE_PREMIUM_UNRESOLVED/);
+});
+
+test("changing or clearing local league TE-premium re-gates a previously READY capture", () => {
+  const unresolved = snapshot({ league:{ tePremium:null } });
+  const sameCapture = capture({ a:20, x:30 });
+  assert.equal(evaluate({}, {
+    snapshot:unresolved,
+    capture:sameCapture,
+    leagueTePremiumConfirmation:confirmation(false)
+  }).status, "READY");
+  reason(evaluate({}, {
+    snapshot:unresolved,
+    capture:sameCapture,
+    leagueTePremiumConfirmation:confirmation(true)
+  }), /TE_PREMIUM_INCOMPATIBLE/);
+  reason(evaluate({}, {
+    snapshot:unresolved,
+    capture:sameCapture
+  }), /ESPN_TE_PREMIUM_UNRESOLVED/);
 });
 
 test("24-hour freshness and 60-second future skew preserve exact boundaries", () => {

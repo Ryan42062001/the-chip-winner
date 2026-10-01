@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { renderTradeAnalysisResult } from "../src/ui/trade-analyzer.js";
+import { readLocalLeagueTePremium, renderTradeAnalysisResult, saveLocalLeagueTePremium } from "../src/ui/trade-analyzer.js";
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
 const snapshot = { players: [
@@ -193,4 +193,30 @@ test("TCW-P01 mobile result offers one summary, collapsed evidence, and labeled 
   assert.match(styles, /\.trade-impact-body td:before\{content:attr\(data-label\)/);
   assert.match(styles, /\.trade-impact-body \.table-wrap\{overflow:visible/);
   assert.match(html, /class="trade-mobile-technical"/);
+});
+
+
+test("local league TE-premium confirmation storage is isolated by ESPN league id and season", () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.has(key) ? values.get(key) : null,
+    setItem: (key, value) => values.set(key, String(value)),
+    removeItem: (key) => values.delete(key)
+  };
+  saveLocalLeagueTePremium(storage, "league-a", 2026, true);
+  assert.equal(readLocalLeagueTePremium(storage, "league-a", 2026), true);
+  assert.equal(readLocalLeagueTePremium(storage, "league-b", 2026), null);
+  assert.equal(readLocalLeagueTePremium(storage, "league-a", 2027), null);
+  saveLocalLeagueTePremium(storage, "league-a", 2026, false);
+  assert.equal(readLocalLeagueTePremium(storage, "league-a", 2026), false);
+  saveLocalLeagueTePremium(storage, "league-a", 2026, null);
+  assert.equal(readLocalLeagueTePremium(storage, "league-a", 2026), null);
+});
+
+test("Trade Analyzer labels connected league TE premium separately from the FantasyCalc source profile", async () => {
+  const source = await readFile(new URL("../src/ui/trade-analyzer.js", import.meta.url), "utf8");
+  assert.match(source, /Connected league TE premium/);
+  assert.match(source, /Local browser setting — does not change ESPN/);
+  assert.match(source, /FantasyCalc TE premium profile/);
+  assert.match(source, /ESPN reported this setting\. It is authoritative and the browser fallback cannot override it\./);
 });

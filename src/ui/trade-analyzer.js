@@ -2,6 +2,28 @@ import { analyzeTrade, buildTradeOwnershipIndex, isUniquelyOwnedByTeam } from ".
 import { createFantasyCalcManualSource } from "../domain/fantasycalc-manual-source.js";
 
 const LOCAL_VALUE_KEY = "chip-winner:fantasycalc-manual:v1";
+const LOCAL_LEAGUE_TEP_KEY_PREFIX = "chip-winner:espn-league-te-premium:v1";
+
+export function leagueTePremiumStorageKey(leagueId, season) {
+  return `${LOCAL_LEAGUE_TEP_KEY_PREFIX}:${encodeURIComponent(String(leagueId ?? ""))}:${encodeURIComponent(String(season ?? ""))}`;
+}
+export function readLocalLeagueTePremium(storage, leagueId, season) {
+  if (leagueId == null || !Number.isInteger(season)) return null;
+  try {
+    const value = storage?.getItem(leagueTePremiumStorageKey(leagueId, season));
+    if (value === "true") return true;
+    if (value === "false") return false;
+  } catch { /* Browser-local league confirmation is optional evidence. */ }
+  return null;
+}
+export function saveLocalLeagueTePremium(storage, leagueId, season, value) {
+  if (leagueId == null || !Number.isInteger(season)) return;
+  try {
+    const key = leagueTePremiumStorageKey(leagueId, season);
+    if (typeof value === "boolean") storage?.setItem(key, String(value));
+    else storage?.removeItem(key);
+  } catch { /* Browser-local league confirmation is optional evidence. */ }
+}
 function readLocalCapture(leagueId, season, teamId) {
   try {
     const stored = JSON.parse(localStorage.getItem(LOCAL_VALUE_KEY) || "null");
@@ -149,6 +171,7 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
   let boundTeamId = null;
   let manualCapture = null;
   let draftProfile = null;
+  let localLeagueTePremium = null;
 
   function contextInputs() {
     const context = getContext();
@@ -199,6 +222,7 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
       boundTeamId = state.selectedTeamId;
       manualCapture = readLocalCapture(state.snapshot.league?.id, state.snapshot.league?.season, state.selectedTeamId);
       draftProfile = manualCapture?.profile || defaultManualProfile(state.snapshot);
+      localLeagueTePremium = readLocalLeagueTePremium(typeof localStorage === "undefined" ? null : localStorage, state.snapshot.league?.id, state.snapshot.league?.season);
     }
     const teams = state.snapshot.teams || [];
     const myTeam = teams.find((team) => team.id === state.selectedTeamId);
@@ -234,6 +258,13 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
       ...proposal.incomingPlayerIds.map((id) => [id, "You receive"])
     ].map(([id, side]) => `<label class="trade-value-player"><span>${escapeHtml(side)} · ${escapeHtml(playerName(playerMap, id))} <small>ESPN ID ${escapeHtml(id)}</small></span><input type="number" min="0" step="any" inputmode="decimal" data-manual-player-id="${escapeHtml(id)}" aria-label="FantasyCalc value for ${escapeHtml(playerName(playerMap, id))}" value="${escapeHtml(manualCapture?.values?.[id]?.value ?? "")}" ${manualCapture ? "" : "disabled"}></label>`).join("");
     const showDrops = result?.analysisState === "ROSTER_ACTION_REQUIRED" || proposal.plannedFollowUpDropIds.length > 0;
+    const espnTePremium = typeof state.snapshot.league?.tePremium === "boolean" ? state.snapshot.league.tePremium : null;
+    const effectiveLeagueTePremium = espnTePremium ?? localLeagueTePremium;
+    const leagueTePremiumStatus = espnTePremium !== null
+      ? `${espnTePremium ? "Yes" : "No"} · ESPN authoritative`
+      : typeof localLeagueTePremium === "boolean"
+        ? `${localLeagueTePremium ? "Yes" : "No"} · local browser confirmation`
+        : "Not confirmed · value withheld";
 
     content.innerHTML = `<div class="page-head"><div><p class="eyebrow">READ-ONLY TEAM CONSEQUENCE ANALYSIS</p><h2>Trade Analyzer</h2><p>Select one real opposing ESPN team and build a hypothetical player-for-player package. No trade is sent to ESPN.</p></div><span class="week-pill">ESPN snapshot · Week ${escapeHtml(String(state.snapshot.currentWeek ?? "unknown"))}</span></div>
       <article class="panel trade-proposal" aria-labelledby="trade-proposal-title"><div class="panel-head"><div><p class="eyebrow">PROPOSAL CONTROLS</p><h3 id="trade-proposal-title">Build the trade</h3></div><span class="quality fresh">Read-only</span></div>
@@ -251,7 +282,7 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
         </section>
       </div>
       <div class="trade-objective-control"><label>Team objective<select id="trade-objective"><option value="BALANCED" ${proposal.teamObjective === "BALANCED" ? "selected" : ""}>Balanced</option><option value="CURRENT_WEEK_STABILITY" ${proposal.teamObjective === "CURRENT_WEEK_STABILITY" ? "selected" : ""}>Current-week stability</option><option value="FUTURE_UPSIDE" ${proposal.teamObjective === "FUTURE_UPSIDE" ? "selected" : ""}>Future upside</option></select></label></div>
-      <section class="trade-value-entry" aria-labelledby="trade-value-entry-title"><div class="trade-value-entry-head"><div><p class="eyebrow">LOCAL PACKAGE ASSET VALUES</p><h4 id="trade-value-entry-title">FantasyCalc · Redraft</h4></div><span class="quality ${manualCapture ? "fresh" : "unknown"}">${manualCapture ? "Captured locally" : "No capture"}</span></div><p class="data-note">Copy values for the selected ESPN players from the same FantasyCalc Redraft view. A new capture clears prior values. Values stay in this browser and are never sent to ESPN.</p><div class="trade-value-profile"><label>Teams<input data-manual-profile="teamCount" type="number" min="2" max="32" step="1" value="${escapeHtml(draftProfile.teamCount)}"></label><label>Reception scoring<select data-manual-profile="ppr">${profileOptions(draftProfile.ppr, [["", "Select"], ["STANDARD", "Standard"], ["HALF_PPR", "Half-PPR"], ["PPR", "PPR"]], escapeHtml)}</select></label><label>QB format<select data-manual-profile="qbFormat">${profileOptions(draftProfile.qbFormat, [["", "Select"], ["1QB", "1QB"], ["SUPERFLEX", "Superflex"]], escapeHtml)}</select></label><label>TE premium<select data-manual-profile="tePremium">${profileOptions(draftProfile.tePremium, [["", "Select"], ["false", "Off"], ["true", "On"]], escapeHtml)}</select></label></div><div class="trade-value-capture"><button class="button secondary" type="button" id="trade-new-value-capture">Start new capture</button><span>${manualCapture ? `Captured ${escapeHtml(manualCapture.asOf)} · one session` : "Start a capture before entering values."}</span></div><div class="trade-value-players">${manualValues || '<p class="data-note">Select send and receive players to enter their values.</p>'}</div><p class="data-note">ESPN PPR: ${escapeHtml(state.snapshot.league?.receptionScoring?.family || "unavailable")} · QB slots: ${escapeHtml(JSON.stringify(state.snapshot.league?.lineupSlots?.filter((item) => ["QB", "OP"].includes(item.slot)) || []))} · ESPN TE premium: ${typeof state.snapshot.league?.tePremium === "boolean" ? state.snapshot.league.tePremium ? "On" : "Off" : "unverified; value withheld"}. The source profile must match every setting.</p></section>
+      <section class="trade-value-entry" aria-labelledby="trade-value-entry-title"><div class="trade-value-entry-head"><div><p class="eyebrow">LOCAL PACKAGE ASSET VALUES</p><h4 id="trade-value-entry-title">FantasyCalc · Redraft</h4></div><span class="quality ${manualCapture ? "fresh" : "unknown"}">${manualCapture ? "Captured locally" : "No capture"}</span></div><p class="data-note">Copy values for the selected ESPN players from the same FantasyCalc Redraft view. A new capture clears prior values. Values stay in this browser and are never sent to ESPN.</p><div class="trade-league-setting"><label>Connected league TE premium<select id="trade-league-te-premium" aria-label="Connected league TE premium" ${espnTePremium !== null ? "disabled" : ""}>${profileOptions(effectiveLeagueTePremium ?? "", [["", "Not confirmed"], ["false", "No"], ["true", "Yes"]], escapeHtml)}</select></label><p class="data-note">${espnTePremium !== null ? "ESPN reported this setting. It is authoritative and the browser fallback cannot override it." : "Local browser setting — does not change ESPN. Saved only for this ESPN league and season."}</p></div><div class="trade-value-profile"><label>Teams<input data-manual-profile="teamCount" type="number" min="2" max="32" step="1" value="${escapeHtml(draftProfile.teamCount)}"></label><label>Reception scoring<select data-manual-profile="ppr">${profileOptions(draftProfile.ppr, [["", "Select"], ["STANDARD", "Standard"], ["HALF_PPR", "Half-PPR"], ["PPR", "PPR"]], escapeHtml)}</select></label><label>QB format<select data-manual-profile="qbFormat">${profileOptions(draftProfile.qbFormat, [["", "Select"], ["1QB", "1QB"], ["SUPERFLEX", "Superflex"]], escapeHtml)}</select></label><label>FantasyCalc TE premium profile<select data-manual-profile="tePremium">${profileOptions(draftProfile.tePremium, [["", "Select"], ["false", "Off"], ["true", "On"]], escapeHtml)}</select></label></div><div class="trade-value-capture"><button class="button secondary" type="button" id="trade-new-value-capture">Start new capture</button><span>${manualCapture ? `Captured ${escapeHtml(manualCapture.asOf)} · one session` : "Start a capture before entering values."}</span></div><div class="trade-value-players">${manualValues || '<p class="data-note">Select send and receive players to enter their values.</p>'}</div><p class="data-note">ESPN PPR: ${escapeHtml(state.snapshot.league?.receptionScoring?.family || "unavailable")} · QB slots: ${escapeHtml(JSON.stringify(state.snapshot.league?.lineupSlots?.filter((item) => ["QB", "OP"].includes(item.slot)) || []))} · Connected league TE premium: ${escapeHtml(leagueTePremiumStatus)}. The FantasyCalc source profile must match every setting.</p></section>
       ${showDrops ? `<div class="section-divider"><span>FOLLOW-UP ROSTER ACTION</span></div><p class="data-note">Choose an explicit follow-up drop only when the known roster rules require another removal. The analyzer never chooses one silently.</p><div class="connection-form"><label>Planned follow-up drop<select id="trade-drop-select" aria-label="Follow-up drop">${optionRows(dropChoices, dropChoices[0]?.id, escapeHtml)}</select></label><button class="button secondary" id="trade-add-drop" type="button" ${dropChoices.length ? "" : "disabled"}>Add follow-up drop</button></div><div class="sync-actions">${proposal.plannedFollowUpDropIds.map((id) => selectedChip(id, "plannedFollowUpDropIds", "follow-up drops")).join("")}</div>` : ""}
       <div class="sync-actions"><button class="button primary" id="trade-analyze" type="button">Analyze proposed trade</button><button class="button secondary" id="trade-reset" type="button">Reset proposal</button></div><p class="data-note">Future window: ${futureWeeks.length ? `Weeks ${futureWeeks.join(", ")}` : "no complete imported selection configured"}. Playoff window: ${playoffWeeks.length ? `Weeks ${playoffWeeks.join(", ")}` : "not configured"}.</p></article>
       ${viewError ? `<article class="panel" role="alert"><h3>Trade analysis unavailable</h3><p>${escapeHtml(viewError)}</p></article>` : ""}
@@ -276,6 +307,14 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
     content.querySelector("#trade-add-drop")?.addEventListener("click", () => mutate("plannedFollowUpDropIds", content.querySelector("#trade-drop-select")?.value, true));
     content.querySelectorAll("[data-trade-remove]").forEach((button) => button.addEventListener("click", () => mutate(button.dataset.tradeRemove, button.dataset.playerIdValue, false)));
     content.querySelector("#trade-objective")?.addEventListener("change", (event) => { proposal.teamObjective = event.target.value; result = null; viewError = null; render(); });
+    content.querySelector("#trade-league-te-premium")?.addEventListener("change", (event) => {
+      if (typeof state.snapshot.league?.tePremium === "boolean") return;
+      localLeagueTePremium = event.target.value === "" ? null : event.target.value === "true";
+      saveLocalLeagueTePremium(typeof localStorage === "undefined" ? null : localStorage, state.snapshot.league?.id, state.snapshot.league?.season, localLeagueTePremium);
+      result = null;
+      viewError = null;
+      render();
+    });
     content.querySelectorAll("[data-manual-profile]").forEach((control) => control.addEventListener("change", () => {
       const selected = Object.fromEntries([...content.querySelectorAll("[data-manual-profile]")].map((item) => [item.dataset.manualProfile, item.value]));
       draftProfile = {
@@ -315,7 +354,12 @@ export function createTradeAnalyzerView({ content, getContext, escapeHtml }) {
           render();
           return;
         }
-        const tradeValueSources = manualCapture ? [createFantasyCalcManualSource(state.snapshot, manualCapture)] : [];
+        const leagueTePremiumConfirmation = typeof localLeagueTePremium === "boolean" ? {
+          leagueId: String(state.snapshot.league?.id ?? ""),
+          season: state.snapshot.league?.season,
+          tePremium: localLeagueTePremium
+        } : null;
+        const tradeValueSources = manualCapture ? [createFantasyCalcManualSource(state.snapshot, manualCapture, leagueTePremiumConfirmation)] : [];
         result = analyzeTrade(state.snapshot, state.selectedTeamId, proposal, { futureProjectionSet, identityMap: projectionIdentityMap, futureWeeks, playoffWeeks, tradeValueSources });
         viewError = null;
       } catch {

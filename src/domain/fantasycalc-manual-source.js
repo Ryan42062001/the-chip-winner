@@ -19,6 +19,20 @@ function espnQbFormat(league) {
   return qb > 1 || op > 0 ? "SUPERFLEX" : "1QB";
 }
 
+export function resolveFantasyCalcLeagueTePremium(snapshot, confirmation = null) {
+  const espnValue = snapshot?.league?.tePremium;
+  if (typeof espnValue === "boolean") return Object.freeze({ value: espnValue, authority: "ESPN" });
+  const leagueId = snapshot?.league?.id == null ? null : String(snapshot.league.id);
+  const season = snapshot?.league?.season;
+  const localMatches = Boolean(leagueId)
+    && typeof confirmation?.tePremium === "boolean"
+    && String(confirmation.leagueId ?? "") === leagueId
+    && confirmation.season === season;
+  return Object.freeze(localMatches
+    ? { value: confirmation.tePremium, authority: "LOCAL_BROWSER" }
+    : { value: null, authority: "UNRESOLVED" });
+}
+
 export function fantasyCalcProfileReasons(source, snapshot, assetIds) {
   const profile = source?.profile || {};
   const league = snapshot?.league || {};
@@ -31,8 +45,9 @@ export function fantasyCalcProfileReasons(source, snapshot, assetIds) {
   const qb = espnQbFormat(league);
   if (!qb) reasons.push("ESPN_QB_PROFILE_UNRESOLVED");
   if (!["1QB", "SUPERFLEX"].includes(profile.qbFormat) || (qb && profile.qbFormat !== qb)) reasons.push("QB_PROFILE_INCOMPATIBLE");
-  if (typeof league.tePremium !== "boolean") reasons.push("ESPN_TE_PREMIUM_UNRESOLVED");
-  if (typeof profile.tePremium !== "boolean" || (typeof league.tePremium === "boolean" && profile.tePremium !== league.tePremium)) reasons.push("TE_PREMIUM_INCOMPATIBLE");
+  const leagueTePremium = resolveFantasyCalcLeagueTePremium(snapshot, source?.leagueTePremiumConfirmation);
+  if (leagueTePremium.value === null) reasons.push("ESPN_TE_PREMIUM_UNRESOLVED");
+  if (typeof profile.tePremium !== "boolean" || (leagueTePremium.value !== null && profile.tePremium !== leagueTePremium.value)) reasons.push("TE_PREMIUM_INCOMPATIBLE");
   const teamCount = Array.isArray(snapshot?.teams) ? snapshot.teams.length : null;
   if (!Number.isInteger(teamCount) || teamCount < 2 || !Number.isInteger(profile.teamCount) || profile.teamCount !== teamCount) reasons.push("TEAM_COUNT_INCOMPATIBLE");
   if (!Number.isInteger(league.season) || source?.league?.season !== league.season || source?.league?.scoringType !== league.scoringType) reasons.push("LEAGUE_PROFILE_INCOMPATIBLE");
@@ -44,7 +59,7 @@ export function fantasyCalcProfileReasons(source, snapshot, assetIds) {
   return [...new Set(reasons)];
 }
 
-export function createFantasyCalcManualSource(snapshot, capture) {
+export function createFantasyCalcManualSource(snapshot, capture, leagueTePremiumConfirmation = null) {
   const profile = capture?.profile || {};
   const profileKey = JSON.stringify([profile.teamCount, profile.ppr, profile.qbFormat, profile.tePremium]);
   const values = Object.create(null);
@@ -67,6 +82,11 @@ export function createFantasyCalcManualSource(snapshot, capture) {
     mode: "REDRAFT",
     profile: { provider: "FantasyCalc", mode: "REDRAFT", ...profile },
     profileKey,
+    leagueTePremiumConfirmation: typeof leagueTePremiumConfirmation?.tePremium === "boolean" ? {
+      leagueId: String(leagueTePremiumConfirmation.leagueId ?? ""),
+      season: leagueTePremiumConfirmation.season,
+      tePremium: leagueTePremiumConfirmation.tePremium
+    } : null,
     league: {
       season: snapshot?.league?.season,
       scoringType: snapshot?.league?.scoringType,

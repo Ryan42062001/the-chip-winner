@@ -71,7 +71,13 @@ try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
   const pageErrors = [];
+  const espnMutationRequests = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("request", (request) => {
+    if (!["GET", "HEAD"].includes(request.method()) && /espn/i.test(request.url())) {
+      espnMutationRequests.push(`${request.method()} ${request.url()}`);
+    }
+  });
   await page.goto(origin, { waitUntil: "networkidle" });
   await page.locator("#onboarding-dialog").waitFor();
   await page.getByRole("button", { name: "Explore sample" }).click();
@@ -114,6 +120,9 @@ try {
   const livePackageText = await page.locator(".trade-decision-facts > div").first().innerText();
   if (/YOU WIN|FAIR TRADE|THEY WIN|\b\d{1,3}\/\d{1,3}\b/.test(livePackageText)) throw new Error("Live Trade Analyzer exposed a winner or numeric split without an approved package-value source.");
   if (await page.locator(".trade-advantage.is-withheld .trade-advantage-track span").count()) throw new Error("Withheld asset value rendered a directional meter.");
+  await page.locator('[data-manual-profile="tePremium"]').selectOption("false");
+  await page.getByText(/Local browser setting — does not change ESPN/).waitFor();
+  if (await page.locator("#trade-league-te-premium").inputValue() !== "") throw new Error("Unresolved ESPN TE premium was silently defaulted in the local league control.");
   await page.getByRole("button", { name: "Start new capture" }).click();
   const outgoingId = await page.locator('[data-trade-remove="outgoingPlayerIds"]').first().getAttribute("data-player-id-value");
   const incomingId = await page.locator('[data-trade-remove="incomingPlayerIds"]').first().getAttribute("data-player-id-value");
@@ -123,8 +132,37 @@ try {
   await page.locator(`[data-manual-player-id="${incomingId}"]`).blur();
   await page.getByRole("button", { name: "Analyze proposed trade" }).click();
   await page.locator(".trade-advantage.is-withheld").waitFor();
+  await page.locator(".trade-advantage.is-withheld").getByText("Value unavailable", { exact:true }).waitFor();
+  if (await page.locator(".trade-advantage.is-withheld .trade-advantage-track span").count()) throw new Error("Unresolved league TE premium rendered a directional meter.");
   await page.locator(".trade-value-provenance > summary").click();
   await page.locator(".trade-value-provenance").getByText(/ESPN_TE_PREMIUM_UNRESOLVED/).waitFor();
+
+  const leagueTep = page.locator("#trade-league-te-premium");
+  await leagueTep.selectOption("false");
+  if (await page.locator("#trade-results-title").count()) throw new Error("Changing local league TE premium did not invalidate the previous analysis.");
+  await page.getByRole("button", { name: "Analyze proposed trade" }).click();
+  await page.locator(".trade-advantage.is-you-win").waitFor();
+  if (await page.locator(".trade-advantage.is-you-win .trade-advantage-track span").count() !== 1) throw new Error("READY manual FantasyCalc analysis did not render the directional meter.");
+  await page.locator(".trade-package-source").getByText(/fantasycalc-manual-redraft/).waitFor();
+  await page.locator(".trade-value-provenance > summary").click();
+  await page.locator(".trade-value-provenance").getByText(/Profile: .*TE premium false/).waitFor();
+  await page.getByText(/No ESPN trade mutation/i).waitFor();
+  if (espnMutationRequests.length) throw new Error(`Trade Analyzer issued an ESPN mutation request: ${espnMutationRequests.join(" | ")}`);
+
+  await leagueTep.selectOption("true");
+  if (await page.locator("#trade-results-title").count()) throw new Error("Changing local league TE premium left a stale READY result visible.");
+  await page.getByRole("button", { name: "Analyze proposed trade" }).click();
+  await page.locator(".trade-advantage.is-withheld").waitFor();
+  await page.locator(".trade-value-provenance > summary").click();
+  await page.locator(".trade-value-provenance").getByText(/TE_PREMIUM_INCOMPATIBLE/).waitFor();
+
+  await leagueTep.selectOption("");
+  if (await page.locator("#trade-results-title").count()) throw new Error("Clearing local league TE premium left stale analysis visible.");
+  await page.getByRole("button", { name: "Analyze proposed trade" }).click();
+  await page.locator(".trade-advantage.is-withheld").waitFor();
+  await page.locator(".trade-value-provenance > summary").click();
+  await page.locator(".trade-value-provenance").getByText(/ESPN_TE_PREMIUM_UNRESOLVED/).waitFor();
+
   const localValue = await page.evaluate(() => localStorage.getItem("chip-winner:fantasycalc-manual:v1"));
   if (!localValue?.includes(outgoingId) || !localValue?.includes(incomingId)) throw new Error("Manual capture did not stay keyed to selected ESPN player IDs in browser-local storage.");
   if (page.url().includes("fantasycalc") || page.url().includes("40") || page.url().includes("60")) throw new Error("Manual value escaped into the URL.");
