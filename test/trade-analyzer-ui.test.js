@@ -61,6 +61,7 @@ test("TCW-034 package winner presentation is separate from roster impact and lab
     packageValue: {
       status: "READY", winner: "YOU_WIN", sourceId: "synthetic-approved-fixture", sourceVersion: "v1",
       asOf: "2026-09-19T12:00:00Z", unit: "synthetic units",
+      incomingShare: 60, outgoingShare: 40,
       displayedSplit: { incoming: 60, outgoing: 40, label: "60/40", nearFairnessBoundary: false },
       reasons: [], sourceResults: []
     },
@@ -68,7 +69,9 @@ test("TCW-034 package winner presentation is separate from roster impact and lab
   }), snapshot, escapeHtml);
   assert.match(html, /YOU WIN/);
   assert.match(html, /60\/40 received\/sent/);
-  assert.match(html, /relative package asset value, not win probability/);
+  assert.match(html, /Package value favors you/);
+  assert.match(html, /You receive/);
+  assert.match(html, /relative package asset value/);
   assert.match(html, /WORSENS/);
   assert.match(html, /DO_NOT_PROCEED/);
 });

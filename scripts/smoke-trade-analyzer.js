@@ -113,6 +113,21 @@ try {
   await page.locator(".trade-decision").getByText(/YOUR ROSTER IMPACT/i).waitFor();
   const livePackageText = await page.locator(".trade-decision-facts > div").first().innerText();
   if (/YOU WIN|FAIR TRADE|THEY WIN|\b\d{1,3}\/\d{1,3}\b/.test(livePackageText)) throw new Error("Live Trade Analyzer exposed a winner or numeric split without an approved package-value source.");
+  if (await page.locator(".trade-advantage.is-withheld .trade-advantage-track span").count()) throw new Error("Withheld asset value rendered a directional meter.");
+  await page.getByRole("button", { name: "Start new capture" }).click();
+  const outgoingId = await page.locator('[data-trade-remove="outgoingPlayerIds"]').first().getAttribute("data-player-id-value");
+  const incomingId = await page.locator('[data-trade-remove="incomingPlayerIds"]').first().getAttribute("data-player-id-value");
+  await page.locator(`[data-manual-player-id="${outgoingId}"]`).fill("40");
+  await page.locator(`[data-manual-player-id="${outgoingId}"]`).blur();
+  await page.locator(`[data-manual-player-id="${incomingId}"]`).fill("60");
+  await page.locator(`[data-manual-player-id="${incomingId}"]`).blur();
+  await page.getByRole("button", { name: "Analyze proposed trade" }).click();
+  await page.locator(".trade-advantage.is-withheld").waitFor();
+  await page.locator(".trade-value-provenance > summary").click();
+  await page.locator(".trade-value-provenance").getByText(/ESPN_TE_PREMIUM_UNRESOLVED/).waitFor();
+  const localValue = await page.evaluate(() => localStorage.getItem("chip-winner:fantasycalc-manual:v1"));
+  if (!localValue?.includes(outgoingId) || !localValue?.includes(incomingId)) throw new Error("Manual capture did not stay keyed to selected ESPN player IDs in browser-local storage.");
+  if (page.url().includes("fantasycalc") || page.url().includes("40") || page.url().includes("60")) throw new Error("Manual value escaped into the URL.");
 
   await page.locator('[data-trade-remove="outgoingPlayerIds"]').first().click();
   if (await page.locator('[data-trade-remove="outgoingPlayerIds"]').count() !== 0) throw new Error("Trade Analyzer did not remove the outgoing player during proposal editing.");

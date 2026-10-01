@@ -176,3 +176,27 @@ main { min-width:0; }.topbar { min-height:90px; background:rgba(255,255,255,.82)
 .plan-disclosures .panel{box-shadow:none;border:1px solid var(--line);margin-top:8px}
 @media(max-width:900px){.season-outlook-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.season-outlook-item:nth-child(3){border-left:0;padding-left:0}.season-outlook-item:nth-child(n+3):not(.season-outlook-sos){border-top:1px solid var(--line)}.plan-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.season-outlook{padding:16px}.season-outlook-heading{flex-wrap:wrap}.season-outlook-grid,.season-evidence-grid,.plan-groups{grid-template-columns:minmax(0,1fr)}.season-outlook-item,.season-outlook-item+ .season-outlook-item,.season-outlook-item:nth-child(3){border-left:0;border-top:1px solid var(--line);padding:10px 0}.season-outlook-item:first-child{border-top:0}.season-outlook-sos{display:grid;gap:4px}.season-evidence-grid .panel-head{flex-wrap:wrap}.plan-depth-group>summary{min-height:54px}}
+/* P03 manual FantasyCalc capture and package asset-value meter. */
+.trade-value-entry{margin-top:16px;padding:15px;border:1px solid var(--line);border-radius:10px;background:#f8faf7;min-width:0}
+.trade-value-entry-head,.trade-advantage-heading,.trade-advantage-sides{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.trade-value-entry-head h4{margin:3px 0;font:800 15px Manrope}
+.trade-value-profile{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.trade-value-profile label,.trade-value-player{display:grid;gap:5px;min-width:0;color:var(--muted);font-size:10px;font-weight:800}
+.trade-value-profile input,.trade-value-profile select,.trade-value-player input{width:100%;min-width:0;padding:9px;border:1px solid var(--line);border-radius:7px;background:white;color:var(--ink);font:600 12px Manrope}
+.trade-value-capture{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;font-size:10px;color:var(--muted);overflow-wrap:anywhere}
+.trade-value-players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.trade-value-player{padding:9px;border:1px solid var(--line);border-radius:8px;background:white;grid-template-columns:minmax(0,1fr) minmax(70px,110px);align-items:center}
+.trade-value-player span{color:var(--ink);overflow-wrap:anywhere}
+.trade-value-player small{display:block;color:var(--muted);font-weight:400}
+.trade-advantage{padding:13px;margin-top:12px;border:1px solid var(--line);border-radius:9px;background:#f8faf7;min-width:0}
+.trade-advantage-heading strong{font-size:11px}.trade-advantage-heading span{font-size:11px;font-weight:800;color:var(--green)}
+.trade-advantage-track{height:13px;margin:12px 0 7px;border-radius:20px;background:#e7eae7;position:relative;overflow:hidden}
+.trade-advantage-track span{display:block;height:100%;background:#407e60;border-radius:20px}
+.trade-advantage-track i{position:absolute;top:0;bottom:0;border-left:2px solid #203c2d}
+.trade-advantage.is-they-win .trade-advantage-track span{background:#bd8b58}
+.trade-advantage.is-fair-trade .trade-advantage-track span{background:#8daba0}
+.trade-advantage.is-withheld .trade-advantage-track{background:repeating-linear-gradient(135deg,#e8eae8 0 7px,#f1f2f1 7px 14px)}
+.trade-advantage.is-withheld .trade-advantage-heading span{color:var(--muted)}
+.trade-advantage-sides{font-size:10px;color:var(--muted)}.trade-advantage p,.trade-value-provenance p{font-size:10px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:760px){.trade-value-profile{grid-template-columns:repeat(2,minmax(0,1fr))}.trade-value-players{grid-template-columns:1fr}}
+@media(max-width:420px){.trade-value-profile{grid-template-columns:1fr 1fr}.trade-value-player{grid-template-columns:minmax(0,1fr) 82px}}
