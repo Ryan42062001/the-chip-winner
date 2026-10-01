@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeTrade } from "../src/domain/trade-analyzer.js";
+import { createFantasyCalcManualSource } from "../src/domain/fantasycalc-manual-source.js";
 import { createSyntheticApprovedTradeValueSource } from "../src/domain/trade-value-source.js";
 
 const NOW = Date.parse("2026-09-19T12:30:00Z");
@@ -81,6 +82,31 @@ test("TCW-034 fair package can still worsen the user's roster", () => {
   const result = analyze(snapshot, proposal(["a"], ["x"]), { tradeValueSources: [valueSource({ a:50, x:50 })] });
   assert.equal(result.packageValue.winner, "FAIR_TRADE");
   assert.equal(result.currentWeek.direction, "DOWNGRADE");
+  assert.equal(result.doNothing.userDecision, "WORSENS");
+  assert.equal(result.doNothing.recommendation, "DO_NOT_PROCEED");
+});
+
+test("FantasyCalc manual package advantage cannot override worsening roster impact", () => {
+  const snapshot = snap({
+    players: [player("q","QB",20), player("a","RB",20), player("b","RB",8), player("r","QB",19), player("x","RB",17)],
+    mine: [entry("q","QB"),entry("a","RB"),entry("b","BE")],
+    other: [entry("r","QB"),entry("x","RB")],
+    lineupSlots: [{slot:"QB",count:1},{slot:"RB",count:1},{slot:"BE",count:1}]
+  });
+  snapshot.league.tePremium = false;
+  const asOf = new Date(NOW).toISOString();
+  const profile = { teamCount:2, ppr:"PPR", qbFormat:"1QB", tePremium:false };
+  const profileKey = JSON.stringify([2,"PPR","1QB",false]);
+  const manual = createFantasyCalcManualSource(snapshot, {
+    sessionId:"synthetic-session", asOf, profile,
+    values: {
+      a:{ value:40, sessionId:"synthetic-session", asOf, profileKey },
+      x:{ value:60, sessionId:"synthetic-session", asOf, profileKey }
+    }
+  });
+  const result = analyze(snapshot, proposal(["a"],["x"]), { tradeValueSources:[manual] });
+  assert.equal(result.packageValue.status, "READY");
+  assert.equal(result.packageValue.winner, "YOU_WIN");
   assert.equal(result.doNothing.userDecision, "WORSENS");
   assert.equal(result.doNothing.recommendation, "DO_NOT_PROCEED");
 });
