@@ -1,3 +1,5 @@
+import { fantasyCalcProfileReasons, FANTASYCALC_SOURCE_ID } from "./fantasycalc-manual-source.js";
+
 export const PRODUCTION_TRADE_VALUE_SOURCES = Object.freeze([]);
 // Accept at most one minute of upstream clock skew; a larger future vintage is not fresh evidence.
 const MAX_FUTURE_SKEW_MS = 60_000;
@@ -14,7 +16,8 @@ function assetRecord(raw) {
     sourceId: raw.sourceId ?? null,
     sourceVersion: raw.sourceVersion ?? null,
     asOf: raw.asOf ?? null,
-    unit: raw.unit ?? null
+    unit: raw.unit ?? null,
+    profileKey: raw.profileKey ?? null
   };
 }
 
@@ -47,6 +50,7 @@ export function inspectTradeValueSource(source, snapshot, assetIds, { now = Date
   if (!managerApproved) reasons.push("SOURCE_NOT_MANAGER_APPROVED");
   if (!additive) reasons.push("SOURCE_NOT_ADDITIVE");
   if (mode !== "REDRAFT") reasons.push("MODE_INCOMPATIBLE");
+  if (sourceId === FANTASYCALC_SOURCE_ID) reasons.push(...fantasyCalcProfileReasons(source, snapshot, assetIds));
 
   const snapshotSeason = snapshot?.league?.season;
   const sourceSeason = league.season;
@@ -91,6 +95,12 @@ export function inspectTradeValueSource(source, snapshot, assetIds, { now = Date
 
   for (const playerId of [...new Set(Array.isArray(assetIds) ? assetIds : [])].sort()) {
     const record = assetRecord(source?.values?.[playerId]);
+    if (sourceId === FANTASYCALC_SOURCE_ID && record.status === "READY"
+      && (record.sourceId == null || record.sourceVersion == null || record.asOf == null || record.unit == null
+        || record.profileKey == null || record.profileKey !== source.profileKey)) {
+      mixedMetadataPlayerIds.push(playerId);
+      continue;
+    }
     if (record.status === "MISSING") {
       missingPlayerIds.push(playerId);
       continue;
