@@ -1,5 +1,10 @@
 # The Chip Winner agent guide
 
+## Primary Builder execution mode
+
+**Default to regular ChatGPT Chat** for the Project Manager, Primary Builder and fresh Independent Auditor. Use ChatGPT Work mode (**Super Builder**) only for a specific unavoidable capability gap, after explaining the blocker and receiving Ryan's explicit approval. Never skip validation, change phase authority, reuse the Builder as its own independent Auditor, or bypass CI/audit/merge/deployment protections to avoid Work usage. For the controlling details, read `docs/WORKFLOW.md`.
+
+
 ## Product boundary
 
 The Chip Winner is an ESPN-only, read-only in-season fantasy football companion. ESPN owns league state. External rankings and projections are independent inputs. Derived recommendations never modify source snapshots.
