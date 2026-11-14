@@ -1,3 +1,5 @@
+> **Proposed Owner AI role amendment (2026-11-13; not active until approved merge):** [AI_COLLABORATION_WORKFLOW.md](AI_COLLABORATION_WORKFLOW.md) appoints Claude Code the sole Primary Builder, ChatGPT Codex the isolated handoff fallback, ChatGPT Work Cloud Browser the synthetic UI tester, and a fresh ChatGPT session the independent reviewer/Manager. The previous regular-Chat Builder and Work-as-Super-Builder *role defaults* are superseded only for those functions. Exceptional Work computer/developer access still needs separate Ryan authorization; existing Speed V2.1, progress-first, ESPN, privacy, field evidence, `master` protection, exact-SHA CI, Owner merge/deploy rules remain binding.
+
 # Speed Workflow V2.1
 
 ## 2026-11-07 Owner sequencing amendment — focused phase audits, comprehensive final audit
