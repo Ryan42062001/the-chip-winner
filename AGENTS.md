@@ -1,3 +1,5 @@
+> **Owner-requested AI roles (proposal 2026-11-13):** read [docs/AI_COLLABORATION_WORKFLOW.md](docs/AI_COLLABORATION_WORKFLOW.md). After reviewed merge, Claude Code is default Builder, Work Cloud Browser handles approved synthetic/mock QA, and a fresh ChatGPT session independently reviews. This supersedes only prior regular-Chat Builder/exception-only Work role defaults, never ESPN privacy, protected master, CI/FULL, field-validation, provider or explicit Owner approval rules. No production or ESPN access is authorized by this draft.
+
 # The Chip Winner agent guide
 
 ## Owner progress-first override — 2026-11-07 (refined)
