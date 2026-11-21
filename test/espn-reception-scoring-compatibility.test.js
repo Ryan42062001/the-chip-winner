@@ -29,6 +29,15 @@ test("live ESPN H2H_POINTS league retains PPR reception scoring from mSettings",
   assert.deepEqual(snapshot.league.receptionScoring, { family: "ppr", pointsPerReception: 1 });
 });
 
+test("TE premium is propagated only when ESPN scoring settings explicitly report it", () => {
+  const explicit = structuredClone(leagueResponse);
+  explicit.settings.scoringSettings.tePremium = false;
+  assert.equal(normalizeEspnLeagueResponse(explicit).league.tePremium, false);
+  const absent = structuredClone(leagueResponse);
+  delete absent.settings.scoringSettings.tePremium;
+  assert.equal(normalizeEspnLeagueResponse(absent).league.tePremium, undefined);
+});
+
 test("PPR weekly projections are compatible with ESPN H2H_POINTS when reception scoring is PPR", () => {
   const snapshot = { league: { season: 2026, scoringType: "H2H_POINTS", receptionScoring: { family: "ppr", pointsPerReception: 1 } } };
   const result = evaluateFutureProjectionCompatibility(projectionSet, snapshot, { now: Date.parse("2026-09-05T13:00:00Z") });

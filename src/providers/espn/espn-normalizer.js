@@ -102,6 +102,7 @@ export function normalizeEspnCapture(capture) {
   const playoffWeeks = normalizePlayoffWeeks(capture.league.playoffWeeks);
   if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
   if (capture.league.receptionScoring && typeof capture.league.receptionScoring === "object") snapshot.league.receptionScoring = { ...capture.league.receptionScoring };
+  if (typeof capture.league.tePremium === "boolean") snapshot.league.tePremium = capture.league.tePremium;
   if (Array.isArray(capture.availablePlayerIds)) snapshot.availablePlayers = capture.availablePlayerIds.map(String);
   const errors = validateLeagueSnapshot(snapshot);
   if (errors.length) throw new Error(`Normalized ESPN capture is invalid: ${errors.join(" ")}`);
@@ -170,6 +171,7 @@ export function normalizeEspnLeagueResponse(response, captureMeta = {}, suppleme
   };
   const receptionScoring = normalizeEspnReceptionScoring(response.settings.scoringSettings);
   if (receptionScoring) snapshot.league.receptionScoring = receptionScoring;
+  if (typeof response.settings.scoringSettings?.tePremium === "boolean") snapshot.league.tePremium = response.settings.scoringSettings.tePremium;
   const playoffWeeks = normalizePlayoffWeeks(response.settings.scheduleSettings?.playoffWeeks);
   if (playoffWeeks) snapshot.league.playoffWeeks = playoffWeeks;
   if (Array.isArray(supplemental.availablePlayers)) snapshot.availablePlayers = availablePlayers.map((player) => String(player.id));
